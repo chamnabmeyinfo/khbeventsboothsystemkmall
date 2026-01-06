@@ -1,4 +1,4 @@
-# KHB Events - K Mall Xmas Booth Booking System
+# KHB Events - K Mall Booth Booking System
 
 A modern Laravel-based booth booking and management system for KHB Events.
 
@@ -23,8 +23,8 @@ A modern Laravel-based booth booking and management system for KHB Events.
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/kmallxmas-laravel.git
-   cd kmallxmas-laravel
+   git clone https://github.com/yourusername/kmall-laravel.git
+   cd kmall-laravel
    ```
 
 2. **Install dependencies**
@@ -44,7 +44,7 @@ A modern Laravel-based booth booking and management system for KHB Events.
    DB_CONNECTION=mysql
    DB_HOST=127.0.0.1
    DB_PORT=3306
-   DB_DATABASE=khbevents_kmallxmas
+   DB_DATABASE=khbevents_kmall
    DB_USERNAME=root
    DB_PASSWORD=your_password
    ```
@@ -72,7 +72,7 @@ A modern Laravel-based booth booking and management system for KHB Events.
 ## 📁 Project Structure
 
 ```
-kmallxmas-laravel/
+kmall-laravel/
 ├── app/
 │   ├── Http/Controllers/    # Application controllers
 │   ├── Models/                # Eloquent models

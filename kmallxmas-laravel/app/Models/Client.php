@@ -9,6 +9,20 @@ class Client extends Model
 {
     use HasFactory;
 
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'client';
+
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
+
     protected $fillable = [
         'name',
         'sex',
@@ -30,6 +44,6 @@ class Client extends Model
      */
     public function books()
     {
-        return $this->hasMany(Book::class, 'client_id');
+        return $this->hasMany(Book::class, 'clientid');
     }
 }

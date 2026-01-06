@@ -10,8 +10,9 @@
                 <h4 class="mb-0"><i class="fas fa-sign-in-alt me-2"></i>Login</h4>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('login') }}">
+                <form method="POST" action="{{ route('login') }}" id="loginForm">
                     @csrf
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
                         <input type="text" class="form-control @error('username') is-invalid @enderror" 

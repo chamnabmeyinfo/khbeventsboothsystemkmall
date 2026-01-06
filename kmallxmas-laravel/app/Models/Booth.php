@@ -9,18 +9,42 @@ class Booth extends Model
 {
     use HasFactory;
 
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'booth';
+
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
+
     protected $fillable = [
         'booth_number',
         'type',
         'price',
         'status',
         'client_id',
-        'user_id',
-        'book_id',
+        'userid',
+        'bookid',
         'category_id',
         'sub_category_id',
         'asset_id',
         'booth_type_id',
+        'position_x',
+        'position_y',
+        'width',
+        'height',
+        'rotation',
+        'z_index',
+        'font_size',
+        'border_width',
+        'border_radius',
+        'opacity',
     ];
 
     // Status constants
@@ -43,7 +67,7 @@ class Booth extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'userid');
     }
 
     /**
@@ -51,7 +75,7 @@ class Booth extends Model
      */
     public function book()
     {
-        return $this->belongsTo(Book::class, 'book_id');
+        return $this->belongsTo(Book::class, 'bookid');
     }
 
     /**

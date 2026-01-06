@@ -9,16 +9,29 @@ class Book extends Model
 {
     use HasFactory;
 
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'book';
+
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
+
     protected $fillable = [
-        'client_id',
-        'booth_ids',
+        'clientid',
+        'boothid',
         'date_book',
-        'user_id',
+        'userid',
         'type',
     ];
 
     protected $casts = [
-        'booth_ids' => 'array',
         'date_book' => 'datetime',
     ];
 
@@ -27,7 +40,7 @@ class Book extends Model
      */
     public function client()
     {
-        return $this->belongsTo(Client::class, 'client_id');
+        return $this->belongsTo(Client::class, 'clientid');
     }
 
     /**
@@ -35,14 +48,18 @@ class Book extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'userid');
     }
 
     /**
-     * Get booths in this booking
+     * Get booths in this booking (boothid is stored as JSON string)
      */
     public function booths()
     {
-        return Booth::whereIn('id', $this->booth_ids ?? [])->get();
+        $boothIds = json_decode($this->boothid, true) ?? [];
+        if (empty($boothIds)) {
+            return collect([]);
+        }
+        return Booth::whereIn('id', $boothIds)->get();
     }
 }

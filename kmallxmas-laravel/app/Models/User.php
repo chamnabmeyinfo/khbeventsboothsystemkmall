@@ -12,6 +12,20 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'user';
+
+    /**
+     * The primary key for the model.
+     *
+     * @var string
+     */
+    protected $primaryKey = 'id';
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
@@ -22,7 +36,16 @@ class User extends Authenticatable
         'type',
         'status',
         'last_login',
+        'create_time',
+        'update_time',
     ];
+
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
 
     /**
      * The attributes that should be hidden for serialization.
@@ -31,7 +54,6 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
-        'remember_token',
     ];
 
     /**
@@ -42,9 +64,54 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'last_login' => 'datetime',
             'password' => 'hashed',
+            // Note: last_login cast removed as column may not exist in all database versions
         ];
+    }
+
+    /**
+     * Get the name of the unique identifier for the user.
+     *
+     * @return string
+     */
+    public function getAuthIdentifierName()
+    {
+        return 'username';
+    }
+
+    /**
+     * Get the name of the "remember me" token column.
+     * Override to return null to disable remember token functionality
+     * (the remember_token column doesn't exist in the database)
+     *
+     * @return string|null
+     */
+    public function getRememberTokenName()
+    {
+        return null;
+    }
+
+    /**
+     * Get the remember token value.
+     * Override to return null since remember_token column doesn't exist
+     *
+     * @return string|null
+     */
+    public function getRememberToken()
+    {
+        return null;
+    }
+
+    /**
+     * Set the remember token value.
+     * Override to do nothing since remember_token column doesn't exist
+     *
+     * @param  string  $value
+     * @return void
+     */
+    public function setRememberToken($value)
+    {
+        // Do nothing - column doesn't exist in database
     }
 
     /**
@@ -52,7 +119,8 @@ class User extends Authenticatable
      */
     public function isAdmin(): bool
     {
-        return $this->type === 1;
+        $type = $this->type ?? $this->attributes['type'] ?? null;
+        return $type === '1' || $type === 1;
     }
 
     /**
@@ -60,7 +128,8 @@ class User extends Authenticatable
      */
     public function isActive(): bool
     {
-        return $this->status === 1;
+        $status = $this->status ?? $this->attributes['status'] ?? null;
+        return $status === '1' || $status === 1;
     }
 
     /**
@@ -68,7 +137,7 @@ class User extends Authenticatable
      */
     public function booths()
     {
-        return $this->hasMany(Booth::class, 'user_id');
+        return $this->hasMany(Booth::class, 'userid');
     }
 
     /**
@@ -76,6 +145,6 @@ class User extends Authenticatable
      */
     public function books()
     {
-        return $this->hasMany(Book::class, 'user_id');
+        return $this->hasMany(Book::class, 'userid');
     }
 }

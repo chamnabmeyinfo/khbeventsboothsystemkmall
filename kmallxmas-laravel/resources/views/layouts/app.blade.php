@@ -44,6 +44,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('categories.index') }}">Categories</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('settings.index') }}">Settings</a>
+                    </li>
                     @endif
                     @endauth
                 </ul>
@@ -110,6 +113,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <!-- Panzoom Library for Zoom & Pan -->
+    <script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
     
     @stack('scripts')
 </body>

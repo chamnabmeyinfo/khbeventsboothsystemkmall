@@ -7,15 +7,134 @@ use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
+    /**
+     * Display category management page
+     */
     public function index()
     {
-        $categories = Category::with('parent')->orderBy('name')->paginate(20);
+        $categories = Category::with('parent', 'children')
+            ->orderBy('name')
+            ->get();
+        
         return view('categories.index', compact('categories'));
     }
 
+    /**
+     * Create a new category (AJAX)
+     * Matches Yii actionCreateCategory
+     */
+    public function createCategory(Request $request)
+    {
+        if (!$request->has('name') || !$request->has('limit')) {
+            return response()->json(['error' => 'Missing required fields'], 400);
+        }
+        
+        if (empty($request->name) || empty($request->limit)) {
+            return response()->json(['error' => 'Name and limit are required'], 400);
+        }
+        
+        $category = Category::create([
+            'name' => $request->name,
+            'limit' => $request->limit,
+            'parent_id' => $request->parent_id ?? 0,
+            'status' => $request->status ?? 1,
+        ]);
+        
+        return response('success');
+    }
+
+    /**
+     * Update a category (AJAX)
+     * Matches Yii actionUpdateCategory
+     */
+    public function updateCategory(Request $request)
+    {
+        if (!$request->has('id') || !$request->has('name') || !$request->has('limit')) {
+            return response()->json(['error' => 'Missing required fields'], 400);
+        }
+        
+        if (empty($request->id) || empty($request->name) || empty($request->limit)) {
+            return response()->json(['error' => 'ID, name and limit are required'], 400);
+        }
+        
+        $category = Category::findOrFail($request->id);
+        $category->update([
+            'name' => $request->name,
+            'limit' => $request->limit,
+            'parent_id' => $request->parent_id ?? $category->parent_id,
+            'status' => $request->status ?? $category->status,
+        ]);
+        
+        return response('success');
+    }
+
+    /**
+     * Delete a category (AJAX)
+     * Matches Yii actionDeleteCategory
+     */
+    public function deleteCategory($id)
+    {
+        $category = Category::findOrFail($id);
+        $category->delete();
+        
+        return response('success');
+    }
+
+    /**
+     * Create a sub-category (AJAX)
+     * Matches Yii actionCreateSubCategory
+     */
+    public function createSubCategory(Request $request)
+    {
+        if (!$request->has('name') || !$request->has('limit') || !$request->has('parent_id')) {
+            return response()->json(['error' => 'Missing required fields'], 400);
+        }
+        
+        if (empty($request->name) || empty($request->limit) || empty($request->parent_id)) {
+            return response()->json(['error' => 'Name, limit and parent_id are required'], 400);
+        }
+        
+        $category = Category::create([
+            'name' => $request->name,
+            'limit' => $request->limit,
+            'parent_id' => $request->parent_id,
+            'status' => $request->status ?? 1,
+        ]);
+        
+        return response('success');
+    }
+
+    /**
+     * Update a sub-category (AJAX)
+     * Matches Yii actionUpdateSubCategory
+     */
+    public function updateSubCategory(Request $request)
+    {
+        if (!$request->has('id') || !$request->has('name') || !$request->has('limit')) {
+            return response()->json(['error' => 'Missing required fields'], 400);
+        }
+        
+        if (empty($request->id) || empty($request->name) || empty($request->limit)) {
+            return response()->json(['error' => 'ID, name and limit are required'], 400);
+        }
+        
+        $category = Category::findOrFail($request->id);
+        $category->update([
+            'name' => $request->name,
+            'limit' => $request->limit,
+            'parent_id' => $request->parent_id ?? $category->parent_id,
+            'status' => $request->status ?? $category->status,
+        ]);
+        
+        return response('success');
+    }
+
+    /**
+     * Standard CRUD methods for admin interface
+     */
     public function create()
     {
-        $parents = Category::where('parent_id', 0)->get();
+        $parents = Category::where('parent_id', 0)->orderBy('name')->get();
         return view('categories.create', compact('parents'));
     }
 
@@ -23,7 +142,7 @@ class CategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100',
-            'parent_id' => 'nullable|exists:categories,id',
+            'parent_id' => 'nullable|exists:category,id',
             'limit' => 'nullable|integer|min:0',
             'status' => 'required|integer|in:0,1',
         ]);
@@ -36,7 +155,7 @@ class CategoryController extends Controller
 
     public function edit(Category $category)
     {
-        $parents = Category::where('parent_id', 0)->where('id', '!=', $category->id)->get();
+        $parents = Category::where('parent_id', 0)->where('id', '!=', $category->id)->orderBy('name')->get();
         return view('categories.edit', compact('category', 'parents'));
     }
 
@@ -44,7 +163,7 @@ class CategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100',
-            'parent_id' => 'nullable|exists:categories,id',
+            'parent_id' => 'nullable|exists:category,id',
             'limit' => 'nullable|integer|min:0',
             'status' => 'required|integer|in:0,1',
         ]);

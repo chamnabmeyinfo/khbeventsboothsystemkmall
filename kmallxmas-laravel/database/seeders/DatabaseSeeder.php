@@ -17,12 +17,20 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Create admin user
-        User::create([
-            'username' => 'admin',
-            'password' => Hash::make('password'),
-            'type' => 1,
-            'status' => 1,
-        ]);
+        $admin = User::where('username', 'admin')->first();
+        if ($admin) {
+            $admin->password = Hash::make('admin@123!');
+            $admin->type = 1;
+            $admin->status = 1;
+            $admin->save();
+        } else {
+            User::create([
+                'username' => 'admin',
+                'password' => Hash::make('admin@123!'),
+                'type' => 1,
+                'status' => 1,
+            ]);
+        }
 
         // Create assets
         Asset::create(['name' => '10A', 'type' => 1, 'status' => 1]);
