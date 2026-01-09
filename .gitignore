@@ -3,6 +3,12 @@
 /public/hot
 /public/storage
 /storage/*.key
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitkeep
+/storage/framework/views/*
+!/storage/framework/views/.gitkeep
+/storage/logs/*.log
+!/storage/logs/.gitkeep
 /vendor
 .env
 .env.backup
@@ -16,5 +22,33 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+/.cursor
 .DS_Store
 Thumbs.db
+
+# Development/Setup files (not needed on server)
+*.ps1
+*.sh
+setup-config.php
+verify-setup.php
+organize-code.ps1
+move-to-root.sh
+deploy-cpanel.sh
+
+# Backup folders
+backup_*/
+
+# Temporary documentation
+MOVE-TO-ROOT.md
+ORGANIZATION-COMPLETE.md
+GITHUB_SETUP.md
+README-GITHUB.md
+PROJECT_SUMMARY.md
+INSTALLATION.md
+DEPLOYMENT.md
+DEPLOYMENT-SUMMARY.md
+CPANEL-DEPLOYMENT.md
+DIRECT-DOMAIN-SETUP.md
+QUICK-SETUP.md
+README-DIRECT-DOMAIN.md
+ROOT-DEPLOYMENT.md
