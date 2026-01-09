@@ -47,9 +47,9 @@ MAIL_FROM_NAME="KHB Booths Booking System"
 Remove these lines (they're only for local Git operations):
 ```env
 # GitHub Configuration
-GITHUB_USERNAME=chamnabmeyinfo
-GITHUB_TOKEN=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
-GITHUB_REPO_URL=https://github.com/chamnabmeyinfo/khbevents-boothsystem-kmall.git
+GITHUB_USERNAME=your_github_username
+GITHUB_TOKEN=your_github_token_here
+GITHUB_REPO_URL=https://github.com/yourusername/yourrepo.git
 GITHUB_USE_SSH=false
 ```
 
