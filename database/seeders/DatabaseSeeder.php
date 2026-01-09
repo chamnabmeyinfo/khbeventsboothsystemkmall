@@ -17,12 +17,20 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Create admin user
-        User::create([
-            'username' => 'admin',
-            'password' => Hash::make('password'),
-            'type' => 1,
-            'status' => 1,
-        ]);
+        $admin = User::where('username', 'admin')->first();
+        if ($admin) {
+            $admin->password = Hash::make('admin@123!');
+            $admin->type = 1;
+            $admin->status = 1;
+            $admin->save();
+        } else {
+            User::create([
+                'username' => 'admin',
+                'password' => Hash::make('admin@123!'),
+                'type' => 1,
+                'status' => 1,
+            ]);
+        }
 
         // Create assets
         Asset::create(['name' => '10A', 'type' => 1, 'status' => 1]);
@@ -52,12 +60,16 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($boothNumbers as $number) {
-            Booth::create([
-                'booth_number' => $number,
-                'type' => 2,
-                'price' => 500,
-                'status' => Booth::STATUS_AVAILABLE,
-            ]);
+            // Check if booth number already exists to prevent duplicates
+            $existingBooth = Booth::where('booth_number', $number)->first();
+            if (!$existingBooth) {
+                Booth::create([
+                    'booth_number' => $number,
+                    'type' => 2,
+                    'price' => 500,
+                    'status' => Booth::STATUS_AVAILABLE,
+                ]);
+            }
         }
     }
 }

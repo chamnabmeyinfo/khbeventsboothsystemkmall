@@ -9,11 +9,27 @@ class Category extends Model
 {
     use HasFactory;
 
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'category';
+
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
+
     protected $fillable = [
         'name',
         'parent_id',
         'limit',
         'status',
+        'create_time',
+        'update_time',
     ];
 
     /**

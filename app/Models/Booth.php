@@ -4,10 +4,25 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\ValidationException;
 
 class Booth extends Model
 {
     use HasFactory;
+
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'booth';
+
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
 
     protected $fillable = [
         'booth_number',
@@ -15,12 +30,30 @@ class Booth extends Model
         'price',
         'status',
         'client_id',
-        'user_id',
-        'book_id',
+        'userid',
+        'bookid',
         'category_id',
         'sub_category_id',
         'asset_id',
         'booth_type_id',
+        'position_x',
+        'position_y',
+        'width',
+        'height',
+        'rotation',
+        'z_index',
+        'font_size',
+        'border_width',
+        'border_radius',
+        'opacity',
+        // Appearance properties
+        'background_color',
+        'border_color',
+        'text_color',
+        'font_weight',
+        'font_family',
+        'text_align',
+        'box_shadow',
     ];
 
     // Status constants
@@ -43,7 +76,7 @@ class Booth extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'userid');
     }
 
     /**
@@ -51,7 +84,7 @@ class Booth extends Model
      */
     public function book()
     {
-        return $this->belongsTo(Book::class, 'book_id');
+        return $this->belongsTo(Book::class, 'bookid');
     }
 
     /**
@@ -138,5 +171,47 @@ class Booth extends Model
             self::STATUS_PAID => 'primary',
             default => 'secondary',
         };
+    }
+
+    /**
+     * Boot method to add model event listeners
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Before creating, check for duplicate booth_number
+        static::creating(function ($booth) {
+            $existing = self::where('booth_number', $booth->booth_number)->first();
+            if ($existing) {
+                throw ValidationException::withMessages([
+                    'booth_number' => 'This booth number already exists. Please choose a different number.'
+                ]);
+            }
+        });
+
+        // Before updating, check for duplicate booth_number (excluding current record)
+        static::updating(function ($booth) {
+            $existing = self::where('booth_number', $booth->booth_number)
+                ->where('id', '!=', $booth->id)
+                ->first();
+            if ($existing) {
+                throw ValidationException::withMessages([
+                    'booth_number' => 'This booth number already exists. Please choose a different number.'
+                ]);
+            }
+        });
+    }
+
+    /**
+     * Check if a booth number already exists
+     */
+    public static function numberExists(string $boothNumber, ?int $excludeId = null): bool
+    {
+        $query = self::where('booth_number', $boothNumber);
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+        return $query->exists();
     }
 }

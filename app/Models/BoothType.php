@@ -9,6 +9,10 @@ class BoothType extends Model
 {
     use HasFactory;
 
+    protected $table = 'booth_type';
+
+    public $timestamps = false;
+
     protected $fillable = [
         'name',
         'status',

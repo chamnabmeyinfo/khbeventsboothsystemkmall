@@ -9,6 +9,10 @@ class Asset extends Model
 {
     use HasFactory;
 
+    protected $table = 'asset';
+
+    public $timestamps = false;
+
     protected $fillable = [
         'name',
         'type',
@@ -16,7 +20,7 @@ class Asset extends Model
     ];
 
     /**
-     * Get booths with this asset
+     * Get booths that use this asset
      */
     public function booths()
     {

@@ -7,10 +7,34 @@ use Illuminate\Http\Request;
 
 class ClientController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $clients = Client::orderBy('company')->paginate(20);
-        return view('clients.index', compact('clients'));
+        $query = Client::query();
+        
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('company', 'like', "%{$search}%")
+                  ->orWhere('phone_number', 'like', "%{$search}%")
+                  ->orWhere('position', 'like', "%{$search}%");
+            });
+        }
+        
+        // Sort functionality
+        $sortBy = $request->get('sort_by', 'company');
+        $sortDir = $request->get('sort_dir', 'asc');
+        
+        if (in_array($sortBy, ['company', 'name', 'position', 'phone_number'])) {
+            $query->orderBy($sortBy, $sortDir);
+        } else {
+            $query->orderBy('company', 'asc');
+        }
+        
+        $clients = $query->paginate(20)->withQueryString();
+        
+        return view('clients.index', compact('clients', 'sortBy', 'sortDir'));
     }
 
     public function create()
@@ -37,6 +61,19 @@ class ClientController extends Controller
     public function show(Client $client)
     {
         $client->load('booths', 'books');
+        
+        // Return JSON if request expects JSON (for API calls)
+        if (request()->expectsJson() || request()->wantsJson()) {
+            return response()->json([
+                'id' => $client->id,
+                'name' => $client->name,
+                'sex' => $client->sex,
+                'company' => $client->company,
+                'position' => $client->position,
+                'phone_number' => $client->phone_number,
+            ]);
+        }
+        
         return view('clients.show', compact('client'));
     }
 

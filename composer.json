@@ -1,7 +1,7 @@
 {
-    "name": "khbevents/kmallxmas",
+    "name": "khbevents/kmall",
     "type": "project",
-    "description": "KHB Events - K Mall Xmas Booth Booking System",
+    "description": "KHB Events - K Mall Booth Booking System",
     "keywords": ["laravel", "booth", "booking", "events"],
     "license": "proprietary",
     "require": {
