@@ -3,6 +3,7 @@
 ## 📊 Current Status: Good Foundation ✅
 
 Your project has a solid foundation with:
+
 - ✅ Proper authentication and authorization
 - ✅ CSRF protection
 - ✅ Password hashing
@@ -14,9 +15,11 @@ Your project has a solid foundation with:
 ### 🔴 High Priority (Security & Performance)
 
 #### 1. **Rate Limiting on Login** (Security)
+
 **Issue:** No brute force protection on login attempts.
 
 **Fix:**
+
 ```php
 // In routes/web.php, add throttle middleware:
 Route::post('/login', [LoginController::class, 'login'])
@@ -26,9 +29,11 @@ Route::post('/login', [LoginController::class, 'login'])
 **Why:** Prevents brute force attacks on login.
 
 #### 2. **N+1 Query Problem in Dashboard** (Performance)
+
 **Issue:** In `DashboardController.php` lines 104-127, looping through users and querying booths for each.
 
 **Current Code:**
+
 ```php
 foreach ($users as $usr) {
     $userStats[] = [
@@ -40,6 +45,7 @@ foreach ($users as $usr) {
 ```
 
 **Fix:** Use eager loading and groupBy:
+
 ```php
 // Get all booth counts grouped by user in one query
 $boothStats = Booth::select('userid', 'status', DB::raw('count(*) as count'))
@@ -52,11 +58,13 @@ $boothStats = Booth::select('userid', 'status', DB::raw('count(*) as count'))
 **Why:** Reduces database queries from N+1 to just 2 queries.
 
 #### 3. **Remove DebugLogger from Production** (Security)
+
 **Issue:** DebugLogger logs sensitive data (usernames, session IDs, CSRF tokens).
 
 **Current:** Already checks environment, but logs are still created.
 
 **Fix:** Add to `.gitignore`:
+
 ```
 /storage/logs/debug.log
 ```
@@ -66,9 +74,11 @@ $boothStats = Booth::select('userid', 'status', DB::raw('count(*) as count'))
 ### 🟡 Medium Priority (Code Quality)
 
 #### 4. **Create Form Request Classes** (Code Organization)
+
 **Issue:** Validation logic is scattered in controllers.
 
 **Fix:** Create Form Request classes:
+
 ```bash
 php artisan make:request StoreBoothRequest
 php artisan make:request UpdateBoothRequest
@@ -78,9 +88,11 @@ php artisan make:request BookingRequest
 **Why:** Better code organization, reusable validation rules.
 
 #### 5. **Add API Rate Limiting**
+
 **Issue:** No rate limiting on API endpoints.
 
 **Fix:**
+
 ```php
 Route::middleware(['auth', 'throttle:60,1'])->group(function () {
     // API routes
@@ -90,9 +102,11 @@ Route::middleware(['auth', 'throttle:60,1'])->group(function () {
 **Why:** Prevents API abuse.
 
 #### 6. **Optimize Dashboard Queries**
+
 **Issue:** Multiple separate queries that could be combined.
 
 **Current:**
+
 ```php
 $totalBooths = Booth::count();
 $availableBooths = Booth::whereIn('status', [1, 4])->count();
@@ -101,6 +115,7 @@ $reservedBooths = Booth::where('status', 2)->count();
 ```
 
 **Fix:** Use single query with conditional aggregation:
+
 ```php
 $boothStats = Booth::selectRaw('
     COUNT(*) as total,
@@ -116,14 +131,17 @@ $boothStats = Booth::selectRaw('
 ### 🟢 Low Priority (Nice to Have)
 
 #### 7. **Add Request Validation for All Endpoints**
+
 **Issue:** Some endpoints lack proper validation.
 
 **Fix:** Add validation to all controller methods.
 
 #### 8. **Add Database Indexes**
+
 **Issue:** Check if frequently queried columns have indexes.
 
 **Fix:** Add migrations for indexes:
+
 ```php
 Schema::table('booth', function (Blueprint $table) {
     $table->index('status');
@@ -133,14 +151,17 @@ Schema::table('booth', function (Blueprint $table) {
 ```
 
 #### 9. **Add Soft Deletes**
+
 **Issue:** No soft delete functionality.
 
 **Fix:** Add `SoftDeletes` trait to models that need it.
 
 #### 10. **Add Activity Logging**
+
 **Issue:** No audit trail for important actions.
 
 **Fix:** Add activity logging for:
+
 - User logins/logouts
 - Booth status changes
 - Booking creation/updates
@@ -149,18 +170,22 @@ Schema::table('booth', function (Blueprint $table) {
 ## 📋 Quick Wins (Easy Improvements)
 
 ### 1. Add Login Rate Limiting
+
 **Time:** 5 minutes
 **Impact:** High (Security)
 
 ### 2. Optimize Dashboard Queries
+
 **Time:** 30 minutes
 **Impact:** High (Performance)
 
 ### 3. Add Missing Validation
+
 **Time:** 1 hour
 **Impact:** Medium (Code Quality)
 
 ### 4. Add Database Indexes
+
 **Time:** 15 minutes
 **Impact:** Medium (Performance)
 
@@ -175,6 +200,7 @@ Schema::table('booth', function (Blueprint $table) {
 ## 📝 Code Examples
 
 ### Example 1: Rate Limited Login Route
+
 ```php
 // routes/web.php
 Route::post('/login', [LoginController::class, 'login'])
@@ -183,6 +209,7 @@ Route::post('/login', [LoginController::class, 'login'])
 ```
 
 ### Example 2: Optimized Dashboard Query
+
 ```php
 // DashboardController.php
 $boothStats = DB::table('booth')
@@ -197,6 +224,7 @@ $boothStats = DB::table('booth')
 ```
 
 ### Example 3: Form Request Class
+
 ```php
 // app/Http/Requests/StoreBoothRequest.php
 class StoreBoothRequest extends FormRequest

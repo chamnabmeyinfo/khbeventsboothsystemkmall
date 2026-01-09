@@ -70,17 +70,23 @@ class DashboardController extends Controller
             DebugLogger::log([], 'DashboardController.php:69', 'Starting booth queries');
             // #endregion
             
-            // Total booths
-            $totalBooths = Booth::count();
+            // Optimized: Get all booth statistics in one query instead of multiple separate queries
+            $boothStats = Booth::selectRaw('
+                COUNT(*) as total,
+                SUM(CASE WHEN status IN (' . Booth::STATUS_AVAILABLE . ', ' . Booth::STATUS_HIDDEN . ') THEN 1 ELSE 0 END) as available,
+                SUM(CASE WHEN status = ' . Booth::STATUS_RESERVED . ' THEN 1 ELSE 0 END) as reserved,
+                SUM(CASE WHEN status = ' . Booth::STATUS_CONFIRMED . ' THEN 1 ELSE 0 END) as confirmed,
+                SUM(CASE WHEN status = ' . Booth::STATUS_PAID . ' THEN 1 ELSE 0 END) as paid
+            ')->first();
             
-            // Available booths (status 1 or 4)
-            $availableBooths = Booth::whereIn('status', [Booth::STATUS_AVAILABLE, Booth::STATUS_HIDDEN])->count();
+            $totalBooths = (int) ($boothStats->total ?? 0);
+            $availableBooths = (int) ($boothStats->available ?? 0);
             
             // Get statistics based on user type
             if ($isAdmin) {
-                $reservedBooths = Booth::where('status', Booth::STATUS_RESERVED)->count();
-                $confirmedBooths = Booth::where('status', Booth::STATUS_CONFIRMED)->count();
-                $paidBooths = Booth::where('status', Booth::STATUS_PAID)->count();
+                $reservedBooths = (int) ($boothStats->reserved ?? 0);
+                $confirmedBooths = (int) ($boothStats->confirmed ?? 0);
+                $paidBooths = (int) ($boothStats->paid ?? 0);
             
             // Get all users
             // #region agent log
@@ -99,30 +105,72 @@ class DashboardController extends Controller
                 $users = collect([]);
             }
             
-            // Get user statistics
+            // Optimized: Get all user booth statistics in one query instead of N+1 queries
             $userStats = [];
-            foreach ($users as $usr) {
+            if ($users->isNotEmpty()) {
                 try {
-                    $userStats[] = [
-                        'id' => $usr->id,
-                        'username' => $usr->username,
-                        'type' => ($usr->type ?? '2') == '1' || ($usr->type ?? '2') == 1 ? 'Admin' : 'Sale',
-                        'status' => $usr->status ?? 'N/A',
-                        'reserve' => Booth::where('status', Booth::STATUS_RESERVED)
-                            ->where('userid', $usr->id)
-                            ->count(),
-                        'booking' => Booth::where('status', Booth::STATUS_CONFIRMED)
-                            ->where('userid', $usr->id)
-                            ->count(),
-                        'paid' => Booth::where('status', Booth::STATUS_PAID)
-                            ->where('userid', $usr->id)
-                            ->count(),
-                        'last_login' => $usr->last_login ?? null,
-                    ];
+                    // Get all booth counts grouped by user in one query
+                    $boothCountsByUser = Booth::select('userid', 'status', DB::raw('count(*) as count'))
+                        ->whereIn('status', [Booth::STATUS_RESERVED, Booth::STATUS_CONFIRMED, Booth::STATUS_PAID])
+                        ->whereIn('userid', $users->pluck('id'))
+                        ->groupBy('userid', 'status')
+                        ->get()
+                        ->groupBy('userid');
+                    
+                    // Build user stats array with optimized data
+                    foreach ($users as $usr) {
+                        try {
+                            $userBoothCounts = $boothCountsByUser->get($usr->id, collect());
+                            
+                            $reserveCount = $userBoothCounts->firstWhere('status', Booth::STATUS_RESERVED);
+                            $bookingCount = $userBoothCounts->firstWhere('status', Booth::STATUS_CONFIRMED);
+                            $paidCount = $userBoothCounts->firstWhere('status', Booth::STATUS_PAID);
+                            
+                            $userStats[] = [
+                                'id' => $usr->id,
+                                'username' => $usr->username,
+                                'type' => ($usr->type ?? '2') == '1' || ($usr->type ?? '2') == 1 ? 'Admin' : 'Sale',
+                                'status' => $usr->status ?? 'N/A',
+                                'reserve' => $reserveCount ? (int) $reserveCount->count : 0,
+                                'booking' => $bookingCount ? (int) $bookingCount->count : 0,
+                                'paid' => $paidCount ? (int) $paidCount->count : 0,
+                                'last_login' => $usr->last_login ?? null,
+                            ];
+                        } catch (\Exception $e) {
+                            // #region agent log
+                            DebugLogger::log(['user_id'=>$usr->id ?? 'N/A','error'=>$e->getMessage()], 'DashboardController.php:124', 'Error processing user stats');
+                            // #endregion
+                        }
+                    }
                 } catch (\Exception $e) {
+                    // Fallback to original method if optimized query fails
                     // #region agent log
-                    DebugLogger::log(['user_id'=>$usr->id ?? 'N/A','error'=>$e->getMessage()], 'DashboardController.php:124', 'Error processing user stats');
+                    DebugLogger::log(['error'=>$e->getMessage()], 'DashboardController.php:127', 'Optimized query failed, using fallback');
                     // #endregion
+                    foreach ($users as $usr) {
+                        try {
+                            $userStats[] = [
+                                'id' => $usr->id,
+                                'username' => $usr->username,
+                                'type' => ($usr->type ?? '2') == '1' || ($usr->type ?? '2') == 1 ? 'Admin' : 'Sale',
+                                'status' => $usr->status ?? 'N/A',
+                                'reserve' => Booth::where('status', Booth::STATUS_RESERVED)
+                                    ->where('userid', $usr->id)
+                                    ->count(),
+                                'booking' => Booth::where('status', Booth::STATUS_CONFIRMED)
+                                    ->where('userid', $usr->id)
+                                    ->count(),
+                                'paid' => Booth::where('status', Booth::STATUS_PAID)
+                                    ->where('userid', $usr->id)
+                                    ->count(),
+                                'last_login' => $usr->last_login ?? null,
+                            ];
+                        } catch (\Exception $e) {
+                            // #region agent log
+                            DebugLogger::log(['user_id'=>$usr->id ?? 'N/A','error'=>$e->getMessage()], 'DashboardController.php:124', 'Error processing user stats');
+                            // #endregion
+                        }
+                    }
                 }
             }
         } else {
