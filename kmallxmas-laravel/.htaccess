@@ -2,19 +2,17 @@
     RewriteEngine On
     RewriteBase /
     
-    # If the request is for a file that exists in root, serve it
-    RewriteCond %{REQUEST_FILENAME} -f
-    RewriteRule ^ - [L]
-    
-    # If the request is for a directory that exists in root, serve it
-    RewriteCond %{REQUEST_FILENAME} -d
-    RewriteRule ^ - [L]
-    
-    # Route everything else through index.php
+    # Redirect to public folder if document root is not set to public
+    # This is for cPanel setups where document root is the project root
+    RewriteCond %{REQUEST_URI} !^/public/
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^ index.php [L]
+    RewriteRule ^(.*)$ public/$1 [L]
+    
+    # If document root is already set to public, this won't be needed
+    # But it's safe to have for flexibility
 </IfModule>
 
-DirectoryIndex index.php index.html
+# If accessing root directly, redirect to public
+DirectoryIndex public/index.php index.php index.html
 
