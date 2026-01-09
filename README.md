@@ -39,6 +39,7 @@ A modern Laravel-based booth booking and management system for KHB Events.
    php artisan key:generate
    ```
    
+   **For Local Development:**
    Edit `.env` file and set your database credentials:
    ```env
    DB_CONNECTION=mysql
@@ -48,6 +49,21 @@ A modern Laravel-based booth booking and management system for KHB Events.
    DB_USERNAME=root
    DB_PASSWORD=your_password
    ```
+   
+   **For cPanel/Production:**
+   See [CPANEL-DATABASE-CONFIG.md](./CPANEL-DATABASE-CONFIG.md) for detailed instructions.
+   
+   Quick setup:
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=localhost
+   DB_PORT=3306
+   DB_DATABASE=your_cpanel_username_boothsystem_db
+   DB_USERNAME=your_cpanel_username_boothsystem_user
+   DB_PASSWORD=your_database_password
+   ```
+   
+   **Note:** In cPanel, database names and usernames are prefixed with your cPanel username.
 
 4. **Run migrations and seed database**
    ```bash
@@ -135,6 +151,22 @@ Proprietary - KHB Events
 ## 👥 Contributing
 
 This is a private project for KHB Events. For issues or questions, please contact the development team.
+
+## 🌐 cPanel Deployment
+
+For deploying to cPanel hosting, see the following guides:
+
+- **[CPANEL-DATABASE-CONFIG.md](./CPANEL-DATABASE-CONFIG.md)** - Complete database configuration guide
+- **[QUICK-CPANEL-SETUP.md](./QUICK-CPANEL-SETUP.md)** - Quick setup steps
+
+### Quick cPanel Database Setup
+
+1. Create database and user in cPanel MySQL Databases section
+2. Copy `.env.example` to `.env` and update database credentials
+3. Use `localhost` as `DB_HOST` (not `127.0.0.1`)
+4. Include cPanel username prefix in database name and username
+5. Test connection using `test-db-connection.php` (delete after testing)
+6. Run `php artisan migrate` to set up database tables
 
 ## 📞 Support
 
