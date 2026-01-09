@@ -11,12 +11,12 @@
  * 4. Delete this file after successful connection test
  */
 
-// Database Configuration - UPDATE THESE VALUES
+// Database Configuration - YOUR cPanel CREDENTIALS
 $db_host = 'localhost';  // Usually 'localhost' for cPanel
 $db_port = '3306';       // Standard MySQL port
-$db_name = 'your_cpanel_username_boothsystem_db';  // Full database name with prefix
-$db_user = 'your_cpanel_username_boothsystem_user'; // Full username with prefix
-$db_pass = 'your_database_password';  // Database password
+$db_name = 'khbevents_aebooths';  // Your database name
+$db_user = 'khbevents_admaebooths'; // Your database username
+$db_pass = 'ASDasd12345$$$%%%';  // Your database password
 
 // Test Connection
 echo "<h1>Database Connection Test</h1>";
