@@ -50,7 +50,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/booths/{id}/save-position', [BoothController::class, 'savePosition'])->name('booths.save-position');
     Route::post('/booths/save-all-positions', [BoothController::class, 'saveAllPositions'])->name('booths.save-all-positions');
     Route::post('/booths/upload-floorplan', [BoothController::class, 'uploadFloorplan'])->name('booths.upload-floorplan');
-Route::post('/booths/remove-floorplan', [BoothController::class, 'removeFloorplan'])->name('booths.remove-floorplan');
+    Route::post('/booths/remove-floorplan', [BoothController::class, 'removeFloorplan'])->name('booths.remove-floorplan');
+    Route::get('/booths/check-duplicate/{boothNumber}', [BoothController::class, 'checkDuplicate'])->name('booths.check-duplicate');
+    Route::get('/booths/zone-settings/{zoneName}', [BoothController::class, 'getZoneSettings'])->name('booths.get-zone-settings');
+    Route::post('/booths/zone-settings/{zoneName}', [BoothController::class, 'saveZoneSettings'])->name('booths.save-zone-settings');
+    Route::post('/booths/create-in-zone/{zoneName}', [BoothController::class, 'createBoothInZone'])->name('booths.create-in-zone');
+    Route::post('/booths/delete-in-zone/{zoneName}', [BoothController::class, 'deleteBoothsInZone'])->name('booths.delete-in-zone');
+    Route::post('/booths/book-booth', [BoothController::class, 'bookBooth'])->name('booths.book-booth');
 
     // Clients
     Route::resource('clients', ClientController::class);
@@ -89,6 +95,14 @@ Route::post('/booths/remove-floorplan', [BoothController::class, 'removeFloorpla
         Route::post('/settings/view/clear', [SettingsController::class, 'clearView'])->name('settings.view.clear');
         Route::post('/settings/clear-all', [SettingsController::class, 'clearAll'])->name('settings.clear-all');
         Route::post('/settings/optimize', [SettingsController::class, 'optimize'])->name('settings.optimize');
+        
+        // Booth Default Settings API
+        Route::get('/settings/booth-defaults', [SettingsController::class, 'getBoothDefaults'])->name('settings.booth-defaults');
+        Route::post('/settings/booth-defaults', [SettingsController::class, 'saveBoothDefaults'])->name('settings.booth-defaults.save');
+        
+        // Canvas Settings API
+        Route::get('/settings/canvas', [SettingsController::class, 'getCanvasSettings'])->name('settings.canvas');
+        Route::post('/settings/canvas', [SettingsController::class, 'saveCanvasSettings'])->name('settings.canvas.save');
     });
 });
 

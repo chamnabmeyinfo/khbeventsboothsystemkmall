@@ -61,6 +61,19 @@ class ClientController extends Controller
     public function show(Client $client)
     {
         $client->load('booths', 'books');
+        
+        // Return JSON if request expects JSON (for API calls)
+        if (request()->expectsJson() || request()->wantsJson()) {
+            return response()->json([
+                'id' => $client->id,
+                'name' => $client->name,
+                'sex' => $client->sex,
+                'company' => $client->company,
+                'position' => $client->position,
+                'phone_number' => $client->phone_number,
+            ]);
+        }
+        
         return view('clients.show', compact('client'));
     }
 

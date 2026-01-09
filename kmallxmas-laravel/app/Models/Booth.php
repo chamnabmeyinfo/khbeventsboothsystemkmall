@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\ValidationException;
 
 class Booth extends Model
 {
@@ -45,6 +46,14 @@ class Booth extends Model
         'border_width',
         'border_radius',
         'opacity',
+        // Appearance properties
+        'background_color',
+        'border_color',
+        'text_color',
+        'font_weight',
+        'font_family',
+        'text_align',
+        'box_shadow',
     ];
 
     // Status constants
@@ -162,5 +171,47 @@ class Booth extends Model
             self::STATUS_PAID => 'primary',
             default => 'secondary',
         };
+    }
+
+    /**
+     * Boot method to add model event listeners
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Before creating, check for duplicate booth_number
+        static::creating(function ($booth) {
+            $existing = self::where('booth_number', $booth->booth_number)->first();
+            if ($existing) {
+                throw ValidationException::withMessages([
+                    'booth_number' => 'This booth number already exists. Please choose a different number.'
+                ]);
+            }
+        });
+
+        // Before updating, check for duplicate booth_number (excluding current record)
+        static::updating(function ($booth) {
+            $existing = self::where('booth_number', $booth->booth_number)
+                ->where('id', '!=', $booth->id)
+                ->first();
+            if ($existing) {
+                throw ValidationException::withMessages([
+                    'booth_number' => 'This booth number already exists. Please choose a different number.'
+                ]);
+            }
+        });
+    }
+
+    /**
+     * Check if a booth number already exists
+     */
+    public static function numberExists(string $boothNumber, ?int $excludeId = null): bool
+    {
+        $query = self::where('booth_number', $boothNumber);
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+        return $query->exists();
     }
 }

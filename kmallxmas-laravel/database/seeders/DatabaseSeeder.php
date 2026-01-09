@@ -60,12 +60,16 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($boothNumbers as $number) {
-            Booth::create([
-                'booth_number' => $number,
-                'type' => 2,
-                'price' => 500,
-                'status' => Booth::STATUS_AVAILABLE,
-            ]);
+            // Check if booth number already exists to prevent duplicates
+            $existingBooth = Booth::where('booth_number', $number)->first();
+            if (!$existingBooth) {
+                Booth::create([
+                    'booth_number' => $number,
+                    'type' => 2,
+                    'price' => 500,
+                    'status' => Booth::STATUS_AVAILABLE,
+                ]);
+            }
         }
     }
 }
