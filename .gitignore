@@ -7,12 +7,15 @@
 !/storage/framework/sessions/.gitkeep
 /storage/framework/views/*
 !/storage/framework/views/.gitkeep
+/storage/framework/cache/*
+!/storage/framework/cache/.gitkeep
 /storage/logs/*.log
 !/storage/logs/.gitkeep
 /vendor
 .env
 .env.backup
 .env.production
+.env.*.local
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
@@ -34,6 +37,7 @@ verify-setup.php
 organize-code.ps1
 move-to-root.sh
 deploy-cpanel.sh
+test-db-connection.php
 
 # Backup folders
 backup_*/
