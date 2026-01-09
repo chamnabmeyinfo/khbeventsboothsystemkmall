@@ -38,6 +38,8 @@ organize-code.ps1
 move-to-root.sh
 deploy-cpanel.sh
 test-db-connection.php
+test-local-db.php
+list-databases.php
 
 # Backup folders
 backup_*/

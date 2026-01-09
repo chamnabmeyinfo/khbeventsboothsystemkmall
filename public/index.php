@@ -7,23 +7,6 @@ define('LARAVEL_START', microtime(true));
 
 /*
 |--------------------------------------------------------------------------
-| Load Dynamic Configuration
-|--------------------------------------------------------------------------
-|
-| Load the dynamic app.php configuration that auto-detects environment
-| and sets up paths, URLs, and database connections automatically.
-| This works for both localhost and cPanel deployments.
-|
-*/
-
-// Load dynamic configuration (if app.php exists in parent directory)
-$appConfigPath = dirname(__DIR__) . '/app.php';
-if (file_exists($appConfigPath)) {
-    require_once $appConfigPath;
-}
-
-/*
-|--------------------------------------------------------------------------
 | Check If The Application Is Under Maintenance
 |--------------------------------------------------------------------------
 */
