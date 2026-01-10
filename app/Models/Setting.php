@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class Setting extends Model
 {
@@ -21,13 +22,13 @@ class Setting extends Model
      */
     public static function getValue($key, $default = null)
     {
-        $setting = self::where('key', $key)->first();
-        
-        if (!$setting) {
+        $settings = self::getAllCached();
+        if (!array_key_exists($key, $settings)) {
             return $default;
         }
 
-        return self::castValue($setting->value, $setting->type);
+        $row = $settings[$key];
+        return self::castValue($row['value'] ?? null, $row['type'] ?? 'string');
     }
 
     /**
@@ -44,7 +45,45 @@ class Setting extends Model
             ]
         );
 
+        self::clearCache();
         return self::castValue($setting->value, $setting->type);
+    }
+
+    /**
+     * Cache key for settings (key/value/type)
+     */
+    protected static function cacheKey(): string
+    {
+        return 'settings.all.kv';
+    }
+
+    /**
+     * Get all settings in a single cached payload.
+     *
+     * @return array<string, array{value:mixed,type:mixed}>
+     */
+    public static function getAllCached(): array
+    {
+        return Cache::remember(self::cacheKey(), 3600, function () {
+            return self::query()
+                ->get(['key', 'value', 'type'])
+                ->keyBy('key')
+                ->map(function ($s) {
+                    return [
+                        'value' => $s->value,
+                        'type' => $s->type,
+                    ];
+                })
+                ->all();
+        });
+    }
+
+    /**
+     * Clear cached settings payload (call after writes).
+     */
+    public static function clearCache(): void
+    {
+        Cache::forget(self::cacheKey());
     }
 
     /**

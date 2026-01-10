@@ -70,17 +70,20 @@ class DashboardController extends Controller
             DebugLogger::log([], 'DashboardController.php:69', 'Starting booth queries');
             // #endregion
             
-            // Total booths
-            $totalBooths = Booth::count();
-            
-            // Available booths (status 1 or 4)
-            $availableBooths = Booth::whereIn('status', [Booth::STATUS_AVAILABLE, Booth::STATUS_HIDDEN])->count();
+            // Booth status counts in one query (instead of multiple counts)
+            $statusCounts = Booth::query()
+                ->select('status', DB::raw('COUNT(*) as cnt'))
+                ->groupBy('status')
+                ->pluck('cnt', 'status');
+
+            $totalBooths = (int) $statusCounts->sum();
+            $availableBooths = (int) (($statusCounts[Booth::STATUS_AVAILABLE] ?? 0) + ($statusCounts[Booth::STATUS_HIDDEN] ?? 0));
             
             // Get statistics based on user type
             if ($isAdmin) {
-                $reservedBooths = Booth::where('status', Booth::STATUS_RESERVED)->count();
-                $confirmedBooths = Booth::where('status', Booth::STATUS_CONFIRMED)->count();
-                $paidBooths = Booth::where('status', Booth::STATUS_PAID)->count();
+                $reservedBooths = (int) ($statusCounts[Booth::STATUS_RESERVED] ?? 0);
+                $confirmedBooths = (int) ($statusCounts[Booth::STATUS_CONFIRMED] ?? 0);
+                $paidBooths = (int) ($statusCounts[Booth::STATUS_PAID] ?? 0);
             
             // Get all users
             // #region agent log
@@ -99,24 +102,31 @@ class DashboardController extends Controller
                 $users = collect([]);
             }
             
+            // Get per-user booth statistics (avoid N+1 queries: 3 counts per user)
+            $userBoothCounts = Booth::query()
+                ->select('userid', 'status', DB::raw('COUNT(*) as cnt'))
+                ->whereIn('status', [Booth::STATUS_RESERVED, Booth::STATUS_CONFIRMED, Booth::STATUS_PAID])
+                ->groupBy('userid', 'status')
+                ->get()
+                ->groupBy('userid')
+                ->map(function ($rows) {
+                    return $rows->pluck('cnt', 'status')->map(fn ($v) => (int) $v)->all();
+                })
+                ->all();
+
             // Get user statistics
             $userStats = [];
             foreach ($users as $usr) {
                 try {
+                    $counts = $userBoothCounts[$usr->id] ?? [];
                     $userStats[] = [
                         'id' => $usr->id,
                         'username' => $usr->username,
                         'type' => ($usr->type ?? '2') == '1' || ($usr->type ?? '2') == 1 ? 'Admin' : 'Sale',
                         'status' => $usr->status ?? 'N/A',
-                        'reserve' => Booth::where('status', Booth::STATUS_RESERVED)
-                            ->where('userid', $usr->id)
-                            ->count(),
-                        'booking' => Booth::where('status', Booth::STATUS_CONFIRMED)
-                            ->where('userid', $usr->id)
-                            ->count(),
-                        'paid' => Booth::where('status', Booth::STATUS_PAID)
-                            ->where('userid', $usr->id)
-                            ->count(),
+                        'reserve' => (int) ($counts[Booth::STATUS_RESERVED] ?? 0),
+                        'booking' => (int) ($counts[Booth::STATUS_CONFIRMED] ?? 0),
+                        'paid' => (int) ($counts[Booth::STATUS_PAID] ?? 0),
                         'last_login' => $usr->last_login ?? null,
                     ];
                 } catch (\Exception $e) {
@@ -126,15 +136,16 @@ class DashboardController extends Controller
                 }
             }
         } else {
-            $reservedBooths = Booth::where('status', Booth::STATUS_RESERVED)
+            $myCounts = Booth::query()
+                ->select('status', DB::raw('COUNT(*) as cnt'))
                 ->where('userid', $user->id)
-                ->count();
-            $confirmedBooths = Booth::where('status', Booth::STATUS_CONFIRMED)
-                ->where('userid', $user->id)
-                ->count();
-            $paidBooths = Booth::where('status', Booth::STATUS_PAID)
-                ->where('userid', $user->id)
-                ->count();
+                ->whereIn('status', [Booth::STATUS_RESERVED, Booth::STATUS_CONFIRMED, Booth::STATUS_PAID])
+                ->groupBy('status')
+                ->pluck('cnt', 'status');
+
+            $reservedBooths = (int) ($myCounts[Booth::STATUS_RESERVED] ?? 0);
+            $confirmedBooths = (int) ($myCounts[Booth::STATUS_CONFIRMED] ?? 0);
+            $paidBooths = (int) ($myCounts[Booth::STATUS_PAID] ?? 0);
             
             $userStats = [];
         }
@@ -171,7 +182,8 @@ class DashboardController extends Controller
                     $query->where('u.id', $user->id);
                 }
                 
-                $bookingData = $query->orderBy('b.date_book', 'desc')->get();
+                // Protect dashboard load times on large datasets.
+                $bookingData = $query->orderBy('b.date_book', 'desc')->limit(1000)->get();
             } catch (\Exception $e) {
                 $bookingData = collect([]);
             }
@@ -233,11 +245,18 @@ class DashboardController extends Controller
             $bookingTrendDates = [];
             $bookingTrendCounts = [];
             try {
-                for($i = 6; $i >= 0; $i--) {
+                $start = now()->subDays(6)->startOfDay();
+                $trend = Book::query()
+                    ->selectRaw('DATE(date_book) as day, COUNT(*) as cnt')
+                    ->where('date_book', '>=', $start)
+                    ->groupBy('day')
+                    ->pluck('cnt', 'day');
+
+                for ($i = 6; $i >= 0; $i--) {
                     $date = now()->subDays($i);
-                    $count = Book::whereDate('date_book', $date->format('Y-m-d'))->count();
+                    $key = $date->toDateString();
                     $bookingTrendDates[] = $date->format('M d');
-                    $bookingTrendCounts[] = $count;
+                    $bookingTrendCounts[] = (int) ($trend[$key] ?? 0);
                 }
             } catch (\Exception $e) {
                 for($i = 6; $i >= 0; $i--) {
