@@ -26,7 +26,7 @@ return [
         ],
     ],
     'migrations' => [
-        'table' => 'migrations',
+        'table' => (string)'migrations',
         'update_date_on_publish' => true,
     ],
 ];

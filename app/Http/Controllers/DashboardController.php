@@ -258,40 +258,177 @@ class DashboardController extends Controller
                 ];
             }
             
-            // Get recent bookings for the view
-            try {
-                // #region agent log
-                DebugLogger::log([], 'DashboardController.php:216', 'Fetching recent bookings');
-                // #endregion
-                $recentBookings = \App\Models\Book::with(['client', 'user'])
-                    ->latest('date_book')
-                    ->take(10)
-                    ->get();
-                // #region agent log
-                DebugLogger::log(['count'=>count($recentBookings)], 'DashboardController.php:223', 'Recent bookings fetched');
-                // #endregion
-            } catch (\Exception $e) {
-                // #region agent log
-                DebugLogger::log(['error'=>$e->getMessage()], 'DashboardController.php:227', 'Error fetching recent bookings');
-                // #endregion
-                $recentBookings = collect([]);
-            }
+            // Get booking trends data for chart (last 30 days by default, configurable)
+            $days = (int) $request->input('days', 30);
+            $days = max(7, min(90, $days)); // Between 7 and 90 days
             
-            // Get booking trends data for chart (last 7 days)
             $bookingTrendDates = [];
             $bookingTrendCounts = [];
+            $revenueTrendData = [];
+            
             try {
-                for($i = 6; $i >= 0; $i--) {
+                for($i = $days - 1; $i >= 0; $i--) {
                     $date = now()->subDays($i);
-                    $count = Book::whereDate('date_book', $date->format('Y-m-d'))->count();
+                    $dateStr = $date->format('Y-m-d');
+                    
+                    // Booking counts
+                    $count = Book::whereDate('date_book', $dateStr)->count();
+                    
+                    // Revenue calculation from booths
+                    $dayRevenue = 0;
+                    $dayBookings = Book::whereDate('date_book', $dateStr)->get();
+                    foreach ($dayBookings as $booking) {
+                        try {
+                            $boothIds = json_decode($booking->boothid, true) ?? [];
+                            if (!empty($boothIds)) {
+                                $dayRevenue += Booth::whereIn('id', $boothIds)
+                                    ->where('status', Booth::STATUS_PAID)
+                                    ->sum('price');
+                            }
+                        } catch (\Exception $e) {
+                            // Skip if error
+                        }
+                    }
+                    
                     $bookingTrendDates[] = $date->format('M d');
                     $bookingTrendCounts[] = $count;
+                    $revenueTrendData[] = $dayRevenue;
                 }
             } catch (\Exception $e) {
-                for($i = 6; $i >= 0; $i--) {
+                for($i = $days - 1; $i >= 0; $i--) {
                     $date = now()->subDays($i);
                     $bookingTrendDates[] = $date->format('M d');
                     $bookingTrendCounts[] = 0;
+                    $revenueTrendData[] = 0;
+                }
+            }
+            
+            // Calculate additional metrics
+            try {
+                $todayBookings = Book::whereDate('date_book', today())->count();
+            } catch (\Exception $e) {
+                $todayBookings = 0;
+            }
+            
+            try {
+                $yesterdayBookings = Book::whereDate('date_book', today()->subDay())->count();
+            } catch (\Exception $e) {
+                $yesterdayBookings = 0;
+            }
+            
+            try {
+                $thisMonthBookings = Book::whereMonth('date_book', now()->month)
+                    ->whereYear('date_book', now()->year)
+                    ->count();
+            } catch (\Exception $e) {
+                $thisMonthBookings = 0;
+            }
+            
+            try {
+                $lastMonthBookings = Book::whereMonth('date_book', now()->subMonth()->month)
+                    ->whereYear('date_book', now()->subMonth()->year)
+                    ->count();
+            } catch (\Exception $e) {
+                $lastMonthBookings = 0;
+            }
+            
+            // Calculate revenue metrics
+            $totalRevenue = 0;
+            $todayRevenue = 0;
+            $thisMonthRevenue = 0;
+            
+            try {
+                // Total revenue from paid booths
+                $totalRevenue = (float) Booth::where('status', Booth::STATUS_PAID)->sum('price');
+                
+                // Today's revenue
+                $todayBookingsList = Book::whereDate('date_book', today())->get();
+                foreach ($todayBookingsList as $booking) {
+                    try {
+                        $boothIds = json_decode($booking->boothid, true) ?? [];
+                        if (!empty($boothIds)) {
+                            $todayRevenue += (float) Booth::whereIn('id', $boothIds)
+                                ->where('status', Booth::STATUS_PAID)
+                                ->sum('price');
+                        }
+                    } catch (\Exception $e) {
+                        // Skip if error
+                    }
+                }
+                
+                // This month revenue
+                $monthBookings = Book::whereMonth('date_book', now()->month)
+                    ->whereYear('date_book', now()->year)
+                    ->get();
+                foreach ($monthBookings as $booking) {
+                    try {
+                        $boothIds = json_decode($booking->boothid, true) ?? [];
+                        if (!empty($boothIds)) {
+                            $thisMonthRevenue += (float) Booth::whereIn('id', $boothIds)
+                                ->where('status', Booth::STATUS_PAID)
+                                ->sum('price');
+                        }
+                    } catch (\Exception $e) {
+                        // Skip if error
+                    }
+                }
+            } catch (\Exception $e) {
+                // Revenue calculation failed
+            }
+            
+            // Calculate growth percentages
+            $bookingGrowth = $yesterdayBookings > 0 
+                ? (($todayBookings - $yesterdayBookings) / $yesterdayBookings) * 100 
+                : ($todayBookings > 0 ? 100 : 0);
+            
+            $monthBookingGrowth = $lastMonthBookings > 0
+                ? (($thisMonthBookings - $lastMonthBookings) / $lastMonthBookings) * 100
+                : ($thisMonthBookings > 0 ? 100 : 0);
+            
+            // Get recent notifications (unread)
+            $recentNotifications = [];
+            try {
+                $recentNotifications = \App\Models\Notification::where(function($query) use ($user) {
+                        $query->where('user_id', $user->id)
+                              ->orWhereNull('user_id'); // System notifications
+                    })
+                    ->where('is_read', false)
+                    ->latest()
+                    ->take(5)
+                    ->get();
+            } catch (\Exception $e) {
+                $recentNotifications = collect([]);
+            }
+            
+            // Get recent activity logs
+            $recentActivities = [];
+            try {
+                $recentActivities = \App\Models\ActivityLog::with('user')
+                    ->latest()
+                    ->take(10)
+                    ->get();
+            } catch (\Exception $e) {
+                $recentActivities = collect([]);
+            }
+            
+            // Calculate occupancy rate
+            $occupancyRate = $totalBooths > 0
+                ? (($totalBooths - $availableBooths) / $totalBooths) * 100
+                : 0;
+            
+            // Top performing users (by booth bookings)
+            $topUsers = [];
+            if ($isAdmin) {
+                try {
+                    $topUsers = collect($userStats)
+                        ->sortByDesc(function($user) {
+                            return $user['reserve'] + $user['booking'] + $user['paid'];
+                        })
+                        ->take(5)
+                        ->values()
+                        ->all();
+                } catch (\Exception $e) {
+                    $topUsers = [];
                 }
             }
             
@@ -316,11 +453,34 @@ class DashboardController extends Controller
                 $clientData = [];
             }
             
+            // Add enhanced metrics to stats array
+            $stats['today_bookings'] = $todayBookings ?? 0;
+            $stats['this_month_bookings'] = $thisMonthBookings ?? 0;
+            $stats['booking_growth'] = round($bookingGrowth, 1);
+            $stats['month_booking_growth'] = round($monthBookingGrowth, 1);
+            $stats['total_revenue'] = $totalRevenue;
+            $stats['today_revenue'] = $todayRevenue;
+            $stats['this_month_revenue'] = $thisMonthRevenue;
+            $stats['occupancy_rate'] = round($occupancyRate, 1);
+            $stats['available_rate'] = round(100 - $occupancyRate, 1);
+            
             // #region agent log
-            DebugLogger::log(['has_stats'=>!empty($stats),'has_userStats'=>!empty($userStats),'has_clientData'=>!empty($clientData)], 'DashboardController.php:272', 'Returning AdminLTE view');
+            DebugLogger::log(['has_stats'=>!empty($stats),'has_userStats'=>!empty($userStats),'has_clientData'=>!empty($clientData)], 'DashboardController.php:320', 'Returning AdminLTE view');
             // #endregion
             
-            return view('dashboard.index-adminlte', compact('stats', 'userStats', 'clientData', 'isAdmin'));
+            return view('dashboard.index-adminlte', compact(
+                'stats', 
+                'userStats', 
+                'clientData', 
+                'isAdmin',
+                'bookingTrendDates',
+                'bookingTrendCounts',
+                'revenueTrendData',
+                'recentNotifications',
+                'recentActivities',
+                'topUsers',
+                'days'
+            ));
         } catch (\Illuminate\Database\QueryException $e) {
             // Table doesn't exist - need to run migrations or import SQL
             return view('dashboard.setup-required', [
@@ -342,8 +502,27 @@ class DashboardController extends Controller
             $userStats = [];
             $clientData = [];
             $isAdmin = false;
+            $bookingTrendDates = [];
+            $bookingTrendCounts = [];
+            $revenueTrendData = [];
+            $recentNotifications = collect([]);
+            $recentActivities = collect([]);
+            $topUsers = [];
+            $days = 30;
             
-            return view('dashboard.index-adminlte', compact('stats', 'userStats', 'clientData', 'isAdmin'));
+            return view('dashboard.index-adminlte', compact(
+                'stats', 
+                'userStats', 
+                'clientData', 
+                'isAdmin',
+                'bookingTrendDates',
+                'bookingTrendCounts',
+                'revenueTrendData',
+                'recentNotifications',
+                'recentActivities',
+                'topUsers',
+                'days'
+            ));
         }
     }
 }

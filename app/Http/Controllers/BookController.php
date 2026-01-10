@@ -37,6 +37,11 @@ class BookController extends Controller
             $query->whereDate('date_book', '<=', $request->date_to);
         }
         
+        // Type filter
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+        
         $books = $query->latest('date_book')->paginate(20)->withQueryString();
         
         return view('books.index', compact('books'));
@@ -106,7 +111,46 @@ class BookController extends Controller
     public function show(Book $book)
     {
         $book->load(['client', 'user']);
-        return view('books.show', compact('book'));
+        $boothIds = json_decode($book->boothid, true) ?? [];
+        $booths = !empty($boothIds) ? Booth::whereIn('id', $boothIds)->get() : collect([]);
+        return view('books.show', compact('book', 'booths'));
+    }
+
+    /**
+     * Remove the specified booking
+     */
+    public function destroy(Book $book)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Release booths (set status to available)
+            $boothIds = json_decode($book->boothid, true) ?? [];
+            if (!empty($boothIds)) {
+                Booth::whereIn('id', $boothIds)->update([
+                    'status' => Booth::STATUS_AVAILABLE,
+                    'client_id' => null,
+                    'userid' => null,
+                    'bookid' => null,
+                ]);
+            }
+
+            // Delete the booking
+            $book->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Booking deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

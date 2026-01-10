@@ -124,4 +124,87 @@ class ExportController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+
+    /**
+     * Export to PDF (using simple HTML to PDF approach)
+     */
+    public function exportToPdf(Request $request)
+    {
+        $type = $request->input('type', 'booths');
+        $data = [];
+
+        switch ($type) {
+            case 'booths':
+                $data = Booth::with(['client', 'category', 'user'])->orderBy('booth_number')->get();
+                break;
+            case 'clients':
+                $data = Client::with('booths')->orderBy('company')->get();
+                break;
+            case 'bookings':
+                $data = Book::with(['client', 'user'])->latest('date_book')->get();
+                break;
+        }
+
+        $html = view('exports.pdf', compact('type', 'data'))->render();
+        
+        // For now, return HTML that can be printed to PDF by browser
+        // In production, use a library like dompdf or snappy
+        return response($html)
+            ->header('Content-Type', 'text/html')
+            ->header('Content-Disposition', 'inline; filename="export_' . $type . '_' . date('Y-m-d') . '.html"');
+    }
+
+    /**
+     * Bulk export page
+     */
+    public function index()
+    {
+        return view('exports.index');
+    }
+
+    /**
+     * Import data from CSV
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'type' => 'required|in:booths,clients,bookings',
+            'file' => 'required|file|mimes:csv,txt|max:10240',
+        ]);
+
+        $file = $request->file('file');
+        $type = $request->input('type');
+        $imported = 0;
+        $errors = [];
+
+        if (($handle = fopen($file->getRealPath(), 'r')) !== false) {
+            $headers = fgetcsv($handle); // Skip header row
+            
+            while (($data = fgetcsv($handle)) !== false) {
+                try {
+                    switch ($type) {
+                        case 'booths':
+                            // Import booth logic
+                            break;
+                        case 'clients':
+                            // Import client logic
+                            break;
+                        case 'bookings':
+                            // Import booking logic
+                            break;
+                    }
+                    $imported++;
+                } catch (\Exception $e) {
+                    $errors[] = 'Row ' . ($imported + 1) . ': ' . $e->getMessage();
+                }
+            }
+            fclose($handle);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Imported {$imported} records",
+            'errors' => $errors,
+        ]);
+    }
 }

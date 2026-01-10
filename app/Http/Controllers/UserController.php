@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -11,15 +12,45 @@ class UserController extends Controller
     /**
      * Display a listing of users
      */
-    public function index()
+    public function index(Request $request)
     {
-        try {
-            $users = User::orderBy('username')->paginate(20);
-        } catch (\Exception $e) {
-            // Fallback if type column doesn't exist
-            $users = User::orderBy('username')->paginate(20);
+        $query = User::with(['role', 'role.permissions']);
+        
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('username', 'like', "%{$search}%")
+                  ->orWhereHas('role', function($roleQuery) use ($search) {
+                      $roleQuery->where('name', 'like', "%{$search}%");
+                  });
+            });
         }
-        return view('users.index', compact('users'));
+        
+        // Filter by type
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+        
+        // Filter by status
+        if ($request->filled('status') && $request->status !== '') {
+            $query->where('status', $request->status);
+        }
+        
+        // Filter by role
+        if ($request->filled('role_id')) {
+            if ($request->role_id == '0') {
+                $query->whereNull('role_id');
+            } else {
+                $query->where('role_id', $request->role_id);
+            }
+        }
+        
+        $users = $query->orderBy('username')->paginate(20)->withQueryString();
+        
+        $roles = Role::where('is_active', true)->orderBy('name')->get();
+        
+        return view('users.index', compact('users', 'roles'));
     }
 
     /**
@@ -27,7 +58,8 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('users.create');
+        $roles = Role::where('is_active', true)->orderBy('name')->get();
+        return view('users.create', compact('roles'));
     }
 
     /**
@@ -40,6 +72,7 @@ class UserController extends Controller
             'password' => 'required|string|min:6|confirmed',
             'type' => 'required|integer|in:1,2',
             'status' => 'required|integer|in:0,1',
+            'role_id' => 'nullable|exists:roles,id',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
@@ -55,6 +88,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
+        $user->load(['role', 'role.permissions']);
         return view('users.show', compact('user'));
     }
 
@@ -63,7 +97,8 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        return view('users.edit', compact('user'));
+        $roles = Role::where('is_active', true)->orderBy('name')->get();
+        return view('users.edit', compact('user', 'roles'));
     }
 
     /**
@@ -75,6 +110,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'type' => 'required|integer|in:1,2',
             'status' => 'required|integer|in:0,1',
+            'role_id' => 'nullable|exists:roles,id',
         ]);
 
         $user->update($validated);
@@ -87,8 +123,10 @@ class UserController extends Controller
      * Update user password
      * Matches Yii actionUpdate_pass
      */
-    public function updatePassword(Request $request, User $user)
+    public function updatePassword(Request $request, $id)
     {
+        $user = User::findOrFail($id);
+        
         $validated = $request->validate([
             'password' => 'required|string|min:6|confirmed',
         ]);
@@ -127,7 +165,7 @@ class UserController extends Controller
 
         return response()->json([
             'status' => 200,
-            'message' => 'Successful.'
+            'message' => 'User status updated successfully.'
         ]);
     }
 

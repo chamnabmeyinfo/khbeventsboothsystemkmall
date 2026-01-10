@@ -35,6 +35,7 @@ class User extends Authenticatable
         'password',
         'type',
         'status',
+        'role_id',
         'last_login',
         'create_time',
         'update_time',
@@ -146,5 +147,73 @@ class User extends Authenticatable
     public function books()
     {
         return $this->hasMany(Book::class, 'userid');
+    }
+
+    /**
+     * Get the role for this user
+     */
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    /**
+     * Check if user has a specific permission
+     */
+    public function hasPermission($permissionSlug): bool
+    {
+        // Admin always has all permissions
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        // Check if user's role has the permission
+        if ($this->role) {
+            return $this->role->hasPermission($permissionSlug);
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if user has any of the given permissions
+     */
+    public function hasAnyPermission(array $permissionSlugs): bool
+    {
+        foreach ($permissionSlugs as $slug) {
+            if ($this->hasPermission($slug)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if user has all of the given permissions
+     */
+    public function hasAllPermissions(array $permissionSlugs): bool
+    {
+        foreach ($permissionSlugs as $slug) {
+            if (!$this->hasPermission($slug)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Get all permissions for this user
+     */
+    public function getPermissions()
+    {
+        if ($this->isAdmin()) {
+            return Permission::active()->get();
+        }
+
+        if ($this->role) {
+            return $this->role->permissions()->active()->get();
+        }
+
+        return collect([]);
     }
 }

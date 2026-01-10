@@ -34,6 +34,20 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// Client Portal (Public)
+Route::prefix('client-portal')->name('client-portal.')->group(function () {
+    Route::get('/login', [\App\Http\Controllers\ClientPortalController::class, 'showLogin'])->name('login');
+    Route::post('/login', [\App\Http\Controllers\ClientPortalController::class, 'login'])->name('login.post');
+    Route::post('/logout', [\App\Http\Controllers\ClientPortalController::class, 'logout'])->name('logout');
+    
+    Route::middleware(['client.portal'])->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\ClientPortalController::class, 'dashboard'])->name('dashboard');
+        Route::get('/profile', [\App\Http\Controllers\ClientPortalController::class, 'profile'])->name('profile');
+        Route::post('/profile', [\App\Http\Controllers\ClientPortalController::class, 'updateProfile'])->name('profile.update');
+        Route::get('/booking/{id}', [\App\Http\Controllers\ClientPortalController::class, 'booking'])->name('booking');
+    });
+});
+
 // Protected Routes
 Route::middleware(['auth'])->group(function () {
     // Dashboard
@@ -62,12 +76,16 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('clients', ClientController::class);
     
     // Export Routes
+    Route::get('/export', [ExportController::class, 'index'])->name('export.index');
     Route::get('/export/booths', [ExportController::class, 'exportBooths'])->name('export.booths');
     Route::get('/export/clients', [ExportController::class, 'exportClients'])->name('export.clients');
     Route::get('/export/bookings', [ExportController::class, 'exportBookings'])->name('export.bookings');
+    Route::get('/export/pdf', [ExportController::class, 'exportToPdf'])->name('export.pdf');
+    Route::post('/export/import', [ExportController::class, 'import'])->name('export.import');
 
     // Books
     Route::resource('books', BookController::class);
+    Route::delete('/books/{book}', [BookController::class, 'destroy'])->name('books.destroy');
     Route::post('/books/booking', [BookController::class, 'booking'])->name('books.booking');
     Route::post('/books/upbooking', [BookController::class, 'upbooking'])->name('books.upbooking');
     Route::get('/books/info/{id}', [BookController::class, 'info'])->name('books.info');
@@ -80,11 +98,80 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/categories/create-sub-category', [CategoryController::class, 'createSubCategory'])->name('categories.create-sub-category');
     Route::post('/categories/update-sub-category', [CategoryController::class, 'updateSubCategory'])->name('categories.update-sub-category');
 
+    // Reports & Analytics
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ReportController::class, 'index'])->name('index');
+        Route::get('/sales', [\App\Http\Controllers\ReportController::class, 'salesReport'])->name('sales');
+        Route::get('/trends', [\App\Http\Controllers\ReportController::class, 'bookingTrends'])->name('trends');
+        Route::get('/user-performance', [\App\Http\Controllers\ReportController::class, 'userPerformance'])->name('user-performance');
+        Route::get('/revenue-chart', [\App\Http\Controllers\ReportController::class, 'revenueChart'])->name('revenue-chart');
+    });
+
+    // Notifications
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\NotificationController::class, 'index'])->name('index');
+        Route::get('/unread-count', [\App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('unread-count');
+        Route::post('/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('mark-read');
+        Route::post('/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+    });
+
+    // Payments
+    Route::prefix('payments')->name('payments.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\PaymentController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\PaymentController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\PaymentController::class, 'store'])->name('store');
+        Route::get('/{id}/invoice', [\App\Http\Controllers\PaymentController::class, 'invoice'])->name('invoice');
+    });
+
+    // Communications
+    Route::prefix('communications')->name('communications.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\CommunicationController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\CommunicationController::class, 'create'])->name('create');
+        Route::post('/send', [\App\Http\Controllers\CommunicationController::class, 'send'])->name('send');
+        Route::get('/{id}', [\App\Http\Controllers\CommunicationController::class, 'show'])->name('show');
+        Route::post('/announcement', [\App\Http\Controllers\CommunicationController::class, 'announcement'])->name('announcement');
+    });
+
+    // Global Search
+    Route::get('/search', [\App\Http\Controllers\SearchController::class, 'search'])->name('search');
+
+    // Activity Logs
+    Route::prefix('activity-logs')->name('activity-logs.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ActivityLogController::class, 'index'])->name('index');
+        Route::get('/{activityLog}', [\App\Http\Controllers\ActivityLogController::class, 'show'])->name('show');
+        Route::get('/export/csv', [\App\Http\Controllers\ActivityLogController::class, 'export'])->name('export');
+    });
+
+    // Email Templates
+    Route::prefix('email-templates')->name('email-templates.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\EmailTemplateController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\EmailTemplateController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\EmailTemplateController::class, 'store'])->name('store');
+        Route::get('/{emailTemplate}', [\App\Http\Controllers\EmailTemplateController::class, 'show'])->name('show');
+        Route::get('/{emailTemplate}/preview', [\App\Http\Controllers\EmailTemplateController::class, 'preview'])->name('preview');
+        Route::post('/{emailTemplate}/send-test', [\App\Http\Controllers\EmailTemplateController::class, 'sendTest'])->name('send-test');
+        Route::get('/{emailTemplate}/edit', [\App\Http\Controllers\EmailTemplateController::class, 'edit'])->name('edit');
+        Route::put('/{emailTemplate}', [\App\Http\Controllers\EmailTemplateController::class, 'update'])->name('update');
+        Route::delete('/{emailTemplate}', [\App\Http\Controllers\EmailTemplateController::class, 'destroy'])->name('destroy');
+    });
+
+    // Bulk Operations
+    Route::prefix('bulk')->name('bulk.')->group(function () {
+        Route::post('/booths/update', [\App\Http\Controllers\BulkOperationController::class, 'bulkUpdateBooths'])->name('booths.update');
+        Route::post('/booths/delete', [\App\Http\Controllers\BulkOperationController::class, 'bulkDeleteBooths'])->name('booths.delete');
+        Route::post('/clients/update', [\App\Http\Controllers\BulkOperationController::class, 'bulkUpdateClients'])->name('clients.update');
+        Route::post('/clients/delete', [\App\Http\Controllers\BulkOperationController::class, 'bulkDeleteClients'])->name('clients.delete');
+    });
+
     // Admin Routes
     Route::middleware(['admin'])->group(function () {
+        // Staff Management
+        Route::resource('roles', \App\Http\Controllers\RoleController::class);
+        Route::resource('permissions', \App\Http\Controllers\PermissionController::class);
+        
+        // Users
         Route::resource('users', UserController::class);
-        Route::get('/users/{id}/status', [UserController::class, 'status'])->name('users.status');
-        Route::get('/users/{id}/password', [UserController::class, 'updatePassword'])->name('users.password');
+        Route::post('/users/{id}/status', [UserController::class, 'status'])->name('users.status');
         Route::post('/users/{id}/password', [UserController::class, 'updatePassword'])->name('users.password.update');
         
         // Settings
