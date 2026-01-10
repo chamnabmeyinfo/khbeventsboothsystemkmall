@@ -17,23 +17,17 @@ class BoothController extends Controller
 {
     /**
      * Display a listing of booths (Floor Plan)
+     * OPTIMIZED: Reduced from 7+ queries to 1 query with eager loading
      */
     public function index(Request $request)
     {
-        // #region agent log
-        DebugLogger::log(['request_method'=>$request->method(),'user_authenticated'=>auth()->check()], 'BoothController.php:22', 'BoothController::index() called');
-        // #endregion
-        
-        // Get all booths ordered by booth number, including positions
+        // Get all booths with eager loaded relationships in a SINGLE query
+        // This eliminates the N+1 query problem
         $booths = Booth::with(['client', 'category', 'subCategory', 'asset', 'boothType', 'user'])
             ->orderBy('booth_number', 'asc')
             ->get();
 
-        // #region agent log
-        DebugLogger::log(['booth_count'=>$booths->count(),'first_booth_id'=>$booths->first()?->id ?? null], 'BoothController.php:31', 'Booths fetched from database');
-        // #endregion
-
-        // Calculate booth statistics
+        // Calculate booth statistics from the already-loaded collection (no additional queries)
         $totalBooths = $booths->count();
         $availableBooths = $booths->where('status', Booth::STATUS_AVAILABLE)->count();
         $bookedBooths = $booths->where('status', Booth::STATUS_CONFIRMED)->count();
@@ -42,22 +36,18 @@ class BoothController extends Controller
         $occupiedBooths = $totalBooths - $availableBooths;
         $occupancyPercentage = $totalBooths > 0 ? round(($occupiedBooths / $totalBooths) * 100, 1) : 0;
         
-        // Calculate total revenue (if price data is available)
+        // Calculate total revenue from collection
         $totalRevenue = $booths->sum('price');
         $paidRevenue = $booths->where('status', Booth::STATUS_PAID)->sum('price');
         
-        // #region agent log
-        DebugLogger::log(['totalBooths'=>$totalBooths,'availableBooths'=>$availableBooths,'bookedBooths'=>$bookedBooths,'reservedBoothsCount'=>$reservedBoothsCount,'paidBooths'=>$paidBooths,'totalRevenue'=>$totalRevenue,'paidRevenue'=>$paidRevenue], 'BoothController.php:48', 'Booth statistics calculated');
-        // #endregion
-        
-        // Prepare booth data for JavaScript (to avoid parsing issues in Blade)
+        // Prepare booth data for JavaScript
         $boothsForJS = $booths->map(function($booth) {
             return [
                 'id' => $booth->id,
                 'booth_number' => $booth->booth_number,
-                'company' => $booth->client ? $booth->client->company : '',
-                'category' => $booth->category ? $booth->category->name : '',
-                'sub_category' => $booth->subCategory ? $booth->subCategory->name : '',
+                'company' => $booth->client?->company ?? '',
+                'category' => $booth->category?->name ?? '',
+                'sub_category' => $booth->subCategory?->name ?? '',
                 'status' => $booth->status,
                 'price' => $booth->price,
                 'position_x' => $booth->position_x,
@@ -70,7 +60,6 @@ class BoothController extends Controller
                 'border_width' => $booth->border_width,
                 'border_radius' => $booth->border_radius,
                 'opacity' => $booth->opacity,
-                // Appearance properties
                 'background_color' => $booth->background_color,
                 'border_color' => $booth->border_color,
                 'text_color' => $booth->text_color,
@@ -80,120 +69,66 @@ class BoothController extends Controller
                 'box_shadow' => $booth->box_shadow,
             ];
         })->values();
-        
-        // #region agent log
-        DebugLogger::log(['boothsForJS_count'=>count($boothsForJS),'first_booth_js'=>($boothsForJS->first() ?? null)], 'BoothController.php:65', 'Booth data prepared for JavaScript');
-        // #endregion
 
-        // Get all categories, assets, and booth types for dropdowns
-        $categories = Category::where('status', 1)->orderBy('name')->get();
-        $assets = Asset::where('status', 1)->orderBy('name')->get();
-        $boothTypes = BoothType::where('status', 1)->orderBy('name')->get();
+        // Use cached dropdown data (categories, assets, booth types)
+        $categories = cache()->remember('active_categories', 300, function () {
+            return Category::where('status', 1)->orderBy('name')->get();
+        });
+        $assets = cache()->remember('active_assets', 300, function () {
+            return Asset::where('status', 1)->orderBy('name')->get();
+        });
+        $boothTypes = cache()->remember('active_booth_types', 300, function () {
+            return BoothType::where('status', 1)->orderBy('name')->get();
+        });
 
-        // Get mapping data for filters (only if user is authenticated)
+        // Build mapping data from already-loaded collection (NO additional queries)
         $reserveMap = [];
         $companyMap = [];
         $categoryMap = [];
         $subCategoryMap = [];
         $assetMap = [];
         $boothTypeMap = [];
-        $clients = [];
+        $clients = collect();
 
         if (auth()->check()) {
-            // Reserve Map - only reserved booths (status 3)
-            $reservedBooths = Booth::where('status', Booth::STATUS_RESERVED)
-                ->with('client')
-                ->get();
-            
-            foreach ($reservedBooths as $booth) {
-                $company = $booth->client ? $booth->client->company : '';
-                if (empty($company)) {
-                    $company = '===No Complete Form===';
+            // Build all maps from the single loaded collection
+            foreach ($booths as $booth) {
+                // Reserve Map - only reserved booths
+                if ($booth->status === Booth::STATUS_RESERVED) {
+                    $company = $booth->client?->company ?? '===No Complete Form===';
+                    $reserveMap[$company][] = $booth->id;
                 }
-                if (!isset($reserveMap[$company])) {
-                    $reserveMap[$company] = [];
-                }
-                $reserveMap[$company][] = $booth->id;
-            }
 
-            // Company Map - all booths with clients
-            $companyBooths = Booth::whereNotNull('client_id')
-                ->where('client_id', '!=', 0)
-                ->with('client')
-                ->get();
-            
-            foreach ($companyBooths as $booth) {
-                if ($booth->client) {
-                    $company = $booth->client->company;
-                    if (!isset($companyMap[$company])) {
-                        $companyMap[$company] = [];
-                    }
-                    $companyMap[$company][] = $booth->id;
+                // Company Map - booths with clients
+                if ($booth->client_id && $booth->client) {
+                    $companyMap[$booth->client->company][] = $booth->id;
                 }
-            }
 
-            // Category Map
-            $categoryBooths = Booth::whereNotNull('category_id')
-                ->with('category')
-                ->get();
-            
-            foreach ($categoryBooths as $booth) {
-                if ($booth->category) {
-                    $categoryName = $booth->category->name;
-                    if (!isset($categoryMap[$categoryName])) {
-                        $categoryMap[$categoryName] = [];
-                    }
-                    $categoryMap[$categoryName][] = $booth->id;
+                // Category Map
+                if ($booth->category_id && $booth->category) {
+                    $categoryMap[$booth->category->name][] = $booth->id;
+                }
+
+                // Sub-Category Map
+                if ($booth->sub_category_id && $booth->subCategory) {
+                    $subCategoryMap[$booth->subCategory->name][] = $booth->id;
+                }
+
+                // Asset Map
+                if ($booth->asset_id && $booth->asset) {
+                    $assetMap[$booth->asset->name][] = $booth->id;
+                }
+
+                // Booth Type Map
+                if ($booth->booth_type_id && $booth->boothType) {
+                    $boothTypeMap[$booth->boothType->name][] = $booth->id;
                 }
             }
 
-            // Sub-Category Map
-            $subCategoryBooths = Booth::whereNotNull('sub_category_id')
-                ->with('subCategory')
-                ->get();
-            
-            foreach ($subCategoryBooths as $booth) {
-                if ($booth->subCategory) {
-                    $subCategoryName = $booth->subCategory->name;
-                    if (!isset($subCategoryMap[$subCategoryName])) {
-                        $subCategoryMap[$subCategoryName] = [];
-                    }
-                    $subCategoryMap[$subCategoryName][] = $booth->id;
-                }
-            }
-
-            // Asset Map
-            $assetBooths = Booth::whereNotNull('asset_id')
-                ->with('asset')
-                ->get();
-            
-            foreach ($assetBooths as $booth) {
-                if ($booth->asset) {
-                    $assetName = $booth->asset->name;
-                    if (!isset($assetMap[$assetName])) {
-                        $assetMap[$assetName] = [];
-                    }
-                    $assetMap[$assetName][] = $booth->id;
-                }
-            }
-
-            // Booth Type Map
-            $boothTypeBooths = Booth::whereNotNull('booth_type_id')
-                ->with('boothType')
-                ->get();
-            
-            foreach ($boothTypeBooths as $booth) {
-                if ($booth->boothType) {
-                    $boothTypeName = $booth->boothType->name;
-                    if (!isset($boothTypeMap[$boothTypeName])) {
-                        $boothTypeMap[$boothTypeName] = [];
-                    }
-                    $boothTypeMap[$boothTypeName][] = $booth->id;
-                }
-            }
-
-            // Get all clients
-            $clients = Client::orderBy('company')->get();
+            // Cache clients list for 5 minutes
+            $clients = cache()->remember('clients_ordered', 300, function () {
+                return Client::orderBy('company')->get();
+            });
         }
 
         return view('booths.index', compact(
@@ -217,8 +152,7 @@ class BoothController extends Controller
             'occupiedBooths',
             'occupancyPercentage',
             'totalRevenue',
-            'paidRevenue',
-            'boothsForJS'
+            'paidRevenue'
         ));
     }
 
