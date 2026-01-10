@@ -101,9 +101,8 @@ class BoothController extends Controller
 
         if (auth()->check()) {
             // Reserve Map - only reserved booths (status 3)
-            $reservedBooths = Booth::where('status', Booth::STATUS_RESERVED)
-                ->with('client')
-                ->get();
+            // Optimize: Use the already fetched collection instead of querying DB again
+            $reservedBooths = $booths->where('status', Booth::STATUS_RESERVED);
             
             foreach ($reservedBooths as $booth) {
                 $company = $booth->client ? $booth->client->company : '';
@@ -117,10 +116,10 @@ class BoothController extends Controller
             }
 
             // Company Map - all booths with clients
-            $companyBooths = Booth::whereNotNull('client_id')
-                ->where('client_id', '!=', 0)
-                ->with('client')
-                ->get();
+            // Optimize: Filter from main collection
+            $companyBooths = $booths->filter(function ($booth) {
+                return !empty($booth->client_id) && $booth->client_id != 0;
+            });
             
             foreach ($companyBooths as $booth) {
                 if ($booth->client) {
@@ -133,9 +132,8 @@ class BoothController extends Controller
             }
 
             // Category Map
-            $categoryBooths = Booth::whereNotNull('category_id')
-                ->with('category')
-                ->get();
+            // Optimize: Filter from main collection
+            $categoryBooths = $booths->whereNotNull('category_id');
             
             foreach ($categoryBooths as $booth) {
                 if ($booth->category) {
@@ -148,9 +146,8 @@ class BoothController extends Controller
             }
 
             // Sub-Category Map
-            $subCategoryBooths = Booth::whereNotNull('sub_category_id')
-                ->with('subCategory')
-                ->get();
+            // Optimize: Filter from main collection
+            $subCategoryBooths = $booths->whereNotNull('sub_category_id');
             
             foreach ($subCategoryBooths as $booth) {
                 if ($booth->subCategory) {
@@ -163,9 +160,8 @@ class BoothController extends Controller
             }
 
             // Asset Map
-            $assetBooths = Booth::whereNotNull('asset_id')
-                ->with('asset')
-                ->get();
+            // Optimize: Filter from main collection
+            $assetBooths = $booths->whereNotNull('asset_id');
             
             foreach ($assetBooths as $booth) {
                 if ($booth->asset) {
@@ -178,9 +174,8 @@ class BoothController extends Controller
             }
 
             // Booth Type Map
-            $boothTypeBooths = Booth::whereNotNull('booth_type_id')
-                ->with('boothType')
-                ->get();
+            // Optimize: Filter from main collection
+            $boothTypeBooths = $booths->whereNotNull('booth_type_id');
             
             foreach ($boothTypeBooths as $booth) {
                 if ($booth->boothType) {
