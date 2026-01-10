@@ -14,6 +14,21 @@
             @csrf
             @method('PUT')
             <div class="card-body">
+                <!-- General Error Display -->
+                @if($errors->any())
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <h6><i class="fas fa-exclamation-triangle mr-2"></i>Please fix the following errors:</h6>
+                        <ul class="mb-0">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                @endif
+
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">

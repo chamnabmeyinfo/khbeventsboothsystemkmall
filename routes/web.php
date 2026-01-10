@@ -14,6 +14,7 @@ use App\Http\Controllers\ExportController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\EventController;
+use App\Http\Controllers\FloorPlanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -52,6 +53,11 @@ Route::prefix('client-portal')->name('client-portal.')->group(function () {
 Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Floor Plans (Floor Plan Management)
+    Route::resource('floor-plans', FloorPlanController::class);
+    Route::post('/floor-plans/{id}/set-default', [FloorPlanController::class, 'setDefault'])->name('floor-plans.set-default');
+    Route::post('/floor-plans/{id}/duplicate', [FloorPlanController::class, 'duplicate'])->name('floor-plans.duplicate');
 
     // Booths
     Route::resource('booths', BoothController::class);
@@ -121,6 +127,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create', [\App\Http\Controllers\PaymentController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\PaymentController::class, 'store'])->name('store');
         Route::get('/{id}/invoice', [\App\Http\Controllers\PaymentController::class, 'invoice'])->name('invoice');
+        Route::post('/{id}/refund', [\App\Http\Controllers\PaymentController::class, 'refund'])->name('refund');
+        Route::post('/{id}/void', [\App\Http\Controllers\PaymentController::class, 'void'])->name('void');
     });
 
     // Communications
@@ -190,6 +198,14 @@ Route::middleware(['auth'])->group(function () {
         // Canvas Settings API
         Route::get('/settings/canvas', [SettingsController::class, 'getCanvasSettings'])->name('settings.canvas');
         Route::post('/settings/canvas', [SettingsController::class, 'saveCanvasSettings'])->name('settings.canvas.save');
+        
+        // Image Upload Routes
+        Route::prefix('images')->name('images.')->group(function () {
+            Route::post('/avatar/upload', [\App\Http\Controllers\ImageController::class, 'uploadAvatar'])->name('avatar.upload');
+            Route::post('/avatar/remove', [\App\Http\Controllers\ImageController::class, 'removeAvatar'])->name('avatar.remove');
+            Route::post('/cover/upload', [\App\Http\Controllers\ImageController::class, 'uploadCover'])->name('cover.upload');
+            Route::post('/cover/remove', [\App\Http\Controllers\ImageController::class, 'removeCover'])->name('cover.remove');
+        });
     });
 });
 

@@ -39,19 +39,49 @@
 
 @section('content')
 <div class="container-fluid">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('books.index') }}">Bookings</a></li>
+            <li class="breadcrumb-item active">Booking #{{ $book->id }}</li>
+        </ol>
+    </nav>
+
     <!-- Header Actions -->
     <div class="row mb-4">
-        <div class="col">
-            <div class="btn-group">
+        <div class="col-md-8">
+            <div class="btn-group" role="group">
                 <a href="{{ route('books.index') }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left mr-1"></i>Back to Bookings
                 </a>
                 @if(auth()->user()->isAdmin())
-                <button type="button" class="btn btn-danger" onclick="deleteBooking({{ $book->id }})">
-                    <i class="fas fa-trash mr-1"></i>Delete Booking
-                </button>
+                <a href="{{ route('books.edit', $book) }}" class="btn btn-warning">
+                    <i class="fas fa-edit mr-1"></i>Edit Booking
+                </a>
+                @endif
+                @if($book->client)
+                <a href="{{ route('clients.show', $book->client) }}" class="btn btn-info">
+                    <i class="fas fa-user mr-1"></i>View Client: {{ $book->client->company ?? $book->client->name }}
+                </a>
+                @endif
+                @if(!isset($payment) || !$payment)
+                <a href="{{ route('payments.create', ['booking_id' => $book->id]) }}" class="btn btn-success">
+                    <i class="fas fa-money-bill-wave mr-1"></i>Record Payment
+                </a>
+                @else
+                <a href="{{ route('payments.index', ['search' => '#'.$book->id]) }}" class="btn btn-info">
+                    <i class="fas fa-receipt mr-1"></i>View Payment
+                </a>
                 @endif
             </div>
+        </div>
+        <div class="col-md-4 text-right">
+            @if(auth()->user()->isAdmin())
+            <button type="button" class="btn btn-danger" onclick="deleteBooking({{ $book->id }})">
+                <i class="fas fa-trash mr-1"></i>Delete Booking
+            </button>
+            @endif
         </div>
     </div>
 
@@ -114,8 +144,13 @@
         <!-- Client Information -->
         <div class="col-md-6 mb-4">
             <div class="card detail-card success">
-                <div class="card-header bg-success text-white">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="fas fa-building mr-2"></i>Client Information</h5>
+                    @if($book->client)
+                    <a href="{{ route('clients.show', $book->client) }}" class="btn btn-sm btn-light">
+                        <i class="fas fa-external-link-alt mr-1"></i>View Profile
+                    </a>
+                    @endif
                 </div>
                 <div class="card-body">
                     @if($book->client)

@@ -10,6 +10,7 @@ class ZoneSetting extends Model
     use HasFactory;
 
     protected $fillable = [
+        'floor_plan_id',
         'zone_name',
         'width',
         'height',
@@ -21,6 +22,7 @@ class ZoneSetting extends Model
     ];
 
     protected $casts = [
+        'floor_plan_id' => 'integer',
         'width' => 'integer',
         'height' => 'integer',
         'rotation' => 'integer',
@@ -29,23 +31,51 @@ class ZoneSetting extends Model
         'border_width' => 'float',
         'opacity' => 'float',
     ];
-
+    
     /**
-     * Get zone settings by zone name
+     * Get the floor plan that owns this zone setting
      */
-    public static function getByZoneName($zoneName)
+    public function floorPlan()
     {
-        return self::where('zone_name', $zoneName)->first();
+        return $this->belongsTo(FloorPlan::class, 'floor_plan_id');
     }
 
     /**
-     * Save or update zone settings
+     * Get zone settings by zone name and floor plan (floor-plan-specific)
      */
-    public static function saveZoneSettings($zoneName, $settings)
+    public static function getByZoneName($zoneName, $floorPlanId = null)
     {
+        $query = self::where('zone_name', $zoneName);
+        
+        // Filter by floor plan if specified
+        if ($floorPlanId) {
+            $query->where('floor_plan_id', $floorPlanId);
+        } else {
+            // If no floor plan specified, get global settings (backward compatibility)
+            $query->whereNull('floor_plan_id');
+        }
+        
+        return $query->first();
+    }
+
+    /**
+     * Save or update zone settings (floor-plan-specific)
+     */
+    public static function saveZoneSettings($zoneName, $settings, $floorPlanId = null)
+    {
+        $whereClause = ['zone_name' => $zoneName];
+        
+        // Include floor_plan_id in unique constraint
+        if ($floorPlanId) {
+            $whereClause['floor_plan_id'] = $floorPlanId;
+        } else {
+            $whereClause['floor_plan_id'] = null; // Global settings (backward compatibility)
+        }
+        
         return self::updateOrCreate(
-            ['zone_name' => $zoneName],
+            $whereClause,
             [
+                'floor_plan_id' => $floorPlanId,
                 'width' => $settings['width'] ?? 80,
                 'height' => $settings['height'] ?? 50,
                 'rotation' => $settings['rotation'] ?? 0,
@@ -58,11 +88,11 @@ class ZoneSetting extends Model
     }
 
     /**
-     * Get default settings for a zone (returns saved settings or defaults)
+     * Get default settings for a zone (returns saved settings or defaults, floor-plan-specific)
      */
-    public static function getZoneDefaults($zoneName)
+    public static function getZoneDefaults($zoneName, $floorPlanId = null)
     {
-        $zoneSetting = self::getByZoneName($zoneName);
+        $zoneSetting = self::getByZoneName($zoneName, $floorPlanId);
         
         if ($zoneSetting) {
             return [
@@ -76,7 +106,7 @@ class ZoneSetting extends Model
             ];
         }
 
-        // Return default values if no saved settings
+        // Return default values if no saved settings for this floor plan/zone
         return [
             'width' => 80,
             'height' => 50,

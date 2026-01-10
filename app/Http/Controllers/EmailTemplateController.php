@@ -11,10 +11,43 @@ class EmailTemplateController extends Controller
     /**
      * Display a listing of email templates
      */
-    public function index()
+    public function index(Request $request)
     {
-        $templates = EmailTemplate::orderBy('category')->orderBy('name')->get();
-        return view('email-templates.index', compact('templates'));
+        $query = EmailTemplate::query();
+
+        // Filter by category
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status == 'active' ? 1 : 0);
+        }
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('subject', 'like', "%{$search}%")
+                  ->orWhere('slug', 'like', "%{$search}%");
+            });
+        }
+
+        $templates = $query->orderBy('category')->orderBy('name')->paginate(20)->withQueryString();
+
+        // Statistics
+        $stats = [
+            'total_templates' => EmailTemplate::count(),
+            'active_templates' => EmailTemplate::where('is_active', true)->count(),
+            'categories_count' => EmailTemplate::distinct()->count('category'),
+        ];
+
+        // Get unique categories
+        $categories = EmailTemplate::distinct()->pluck('category')->filter()->sort()->values();
+
+        return view('email-templates.index', compact('templates', 'stats', 'categories'));
     }
 
     /**

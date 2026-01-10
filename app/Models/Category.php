@@ -28,6 +28,8 @@ class Category extends Model
         'parent_id',
         'limit',
         'status',
+        'avatar',
+        'cover_image',
         'create_time',
         'update_time',
     ];

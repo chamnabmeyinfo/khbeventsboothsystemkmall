@@ -195,7 +195,9 @@
             </li>
             @endif
             <li class="nav-item d-none d-sm-inline-block">
-                <a href="{{ route('booths.index') }}" class="nav-link">Booth</a>
+                <a href="{{ route('floor-plans.index') }}" class="nav-link">
+                    <i class="fas fa-map mr-2"></i>Floor Plan Management
+                </a>
             </li>
             @if(auth()->user()->isAdmin())
             <li class="nav-item d-none d-sm-inline-block">
@@ -487,6 +489,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 <!-- Select2 for better dropdowns -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<!-- Image Upload Handler -->
+<script src="{{ asset('js/image-upload.js') }}"></script>
 
 @stack('scripts')
 

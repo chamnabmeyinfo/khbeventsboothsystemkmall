@@ -6,48 +6,111 @@
 
 @push('styles')
 <style>
+    /* Modern Glassmorphism KPI Cards */
+    .kpi-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 40px rgba(31, 38, 135, 0.5);
+    }
+
+    .kpi-card:hover::before {
+        opacity: 1;
+    }
+
+    .kpi-card.primary::before { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .kpi-card.success::before { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
+    .kpi-card.info::before { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+    .kpi-card.warning::before { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+
+    .kpi-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: white;
+        margin-bottom: 16px;
+    }
+
+    .kpi-card.primary .kpi-icon { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .kpi-card.success .kpi-icon { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
+    .kpi-card.info .kpi-icon { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+    .kpi-card.warning .kpi-icon { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+
+    .kpi-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin: 8px 0;
+        line-height: 1;
+    }
+
+    .kpi-label {
+        font-size: 0.875rem;
+        color: #718096;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
     .booking-card {
-        transition: transform 0.2s, box-shadow 0.2s;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        transition: all 0.3s;
         border-left: 4px solid;
         cursor: pointer;
     }
     .booking-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateY(-8px);
+        box-shadow: 0 12px 40px rgba(31, 38, 135, 0.5);
     }
-    .booking-card.regular { border-left-color: #007bff; }
+    .booking-card.regular { border-left-color: #667eea; }
     .booking-card.special { border-left-color: #ffc107; }
     .booking-card.temporary { border-left-color: #dc3545; }
-    .stat-badge {
-        font-size: 0.875rem;
-        padding: 0.35em 0.65em;
-        font-weight: 600;
-    }
-    .booking-type-badge {
-        font-size: 0.75rem;
-        padding: 0.25em 0.5em;
-    }
+    
     .table-row-hover {
         transition: all 0.2s;
     }
     .table-row-hover:hover {
         background-color: #f8f9fc;
-        transform: scale(1.01);
+        transform: translateX(4px);
     }
-    .filter-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-    }
-    .filter-card .form-control {
-        background: rgba(255,255,255,0.95);
-        border: none;
-    }
-    .view-toggle {
-        border-radius: 0.35rem;
-    }
-    .view-toggle.active {
-        background-color: #007bff;
-        color: white;
+    
+    .filter-bar {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        padding: 24px;
+        margin-bottom: 24px;
     }
 </style>
 @endpush
@@ -56,74 +119,58 @@
 <div class="container-fluid">
     <!-- Statistics Cards -->
     <div class="row mb-4">
-        <div class="col-lg-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Total Bookings</h6>
-                            <h3 class="mb-0">{{ \App\Models\Book::count() }}</h3>
-                        </div>
-                        <div class="text-primary" style="font-size: 2.5rem; opacity: 0.3;">
-                            <i class="fas fa-calendar-check"></i>
-                        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card kpi-card primary">
+                <div class="card-body" style="padding: 24px;">
+                    <div class="kpi-icon">
+                        <i class="fas fa-calendar-check"></i>
                     </div>
+                    <div class="kpi-label">Total Bookings</div>
+                    <div class="kpi-value">{{ number_format(\App\Models\Book::count()) }}</div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Today's Bookings</h6>
-                            <h3 class="mb-0">{{ \App\Models\Book::whereDate('date_book', today())->count() }}</h3>
-                        </div>
-                        <div class="text-success" style="font-size: 2.5rem; opacity: 0.3;">
-                            <i class="fas fa-calendar-day"></i>
-                        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card kpi-card success">
+                <div class="card-body" style="padding: 24px;">
+                    <div class="kpi-icon">
+                        <i class="fas fa-calendar-day"></i>
                     </div>
+                    <div class="kpi-label">Today's Bookings</div>
+                    <div class="kpi-value">{{ number_format(\App\Models\Book::whereDate('date_book', today())->count()) }}</div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">This Month</h6>
-                            <h3 class="mb-0">{{ \App\Models\Book::whereMonth('date_book', now()->month)->whereYear('date_book', now()->year)->count() }}</h3>
-                        </div>
-                        <div class="text-info" style="font-size: 2.5rem; opacity: 0.3;">
-                            <i class="fas fa-calendar-alt"></i>
-                        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card kpi-card info">
+                <div class="card-body" style="padding: 24px;">
+                    <div class="kpi-icon">
+                        <i class="fas fa-calendar-alt"></i>
                     </div>
+                    <div class="kpi-label">This Month</div>
+                    <div class="kpi-value">{{ number_format(\App\Models\Book::whereMonth('date_book', now()->month)->whereYear('date_book', now()->year)->count()) }}</div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Total Booths Booked</h6>
-                            <h3 class="mb-0">
-                                @php
-                                    try {
-                                        $totalBooths = \App\Models\Book::get()->sum(function($book) {
-                                            $boothIds = json_decode($book->boothid, true);
-                                            return is_array($boothIds) ? count($boothIds) : 0;
-                                        });
-                                    } catch (\Exception $e) {
-                                        $totalBooths = 0;
-                                    }
-                                @endphp
-                                {{ $totalBooths }}
-                            </h3>
-                        </div>
-                        <div class="text-warning" style="font-size: 2.5rem; opacity: 0.3;">
-                            <i class="fas fa-cube"></i>
-                        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card kpi-card warning">
+                <div class="card-body" style="padding: 24px;">
+                    <div class="kpi-icon">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                    <div class="kpi-label">Total Booths Booked</div>
+                    <div class="kpi-value">
+                        @php
+                            try {
+                                $totalBooths = \App\Models\Book::get()->sum(function($book) {
+                                    $boothIds = json_decode($book->boothid, true);
+                                    return is_array($boothIds) ? count($boothIds) : 0;
+                                });
+                            } catch (\Exception $e) {
+                                $totalBooths = 0;
+                            }
+                        @endphp
+                        {{ number_format($totalBooths) }}
                     </div>
                 </div>
             </div>
@@ -162,16 +209,16 @@
     </div>
 
     <!-- Advanced Search and Filter -->
-    <div class="card card-primary card-outline mb-4">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="fas fa-filter mr-2"></i>Search & Filters
-                <button type="button" class="btn btn-sm btn-link text-white ml-2" onclick="toggleFilters()">
-                    <i class="fas fa-chevron-down" id="filterToggleIcon"></i>
-                </button>
+    <div class="filter-bar">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 style="font-weight: 600; color: #2d3748;">
+                <i class="fas fa-filter mr-2 text-primary"></i>Search & Filters
             </h3>
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleFilters()">
+                <i class="fas fa-chevron-down" id="filterToggleIcon"></i>
+            </button>
         </div>
-        <div class="card-body" id="filterSection">
+        <div id="filterSection">
             <form method="GET" action="{{ route('books.index') }}" id="filterForm">
                 <div class="row">
                     <div class="col-md-4 mb-3">
@@ -272,7 +319,13 @@
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="mr-2">
-                                            <i class="fas fa-building text-muted"></i>
+                                            <x-avatar 
+                                                :avatar="$book->client->avatar ?? null" 
+                                                :name="$book->client->name ?? 'N/A'" 
+                                                :size="'xs'" 
+                                                :type="'client'"
+                                                :shape="'circle'"
+                                            />
                                         </div>
                                         <div>
                                             <strong>{{ $book->client ? ($book->client->company ?? $book->client->name) : 'N/A' }}</strong>
@@ -307,12 +360,19 @@
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="mr-2">
-                                            <i class="fas fa-user-circle text-muted"></i>
-                                        </div>
-                                        <div>
-                                            <small class="text-muted">{{ $book->user ? $book->user->username : 'System' }}</small>
-                                        </div>
+                                        @if($book->user)
+                                            <x-avatar 
+                                                :avatar="$book->user->avatar" 
+                                                :name="$book->user->username" 
+                                                :size="'xs'" 
+                                                :type="$book->user->isAdmin() ? 'admin' : 'user'"
+                                                :shape="'circle'"
+                                            />
+                                            <small class="text-muted ml-2">{{ $book->user->username }}</small>
+                                        @else
+                                            <i class="fas fa-server text-muted mr-1"></i>
+                                            <small class="text-muted">System</small>
+                                        @endif
                                     </div>
                                 </td>
                                 <td>
@@ -423,8 +483,20 @@
                             <small class="text-muted ml-4">{{ $book->date_book->format('h:i A') }}</small>
                         </div>
                         <div class="d-flex align-items-center">
-                            <i class="fas fa-user text-muted mr-2"></i>
-                            <small class="text-muted">Booked by: {{ $book->user ? $book->user->username : 'System' }}</small>
+                            <span class="text-muted mr-2">Booked by:</span>
+                            @if($book->user)
+                                <x-avatar 
+                                    :avatar="$book->user->avatar" 
+                                    :name="$book->user->username" 
+                                    :size="'xs'" 
+                                    :type="$book->user->isAdmin() ? 'admin' : 'user'"
+                                    :shape="'circle'"
+                                />
+                                <small class="text-muted ml-1">{{ $book->user->username }}</small>
+                            @else
+                                <i class="fas fa-server text-muted mr-1"></i>
+                                <small class="text-muted">System</small>
+                            @endif
                         </div>
                     </div>
                     <div class="card-footer bg-white">

@@ -12,32 +12,59 @@ class ActivityLogController extends Controller
      */
     public function index(Request $request)
     {
-        $query = ActivityLog::with('user')->latest();
+        $query = ActivityLog::with(['user', 'model'])->latest();
 
         // Filters
-        if ($request->has('user_id') && $request->user_id) {
+        if ($request->filled('user_id')) {
             $query->where('user_id', $request->user_id);
         }
 
-        if ($request->has('action') && $request->action) {
+        if ($request->filled('action')) {
             $query->where('action', $request->action);
         }
 
-        if ($request->has('model_type') && $request->model_type) {
+        if ($request->filled('model_type')) {
             $query->where('model_type', $request->model_type);
         }
 
-        if ($request->has('date_from') && $request->date_from) {
+        if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
         }
 
-        if ($request->has('date_to') && $request->date_to) {
+        if ($request->filled('date_to')) {
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        $logs = $query->paginate(50);
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('description', 'like', "%{$search}%")
+                  ->orWhere('action', 'like', "%{$search}%")
+                  ->orWhere('route', 'like', "%{$search}%");
+            });
+        }
 
-        return view('activity-logs.index', compact('logs'));
+        $logs = $query->paginate(50)->withQueryString();
+
+        // Statistics
+        $stats = [
+            'total_logs' => ActivityLog::count(),
+            'today_logs' => ActivityLog::whereDate('created_at', today())->count(),
+            'this_week_logs' => ActivityLog::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
+            'unique_users' => ActivityLog::distinct('user_id')->count('user_id'),
+        ];
+
+        // Get unique users for filter
+        $users = \App\Models\User::whereIn('id', ActivityLog::distinct()->pluck('user_id'))->orderBy('username')->get();
+
+        // Get unique actions
+        $actions = ActivityLog::distinct()->pluck('action')->filter()->sort()->values();
+
+        // Get unique model types
+        $modelTypes = ActivityLog::distinct()->pluck('model_type')->filter()->sort()->values();
+
+        return view('activity-logs.index', compact('logs', 'stats', 'users', 'actions', 'modelTypes'));
     }
 
     /**

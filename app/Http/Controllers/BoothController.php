@@ -9,6 +9,7 @@ use App\Models\Asset;
 use App\Models\BoothType;
 use App\Models\Book;
 use App\Models\ZoneSetting;
+use App\Models\FloorPlan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\DebugLogger;
@@ -24,10 +25,82 @@ class BoothController extends Controller
         DebugLogger::log(['request_method'=>$request->method(),'user_authenticated'=>auth()->check()], 'BoothController.php:22', 'BoothController::index() called');
         // #endregion
         
-        // Get all booths ordered by booth number, including positions
-        $booths = Booth::with(['client', 'category', 'subCategory', 'asset', 'boothType', 'user'])
-            ->orderBy('booth_number', 'asc')
+        // Get floor plan filter (from query param or default)
+        $floorPlanId = $request->input('floor_plan_id');
+        
+        // If no floor plan specified, get default floor plan
+        if (!$floorPlanId) {
+            $defaultFloorPlan = FloorPlan::where('is_default', true)->first();
+            $floorPlanId = $defaultFloorPlan ? $defaultFloorPlan->id : null;
+        }
+        
+        // Get all floor plans for selector
+        $floorPlans = FloorPlan::where('is_active', true)
+            ->orderBy('is_default', 'desc')
+            ->orderBy('name', 'asc')
             ->get();
+        
+        // Get current floor plan with all its settings
+        // CRITICAL: Always reload from database to ensure we have latest floor_image
+        // This ensures when user clicks "View Booths", the correct floor plan image loads automatically
+        // Use fresh() to ensure we get the absolute latest data (not from cache)
+        $currentFloorPlan = $floorPlanId ? FloorPlan::withoutGlobalScopes()->find($floorPlanId) : null;
+        
+        // CRITICAL: Force refresh the model to ensure we have the absolute latest floor_image
+        if ($currentFloorPlan) {
+            $currentFloorPlan->refresh();
+            
+        }
+        
+        // Verify floor plan exists and has image (for automatic canvas loading)
+        if ($currentFloorPlan) {
+            // Verify image file exists
+            if ($currentFloorPlan->floor_image && !file_exists(public_path($currentFloorPlan->floor_image))) {
+                \Log::warning('Floor plan image file not found, but path exists in database', [
+                    'floor_plan_id' => $floorPlanId,
+                    'floor_plan_name' => $currentFloorPlan->name,
+                    'floor_image_path' => $currentFloorPlan->floor_image,
+                    'full_path' => public_path($currentFloorPlan->floor_image)
+                ]);
+            }
+            
+            \Log::info('Loading floor plan for canvas (automatic image load)', [
+                'floor_plan_id' => $floorPlanId,
+                'floor_plan_name' => $currentFloorPlan->name,
+                'floor_image' => $currentFloorPlan->floor_image,
+                'image_exists' => $currentFloorPlan->floor_image && file_exists(public_path($currentFloorPlan->floor_image)),
+                'canvas_width' => $currentFloorPlan->canvas_width,
+                'canvas_height' => $currentFloorPlan->canvas_height
+            ]);
+        }
+        
+        // Get all booths ordered by booth number, including positions
+        $boothsQuery = Booth::with(['client', 'category', 'subCategory', 'asset', 'boothType', 'user', 'floorPlan']);
+        
+        // Filter by floor plan if specified
+        if ($floorPlanId) {
+            $boothsQuery->where('floor_plan_id', $floorPlanId);
+        } else {
+            // If no floor plan exists, show all booths (backward compatibility)
+            $boothsQuery->whereNull('floor_plan_id');
+        }
+        
+        $booths = $boothsQuery->orderBy('booth_number', 'asc')->get();
+        
+        // Get floor plan canvas settings (for JavaScript and canvas initialization)
+        // CRITICAL: Always use floor_plans.floor_image as source of truth
+        $canvasWidth = $currentFloorPlan ? $currentFloorPlan->canvas_width : 1200;
+        $canvasHeight = $currentFloorPlan ? $currentFloorPlan->canvas_height : 800;
+        $floorImage = $currentFloorPlan ? $currentFloorPlan->floor_image : null;
+        
+        // Verify floor image file exists (if path is set)
+        if ($floorImage && !file_exists(public_path($floorImage))) {
+            \Log::warning('Floor plan image file not found', [
+                'floor_plan_id' => $floorPlanId,
+                'floor_image_path' => $floorImage,
+                'full_path' => public_path($floorImage)
+            ]);
+        }
 
         // #region agent log
         DebugLogger::log(['booth_count'=>$booths->count(),'first_booth_id'=>$booths->first()?->id ?? null], 'BoothController.php:31', 'Booths fetched from database');
@@ -218,20 +291,38 @@ class BoothController extends Controller
             'occupancyPercentage',
             'totalRevenue',
             'paidRevenue',
-            'boothsForJS'
+            'boothsForJS',
+            'floorPlans',
+            'currentFloorPlan',
+            'floorPlanId',
+            'canvasWidth',
+            'canvasHeight',
+            'floorImage'
         ));
     }
 
     /**
      * Show the form for creating a new booth
      */
-    public function create()
+    public function create(Request $request)
     {
         $categories = Category::where('status', 1)->get();
         $assets = Asset::where('status', 1)->get();
         $boothTypes = BoothType::where('status', 1)->get();
         
-        return view('booths.create', compact('categories', 'assets', 'boothTypes'));
+        // Get floor plan from query param or default
+        $floorPlanId = $request->input('floor_plan_id');
+        if (!$floorPlanId) {
+            $defaultFloorPlan = FloorPlan::where('is_default', true)->first();
+            $floorPlanId = $defaultFloorPlan ? $defaultFloorPlan->id : null;
+        }
+        
+        $floorPlans = FloorPlan::where('is_active', true)
+            ->orderBy('is_default', 'desc')
+            ->orderBy('name', 'asc')
+            ->get();
+        
+        return view('booths.create', compact('categories', 'assets', 'boothTypes', 'floorPlans', 'floorPlanId'));
     }
 
     /**
@@ -240,25 +331,46 @@ class BoothController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'booth_number' => 'required|string|max:45|unique:booth,booth_number',
+            'booth_number' => 'required|string|max:45',
             'type' => 'required|integer',
             'price' => 'required|numeric|min:0',
             'category_id' => 'nullable|exists:category,id',
             'asset_id' => 'nullable|exists:asset,id',
             'booth_type_id' => 'nullable|exists:booth_type,id',
+            'floor_plan_id' => 'nullable|exists:floor_plans,id',
         ]);
+        
+        // If no floor plan specified, use default
+        if (empty($validated['floor_plan_id'])) {
+            $defaultFloorPlan = FloorPlan::where('is_default', true)->first();
+            if ($defaultFloorPlan) {
+                $validated['floor_plan_id'] = $defaultFloorPlan->id;
+            }
+        }
 
-        // Double-check for duplicates before creating (extra safety)
-        $existingBooth = Booth::where('booth_number', $validated['booth_number'])->first();
+                        // Double-check for duplicates before creating (floor-plan-specific)
+        $existingBoothQuery = Booth::where('booth_number', $validated['booth_number']);
+        if (!empty($validated['floor_plan_id'])) {
+            $existingBoothQuery->where('floor_plan_id', $validated['floor_plan_id']);
+        }
+        $existingBooth = $existingBoothQuery->first();
         if ($existingBooth) {
             return back()
                 ->withInput()
-                ->withErrors(['booth_number' => 'This booth number already exists. Please choose a different number.']);
+                ->withErrors(['booth_number' => !empty($validated['floor_plan_id']) 
+                    ? 'This booth number already exists in this floor plan. Please choose a different number.'
+                    : 'This booth number already exists. Please choose a different number.']);
         }
 
-        Booth::create($validated);
+        $booth = Booth::create($validated);
 
-        return redirect()->route('booths.index')
+        // Preserve floor_plan_id in redirect if specified
+        $redirectUrl = route('booths.index');
+        if (!empty($validated['floor_plan_id'])) {
+            $redirectUrl .= '?floor_plan_id=' . $validated['floor_plan_id'];
+        }
+
+        return redirect($redirectUrl)
             ->with('success', 'Booth created successfully.');
     }
 
@@ -274,14 +386,23 @@ class BoothController extends Controller
     /**
      * Show the form for editing the specified booth
      */
-    public function edit(Booth $booth)
+    public function edit(Booth $booth, Request $request)
     {
         $categories = Category::where('status', 1)->get();
         $assets = Asset::where('status', 1)->get();
         $boothTypes = BoothType::where('status', 1)->get();
         $clients = Client::orderBy('company')->get();
+        
+        // Get all floor plans for selector
+        $floorPlans = FloorPlan::where('is_active', true)
+            ->orderBy('is_default', 'desc')
+            ->orderBy('name', 'asc')
+            ->get();
+        
+        // Get current floor plan (from booth or query param)
+        $currentFloorPlanId = $request->input('floor_plan_id', $booth->floor_plan_id);
 
-        return view('booths.edit', compact('booth', 'categories', 'assets', 'boothTypes', 'clients'));
+        return view('booths.edit', compact('booth', 'categories', 'assets', 'boothTypes', 'clients', 'floorPlans', 'currentFloorPlanId'));
     }
 
     /**
@@ -290,7 +411,7 @@ class BoothController extends Controller
     public function update(Request $request, Booth $booth)
     {
         $validated = $request->validate([
-            'booth_number' => 'required|string|max:45|unique:booth,booth_number,' . $booth->id,
+            'booth_number' => 'required|string|max:45',
             'type' => 'required|integer',
             'price' => 'required|numeric|min:0',
             'status' => 'required|integer',
@@ -298,21 +419,47 @@ class BoothController extends Controller
             'category_id' => 'nullable|exists:category,id',
             'asset_id' => 'nullable|exists:asset,id',
             'booth_type_id' => 'nullable|exists:booth_type,id',
+            'floor_plan_id' => 'nullable|exists:floor_plans,id',
         ]);
 
-        // Double-check for duplicates before updating (extra safety)
-        $existingBooth = Booth::where('booth_number', $validated['booth_number'])
-            ->where('id', '!=', $booth->id)
-            ->first();
+        // Double-check for duplicates before updating (floor-plan-specific)
+        $floorPlanId = $validated['floor_plan_id'] ?? $booth->floor_plan_id;
+        $existingBoothQuery = Booth::where('booth_number', $validated['booth_number'])
+            ->where('id', '!=', $booth->id);
+        
+        if ($floorPlanId) {
+            $existingBoothQuery->where('floor_plan_id', $floorPlanId);
+        }
+        
+        $existingBooth = $existingBoothQuery->first();
         if ($existingBooth) {
             return back()
                 ->withInput()
-                ->withErrors(['booth_number' => 'This booth number already exists. Please choose a different number.']);
+                ->withErrors(['booth_number' => $floorPlanId
+                    ? 'This booth number already exists in this floor plan. Please choose a different number.'
+                    : 'This booth number already exists. Please choose a different number.']);
+        }
+
+        // If no floor plan specified, keep current one
+        if (empty($validated['floor_plan_id']) && $booth->floor_plan_id) {
+            $validated['floor_plan_id'] = $booth->floor_plan_id;
+        } elseif (empty($validated['floor_plan_id'])) {
+            // If booth has no floor plan, assign to default
+            $defaultFloorPlan = FloorPlan::where('is_default', true)->first();
+            if ($defaultFloorPlan) {
+                $validated['floor_plan_id'] = $defaultFloorPlan->id;
+            }
         }
 
         $booth->update($validated);
 
-        return redirect()->route('booths.index')
+        // Preserve floor_plan_id in redirect
+        $redirectUrl = route('booths.index');
+        if (!empty($validated['floor_plan_id'])) {
+            $redirectUrl .= '?floor_plan_id=' . $validated['floor_plan_id'];
+        }
+
+        return redirect($redirectUrl)
             ->with('success', 'Booth updated successfully.');
     }
 
@@ -793,53 +940,146 @@ class BoothController extends Controller
     }
 
     /**
-     * Upload floorplan image
+     * Upload floorplan image (floor-plan-specific)
      */
     public function uploadFloorplan(Request $request)
     {
         try {
             // Get upload size limit from environment or use default (100MB = 102400 KB)
-            // You can set UPLOAD_MAX_SIZE_KB in .env file to customize (value in KB)
             $maxSizeKB = env('UPLOAD_MAX_SIZE_KB', 102400); // Default 100MB in KB
             
             $request->validate([
                 'floorplan_image' => 'required|image|mimes:jpeg,jpg,png,gif|max:' . $maxSizeKB,
+                'floor_plan_id' => 'required|exists:floor_plans,id',
             ]);
 
+            $floorPlanId = $request->input('floor_plan_id');
+            $floorPlan = FloorPlan::findOrFail($floorPlanId);
+
             $image = $request->file('floorplan_image');
-            $imageName = 'map.jpg'; // Always save as map.jpg
+            $imageExtension = $image->getClientOriginalExtension();
+            $imageName = time() . '_floor_plan_' . $floorPlanId . '.' . $imageExtension;
             
-            // Ensure images directory exists
-            $imagesPath = public_path('images');
-            if (!file_exists($imagesPath)) {
-                mkdir($imagesPath, 0755, true);
+            // Ensure floor plans images directory exists
+            $floorPlansPath = public_path('images/floor-plans');
+            if (!file_exists($floorPlansPath)) {
+                mkdir($floorPlansPath, 0755, true);
             }
             
-            // Delete old floorplan if exists
-            $oldImagePath = $imagesPath . '/' . $imageName;
-            if (file_exists($oldImagePath)) {
-                unlink($oldImagePath);
+            // CRITICAL: Save new image FIRST before deleting old one (prevents data loss if save fails)
+            // Move uploaded file to temporary location first, then verify it exists
+            $image->move($floorPlansPath, $imageName);
+            
+            // Verify the new file was created successfully
+            $newImagePath = $floorPlansPath . '/' . $imageName;
+            if (!file_exists($newImagePath)) {
+                throw new \Exception('Failed to upload image file - file not found after move');
             }
             
-            // Move uploaded file
-            $image->move($imagesPath, $imageName);
+            // Get image dimensions from the new file
+            $imageInfo = getimagesize($newImagePath);
+            $imageWidth = $imageInfo[0] ?? $floorPlan->canvas_width;
+            $imageHeight = $imageInfo[1] ?? $floorPlan->canvas_height;
             
-            // Get image dimensions
-            $imagePath = $imagesPath . '/' . $imageName;
-            $imageInfo = getimagesize($imagePath);
-            $imageWidth = $imageInfo[0] ?? null;
-            $imageHeight = $imageInfo[1] ?? null;
+            // Store old image path for cleanup (only delete after successful database update)
+            $oldImagePath = $floorPlan->floor_image ? public_path($floorPlan->floor_image) : null;
+            $oldImageExists = $oldImagePath && file_exists($oldImagePath);
+            
+            // Update floor plan with NEW image path and dimensions
+            // CRITICAL: Save the relative path (not full URL) with unique name including floor_plan_id
+            $floorPlan->floor_image = 'images/floor-plans/' . $imageName;
+            $floorPlan->canvas_width = $imageWidth;
+            $floorPlan->canvas_height = $imageHeight;
+            
+            // Save to database (CRITICAL: Save BEFORE deleting old file)
+            $saved = $floorPlan->save();
+            
+            if (!$saved) {
+                // Database save failed - delete the new file we just created to prevent orphaned files
+                if (file_exists($newImagePath)) {
+                    unlink($newImagePath);
+                }
+                \Log::error('Failed to save floor plan image path to database', [
+                    'floor_plan_id' => $floorPlanId,
+                    'image_name' => $imageName,
+                    'image_path' => 'images/floor-plans/' . $imageName
+                ]);
+                throw new \Exception('Failed to save floor plan image path to database');
+            }
+            
+            // Refresh floor plan from database to ensure we have latest values
+            $floorPlan->refresh();
+            
+            // Verify the image path was saved correctly
+            if ($floorPlan->floor_image !== 'images/floor-plans/' . $imageName) {
+                \Log::error('Floor plan image path mismatch after save - attempting fix', [
+                    'floor_plan_id' => $floorPlanId,
+                    'expected' => 'images/floor-plans/' . $imageName,
+                    'actual' => $floorPlan->floor_image
+                ]);
+                // Try to fix it
+                $floorPlan->floor_image = 'images/floor-plans/' . $imageName;
+                $floorPlan->save();
+                $floorPlan->refresh();
+            }
+            
+            // NOW delete old image (only after successful database update)
+            // This ensures we don't lose data if database update fails
+            if ($oldImageExists && $oldImagePath !== $newImagePath) {
+                try {
+                    unlink($oldImagePath);
+                    \Log::info('Deleted old floor plan image', [
+                        'floor_plan_id' => $floorPlanId,
+                        'old_image' => $oldImagePath,
+                        'new_image' => $newImagePath
+                    ]);
+                } catch (\Exception $e) {
+                    \Log::warning('Could not delete old floor plan image (non-critical): ' . $e->getMessage(), [
+                        'floor_plan_id' => $floorPlanId,
+                        'old_image' => $oldImagePath
+                    ]);
+                }
+            }
+            
+            // Update canvas settings for this floor plan (floor-plan-specific)
+            // CRITICAL: Always sync canvas_settings.floorplan_image with floor_plans.floor_image
+            // This ensures consistency when switching between floor plans
+            try {
+                \App\Models\CanvasSetting::updateOrCreate(
+                    ['floor_plan_id' => $floorPlanId],
+                    [
+                        'canvas_width' => $imageWidth,
+                        'canvas_height' => $imageHeight,
+                        'floorplan_image' => $floorPlan->floor_image, // Relative path: 'images/floor-plans/...'
+                    ]
+                );
+                
+                \Log::info('Canvas settings updated for floor plan ' . $floorPlanId, [
+                    'floor_plan_id' => $floorPlanId,
+                    'floorplan_image' => $floorPlan->floor_image,
+                    'canvas_width' => $imageWidth,
+                    'canvas_height' => $imageHeight
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Could not update canvas settings for floor plan: ' . $e->getMessage(), [
+                    'floor_plan_id' => $floorPlanId,
+                    'trace' => $e->getTraceAsString()
+                ]);
+            }
             
             // Get the URL for the image
-            $imageUrl = asset('images/' . $imageName);
+            $imageUrl = asset($floorPlan->floor_image);
             
             return response()->json([
                 'status' => 200,
                 'message' => 'Floorplan uploaded successfully.',
                 'image_url' => $imageUrl,
-                'image_path' => 'images/' . $imageName,
+                'image_path' => $floorPlan->floor_image, // Relative path for database storage
                 'image_width' => $imageWidth,
-                'image_height' => $imageHeight
+                'image_height' => $imageHeight,
+                'canvas_width' => $imageWidth,
+                'canvas_height' => $imageHeight,
+                'floor_plan_id' => $floorPlanId
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
@@ -860,18 +1100,26 @@ class BoothController extends Controller
     }
 
     /**
-     * Remove the current floorplan image.
+     * Remove the current floorplan image (floor-plan-specific).
      */
     public function removeFloorplan(Request $request)
     {
         try {
-            $imagesPath = public_path('images');
-            $imageName = 'map.jpg';
-            $imagePath = $imagesPath . '/' . $imageName;
+            $request->validate([
+                'floor_plan_id' => 'required|exists:floor_plans,id',
+            ]);
 
-            if (file_exists($imagePath)) {
-                unlink($imagePath);
+            $floorPlanId = $request->input('floor_plan_id');
+            $floorPlan = FloorPlan::findOrFail($floorPlanId);
+
+            // Delete floor plan's image if exists
+            if ($floorPlan->floor_image && file_exists(public_path($floorPlan->floor_image))) {
+                unlink(public_path($floorPlan->floor_image));
             }
+
+            // Clear floor image from floor plan record
+            $floorPlan->floor_image = null;
+            $floorPlan->save();
 
             return response()->json([
                 'status' => 200,
@@ -888,12 +1136,13 @@ class BoothController extends Controller
     }
 
     /**
-     * Check if booth number is duplicate
+     * Check if booth number is duplicate (floor-plan-specific)
      */
     public function checkDuplicate(Request $request, $boothNumber = null)
     {
         $boothNumber = $boothNumber ?? $request->input('booth_number');
         $excludeId = $request->input('exclude_id'); // For update operations
+        $floorPlanId = $request->input('floor_plan_id'); // For floor-plan-specific check
         
         if (!$boothNumber) {
             return response()->json([
@@ -905,32 +1154,53 @@ class BoothController extends Controller
 
         $query = Booth::where('booth_number', $boothNumber);
         
+        // Filter by floor_plan_id if specified (floor-plan-specific uniqueness)
+        if ($floorPlanId) {
+            $query->where('floor_plan_id', $floorPlanId);
+        }
+        
         // Exclude current booth when checking for updates
         if ($excludeId) {
             $query->where('id', '!=', $excludeId);
         }
 
         $exists = $query->exists();
+        
+        $message = $exists 
+            ? ($floorPlanId 
+                ? 'This booth number already exists in this floor plan' 
+                : 'This booth number already exists')
+            : 'Booth number is available';
 
         return response()->json([
             'status' => 200,
             'is_duplicate' => $exists,
             'booth_number' => $boothNumber,
-            'message' => $exists ? 'This booth number already exists' : 'Booth number is available'
+            'floor_plan_id' => $floorPlanId,
+            'message' => $message
         ]);
     }
 
     /**
-     * Get zone settings
+     * Get zone settings (floor-plan-specific)
      */
     public function getZoneSettings(Request $request, $zoneName)
     {
         try {
-            $settings = ZoneSetting::getZoneDefaults($zoneName);
+            // Get floor plan ID from request (required)
+            $floorPlanId = $request->input('floor_plan_id');
+            if (!$floorPlanId) {
+                // If no floor plan specified, try to get default
+                $defaultFloorPlan = FloorPlan::where('is_default', true)->first();
+                $floorPlanId = $defaultFloorPlan ? $defaultFloorPlan->id : null;
+            }
+            
+            $settings = ZoneSetting::getZoneDefaults($zoneName, $floorPlanId);
             
             return response()->json([
                 'status' => 200,
                 'zone_name' => $zoneName,
+                'floor_plan_id' => $floorPlanId,
                 'settings' => $settings
             ]);
         } catch (\Exception $e) {
@@ -955,7 +1225,11 @@ class BoothController extends Controller
                 'from' => 'nullable|integer|min:1|max:9999',
                 'to' => 'nullable|integer|min:1|max:9999',
                 'format' => 'nullable|integer|min:1|max:4',
+                'floor_plan_id' => 'required|exists:floor_plans,id',
             ]);
+
+            $floorPlanId = $validated['floor_plan_id'];
+            $floorPlan = FloorPlan::findOrFail($floorPlanId);
 
             $createdBooths = [];
             $skippedBooths = [];
@@ -988,8 +1262,10 @@ class BoothController extends Controller
                     try {
                         $boothNumber = $zoneName . str_pad($i, $format, '0', STR_PAD_LEFT);
                         
-                        // Check if booth number already exists
-                        if (Booth::where('booth_number', $boothNumber)->exists()) {
+                        // Check if booth number already exists in this floor plan
+                        if (Booth::where('booth_number', $boothNumber)
+                            ->where('floor_plan_id', $floorPlanId)
+                            ->exists()) {
                             $skippedBooths[] = $boothNumber;
                             continue;
                         }
@@ -999,6 +1275,7 @@ class BoothController extends Controller
                             'type' => 2, // Default type
                             'price' => 500, // Default price
                             'status' => Booth::STATUS_AVAILABLE,
+                            'floor_plan_id' => $floorPlanId, // Assign to current floor plan
                         ]);
 
                         $createdBooths[] = [
@@ -1028,15 +1305,19 @@ class BoothController extends Controller
                             $boothNumber = $customBoothNumber;
                         } else {
                             // Auto-generate booth number for the zone
-                            $boothNumber = $this->generateNextBoothNumber($zoneName);
+                            $boothNumber = $this->generateNextBoothNumber($zoneName, $floorPlanId);
                         }
 
-                        // Check if booth number already exists
-                        if (Booth::where('booth_number', $boothNumber)->exists()) {
+                        // Check if booth number already exists in this floor plan
+                        if (Booth::where('booth_number', $boothNumber)
+                            ->where('floor_plan_id', $floorPlanId)
+                            ->exists()) {
                             $skippedBooths[] = $boothNumber;
                             // Try to generate next available
-                            $boothNumber = $this->generateNextBoothNumber($zoneName);
-                            if (Booth::where('booth_number', $boothNumber)->exists()) {
+                            $boothNumber = $this->generateNextBoothNumber($zoneName, $floorPlanId);
+                            if (Booth::where('booth_number', $boothNumber)
+                                ->where('floor_plan_id', $floorPlanId)
+                                ->exists()) {
                                 continue; // Skip if still exists
                             }
                         }
@@ -1046,6 +1327,7 @@ class BoothController extends Controller
                             'type' => 2, // Default type
                             'price' => 500, // Default price
                             'status' => Booth::STATUS_AVAILABLE,
+                            'floor_plan_id' => $floorPlanId, // Assign to current floor plan
                         ]);
 
                         $createdBooths[] = [
@@ -1062,9 +1344,45 @@ class BoothController extends Controller
                 }
             }
 
-            $message = count($createdBooths) . ' booth(s) created successfully in Zone ' . $zoneName;
+            // Check if any booths were created
+            if (count($createdBooths) === 0) {
+                if (count($skippedBooths) > 0) {
+                    // All booths were skipped (already exist)
+                    return response()->json([
+                        'status' => 409, // Conflict
+                        'message' => 'Zone ' . $zoneName . ' already exists in this floor plan. ' . count($skippedBooths) . ' booth(s) already exist: ' . implode(', ', array_slice($skippedBooths, 0, 5)) . (count($skippedBooths) > 5 ? '...' : ''),
+                        'created' => [],
+                        'skipped' => $skippedBooths,
+                        'errors' => $errors
+                    ], 409);
+                } elseif (count($errors) > 0) {
+                    // Errors occurred during creation
+                    return response()->json([
+                        'status' => 500,
+                        'message' => 'Failed to create booth(s) in Zone ' . $zoneName . '. Errors: ' . implode('; ', array_column($errors, 'error')),
+                        'created' => [],
+                        'skipped' => $skippedBooths,
+                        'errors' => $errors
+                    ], 500);
+                } else {
+                    // No booths created for unknown reason
+                    return response()->json([
+                        'status' => 500,
+                        'message' => 'Failed to create booth(s) in Zone ' . $zoneName . '. No booths were created.',
+                        'created' => [],
+                        'skipped' => $skippedBooths,
+                        'errors' => $errors
+                    ], 500);
+                }
+            }
+
+            // Success - at least one booth was created
+            $message = count($createdBooths) . ' booth(s) created successfully in Zone ' . $zoneName . ' (Floor Plan: ' . $floorPlan->name . ')';
             if (count($skippedBooths) > 0) {
                 $message .= '. ' . count($skippedBooths) . ' booth(s) skipped (already exist).';
+            }
+            if (count($errors) > 0) {
+                $message .= '. ' . count($errors) . ' error(s) occurred: ' . implode('; ', array_column($errors, 'error'));
             }
 
             return response()->json([
@@ -1072,7 +1390,9 @@ class BoothController extends Controller
                 'message' => $message,
                 'created' => $createdBooths,
                 'skipped' => $skippedBooths,
-                'errors' => $errors
+                'errors' => $errors,
+                'floor_plan_id' => $floorPlanId,
+                'floor_plan_name' => $floorPlan->name
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
@@ -1094,13 +1414,19 @@ class BoothController extends Controller
     }
 
     /**
-     * Generate the next available booth number for a zone
+     * Generate the next available booth number for a zone (floor-plan-specific)
      */
-    private function generateNextBoothNumber($zoneName)
+    private function generateNextBoothNumber($zoneName, $floorPlanId = null)
     {
-        // Get all booths in this zone (booth numbers starting with zone letter)
-        $zoneBooths = Booth::where('booth_number', 'LIKE', $zoneName . '%')
-            ->get();
+        // Get all booths in this zone and floor plan (booth numbers starting with zone letter)
+        $zoneBoothsQuery = Booth::where('booth_number', 'LIKE', $zoneName . '%');
+        
+        // Filter by floor plan if specified
+        if ($floorPlanId) {
+            $zoneBoothsQuery->where('floor_plan_id', $floorPlanId);
+        }
+        
+        $zoneBooths = $zoneBoothsQuery->get();
 
         if ($zoneBooths->isEmpty()) {
             // No booths in this zone yet, start with 01
@@ -1242,7 +1568,7 @@ class BoothController extends Controller
     }
 
     /**
-     * Save zone settings
+     * Save zone settings (floor-plan-specific)
      */
     public function saveZoneSettings(Request $request, $zoneName)
     {
@@ -1255,14 +1581,17 @@ class BoothController extends Controller
                 'borderRadius' => 'required|numeric|min:0|max:50',
                 'borderWidth' => 'required|numeric|min:0|max:10',
                 'opacity' => 'required|numeric|min:0|max:1',
+                'floor_plan_id' => 'required|exists:floor_plans,id',
             ]);
 
-            ZoneSetting::saveZoneSettings($zoneName, $validated);
+            $floorPlanId = $validated['floor_plan_id'];
+            ZoneSetting::saveZoneSettings($zoneName, $validated, $floorPlanId);
             
             return response()->json([
                 'status' => 200,
                 'message' => 'Zone settings saved successfully.',
                 'zone_name' => $zoneName,
+                'floor_plan_id' => $floorPlanId,
                 'settings' => $validated
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {

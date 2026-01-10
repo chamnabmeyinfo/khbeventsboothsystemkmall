@@ -39,6 +39,11 @@ class Notification extends Model
         return $this->belongsTo(Client::class);
     }
 
+    public function booking()
+    {
+        return $this->belongsTo(Book::class, 'booking_id');
+    }
+
     public function markAsRead()
     {
         $this->update([

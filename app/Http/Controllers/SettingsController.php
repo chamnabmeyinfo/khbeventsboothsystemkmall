@@ -254,7 +254,7 @@ class SettingsController extends Controller
     }
 
     /**
-     * Get canvas settings
+     * Get canvas settings (floor-plan-specific)
      */
     public function getCanvasSettings(Request $request)
     {
@@ -265,6 +265,7 @@ class SettingsController extends Controller
                 return response()->json([
                     'status' => 200,
                     'data' => [
+                        'floor_plan_id' => null,
                         'canvas_width' => 1200,
                         'canvas_height' => 800,
                         'canvas_resolution' => 300,
@@ -279,22 +280,88 @@ class SettingsController extends Controller
                 ]);
             }
             
-            $settings = CanvasSetting::getCurrent();
+            // Get floor_plan_id from request (query parameter or JSON body)
+            $floorPlanId = $request->input('floor_plan_id');
+            if ($floorPlanId) {
+                $floorPlanId = (int) $floorPlanId;
+            } else {
+                $floorPlanId = null;
+            }
+            
+            // Get floor-plan-specific settings
+            $settings = CanvasSetting::getForFloorPlan($floorPlanId);
 
+            // CRITICAL: ALWAYS use floor plan's image from floor_plans table (source of truth)
+            // Never rely on canvas_settings.floorplan_image - it's just a cache
+            // This ensures each floor plan always loads its own image correctly
+            $floorplanImage = null;
+            if ($floorPlanId) {
+                $floorPlan = \App\Models\FloorPlan::find($floorPlanId);
+                
+                
+                if ($floorPlan && $floorPlan->floor_image) {
+                    $floorplanImage = $floorPlan->floor_image; // Relative path: 'images/floor-plans/...'
+                    
+                    // Clean up invalid image paths (empty strings, etc.)
+                    if (trim($floorplanImage) === '' || $floorplanImage === 'null') {
+                        $floorplanImage = null;
+                    }
+                }
+            }
+            
+            // Always sync canvas_settings.floorplan_image with floor_plans.floor_image
+            // This ensures consistency and prevents conflicts when switching floor plans
+            if ($floorPlanId) {
+                try {
+                    // Update canvas_settings to match floor_plans.floor_image (always sync)
+                    $settings->floorplan_image = $floorplanImage; // Can be null if no image
+                    $settings->save();
+                } catch (\Exception $e) {
+                    \Log::warning('Could not sync canvas_settings.floorplan_image: ' . $e->getMessage());
+                }
+            }
+            
+            // Clean up any invalid data in canvas_settings (Blade templates, full URLs, etc.)
+            if ($settings->floorplan_image) {
+                $canvasImagePath = $settings->floorplan_image;
+                $isInvalid = (
+                    strpos($canvasImagePath, '{{') !== false || // Blade template
+                    strpos($canvasImagePath, 'asset') !== false || // Blade asset() function  
+                    strpos($canvasImagePath, 'http://') !== false || // Full URL
+                    strpos($canvasImagePath, 'https://') !== false || // Full URL
+                    trim($canvasImagePath) === '' || // Empty string
+                    $canvasImagePath === 'null' // String "null"
+                );
+                
+                if ($isInvalid) {
+                    try {
+                        // Use floor plan's image instead (or null if none)
+                        $settings->floorplan_image = $floorplanImage;
+                        $settings->save();
+                    } catch (\Exception $e) {
+                        \Log::warning('Could not clean invalid canvas_settings.floorplan_image: ' . $e->getMessage());
+                    }
+                }
+            }
+
+            $responseData = [
+                'floor_plan_id' => $settings->floor_plan_id,
+                'canvas_width' => $settings->canvas_width ?? 1200,
+                'canvas_height' => $settings->canvas_height ?? 800,
+                'canvas_resolution' => $settings->canvas_resolution ?? 300,
+                'grid_size' => $settings->grid_size ?? 10,
+                'zoom_level' => $settings->zoom_level ?? 1.00,
+                'pan_x' => $settings->pan_x ?? 0,
+                'pan_y' => $settings->pan_y ?? 0,
+                'floorplan_image' => $floorplanImage,
+                'grid_enabled' => $settings->grid_enabled ?? true,
+                'snap_to_grid' => $settings->snap_to_grid ?? false,
+            ];
+            
+            
             return response()->json([
                 'status' => 200,
-                'data' => [
-                    'canvas_width' => $settings->canvas_width ?? 1200,
-                    'canvas_height' => $settings->canvas_height ?? 800,
-                    'canvas_resolution' => $settings->canvas_resolution ?? 300,
-                    'grid_size' => $settings->grid_size ?? 10,
-                    'zoom_level' => $settings->zoom_level ?? 1.00,
-                    'pan_x' => $settings->pan_x ?? 0,
-                    'pan_y' => $settings->pan_y ?? 0,
-                    'floorplan_image' => $settings->floorplan_image ?? null,
-                    'grid_enabled' => $settings->grid_enabled ?? true,
-                    'snap_to_grid' => $settings->snap_to_grid ?? false,
-                ]
+                'data' => $responseData
             ]);
         } catch (\Exception $e) {
             \Log::error('Error fetching canvas settings: ' . $e->getMessage());
@@ -302,6 +369,7 @@ class SettingsController extends Controller
             return response()->json([
                 'status' => 200,
                 'data' => [
+                    'floor_plan_id' => null,
                     'canvas_width' => 1200,
                     'canvas_height' => 800,
                     'canvas_resolution' => 300,
@@ -318,7 +386,7 @@ class SettingsController extends Controller
     }
 
     /**
-     * Save canvas settings
+     * Save canvas settings (floor-plan-specific)
      */
     public function saveCanvasSettings(Request $request)
     {
@@ -332,11 +400,30 @@ class SettingsController extends Controller
                 ]);
             }
             
+            // Get floor_plan_id from request (required for floor-plan-specific settings)
+            $floorPlanId = $request->input('floor_plan_id');
+            if ($floorPlanId) {
+                $floorPlanId = (int) $floorPlanId;
+                // Validate floor plan exists
+                if (!\App\Models\FloorPlan::find($floorPlanId)) {
+                    return response()->json([
+                        'status' => 422,
+                        'message' => 'Floor plan not found.',
+                        'errors' => ['floor_plan_id' => ['The selected floor plan is invalid.']]
+                    ], 422);
+                }
+            } else {
+                $floorPlanId = null; // Allow null for backward compatibility
+            }
+            
             // Prepare data with type conversion
             $data = [];
             $input = $request->all();
             
             // Only include fields that are present and valid
+            if ($floorPlanId !== null) {
+                $data['floor_plan_id'] = $floorPlanId;
+            }
             if (isset($input['canvas_width']) && is_numeric($input['canvas_width'])) {
                 $data['canvas_width'] = max(5, (int) $input['canvas_width']);
             }
@@ -358,9 +445,12 @@ class SettingsController extends Controller
             if (isset($input['pan_y']) && is_numeric($input['pan_y'])) {
                 $data['pan_y'] = (float) $input['pan_y'];
             }
-            if (isset($input['floorplan_image']) && is_string($input['floorplan_image'])) {
-                $data['floorplan_image'] = substr($input['floorplan_image'], 0, 255);
-            }
+            // Don't save floorplan_image from JavaScript - it's managed in floor_plans.floor_image
+            // The upload endpoint (BoothController::uploadFloorplan) handles updating canvas_settings.floorplan_image
+            // This prevents conflicts when switching between floor plans
+            // if (isset($input['floorplan_image']) && is_string($input['floorplan_image'])) {
+            //     $data['floorplan_image'] = substr($input['floorplan_image'], 0, 255);
+            // }
             if (isset($input['grid_enabled'])) {
                 $data['grid_enabled'] = filter_var($input['grid_enabled'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true;
             }
@@ -377,12 +467,14 @@ class SettingsController extends Controller
                 ]);
             }
 
-            $settings = CanvasSetting::updateSettings($data);
+            // Update settings for specific floor plan
+            $settings = CanvasSetting::updateSettings($data, $floorPlanId);
 
             return response()->json([
                 'status' => 200,
                 'message' => 'Canvas settings saved successfully.',
                 'data' => [
+                    'floor_plan_id' => $settings->floor_plan_id,
                     'canvas_width' => $settings->canvas_width,
                     'canvas_height' => $settings->canvas_height,
                     'canvas_resolution' => $settings->canvas_resolution,

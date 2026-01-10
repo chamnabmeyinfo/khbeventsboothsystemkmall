@@ -71,38 +71,89 @@ class BookController extends Controller
             'booth_ids' => 'required|array|min:1',
             'booth_ids.*' => 'exists:booth,id',
             'date_book' => 'required|date',
-            'type' => 'nullable|integer',
+            'type' => 'nullable|integer|in:1,2,3',
         ]);
 
-        // Check if all booths are available
-        $booths = Booth::whereIn('id', $validated['booth_ids'])
-            ->whereNotIn('status', [Booth::STATUS_AVAILABLE, Booth::STATUS_HIDDEN])
-            ->get();
+        try {
+            DB::beginTransaction();
 
-        if ($booths->count() > 0) {
+            // Check if all booths are available
+            $unavailableBooths = Booth::whereIn('id', $validated['booth_ids'])
+                ->whereNotIn('status', [Booth::STATUS_AVAILABLE, Booth::STATUS_HIDDEN])
+                ->get();
+
+            if ($unavailableBooths->count() > 0) {
+                DB::rollBack();
+                $boothNumbers = $unavailableBooths->pluck('booth_number')->implode(', ');
+                return back()->withErrors([
+                    'booth_ids' => 'Some selected booths are not available: ' . $boothNumbers
+                ])->withInput();
+            }
+
+            // Verify all booths exist
+            $boothsCount = Booth::whereIn('id', $validated['booth_ids'])->count();
+            if ($boothsCount !== count($validated['booth_ids'])) {
+                DB::rollBack();
+                return back()->withErrors([
+                    'booth_ids' => 'One or more selected booths do not exist.'
+                ])->withInput();
+            }
+
+            // Get floor plan and event from first booth (all booths should be from same floor plan)
+            $firstBooth = Booth::whereIn('id', $validated['booth_ids'])->first();
+            $floorPlanId = $firstBooth ? $firstBooth->floor_plan_id : null;
+            $eventId = null;
+            
+            if ($floorPlanId) {
+                $floorPlan = FloorPlan::find($floorPlanId);
+                $eventId = $floorPlan ? $floorPlan->event_id : null;
+            }
+            
+            // Create booking with project/floor plan tracking
+            $book = Book::create([
+                'event_id' => $eventId,
+                'floor_plan_id' => $floorPlanId,
+                'clientid' => $validated['clientid'],
+                'boothid' => json_encode($validated['booth_ids']),
+                'date_book' => $validated['date_book'],
+                'userid' => auth()->id(),
+                'type' => $validated['type'] ?? 1,
+            ]);
+
+            // Update booths status - use lockForUpdate to prevent race conditions
+            $updated = Booth::whereIn('id', $validated['booth_ids'])
+                ->whereIn('status', [Booth::STATUS_AVAILABLE, Booth::STATUS_HIDDEN])
+                ->lockForUpdate()
+                ->update([
+                    'status' => Booth::STATUS_RESERVED,
+                    'client_id' => $validated['clientid'],
+                    'userid' => auth()->id(),
+                    'bookid' => $book->id,
+                ]);
+
+            // Verify all booths were updated
+            if ($updated !== count($validated['booth_ids'])) {
+                DB::rollBack();
+                return back()->withErrors([
+                    'booth_ids' => 'Some booths became unavailable during booking. Please try again.'
+                ])->withInput();
+            }
+
+            DB::commit();
+
+            return redirect()->route('books.index')
+                ->with('success', 'Booking created successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Booking creation failed: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+                'client_id' => $validated['clientid'] ?? null,
+                'booth_ids' => $validated['booth_ids'] ?? [],
+            ]);
             return back()->withErrors([
-                'booth_ids' => 'Some selected booths are not available.'
+                'error' => 'Error creating booking: ' . $e->getMessage()
             ])->withInput();
         }
-
-        $book = Book::create([
-            'clientid' => $validated['clientid'],
-            'boothid' => json_encode($validated['booth_ids']),
-            'date_book' => $validated['date_book'],
-            'userid' => auth()->id(),
-            'type' => $validated['type'] ?? 1,
-        ]);
-
-        // Update booths status
-        Booth::whereIn('id', $validated['booth_ids'])->update([
-            'status' => Booth::STATUS_RESERVED,
-            'client_id' => $validated['clientid'],
-            'userid' => auth()->id(),
-            'bookid' => $book->id,
-        ]);
-
-        return redirect()->route('books.index')
-            ->with('success', 'Booking created successfully.');
     }
 
     /**
@@ -113,7 +164,144 @@ class BookController extends Controller
         $book->load(['client', 'user']);
         $boothIds = json_decode($book->boothid, true) ?? [];
         $booths = !empty($boothIds) ? Booth::whereIn('id', $boothIds)->get() : collect([]);
-        return view('books.show', compact('book', 'booths'));
+        
+        // Get related payment if exists
+        $payment = \App\Models\Payment::where('booking_id', $book->id)->first();
+        
+        return view('books.show', compact('book', 'booths', 'payment'));
+    }
+
+    /**
+     * Show the form for editing the specified booking
+     */
+    public function edit(Book $book)
+    {
+        $book->load(['client', 'user']);
+        $boothIds = json_decode($book->boothid, true) ?? [];
+        $currentBooths = !empty($boothIds) ? Booth::whereIn('id', $boothIds)->get() : collect([]);
+        
+        $clients = Client::orderBy('company')->get();
+        $allBooths = Booth::orderBy('booth_number')->get();
+        $categories = Category::where('status', 1)->orderBy('name')->get();
+        
+        return view('books.edit', compact('book', 'clients', 'allBooths', 'currentBooths', 'boothIds', 'categories'));
+    }
+
+    /**
+     * Update the specified booking
+     */
+    public function update(Request $request, Book $book)
+    {
+        $validated = $request->validate([
+            'clientid' => 'required|exists:client,id',
+            'booth_ids' => 'required|array|min:1',
+            'booth_ids.*' => 'exists:booth,id',
+            'date_book' => 'required|date',
+            'type' => 'nullable|integer|in:1,2,3',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Get current booth IDs
+            $currentBoothIds = json_decode($book->boothid, true) ?? [];
+            $newBoothIds = $validated['booth_ids'];
+            
+            // Find booths to release (in current but not in new)
+            $boothsToRelease = array_diff($currentBoothIds, $newBoothIds);
+            
+            // Find booths to reserve (in new but not in current)
+            $boothsToReserve = array_diff($newBoothIds, $currentBoothIds);
+            
+            // Check if new booths are available
+            // Note: $boothsToReserve only contains booths NOT in current booking, so we just check availability
+            if (!empty($boothsToReserve)) {
+                $unavailableBooths = Booth::whereIn('id', $boothsToReserve)
+                    ->whereNotIn('status', [Booth::STATUS_AVAILABLE, Booth::STATUS_HIDDEN])
+                    ->get();
+                
+                if ($unavailableBooths->count() > 0) {
+                    DB::rollBack();
+                    return back()->withErrors([
+                        'booth_ids' => 'Some selected booths are not available: ' . $unavailableBooths->pluck('booth_number')->implode(', ')
+                    ])->withInput();
+                }
+            }
+            
+            // Release old booths - but NOT if they are PAID
+            if (!empty($boothsToRelease)) {
+                $boothsToReleaseModels = Booth::whereIn('id', $boothsToRelease)->get();
+                $paidBooths = [];
+                
+                foreach ($boothsToReleaseModels as $booth) {
+                    if ($booth->status === Booth::STATUS_PAID) {
+                        $paidBooths[] = $booth->booth_number;
+                    } else {
+                        // Only release non-paid booths
+                        $booth->update([
+                            'status' => Booth::STATUS_AVAILABLE,
+                            'client_id' => null,
+                            'userid' => null,
+                            'bookid' => null,
+                        ]);
+                    }
+                }
+                
+                if (!empty($paidBooths)) {
+                    DB::rollBack();
+                    return back()->withErrors([
+                        'booth_ids' => 'Cannot remove paid booths from booking: ' . implode(', ', $paidBooths) . '. Please refund payment first.'
+                    ])->withInput();
+                }
+            }
+            
+            // Reserve new booths - use lock to prevent race conditions
+            if (!empty($boothsToReserve)) {
+                $updated = Booth::whereIn('id', $boothsToReserve)
+                    ->whereIn('status', [Booth::STATUS_AVAILABLE, Booth::STATUS_HIDDEN])
+                    ->lockForUpdate()
+                    ->update([
+                        'status' => Booth::STATUS_RESERVED,
+                        'client_id' => $validated['clientid'],
+                        'userid' => auth()->id(),
+                        'bookid' => $book->id,
+                    ]);
+                
+                // Verify all booths were updated
+                if ($updated !== count($boothsToReserve)) {
+                    DB::rollBack();
+                    return back()->withErrors([
+                        'booth_ids' => 'Some booths became unavailable during update. Please try again.'
+                    ])->withInput();
+                }
+            }
+            
+            // Update existing booths with new client if client changed
+            $boothsToKeep = array_intersect($currentBoothIds, $newBoothIds);
+            if (!empty($boothsToKeep) && $book->clientid != $validated['clientid']) {
+                Booth::whereIn('id', $boothsToKeep)->update([
+                    'client_id' => $validated['clientid'],
+                ]);
+            }
+            
+            // Update booking
+            $book->update([
+                'clientid' => $validated['clientid'],
+                'boothid' => json_encode($newBoothIds),
+                'date_book' => $validated['date_book'],
+                'type' => $validated['type'] ?? 1,
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('books.show', $book)
+                ->with('success', 'Booking updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors([
+                'error' => 'Error updating booking: ' . $e->getMessage()
+            ])->withInput();
+        }
     }
 
     /**
@@ -124,15 +312,51 @@ class BookController extends Controller
         try {
             DB::beginTransaction();
 
-            // Release booths (set status to available)
+            // Check if booking has payment
+            $payment = \App\Models\Payment::where('booking_id', $book->id)
+                ->where('status', \App\Models\Payment::STATUS_COMPLETED)
+                ->first();
+            
+            if ($payment) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot delete booking with completed payment. Please refund payment first.'
+                ], 400);
+            }
+
+            // Release booths (set status to available) - but NOT if they are PAID
             $boothIds = json_decode($book->boothid, true) ?? [];
             if (!empty($boothIds)) {
-                Booth::whereIn('id', $boothIds)->update([
-                    'status' => Booth::STATUS_AVAILABLE,
-                    'client_id' => null,
-                    'userid' => null,
-                    'bookid' => null,
-                ]);
+                $booths = Booth::whereIn('id', $boothIds)->get();
+                $paidBooths = [];
+                
+                foreach ($booths as $booth) {
+                    if ($booth->status === Booth::STATUS_PAID) {
+                        $paidBooths[] = $booth->booth_number;
+                        // Keep paid booths as-is, just remove booking reference
+                        $booth->update([
+                            'bookid' => null,
+                            // Keep status, client_id, userid for paid booths
+                        ]);
+                    } else {
+                        // Release non-paid booths
+                        $booth->update([
+                            'status' => Booth::STATUS_AVAILABLE,
+                            'client_id' => null,
+                            'userid' => null,
+                            'bookid' => null,
+                        ]);
+                    }
+                }
+                
+                if (!empty($paidBooths)) {
+                    // Log warning but allow deletion
+                    \Log::warning('Booking deleted with paid booths', [
+                        'booking_id' => $book->id,
+                        'paid_booths' => $paidBooths,
+                    ]);
+                }
             }
 
             // Delete the booking
@@ -146,6 +370,9 @@ class BookController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Booking deletion failed: ' . $e->getMessage(), [
+                'booking_id' => $book->id,
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Error: ' . $e->getMessage()
@@ -211,49 +438,74 @@ class BookController extends Controller
             }
         }
         
-        // Check if all booths are available
-        foreach ($data['booth'] as $boothId) {
-            $booth = Booth::find($boothId);
-            if (!$booth || ($booth->status != Booth::STATUS_AVAILABLE && $booth->status != Booth::STATUS_HIDDEN)) {
+        try {
+            DB::beginTransaction();
+            
+            // Check if all booths are available
+            $unavailableBooths = [];
+            foreach ($data['booth'] as $boothId) {
+                $booth = Booth::find($boothId);
+                if (!$booth || ($booth->status != Booth::STATUS_AVAILABLE && $booth->status != Booth::STATUS_HIDDEN)) {
+                    $unavailableBooths[] = $booth ? $booth->booth_number : $boothId;
+                }
+            }
+            
+            if (!empty($unavailableBooths)) {
+                DB::rollBack();
                 return response()->json([
                     'status' => 403,
-                    'message' => 'Booth ' . ($booth ? $booth->booth_number : $boothId) . ' is not available.'
+                    'message' => 'Booth(s) not available: ' . implode(', ', $unavailableBooths)
                 ], 403);
             }
-        }
-        
-        $userid = auth()->id();
-        $clientID = 0;
-        
-        // Create client if information provided
-        if (!empty($data['inputCpnName']) && !empty($data['inputPosition']) 
-            && !empty($data['inputName']) && !empty($data['inputPhone'])) {
-            $client = Client::create([
-                'company' => $data['inputCpnName'],
-                'position' => $data['inputPosition'],
-                'name' => $data['inputName'],
-                'phone_number' => $data['inputPhone'],
+            
+            $userid = auth()->id();
+            $clientID = 0;
+            
+            // Create client if information provided
+            if (!empty($data['inputCpnName']) && !empty($data['inputPosition']) 
+                && !empty($data['inputName']) && !empty($data['inputPhone'])) {
+                $client = Client::create([
+                    'company' => $data['inputCpnName'],
+                    'position' => $data['inputPosition'],
+                    'name' => $data['inputName'],
+                    'phone_number' => $data['inputPhone'],
+                ]);
+                $clientID = $client->id;
+            }
+            
+            // Map booking type to status (1=Regular=RESERVED, 2=Special=CONFIRMED, 3=Temporary=RESERVED)
+            $bookingType = $data['book'] ?? 3;
+            $boothStatus = ($bookingType == 2) ? Booth::STATUS_CONFIRMED : Booth::STATUS_RESERVED;
+            
+            // Get floor plan and event from first booth (all booths should be from same floor plan)
+            $firstBooth = Booth::whereIn('id', $data['booth'])->first();
+            $floorPlanId = $firstBooth ? $firstBooth->floor_plan_id : null;
+            $eventId = null;
+            
+            if ($floorPlanId) {
+                $floorPlan = FloorPlan::find($floorPlanId);
+                $eventId = $floorPlan ? $floorPlan->event_id : null;
+            }
+            
+            // Create booking with project/floor plan tracking
+            $book = Book::create([
+                'event_id' => $eventId,
+                'floor_plan_id' => $floorPlanId,
+                'userid' => $userid,
+                'type' => $bookingType,
+                'clientid' => $clientID,
+                'boothid' => json_encode($data['booth']),
+                'date_book' => now(),
             ]);
-            $clientID = $client->id;
-        }
-        
-        // Create booking
-        $book = Book::create([
-            'userid' => $userid,
-            'type' => $data['book'] ?? 3,
-            'clientid' => $clientID,
-            'boothid' => json_encode($data['booth']),
-            'date_book' => now(),
-        ]);
-        
-        $bookID = $book->id;
-        
-        // Update booths
-        foreach ($data['booth'] as $boothId) {
-            $booth = Booth::find($boothId);
-            if ($booth && ($booth->status == Booth::STATUS_AVAILABLE || $booth->status == Booth::STATUS_HIDDEN)) {
-                $booth->update([
-                    'status' => $data['book'] ?? 3,
+            
+            $bookID = $book->id;
+            
+            // Update booths with lock to prevent race conditions
+            $updated = Booth::whereIn('id', $data['booth'])
+                ->whereIn('status', [Booth::STATUS_AVAILABLE, Booth::STATUS_HIDDEN])
+                ->lockForUpdate()
+                ->update([
+                    'status' => $boothStatus,
                     'client_id' => $clientID,
                     'userid' => $userid,
                     'bookid' => $bookID,
@@ -262,13 +514,33 @@ class BookController extends Controller
                     'category_id' => $data['inputCategory'] ?? null,
                     'sub_category_id' => $data['inputSubCategory'] ?? null,
                 ]);
+            
+            // Verify all booths were updated
+            if ($updated !== count($data['booth'])) {
+                DB::rollBack();
+                return response()->json([
+                    'status' => 403,
+                    'message' => 'Some booths became unavailable during booking. Please try again.'
+                ], 403);
             }
+            
+            DB::commit();
+            
+            return response()->json([
+                'status' => 200,
+                'message' => 'Successful.'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Booking API creation failed: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+                'data' => $data,
+            ]);
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error creating booking: ' . $e->getMessage()
+            ], 500);
         }
-        
-        return response()->json([
-            'status' => 200,
-            'message' => 'Successful.'
-        ]);
     }
 
     /**
@@ -324,49 +596,97 @@ class BookController extends Controller
             ], 403);
         }
         
-        $userid = auth()->id();
-        
-        // Find existing book
-        $book = Book::where('clientid', $data['companyID'])->first();
-        
-        if (!$book) {
+        try {
+            DB::beginTransaction();
+            
+            $userid = auth()->id();
+            
+            // Find existing book
+            $book = Book::where('clientid', $data['companyID'])->first();
+            
+            if (!$book) {
+                DB::rollBack();
+                return response()->json([
+                    'status' => 403,
+                    'message' => 'Booking not found'
+                ], 403);
+            }
+            
+            $getBoothDB = json_decode($book->boothid, true) ?? [];
+            $getBoothRqs = $data['booth'];
+            
+            // Map booking type to status
+            $bookingType = $data['book'] ?? 3;
+            $boothStatus = ($bookingType == 2) ? Booth::STATUS_CONFIRMED : Booth::STATUS_RESERVED;
+            
+            // Check availability of new booths
+            $newBooths = array_diff($getBoothRqs, $getBoothDB);
+            if (!empty($newBooths)) {
+                $unavailableBooths = Booth::whereIn('id', $newBooths)
+                    ->whereNotIn('status', [Booth::STATUS_AVAILABLE, Booth::STATUS_HIDDEN])
+                    ->where(function($query) use ($book) {
+                        $query->where('bookid', '!=', $book->id)
+                              ->orWhereNull('bookid');
+                    })
+                    ->get();
+                
+                if ($unavailableBooths->count() > 0) {
+                    DB::rollBack();
+                    return response()->json([
+                        'status' => 403,
+                        'message' => 'Some booths are not available: ' . $unavailableBooths->pluck('booth_number')->implode(', ')
+                    ], 403);
+                }
+            }
+            
+            // Update booths
+            foreach ($getBoothRqs as $boothId) {
+                $booth = Booth::find($boothId);
+                if ($booth) {
+                    // Only update if available or already in this booking
+                    if ($booth->status == Booth::STATUS_AVAILABLE || 
+                        $booth->status == Booth::STATUS_HIDDEN || 
+                        $booth->bookid == $book->id) {
+                        $booth->update([
+                            'status' => $boothStatus,
+                            'client_id' => $data['companyID'],
+                            'userid' => $userid,
+                            'bookid' => $book->id,
+                            'booth_type_id' => $data['inputBoothType'],
+                            'asset_id' => $data['inputAsset'],
+                            'category_id' => $data['inputCategory'],
+                            'sub_category_id' => $data['inputSubCategory'],
+                        ]);
+                    }
+                }
+                // Add to booth array
+                if (!in_array($boothId, $getBoothDB)) {
+                    $getBoothDB[] = $boothId;
+                }
+            }
+            
+            // Update book
+            $book->boothid = json_encode($getBoothDB);
+            $book->type = $bookingType;
+            $book->save();
+            
+            DB::commit();
+            
             return response()->json([
-                'status' => 403,
-                'message' => 'Booking not found'
-            ], 403);
+                'status' => 200,
+                'message' => 'Successful.'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Booking API update failed: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+                'data' => $data,
+            ]);
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error updating booking: ' . $e->getMessage()
+            ], 500);
         }
-        
-        $getBoothDB = json_decode($book->boothid, true) ?? [];
-        $getBoothRqs = $data['booth'];
-        
-        // Update booths
-        foreach ($getBoothRqs as $boothId) {
-            $booth = Booth::find($boothId);
-            if ($booth && ($booth->status == Booth::STATUS_AVAILABLE || $booth->status == Booth::STATUS_HIDDEN)) {
-                $booth->update([
-                    'status' => $data['book'],
-                    'client_id' => $data['companyID'],
-                    'userid' => $userid,
-                    'booth_type_id' => $data['inputBoothType'],
-                    'asset_id' => $data['inputAsset'],
-                    'category_id' => $data['inputCategory'],
-                    'sub_category_id' => $data['inputSubCategory'],
-                ]);
-            }
-            // Add to booth array
-            if (!in_array($boothId, $getBoothDB)) {
-                $getBoothDB[] = $boothId;
-            }
-        }
-        
-        // Update book
-        $book->boothid = json_encode($getBoothDB);
-        $book->save();
-        
-        return response()->json([
-            'status' => 200,
-            'message' => 'Successful.'
-        ]);
     }
 
     /**

@@ -10,13 +10,36 @@ class CategoryController extends Controller
     /**
      * Display category management page
      */
-    public function index()
+    public function index(Request $request)
     {
-        $categories = Category::with('parent', 'children')
-            ->orderBy('name')
-            ->get();
-        
-        return view('categories.index', compact('categories'));
+        $query = Category::with(['parent', 'children', 'booths']);
+
+        // Filter by parent (main categories only)
+        if ($request->filled('parent_only') && $request->parent_only == '1') {
+            $query->where('parent_id', 0);
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        $categories = $query->orderBy('name')->get();
+
+        // Statistics
+        $stats = [
+            'total_categories' => Category::where('parent_id', 0)->count(),
+            'total_subcategories' => Category::where('parent_id', '!=', 0)->count(),
+            'active_categories' => Category::where('status', 1)->count(),
+        ];
+
+        return view('categories.index', compact('categories', 'stats'));
     }
 
     /**

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Booth Floor Plan')
+@section('title', 'Floor Plan Management')
 
 @push('styles')
 <style>
@@ -1520,6 +1520,49 @@
 
 @section('content')
 <div class="container-fluid mt-2 mb-2">
+    <!-- Floor Plan Selector -->
+    @if(isset($floorPlans) && $floorPlans->count() > 0)
+    <div class="card mb-3" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.18); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);">
+        <div class="card-body py-2">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <label class="mb-0" style="font-weight: 600; color: #2d3748;">
+                        <i class="fas fa-map mr-2 text-primary"></i>Select Floor Plan:
+                    </label>
+                </div>
+                <div class="col-md-6">
+                    <select id="floorPlanSelector" class="form-control" onchange="switchFloorPlan(this.value)" style="border-radius: 8px; border: 1px solid #e2e8f0;">
+                        @foreach($floorPlans as $fp)
+                            <option value="{{ $fp->id }}" {{ (isset($currentFloorPlan) && $currentFloorPlan && $currentFloorPlan->id == $fp->id) || (isset($floorPlanId) && $floorPlanId == $fp->id) ? 'selected' : '' }}>
+                                {{ $fp->name }}
+                                @if($fp->is_default) (Default) @endif
+                                @if($fp->event) - {{ $fp->event->title }} @endif
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2 text-right">
+                    <a href="{{ route('floor-plans.index') }}" class="btn btn-sm btn-info" title="Manage Floor Plans">
+                        <i class="fas fa-cog mr-1"></i>Manage
+                    </a>
+                </div>
+            </div>
+            @if(isset($currentFloorPlan) && $currentFloorPlan)
+            <div class="row mt-2">
+                <div class="col-12">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Current: <strong>{{ $currentFloorPlan->name }}</strong>
+                        @if($currentFloorPlan->project_name) | Project: {{ $currentFloorPlan->project_name }} @endif
+                        @if($currentFloorPlan->event) | Event: {{ $currentFloorPlan->event->title }} @endif
+                    </small>
+                </div>
+            </div>
+            @endif
+        </div>
+    </div>
+    @endif
+
     @auth
     <!-- Statistics Dashboard -->
     @endauth
@@ -1809,15 +1852,21 @@
                     <div class="blogs" id="boothNumbersContainer">
                             @php
                                 // Group booths by zone (extract first letter from booth number)
+                                // Note: Booths are already filtered by floor_plan_id in controller, so zones are floor-plan-specific
                                 $zones = [];
                                 foreach($booths as $booth) {
+                                    // Only process booths that belong to current floor plan (safety check)
+                                    if (isset($floorPlanId) && $floorPlanId && $booth->floor_plan_id != $floorPlanId) {
+                                        continue; // Skip booths from other floor plans
+                                    }
+                                    
                                     $boothNumber = $booth->booth_number;
-                                    // Extract zone from booth number (first letter or first character)
+                                    // Extract zone from booth number (first letter(s) - can be 1-3 characters)
                                     $zone = '';
-                                    if (preg_match('/^([A-Za-z]+)/', $boothNumber, $matches)) {
+                                    if (preg_match('/^([A-Za-z]{1,3})/', $boothNumber, $matches)) {
                                         $zone = strtoupper($matches[1]);
                                     } else {
-                                        // If no letter found, use first character or default to "Other"
+                                        // If no letter found, use first character or default to "OTHER"
                                         $zone = !empty($boothNumber) ? strtoupper(substr($boothNumber, 0, 1)) : 'OTHER';
                                     }
                                     
@@ -1909,12 +1958,19 @@
             <div id="printContainer" class="canvas-container">
                 <!-- Canvas Area -->
                 <div id="print" class="floorplan-canvas" 
-                     style="@if(file_exists(public_path('images/map.jpg')))
+                     style="@if(isset($currentFloorPlan) && $currentFloorPlan && $currentFloorPlan->floor_image)
+                     background-image: url('{{ asset($currentFloorPlan->floor_image) }}'); background-size: 100% 100%; background-repeat: no-repeat; background-position: top left; background-attachment: local;
+                     @elseif(file_exists(public_path('images/map.jpg')))
                      background-image: url('{{ asset('images/map.jpg') }}'); background-size: 100% 100%; background-repeat: no-repeat; background-position: top left; background-attachment: local;
                      @else
                      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
                      @endif">
-                    @if(file_exists(public_path('images/map.jpg')))
+                    @if(isset($currentFloorPlan) && $currentFloorPlan && $currentFloorPlan->floor_image)
+                        <img src="{{ asset($currentFloorPlan->floor_image) }}" 
+                             id="floorplanImageElement"
+                             alt="Floor Plan Map"
+                             style="display: none;"/>
+                    @elseif(file_exists(public_path('images/map.jpg')))
                         <img src="{{ asset('images/map.jpg') }}" 
                              id="floorplanImageElement"
                              alt="Floor Plan Map"
@@ -3152,8 +3208,8 @@ const FloorPlanDesigner = {
     centerMarkerEnabled: false, // Show/hide canvas center marker
     zoomLevel: 1,
     panzoomInstance: null,
-    canvasWidth: 1200, // Default canvas width
-    canvasHeight: 800, // Default canvas height
+    canvasWidth: @php echo isset($canvasWidth) && $canvasWidth ? (int)$canvasWidth : 1200; @endphp, // Floor plan canvas width or default
+    canvasHeight: @php echo isset($canvasHeight) && $canvasHeight ? (int)$canvasHeight : 800; @endphp, // Floor plan canvas height or default
     canvasResolution: 300, // Default export resolution (DPI)
     isZoomSelecting: false, // Track if user is selecting area to zoom (Ctrl+Space)
     zoomSelectionStart: null, // Start position of zoom selection {x, y}
@@ -3393,6 +3449,50 @@ const FloorPlanDesigner = {
             }
         });
         
+        // CRITICAL: Initialize with floor plan canvas settings IMMEDIATELY on page load
+        // This ensures the canvas loads the correct floor plan image automatically
+        @if(isset($currentFloorPlan) && $currentFloorPlan)
+            @if(isset($canvasWidth) && isset($canvasHeight) && $canvasWidth && $canvasHeight)
+                // Use floor plan canvas dimensions as defaults
+                self.canvasWidth = @php echo (int)$canvasWidth; @endphp;
+                self.canvasHeight = @php echo (int)$canvasHeight; @endphp;
+            @endif
+            
+            @if($currentFloorPlan->floor_image)
+                // CRITICAL: Always use floor_plans.floor_image as source of truth
+                // Store floor plan image URL for immediate use
+                @php
+                    $floorPlanImageUrl = asset($currentFloorPlan->floor_image);
+                    $floorPlanImagePath = $currentFloorPlan->floor_image;
+                @endphp
+                self.floorPlanImageUrl = '{{ $floorPlanImageUrl }}';
+                self.floorplanImage = '{{ $floorPlanImagePath }}'; // Relative path
+                
+                // IMMEDIATELY set canvas background from floor plan (highest priority)
+                // This ensures the image loads automatically when user clicks "View Booths"
+                const canvas = document.getElementById('print');
+                if (canvas) {
+                    console.log('[Floor Plan] Loading image for floor plan {{ $currentFloorPlan->id }}: {{ $currentFloorPlan->name }}');
+                    console.log('[Floor Plan] Image path:', self.floorplanImage);
+                    console.log('[Floor Plan] Image URL:', self.floorPlanImageUrl);
+                    
+                    // Always set the background image from current floor plan (automatic load)
+                    canvas.style.backgroundImage = 'url(\'' + self.floorPlanImageUrl + '?t=' + Date.now() + '\')';
+                    canvas.style.backgroundSize = '100% 100%';
+                    canvas.style.backgroundRepeat = 'no-repeat';
+                    canvas.style.backgroundPosition = 'top left';
+                    canvas.style.backgroundAttachment = 'local';
+                    canvas.style.margin = '0';
+                    canvas.style.display = 'block';
+                    canvas.style.float = 'left';
+                    
+                    console.log('[Floor Plan] Canvas background image set:', canvas.style.backgroundImage);
+                }
+            @else
+                console.log('[Floor Plan] No image for floor plan {{ $currentFloorPlan->id }}: {{ $currentFloorPlan->name }}');
+            @endif
+        @endif
+        
         // Load booth default settings from database first, then setup
         this.loadBoothSettingsFromDatabase().then(function() {
             self.setupDragAndDrop();
@@ -3400,14 +3500,112 @@ const FloorPlanDesigner = {
             self.setupCanvas();
             self.setupKeyboard();
             self.setupZoomSelection(); // Setup Photoshop-like zoom selection (Ctrl+Space)
-            self.loadCanvasSettings(); // Load saved canvas settings
-        // Ensure canvas has a fixed size (in case no saved settings exist)
-        if (!localStorage.getItem('canvasWidth') || !localStorage.getItem('canvasHeight')) {
-                self.setCanvasSize(self.canvasWidth, self.canvasHeight);
-        }
-        
-        // Check if there's an existing floorplan image and resize canvas to match
-            self.detectAndResizeCanvasToImage();
+            
+            // AUTOMATICALLY load floor plan image and resize canvas to match image resolution
+            @if(isset($currentFloorPlan) && $currentFloorPlan && $currentFloorPlan->floor_image)
+                // CRITICAL: Floor plan has image - automatically load it and resize canvas
+                // This ensures the canvas loads the correct image when user clicks "View Booths"
+                const canvas = document.getElementById('print');
+                if (canvas && self.floorPlanImageUrl) {
+                    console.log('[Floor Plan Auto-Load] Starting automatic image load for floor plan {{ $currentFloorPlan->id }}');
+                    
+                    // Ensure background image is set (already set above, but double-check)
+                    if (!canvas.style.backgroundImage || canvas.style.backgroundImage === 'none') {
+                        canvas.style.backgroundImage = 'url(\'' + self.floorPlanImageUrl + '?t=' + Date.now() + '\')';
+                        canvas.style.backgroundSize = '100% 100%';
+                        canvas.style.backgroundRepeat = 'no-repeat';
+                        canvas.style.backgroundPosition = 'top left';
+                        canvas.style.backgroundAttachment = 'local';
+                    }
+                    
+                    // Load image to get dimensions and AUTOMATICALLY resize canvas to match
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous'; // Handle CORS if needed
+                    
+                    img.onload = function() {
+                        const imageWidth = img.naturalWidth || img.width;
+                        const imageHeight = img.naturalHeight || img.height;
+                        
+                        console.log('[Floor Plan Auto-Load] Image loaded successfully:', {
+                            floor_plan_id: {{ $currentFloorPlan->id }},
+                            floor_plan_name: '{{ $currentFloorPlan->name }}',
+                            image_width: imageWidth,
+                            image_height: imageHeight,
+                            image_url: self.floorPlanImageUrl
+                        });
+                        
+                        if (imageWidth > 0 && imageHeight > 0) {
+                            // AUTOMATICALLY update canvas size to match image resolution EXACTLY
+                            self.setCanvasSize(imageWidth, imageHeight);
+                            
+                            // Update canvas settings in memory
+                            self.canvasWidth = imageWidth;
+                            self.canvasHeight = imageHeight;
+                            
+                            console.log('[Floor Plan Auto-Load] Canvas resized to match image:', imageWidth, 'x', imageHeight);
+                            
+                            // Update panzoom after canvas resize
+                            if (self.panzoomInstance) {
+                                setTimeout(function() {
+                                    if (self.panzoomInstance.setOptions) {
+                                        self.panzoomInstance.setOptions({
+                                            minScale: 0.1,
+                                            maxScale: 5,
+                                            contain: 'outside'
+                                        });
+                                    }
+                                    // AUTOMATICALLY fit canvas to view after resize
+                                    self.fitCanvasToView(false);
+                                }, 100);
+                            }
+                        }
+                    };
+                    
+                    img.onerror = function() {
+                        console.error('[Floor Plan Auto-Load] Failed to load floor plan image:', {
+                            floor_plan_id: {{ $currentFloorPlan->id }},
+                            floor_plan_name: '{{ $currentFloorPlan->name }}',
+                            image_url: self.floorPlanImageUrl,
+                            image_path: self.floorplanImage
+                        });
+                        // Fallback to floor plan canvas dimensions if image fails to load
+                        if (!localStorage.getItem('canvasWidth') || !localStorage.getItem('canvasHeight')) {
+                            self.setCanvasSize(self.canvasWidth, self.canvasHeight);
+                        }
+                    };
+                    
+                    // AUTOMATICALLY load the image immediately
+                    img.src = self.floorPlanImageUrl;
+                    
+                    // Load canvas settings AFTER image is loaded (zoom/pan/grid - but don't override image)
+                    // The image is already set from floor_plans.floor_image, so loadCanvasSettings won't clear it
+                    setTimeout(function() {
+                        console.log('[Floor Plan Auto-Load] Loading canvas settings for floor plan {{ $currentFloorPlan->id }}');
+                        self.loadCanvasSettings();
+                    }, 300); // Small delay to ensure image starts loading first
+                } else {
+                    console.warn('[Floor Plan Auto-Load] Canvas or image URL not found', {
+                        canvas_exists: !!canvas,
+                        floorPlanImageUrl: self.floorPlanImageUrl
+                    });
+                    // Fallback: load canvas settings
+                    self.loadCanvasSettings();
+                }
+            @else
+                // No floor plan image from Blade - load canvas settings (may have image from canvas_settings)
+                console.log('[Floor Plan Auto-Load] No image for current floor plan, loading canvas settings');
+                self.loadCanvasSettings();
+                // Ensure canvas has a fixed size (in case no saved settings exist)
+                if (!localStorage.getItem('canvasWidth') || !localStorage.getItem('canvasHeight')) {
+                    self.setCanvasSize(self.canvasWidth, self.canvasHeight);
+                }
+            @endif
+            
+            // Check if there's an existing floorplan image and resize canvas to match (fallback for other cases)
+            // Only if we haven't already loaded from Blade template
+            @if(!isset($currentFloorPlan) || !$currentFloorPlan || !$currentFloorPlan->floor_image)
+                self.detectAndResizeCanvasToImage();
+            @endif
         
             self.loadSavedPositions();
             // After loading positions, sync sidebar to remove booths already on canvas
@@ -4274,11 +4472,21 @@ const FloorPlanDesigner = {
             btn.prop('disabled', true);
             btn.html('<i class="fas fa-spinner fa-spin"></i> Creating ' + count + ' booths...');
             
+            // Get current floor plan ID
+            const floorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
+            if (!floorPlanId) {
+                customAlert('Please select a floor plan first.', 'warning');
+                btn.prop('disabled', false);
+                btn.html(originalText);
+                return;
+            }
+            
             // Prepare request data
             const requestData = {
                 from: from,
                 to: to,
-                format: format
+                format: format,
+                floor_plan_id: floorPlanId
             };
             
             // Create booths
@@ -4364,11 +4572,21 @@ const FloorPlanDesigner = {
             btn.prop('disabled', true);
             btn.html('<i class="fas fa-spinner fa-spin"></i> Creating...');
             
+            // Get current floor plan ID
+            const floorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
+            if (!floorPlanId) {
+                customAlert('Please select a floor plan first.', 'warning');
+                btn.prop('disabled', false);
+                btn.html(originalText);
+                return;
+            }
+            
             // Create first booth for the zone (01 with 2-digit format)
             const requestData = {
                 from: 1,
                 to: 1,
-                format: 2
+                format: 2,
+                floor_plan_id: floorPlanId
             };
             
             fetch('/booths/create-in-zone/' + zoneName, {
@@ -4380,24 +4598,51 @@ const FloorPlanDesigner = {
                 body: JSON.stringify(requestData)
             })
             .then(function(response) {
-                return response.json();
+                // Parse JSON response regardless of status code
+                return response.json().then(function(data) {
+                    // Check if response was successful
+                    if (!response.ok) {
+                        // HTTP error status (422, 409, 500, etc.) - use error message from response
+                        throw new Error(data.message || 'Failed to create zone: HTTP ' + response.status);
+                    }
+                    return data; // Return data if response was OK
+                });
             })
             .then(function(data) {
+                // Check response status code
                 if (data.status === 200) {
+                    // Success - booth(s) created
                     $('#addZoneModal').modal('hide');
                     
                     let message = data.message;
                     if (data.created && data.created.length > 0) {
                         message += '<br><strong>Created:</strong> ' + data.created.map(b => b.booth_number).join(', ');
                     }
+                    if (data.skipped && data.skipped.length > 0) {
+                        message += '<br><strong>Skipped (already exist):</strong> ' + data.skipped.slice(0, 5).join(', ') + (data.skipped.length > 5 ? '...' : '');
+                    }
+                    if (data.errors && data.errors.length > 0) {
+                        message += '<br><strong>Errors:</strong> ' + data.errors.map(e => e.error || e).join('; ');
+                    }
+                    
                     customAlert(message, 'success');
                     
-                    // Reload to show new zone immediately
+                    // Reload to show new zone immediately with current floor plan
                     setTimeout(function() {
-                        window.location.reload();
+                        const currentFloorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
+                        if (currentFloorPlanId) {
+                            window.location.href = '{{ route("booths.index") }}?floor_plan_id=' + currentFloorPlanId;
+                        } else {
+                            window.location.reload();
+                        }
                     }, 1200);
                 } else {
-                    customAlert(data.message || 'Error creating zone', 'error');
+                    // Error status (409, 422, 500, etc.)
+                    let errorMessage = data.message || 'Error creating zone';
+                    if (data.errors && data.errors.length > 0) {
+                        errorMessage += '<br>Details: ' + JSON.stringify(data.errors);
+                    }
+                    customAlert(errorMessage, 'error');
                     btn.prop('disabled', false);
                     btn.html(originalText);
                 }
@@ -4958,8 +5203,13 @@ const FloorPlanDesigner = {
             return;
         }
         
-        // Load zone settings from database first, then use saved values or fallback to current booth values
-        fetch('/booths/zone-settings/' + encodeURIComponent(zoneName), {
+        // Get current floor plan ID
+        const floorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
+        
+        // Load zone settings from database first (floor-plan-specific), then use saved values or fallback to current booth values
+        const zoneSettingsUrl = '/booths/zone-settings/' + encodeURIComponent(zoneName) + 
+            (floorPlanId ? '?floor_plan_id=' + floorPlanId : '');
+        fetch(zoneSettingsUrl, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -4974,8 +5224,11 @@ const FloorPlanDesigner = {
             
             // Use saved zone settings if available, otherwise use current booth values
             if (data.status === 200 && data.settings) {
-                // Update cache with loaded settings
-                self.zoneSettingsCache[zoneName] = data.settings;
+                // Get current floor plan ID for cache key
+                const floorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
+                const cacheKey = floorPlanId ? floorPlanId + '_' + zoneName : 'global_' + zoneName;
+                // Update cache with loaded settings (floor-plan-specific key)
+                self.zoneSettingsCache[cacheKey] = data.settings;
                 
                 currentWidth = data.settings.width || self.defaultBoothWidth;
                 currentHeight = data.settings.height || self.defaultBoothHeight;
@@ -5233,7 +5486,14 @@ const FloorPlanDesigner = {
             updatedCount++;
         });
         
-        // Save zone settings to database first
+        // Get current floor plan ID
+        const floorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
+        if (!floorPlanId) {
+            customAlert('Please select a floor plan first before saving zone settings.', 'warning');
+            return;
+        }
+        
+        // Save zone settings to database (floor-plan-specific)
         fetch('/booths/zone-settings/' + encodeURIComponent(zoneName), {
             method: 'POST',
             headers: {
@@ -5247,7 +5507,8 @@ const FloorPlanDesigner = {
                 zIndex: settings.zIndex,
                 borderRadius: settings.borderRadius,
                 borderWidth: settings.borderWidth,
-                opacity: settings.opacity
+                opacity: settings.opacity,
+                floor_plan_id: floorPlanId
             })
         })
         .then(function(response) {
@@ -5255,10 +5516,14 @@ const FloorPlanDesigner = {
         })
         .then(function(data) {
             if (data.status === 200) {
-                // Clear cache so new settings are used immediately
-                delete self.zoneSettingsCache[zoneName];
-                // Update cache with new settings
-                self.zoneSettingsCache[zoneName] = {
+                // Get current floor plan ID for cache key
+                const floorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
+                const cacheKey = floorPlanId ? floorPlanId + '_' + zoneName : 'global_' + zoneName;
+                
+                // Clear cache so new settings are used immediately (floor-plan-specific)
+                delete self.zoneSettingsCache[cacheKey];
+                // Update cache with new settings (floor-plan-specific key)
+                self.zoneSettingsCache[cacheKey] = {
                     width: settings.width,
                     height: settings.height,
                     rotation: settings.rotation,
@@ -6277,21 +6542,25 @@ const FloorPlanDesigner = {
         return boothNumber.length > 0 ? boothNumber.charAt(0).toUpperCase() : 'OTHER';
     },
     
-    // Get zone settings (with caching and fallback to defaults)
+    // Get zone settings (with caching and fallback to defaults, floor-plan-specific)
     getZoneSettings: function(zoneName, callback) {
         const self = this;
         
-        // If already cached, return immediately
-        if (self.zoneSettingsCache[zoneName]) {
+        // Get current floor plan ID for cache key
+        const floorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
+        const cacheKey = floorPlanId ? floorPlanId + '_' + zoneName : 'global_' + zoneName;
+        
+        // If already cached for this floor plan, return immediately
+        if (self.zoneSettingsCache[cacheKey]) {
             if (callback) {
-                callback(self.zoneSettingsCache[zoneName]);
+                callback(self.zoneSettingsCache[cacheKey]);
             }
-            return Promise.resolve(self.zoneSettingsCache[zoneName]);
+            return Promise.resolve(self.zoneSettingsCache[cacheKey]);
         }
         
-        // If already loading, wait for it
-        if (self.zoneSettingsLoading[zoneName]) {
-            return self.zoneSettingsLoading[zoneName].then(function(settings) {
+        // If already loading for this floor plan, wait for it
+        if (self.zoneSettingsLoading[cacheKey]) {
+            return self.zoneSettingsLoading[cacheKey].then(function(settings) {
                 if (callback) {
                     callback(settings);
                 }
@@ -6299,8 +6568,10 @@ const FloorPlanDesigner = {
             });
         }
         
-        // Fetch from server
-        const loadingPromise = fetch('/booths/zone-settings/' + encodeURIComponent(zoneName), {
+        // Fetch from server (floor-plan-specific)
+        const zoneSettingsUrl = '/booths/zone-settings/' + encodeURIComponent(zoneName) + 
+            (floorPlanId ? '?floor_plan_id=' + floorPlanId : '');
+        const loadingPromise = fetch(zoneSettingsUrl, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -6315,25 +6586,25 @@ const FloorPlanDesigner = {
         })
         .then(function(data) {
             if (data.status === 200 && data.settings) {
-                // Cache the settings
-                self.zoneSettingsCache[zoneName] = data.settings;
+                // Cache the settings with floor-plan-specific key
+                self.zoneSettingsCache[cacheKey] = data.settings;
                 return data.settings;
             } else {
-                // Return defaults if no zone settings found
+                // Return defaults if no zone settings found for this floor plan
                 return null;
             }
         })
         .catch(function(error) {
-            console.warn('Failed to load zone settings for ' + zoneName + ', using defaults:', error);
+            console.warn('Failed to load zone settings for ' + zoneName + ' (Floor Plan ' + floorPlanId + '), using defaults:', error);
             return null;
         })
         .finally(function() {
             // Clear loading flag
-            delete self.zoneSettingsLoading[zoneName];
+            delete self.zoneSettingsLoading[cacheKey];
         });
         
-        // Store loading promise
-        self.zoneSettingsLoading[zoneName] = loadingPromise;
+        // Store loading promise with floor-plan-specific key
+        self.zoneSettingsLoading[cacheKey] = loadingPromise;
         
         if (callback) {
             loadingPromise.then(callback);
@@ -6342,10 +6613,14 @@ const FloorPlanDesigner = {
         return loadingPromise;
     },
     
-    // Get effective settings for a booth (zone settings override defaults)
+    // Get effective settings for a booth (zone settings override defaults, floor-plan-specific)
     getEffectiveBoothSettings: function(boothNumber) {
         const self = this;
         const zoneName = self.getZoneFromBoothNumber(boothNumber);
+        
+        // Get current floor plan ID for cache key
+        const floorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
+        const cacheKey = floorPlanId ? floorPlanId + '_' + zoneName : 'global_' + zoneName;
         
         // Start with defaults
         const effectiveSettings = {
@@ -6359,9 +6634,9 @@ const FloorPlanDesigner = {
             opacity: self.defaultBoothOpacity
         };
         
-        // Override with zone settings if available
-        if (self.zoneSettingsCache[zoneName]) {
-            const zoneSettings = self.zoneSettingsCache[zoneName];
+        // Override with zone settings if available (floor-plan-specific cache key)
+        if (self.zoneSettingsCache[cacheKey]) {
+            const zoneSettings = self.zoneSettingsCache[cacheKey];
             if (zoneSettings.width !== undefined) effectiveSettings.width = zoneSettings.width;
             if (zoneSettings.height !== undefined) effectiveSettings.height = zoneSettings.height;
             if (zoneSettings.rotation !== undefined) effectiveSettings.rotation = zoneSettings.rotation;
@@ -9610,8 +9885,16 @@ const FloorPlanDesigner = {
     saveCanvasSettingsToDatabase: function() {
         const self = this;
         
+        // Get current floor plan ID (floor-plan-specific settings)
+        const floorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
+        
         // Only send defined values to avoid validation errors
         const settings = {};
+        
+        // Include floor_plan_id for floor-plan-specific canvas settings
+        if (floorPlanId) {
+            settings.floor_plan_id = floorPlanId;
+        }
         
         if (self.canvasWidth !== undefined && self.canvasWidth !== null) {
             settings.canvas_width = parseInt(self.canvasWidth) || 1200;
@@ -9657,24 +9940,16 @@ const FloorPlanDesigner = {
             }
         }
         
-        // Get floorplan image path from canvas background or stored value
-        const canvas = document.getElementById('print');
-        if (canvas) {
-            const bgImage = canvas.style.backgroundImage;
-            if (bgImage && bgImage !== 'none' && bgImage !== '') {
-                // Extract URL from background-image CSS
-                const imageUrl = bgImage.replace(/url\(['"]?([^'"]+)['"]?\)/, '$1');
-                if (imageUrl && imageUrl !== 'none') {
-                    settings.floorplan_image = imageUrl;
-                }
-            } else if (self.floorplanImage) {
-                // Use stored floorplan image path
-                settings.floorplan_image = self.floorplanImage;
-            }
-        }
+        // Get floorplan image path - prefer floor_plans.floor_image over canvas_settings
+        // Don't save floorplan_image to canvas_settings - it's already in floor_plans table
+        // Canvas settings should only store zoom/pan/grid, not the image path
+        // The image path is managed in floor_plans.floor_image and loaded from there
+        // This prevents conflicts when switching between floor plans
         
-        // Don't save if no valid settings
-        if (Object.keys(settings).length === 0) {
+        // Don't save if no valid settings (except floor_plan_id)
+        const settingsWithoutFloorPlanId = { ...settings };
+        delete settingsWithoutFloorPlanId.floor_plan_id;
+        if (Object.keys(settingsWithoutFloorPlanId).length === 0) {
             return Promise.resolve({ status: 200, message: 'No settings to save' });
         }
         
@@ -9917,8 +10192,23 @@ const FloorPlanDesigner = {
     loadCanvasSettings: function() {
         const self = this;
         
+        // Get current floor plan ID (floor-plan-specific settings)
+        // CRITICAL: Always get from PHP variable to ensure correct floor plan
+        const floorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
+        
+        // Debug logging
+        console.log('[Canvas Settings] Loading settings for floor plan ID:', floorPlanId);
+        
+        // Build URL with floor_plan_id query parameter if available
+        let canvasSettingsUrl = '/settings/canvas';
+        if (floorPlanId) {
+            canvasSettingsUrl += '?floor_plan_id=' + floorPlanId;
+        }
+        
+        console.log('[Canvas Settings] Request URL:', canvasSettingsUrl);
+        
         // Load from database first, fallback to localStorage
-        fetch('/settings/canvas', {
+        fetch(canvasSettingsUrl, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -9935,6 +10225,14 @@ const FloorPlanDesigner = {
             if (data.status === 200 && data.data) {
                 // Load from database
                 const settings = data.data;
+                
+                console.log('[Canvas Settings] Received settings:', {
+                    floor_plan_id: settings.floor_plan_id,
+                    floorplan_image: settings.floorplan_image,
+                    canvas_width: settings.canvas_width,
+                    canvas_height: settings.canvas_height
+                });
+                
                 self.canvasWidth = settings.canvas_width || 1200;
                 self.canvasHeight = settings.canvas_height || 800;
                 self.canvasResolution = settings.canvas_resolution || 300;
@@ -9950,19 +10248,85 @@ const FloorPlanDesigner = {
                     self.panzoomInstance.zoom(settings.zoom_level);
                 }
                 if (settings.pan_x !== undefined && settings.pan_y !== undefined && self.panzoomInstance) {
-                    self.panzoomInstance.moveTo(settings.pan_x, settings.pan_y);
+                    // Use panzoom's move method instead of moveTo (which doesn't exist)
+                    if (self.panzoomInstance.move) {
+                        self.panzoomInstance.move(settings.pan_x, settings.pan_y);
+                    } else if (self.panzoomInstance.setTransform) {
+                        const currentScale = self.panzoomInstance.getScale ? self.panzoomInstance.getScale() : 1;
+                        self.panzoomInstance.setTransform({ x: settings.pan_x, y: settings.pan_y, scale: currentScale });
+                    }
                 }
                 
-                // Restore floorplan if available
-                if (settings.floorplan_image) {
-                    const canvas = document.getElementById('print');
-                    if (canvas) {
-                        canvas.style.backgroundImage = 'url(\'' + settings.floorplan_image + '?t=' + Date.now() + '\')';
+                // CRITICAL: Restore floorplan image from floor_plans.floor_image (source of truth)
+                // The settings.floorplan_image comes from floor_plans.floor_image (prioritized in backend)
+                // CRITICAL FIX: ALWAYS set the image from settings if it exists - don't be conservative
+                const canvas = document.getElementById('print');
+                if (canvas) {
+                    console.log('[Canvas Settings] Processing floorplan_image:', {
+                        floorplan_image: settings.floorplan_image,
+                        floor_plan_id_from_settings: settings.floor_plan_id,
+                        current_floor_plan_id: floorPlanId,
+                        current_floorplanImage: self.floorplanImage,
+                        current_floorPlanImageUrl: self.floorPlanImageUrl,
+                        current_canvas_background: canvas.style.backgroundImage
+                    });
+                    
+                    // CRITICAL: If settings has floorplan_image and it matches the current floor plan, ALWAYS use it
+                    // This ensures the canvas always shows the correct image after upload
+                    
+                    if (settings.floorplan_image && settings.floor_plan_id === floorPlanId) {
+                        // Convert relative path to full URL
+                        let imageUrl = settings.floorplan_image;
+                        if (!imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
+                            imageUrl = '/' + imageUrl;
+                        }
+                        if (!imageUrl.startsWith('http')) {
+                            imageUrl = window.location.origin + (imageUrl.startsWith('/') ? '' : '/') + imageUrl;
+                        }
+                        
+                        // ALWAYS set the image from settings (don't check if already loaded - force refresh)
+                        console.log('[Canvas Settings] ✅ FORCING canvas background image from settings:', imageUrl);
+                        canvas.style.backgroundImage = 'url(\'' + imageUrl + '?t=' + Date.now() + '\')';
                         canvas.style.backgroundSize = '100% 100%';
                         canvas.style.backgroundRepeat = 'no-repeat';
                         canvas.style.backgroundPosition = 'top left';
                         canvas.style.backgroundAttachment = 'local';
+                        canvas.style.margin = '0';
+                        canvas.style.display = 'block';
+                        canvas.style.float = 'left';
+                        
+                        // Store relative path and full URL
                         self.floorplanImage = settings.floorplan_image;
+                        self.floorPlanImageUrl = imageUrl;
+                        
+                        console.log('[Canvas Settings] ✅ Canvas background image SET SUCCESSFULLY from settings');
+                    } else if (settings.floorplan_image && settings.floor_plan_id !== floorPlanId) {
+                        // Settings for different floor plan - preserve current image
+                        console.warn('[Canvas Settings] ⚠️ Floor plan ID mismatch - preserving current image', {
+                            settings_floor_plan_id: settings.floor_plan_id,
+                            current_floor_plan_id: floorPlanId
+                        });
+                    } else if (!settings.floorplan_image) {
+                        // No image in settings - check if canvas already has image from Blade template
+                        console.log('[Canvas Settings] No floorplan_image in settings for floor plan:', floorPlanId);
+                        if (canvas.style.backgroundImage && canvas.style.backgroundImage !== 'none') {
+                            console.log('[Canvas Settings] ✅ Canvas already has image from Blade template, preserving it');
+                            // Ensure variables are set from current floor plan
+                            @if(isset($currentFloorPlan) && $currentFloorPlan && $currentFloorPlan->floor_image)
+                                @php
+                                    $fallbackImageUrl = asset($currentFloorPlan->floor_image);
+                                    $fallbackImagePath = $currentFloorPlan->floor_image;
+                                @endphp
+                                if (!self.floorplanImage) {
+                                    self.floorplanImage = '{{ $fallbackImagePath }}';
+                                }
+                                if (!self.floorPlanImageUrl) {
+                                    self.floorPlanImageUrl = '{{ $fallbackImageUrl }}';
+                                }
+                            @endif
+                        } else {
+                            console.warn('[Canvas Settings] ⚠️ No image in settings AND canvas has no image - floor plan may not have image uploaded');
+                        }
                     }
                 }
             }
@@ -10137,20 +10501,27 @@ const FloorPlanDesigner = {
         const self = this;
         const canvas = document.getElementById('print');
         if (!canvas) return;
-        
-        // Check if there's a background image
-        const bgImage = canvas.style.backgroundImage;
-        const floorplanImg = document.getElementById('floorplanImageElement');
-        
-        // Try to get image from either background or img element
+
+        // Priority 1: Check if we have a floor plan image URL (from floor plan record)
         let imageUrl = null;
-        if (bgImage && bgImage !== 'none' && bgImage !== '') {
-            imageUrl = bgImage.replace(/url\(['"]?([^'"]+)['"]?\)/, '$1');
-        } else if (floorplanImg && floorplanImg.src) {
-            imageUrl = floorplanImg.src;
+        if (self.floorPlanImageUrl) {
+            imageUrl = self.floorPlanImageUrl;
+        } else {
+            // Priority 2: Check if there's a background image on canvas
+            const bgImage = canvas.style.backgroundImage;
+            if (bgImage && bgImage !== 'none' && bgImage !== '') {
+                imageUrl = bgImage.replace(/url\(['"]?([^'"]+)['"]?\)/, '$1');
+            } else {
+                // Priority 3: Check img element
+                const floorplanImg = document.getElementById('floorplanImageElement');
+                if (floorplanImg && floorplanImg.src) {
+                    imageUrl = floorplanImg.src;
+                }
+            }
         }
         
-        // Also check if img element already has dimensions
+        // Also check if img element already has dimensions (quick path - avoids reloading)
+        const floorplanImg = document.getElementById('floorplanImageElement');
         if (floorplanImg && floorplanImg.complete && floorplanImg.naturalWidth > 0) {
             const imageWidth = floorplanImg.naturalWidth;
             const imageHeight = floorplanImg.naturalHeight;
@@ -10765,10 +11136,22 @@ const FloorPlanDesigner = {
             removeBtn.html('<i class="fas fa-spinner fa-spin"></i> Removing...');
             removeBtn.css('pointer-events', 'none');
             
+            // Get current floor plan ID
+            const floorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
+            if (!floorPlanId) {
+                customAlert('Please select a floor plan first.', 'warning');
+                removeBtn.html(originalHtml);
+                removeBtn.css('pointer-events', 'auto');
+                return;
+            }
+            
             // Send AJAX request to remove floorplan
             $.ajax({
                 url: '{{ route("booths.remove-floorplan") }}',
                 method: 'POST',
+                data: {
+                    floor_plan_id: floorPlanId
+                },
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
@@ -10837,6 +11220,15 @@ const FloorPlanDesigner = {
             
             // Create FormData
             const formData = new FormData(form);
+            
+            // Add floor_plan_id to form data
+            const floorPlanId = @if(isset($floorPlanId) && $floorPlanId){{ $floorPlanId }}@else null @endif;
+            if (floorPlanId) {
+                formData.append('floor_plan_id', floorPlanId);
+            } else {
+                customAlert('Please select a floor plan first.', 'warning');
+                return;
+            }
             
             const file = fileInput.files[0];
             
@@ -10944,10 +11336,20 @@ const FloorPlanDesigner = {
                         
                         floorplanImg.src = response.image_url + '?t=' + Date.now();
                         
-                        // Store floorplan image path
-                        self.floorplanImage = response.image_url;
+                        // Store floorplan image path (use relative path from response.image_path)
+                        // response.image_path is the relative path: 'images/floor-plans/...'
+                        // response.image_url is the full URL: 'http://localhost:8000/images/floor-plans/...'
+                        // We use relative path for consistency and to prevent conflicts
+                        if (response.image_path) {
+                            self.floorplanImage = response.image_path; // Relative path
+                        } else if (response.image_url) {
+                            // Extract relative path from full URL if image_path not provided
+                            const url = new URL(response.image_url);
+                            self.floorplanImage = url.pathname.startsWith('/') ? url.pathname.substring(1) : url.pathname;
+                        }
+                        self.floorPlanImageUrl = response.image_url; // Full URL for display
                         
-                        // Save floorplan image path to database
+                        // Save floorplan image path to database (with correct floor_plan_id)
                         self.saveCanvasSettingsToDatabase().then(function() {
                             // Close modal
                             $('#uploadFloorplanModal').modal('hide');
@@ -12910,8 +13312,62 @@ window.addEventListener('error', function(e) {
     console.error('JavaScript Error:', e);
 });
 
-// Initialize when document is ready
+// CRITICAL: Load floor plan image IMMEDIATELY when DOM is ready (before FloorPlanDesigner.init)
+// This ensures the canvas automatically shows the correct floor plan image when user clicks "View Booths"
 $(document).ready(function() {
+    // AUTOMATICALLY load floor plan image if available (highest priority - before anything else)
+    @if(isset($currentFloorPlan) && $currentFloorPlan && $currentFloorPlan->floor_image)
+        console.log('[Auto-Load Floor Plan] Setting canvas background IMMEDIATELY for floor plan {{ $currentFloorPlan->id }}: {{ $currentFloorPlan->name }}');
+        const canvas = document.getElementById('print');
+        if (canvas) {
+            @php
+                $floorPlanImageUrlReady = asset($currentFloorPlan->floor_image);
+                $floorPlanImagePathReady = $currentFloorPlan->floor_image;
+            @endphp
+            const floorPlanImageUrl = '{{ $floorPlanImageUrlReady }}';
+            const floorPlanImagePath = '{{ $floorPlanImagePathReady }}';
+            
+            console.log('[Auto-Load Floor Plan] Image path:', floorPlanImagePath);
+            console.log('[Auto-Load Floor Plan] Image URL:', floorPlanImageUrl);
+            
+            // IMMEDIATELY set canvas background image (automatic load - no delays)
+            canvas.style.backgroundImage = 'url(\'' + floorPlanImageUrl + '?t=' + Date.now() + '\')';
+            canvas.style.backgroundSize = '100% 100%';
+            canvas.style.backgroundRepeat = 'no-repeat';
+            canvas.style.backgroundPosition = 'top left';
+            canvas.style.backgroundAttachment = 'local';
+            canvas.style.margin = '0';
+            canvas.style.display = 'block';
+            canvas.style.float = 'left';
+            
+            console.log('[Auto-Load Floor Plan] ✅ Canvas background image set immediately:', canvas.style.backgroundImage);
+            
+            // Preload image to verify it exists and get dimensions
+            const img = new Image();
+            img.onload = function() {
+                console.log('[Auto-Load Floor Plan] ✅ Image loaded successfully:', {
+                    floor_plan_id: {{ $currentFloorPlan->id }},
+                    floor_plan_name: '{{ $currentFloorPlan->name }}',
+                    image_width: img.naturalWidth || img.width,
+                    image_height: img.naturalHeight || img.height,
+                    image_url: floorPlanImageUrl
+                });
+            };
+            img.onerror = function() {
+                console.error('[Auto-Load Floor Plan] ❌ Failed to load image:', {
+                    floor_plan_id: {{ $currentFloorPlan->id }},
+                    floor_plan_name: '{{ $currentFloorPlan->name }}',
+                    image_url: floorPlanImageUrl,
+                    image_path: floorPlanImagePath
+                });
+            };
+            img.src = floorPlanImageUrl;
+        } else {
+            console.error('[Auto-Load Floor Plan] ❌ Canvas element not found!');
+        }
+    @else
+        console.log('[Auto-Load Floor Plan] No floor plan image to load for current floor plan');
+    @endif
     
     // Ensure info toolbar is always visible
     const infoToolbar = document.getElementById('infoToolbar');
@@ -12921,6 +13377,7 @@ $(document).ready(function() {
         infoToolbar.style.opacity = '1';
     }
     
+    // Initialize FloorPlanDesigner (image is already set above, this will handle resize and other setup)
     try {
         FloorPlanDesigner.init();
     } catch (error) {
@@ -12991,5 +13448,21 @@ $(document).ready(function() {
     
     console.log('✅ Floor Plan Designer ready!');
 });
+
+// Floor Plan Switcher
+function switchFloorPlan(floorPlanId) {
+    if (floorPlanId) {
+        // Clear zone settings cache when switching floor plans (zones are floor-plan-specific)
+        if (typeof FloorPlanDesigner !== 'undefined' && FloorPlanDesigner.zoneSettingsCache) {
+            FloorPlanDesigner.zoneSettingsCache = {};
+            FloorPlanDesigner.zoneSettingsLoading = {};
+            console.log('Cleared zone settings cache for floor plan switch');
+        }
+        
+        window.location.href = '{{ route("booths.index") }}?floor_plan_id=' + floorPlanId;
+    } else {
+        window.location.href = '{{ route("booths.index") }}';
+    }
+}
 </script>
 @endpush

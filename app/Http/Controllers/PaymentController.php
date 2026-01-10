@@ -17,17 +17,64 @@ class PaymentController extends Controller
     {
         $query = Payment::with(['booking', 'client', 'user']);
 
-        if ($request->has('status')) {
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('transaction_id', 'like', "%{$search}%")
+                  ->orWhere('amount', 'like', "%{$search}%")
+                  ->orWhereHas('client', function($clientQuery) use ($search) {
+                      $clientQuery->where('name', 'like', "%{$search}%")
+                                   ->orWhere('company', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Status filter
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        if ($request->has('client_id')) {
+        // Payment method filter
+        if ($request->filled('payment_method')) {
+            $query->where('payment_method', $request->payment_method);
+        }
+
+        // Date range filter
+        if ($request->filled('date_from')) {
+            $query->whereDate('paid_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('paid_at', '<=', $request->date_to);
+        }
+
+        // Client filter
+        if ($request->filled('client_id')) {
             $query->where('client_id', $request->client_id);
         }
 
-        $payments = $query->latest()->paginate(20);
+        $payments = $query->latest('paid_at')->paginate(20)->withQueryString();
 
-        return view('payments.index', compact('payments'));
+        // Calculate statistics
+        $stats = [
+            'total_payments' => Payment::count(),
+            'total_amount' => Payment::where('status', Payment::STATUS_COMPLETED)->sum('amount'),
+            'pending_payments' => Payment::where('status', Payment::STATUS_PENDING)->count(),
+            'failed_payments' => Payment::where('status', Payment::STATUS_FAILED)->count(),
+            'today_payments' => Payment::whereDate('paid_at', today())->where('status', Payment::STATUS_COMPLETED)->sum('amount'),
+            'this_month_payments' => Payment::whereMonth('paid_at', now()->month)
+                ->whereYear('paid_at', now()->year)
+                ->where('status', Payment::STATUS_COMPLETED)
+                ->sum('amount'),
+        ];
+
+        // Get unique payment methods
+        $paymentMethods = Payment::distinct()->pluck('payment_method')->filter();
+
+        // Get clients for filter
+        $clients = \App\Models\Client::orderBy('company')->get();
+
+        return view('payments.index', compact('payments', 'stats', 'paymentMethods', 'clients'));
     }
 
     /**
@@ -84,5 +131,117 @@ class PaymentController extends Controller
         $booking = $bookingId ? Book::with('booths')->findOrFail($bookingId) : null;
         
         return view('payments.create', compact('booking'));
+    }
+
+    /**
+     * Refund a payment
+     */
+    public function refund(Request $request, $id)
+    {
+        $payment = Payment::with(['booking', 'booking.booths'])->findOrFail($id);
+
+        // Validate payment can be refunded
+        if ($payment->status === Payment::STATUS_REFUNDED) {
+            return back()->with('error', 'This payment has already been refunded.');
+        }
+
+        if ($payment->status !== Payment::STATUS_COMPLETED) {
+            return back()->with('error', 'Only completed payments can be refunded.');
+        }
+
+        try {
+            \DB::beginTransaction();
+
+            // Create refund payment entry (negative amount)
+            $refundPayment = Payment::create([
+                'booking_id' => $payment->booking_id,
+                'client_id' => $payment->client_id,
+                'amount' => -$payment->amount, // Negative amount for refund
+                'payment_method' => $payment->payment_method,
+                'status' => Payment::STATUS_REFUNDED,
+                'transaction_id' => 'REFUND-' . $payment->transaction_id ?? 'REFUND-' . $payment->id,
+                'notes' => 'Refund for Payment #' . $payment->id . ($request->notes ? ': ' . $request->notes : ''),
+                'paid_at' => now(),
+                'user_id' => Auth::id(),
+            ]);
+
+            // Update original payment status
+            $payment->update([
+                'status' => Payment::STATUS_REFUNDED,
+                'notes' => ($payment->notes ? $payment->notes . ' | ' : '') . 'Refunded on ' . now()->format('Y-m-d H:i:s'),
+            ]);
+
+            // Revert booth status from paid to confirmed (or reserved if no confirmation)
+            if ($payment->booking) {
+                $boothIds = json_decode($payment->booking->boothid, true) ?? [];
+                if (!empty($boothIds)) {
+                    Booth::whereIn('id', $boothIds)->update([
+                        'status' => Booth::STATUS_CONFIRMED, // Revert to confirmed, not available
+                    ]);
+                }
+            }
+
+            \DB::commit();
+
+            return redirect()->route('payments.index')
+                ->with('success', 'Payment refunded successfully. Refund payment #' . $refundPayment->id . ' created.');
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return back()->with('error', 'Error processing refund: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Void a payment (cancel before completion)
+     */
+    public function void(Request $request, $id)
+    {
+        $payment = Payment::with(['booking', 'booking.booths'])->findOrFail($id);
+
+        // Validate payment can be voided
+        if ($payment->status === Payment::STATUS_REFUNDED) {
+            return back()->with('error', 'This payment has already been refunded and cannot be voided.');
+        }
+
+        if ($payment->status === Payment::STATUS_FAILED) {
+            return back()->with('error', 'This payment has already failed.');
+        }
+
+        try {
+            \DB::beginTransaction();
+
+            // Update payment status to failed (voided)
+            $payment->update([
+                'status' => Payment::STATUS_FAILED,
+                'notes' => ($payment->notes ? $payment->notes . ' | ' : '') . 'VOIDED on ' . now()->format('Y-m-d H:i:s') . ($request->notes ? ': ' . $request->notes : ''),
+            ]);
+
+            // Store original status before update
+            $originalStatus = $payment->status;
+            
+            // Update payment status to failed (voided)
+            $payment->update([
+                'status' => Payment::STATUS_FAILED,
+                'notes' => ($payment->notes ? $payment->notes . ' | ' : '') . 'VOIDED on ' . now()->format('Y-m-d H:i:s') . ($request->notes ? ': ' . $request->notes : ''),
+            ]);
+
+            // Revert booth status if payment was completed
+            if ($originalStatus === Payment::STATUS_COMPLETED && $payment->booking) {
+                $boothIds = json_decode($payment->booking->boothid, true) ?? [];
+                if (!empty($boothIds)) {
+                    Booth::whereIn('id', $boothIds)->update([
+                        'status' => Booth::STATUS_CONFIRMED, // Revert to confirmed
+                    ]);
+                }
+            }
+
+            \DB::commit();
+
+            return redirect()->route('payments.index')
+                ->with('success', 'Payment voided successfully.');
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return back()->with('error', 'Error voiding payment: ' . $e->getMessage());
+        }
     }
 }

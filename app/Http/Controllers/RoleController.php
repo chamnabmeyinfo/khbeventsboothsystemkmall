@@ -5,16 +5,59 @@ namespace App\Http\Controllers;
 use App\Models\Role;
 use App\Models\Permission;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class RoleController extends Controller
 {
     /**
      * Display a listing of roles
      */
-    public function index()
+    public function index(Request $request)
     {
-        $roles = Role::with(['users', 'permissions'])->orderBy('sort_order')->get();
-        return view('roles.index', compact('roles'));
+        $query = Role::with(['users', 'permissions']);
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status == 'active' ? 1 : 0);
+        }
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('slug', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $roles = $query->orderBy('sort_order')->paginate(20)->withQueryString();
+
+        // Statistics
+        $stats = [
+            'total_roles' => Role::count(),
+            'active_roles' => Role::where('is_active', true)->count(),
+            'total_users_with_roles' => $this->getUsersWithRolesCount(),
+        ];
+
+        return view('roles.index', compact('roles', 'stats'));
+    }
+
+    /**
+     * Safely get count of users with roles
+     */
+    private function getUsersWithRolesCount()
+    {
+        try {
+            // Check if role_id column exists
+            $hasRoleId = Schema::hasColumn('user', 'role_id');
+            if ($hasRoleId) {
+                return \App\Models\User::whereNotNull('role_id')->count();
+            }
+            return 0;
+        } catch (\Exception $e) {
+            return 0;
+        }
     }
 
     /**

@@ -10,10 +10,43 @@ class PermissionController extends Controller
     /**
      * Display a listing of permissions
      */
-    public function index()
+    public function index(Request $request)
     {
-        $permissions = Permission::orderBy('module')->orderBy('sort_order')->get()->groupBy('module');
-        return view('permissions.index', compact('permissions'));
+        $query = Permission::query();
+
+        // Filter by module
+        if ($request->filled('module')) {
+            $query->where('module', $request->module);
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status == 'active' ? 1 : 0);
+        }
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('slug', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $permissions = $query->orderBy('module')->orderBy('sort_order')->get()->groupBy('module');
+
+        // Statistics
+        $stats = [
+            'total_permissions' => Permission::count(),
+            'active_permissions' => Permission::where('is_active', true)->count(),
+            'modules_count' => Permission::distinct()->count('module'),
+        ];
+
+        // Get unique modules
+        $modules = Permission::distinct()->pluck('module')->filter()->sort()->values();
+
+        return view('permissions.index', compact('permissions', 'stats', 'modules'));
     }
 
     /**

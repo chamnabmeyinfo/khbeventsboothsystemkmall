@@ -1,79 +1,158 @@
-@extends('layouts.app')
+@extends('layouts.adminlte')
 
 @section('title', 'Create Client')
+@section('page-title', 'Create New Client')
+@section('breadcrumb', 'Clients / Create')
+
+@push('styles')
+<style>
+    .form-section {
+        background: #f8f9fc;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #007bff;
+    }
+    .form-section h6 {
+        color: #495057;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+</style>
+@endpush
 
 @section('content')
-<div class="row mb-4">
-    <div class="col">
-        <h2><i class="fas fa-user-plus me-2"></i>Create New Client</h2>
-    </div>
-    <div class="col-auto">
-        <a href="{{ route('clients.index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Back to Clients
-        </a>
-    </div>
-</div>
-
-<div class="card">
-    <div class="card-body">
-        <form action="{{ route('clients.store') }}" method="POST">
+<div class="container-fluid">
+    <div class="card card-primary card-outline">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-user-plus mr-2"></i>Create New Client</h3>
+            <div class="card-tools">
+                <a href="{{ route('clients.index') }}" class="btn btn-sm btn-secondary">
+                    <i class="fas fa-arrow-left mr-1"></i>Back to Clients
+                </a>
+            </div>
+        </div>
+        <form action="{{ route('clients.store') }}" method="POST" id="clientForm">
             @csrf
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control @error('name') is-invalid @enderror" 
-                           id="name" name="name" value="{{ old('name') }}" required>
-                    @error('name')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+            <div class="card-body">
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <h6><i class="fas fa-user mr-2"></i>Basic Information</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    </div>
+                                    <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                                           id="name" name="name" value="{{ old('name') }}" 
+                                           placeholder="Enter client full name" required>
+                                </div>
+                                @error('name')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">Client's full name</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="sex" class="form-label">Gender</label>
+                                <select class="form-control @error('sex') is-invalid @enderror" id="sex" name="sex">
+                                    <option value="">Select Gender...</option>
+                                    <option value="1" {{ old('sex') == 1 ? 'selected' : '' }}>Male</option>
+                                    <option value="2" {{ old('sex') == 2 ? 'selected' : '' }}>Female</option>
+                                </select>
+                                @error('sex')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">Optional: Select gender</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label for="company" class="form-label">Company</label>
-                    <input type="text" class="form-control @error('company') is-invalid @enderror" 
-                           id="company" name="company" value="{{ old('company') }}">
-                    @error('company')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+
+                <!-- Company Information -->
+                <div class="form-section">
+                    <h6><i class="fas fa-building mr-2"></i>Company Information</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="company" class="form-label">Company Name</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-building"></i></span>
+                                    </div>
+                                    <input type="text" class="form-control @error('company') is-invalid @enderror" 
+                                           id="company" name="company" value="{{ old('company') }}" 
+                                           placeholder="Enter company name">
+                                </div>
+                                @error('company')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">Optional: Company or organization name</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="position" class="form-label">Position/Title</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-briefcase"></i></span>
+                                    </div>
+                                    <input type="text" class="form-control @error('position') is-invalid @enderror" 
+                                           id="position" name="position" value="{{ old('position') }}" 
+                                           placeholder="Enter position or title">
+                                </div>
+                                @error('position')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">Optional: Job title or position</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="form-section">
+                    <h6><i class="fas fa-phone mr-2"></i>Contact Information</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="phone_number" class="form-label">Phone Number</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                    </div>
+                                    <input type="text" class="form-control @error('phone_number') is-invalid @enderror" 
+                                           id="phone_number" name="phone_number" value="{{ old('phone_number') }}" 
+                                           placeholder="Enter phone number">
+                                </div>
+                                @error('phone_number')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">Optional: Contact phone number</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="position" class="form-label">Position</label>
-                    <input type="text" class="form-control @error('position') is-invalid @enderror" 
-                           id="position" name="position" value="{{ old('position') }}">
-                    @error('position')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="phone_number" class="form-label">Phone Number</label>
-                    <input type="text" class="form-control @error('phone_number') is-invalid @enderror" 
-                           id="phone_number" name="phone_number" value="{{ old('phone_number') }}">
-                    @error('phone_number')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="sex" class="form-label">Gender</label>
-                    <select class="form-control @error('sex') is-invalid @enderror" id="sex" name="sex">
-                        <option value="">Select...</option>
-                        <option value="1" {{ old('sex') == 1 ? 'selected' : '' }}>Male</option>
-                        <option value="2" {{ old('sex') == 2 ? 'selected' : '' }}>Female</option>
-                    </select>
-                    @error('sex')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-            </div>
-            <div class="mt-4">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-2"></i>Create Client
+            <div class="card-footer">
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <i class="fas fa-save mr-1"></i>Create Client
                 </button>
-                <a href="{{ route('clients.index') }}" class="btn btn-secondary">Cancel</a>
+                <a href="{{ route('clients.index') }}" class="btn btn-default">Cancel</a>
             </div>
         </form>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+$('#clientForm').on('submit', function() {
+    showLoading();
+});
+</script>
+@endpush

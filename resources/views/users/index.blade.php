@@ -6,23 +6,112 @@
 
 @push('styles')
 <style>
+    /* Modern Glassmorphism KPI Cards */
+    .kpi-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 40px rgba(31, 38, 135, 0.5);
+    }
+
+    .kpi-card:hover::before {
+        opacity: 1;
+    }
+
+    .kpi-card.primary::before { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .kpi-card.success::before { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
+    .kpi-card.danger::before { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); }
+    .kpi-card.info::before { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+
+    .kpi-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: white;
+        margin-bottom: 16px;
+    }
+
+    .kpi-card.primary .kpi-icon { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .kpi-card.success .kpi-icon { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
+    .kpi-card.danger .kpi-icon { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); }
+    .kpi-card.info .kpi-icon { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+
+    .kpi-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin: 8px 0;
+        line-height: 1;
+    }
+
+    .kpi-label {
+        font-size: 0.875rem;
+        color: #718096;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
     .user-card {
-        transition: transform 0.2s, box-shadow 0.2s;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        transition: all 0.3s;
         border-left: 4px solid;
         cursor: pointer;
     }
     .user-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateY(-8px);
+        box-shadow: 0 12px 40px rgba(31, 38, 135, 0.5);
     }
     .user-card.admin { border-left-color: #dc3545; }
     .user-card.sale { border-left-color: #6c757d; }
+    
     .table-row-hover {
         transition: all 0.2s;
     }
     .table-row-hover:hover {
         background-color: #f8f9fc;
+        transform: translateX(4px);
     }
+    
+    .filter-bar {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    
     .status-toggle {
         cursor: pointer;
     }
@@ -33,63 +122,47 @@
 <div class="container-fluid">
     <!-- Statistics Cards -->
     <div class="row mb-4">
-        <div class="col-lg-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Total Users</h6>
-                            <h3 class="mb-0">{{ \App\Models\User::count() }}</h3>
-                        </div>
-                        <div class="text-primary" style="font-size: 2.5rem; opacity: 0.3;">
-                            <i class="fas fa-users"></i>
-                        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card kpi-card primary">
+                <div class="card-body" style="padding: 24px;">
+                    <div class="kpi-icon">
+                        <i class="fas fa-users"></i>
                     </div>
+                    <div class="kpi-label">Total Users</div>
+                    <div class="kpi-value">{{ number_format(\App\Models\User::count()) }}</div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Active Users</h6>
-                            <h3 class="mb-0">{{ \App\Models\User::where('status', 1)->count() }}</h3>
-                        </div>
-                        <div class="text-success" style="font-size: 2.5rem; opacity: 0.3;">
-                            <i class="fas fa-user-check"></i>
-                        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card kpi-card success">
+                <div class="card-body" style="padding: 24px;">
+                    <div class="kpi-icon">
+                        <i class="fas fa-user-check"></i>
                     </div>
+                    <div class="kpi-label">Active Users</div>
+                    <div class="kpi-value">{{ number_format(\App\Models\User::where('status', 1)->count()) }}</div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Admins</h6>
-                            <h3 class="mb-0">{{ \App\Models\User::where('type', 1)->count() }}</h3>
-                        </div>
-                        <div class="text-danger" style="font-size: 2.5rem; opacity: 0.3;">
-                            <i class="fas fa-user-shield"></i>
-                        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card kpi-card danger">
+                <div class="card-body" style="padding: 24px;">
+                    <div class="kpi-icon">
+                        <i class="fas fa-user-shield"></i>
                     </div>
+                    <div class="kpi-label">Admins</div>
+                    <div class="kpi-value">{{ number_format(\App\Models\User::where('type', 1)->count()) }}</div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Sales Staff</h6>
-                            <h3 class="mb-0">{{ \App\Models\User::where('type', 2)->count() }}</h3>
-                        </div>
-                        <div class="text-info" style="font-size: 2.5rem; opacity: 0.3;">
-                            <i class="fas fa-user-tie"></i>
-                        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card kpi-card info">
+                <div class="card-body" style="padding: 24px;">
+                    <div class="kpi-icon">
+                        <i class="fas fa-user-tie"></i>
                     </div>
+                    <div class="kpi-label">Sales Staff</div>
+                    <div class="kpi-value">{{ number_format(\App\Models\User::where('type', 2)->count()) }}</div>
                 </div>
             </div>
         </div>
@@ -124,16 +197,14 @@
     </div>
 
     <!-- Advanced Search and Filter -->
-    <div class="card card-primary card-outline mb-4">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="fas fa-filter mr-2"></i>Search & Filters
-                <button type="button" class="btn btn-sm btn-link text-white ml-2" onclick="toggleFilters()">
-                    <i class="fas fa-chevron-down" id="filterToggleIcon"></i>
-                </button>
+    <div class="filter-bar">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 style="font-weight: 600; color: #2d3748;">
+                <i class="fas fa-filter mr-2 text-primary"></i>Search & Filters
             </h3>
         </div>
-        <div class="card-body" id="filterSection">
+        </div>
+        <div id="filterSection">
             <form method="GET" action="{{ route('users.index') }}" id="filterForm">
                 <div class="row">
                     <div class="col-md-4 mb-3">
@@ -238,7 +309,13 @@
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="mr-2">
-                                            <i class="fas fa-user-circle text-muted" style="font-size: 1.5rem;"></i>
+                                            <x-avatar 
+                                                :avatar="$user->avatar" 
+                                                :name="$user->username" 
+                                                :size="'sm'" 
+                                                :type="$user->isAdmin() ? 'admin' : 'user'"
+                                                :shape="'circle'"
+                                            />
                                         </div>
                                         <div>
                                             <strong>{{ $user->username }}</strong>
@@ -382,7 +459,14 @@
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center">
                             <h6 class="mb-0">
-                                <i class="fas fa-user-circle mr-1"></i>{{ $user->username }}
+                                <x-avatar 
+                                    :avatar="$user->avatar" 
+                                    :name="$user->username" 
+                                    :size="'xs'" 
+                                    :type="$user->isAdmin() ? 'admin' : 'user'"
+                                    :shape="'circle'"
+                                />
+                                <span class="ml-2">{{ $user->username }}</span>
                             </h6>
                             @if($user->isAdmin())
                                 <span class="badge badge-danger">Admin</span>

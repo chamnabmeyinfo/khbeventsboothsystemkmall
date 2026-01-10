@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class UserController extends Controller
 {
@@ -37,8 +38,8 @@ class UserController extends Controller
             $query->where('status', $request->status);
         }
         
-        // Filter by role
-        if ($request->filled('role_id')) {
+        // Filter by role (only if column exists)
+        if ($request->filled('role_id') && \Illuminate\Support\Facades\Schema::hasColumn('user', 'role_id')) {
             if ($request->role_id == '0') {
                 $query->whereNull('role_id');
             } else {

@@ -15,13 +15,46 @@ class CommunicationController extends Controller
      */
     public function index(Request $request)
     {
-        $messages = Message::where('to_user_id', Auth::id())
-            ->orWhere('from_user_id', Auth::id())
-            ->with(['fromUser', 'toUser', 'client'])
-            ->latest()
-            ->paginate(20);
+        $query = Message::where(function($q) {
+                $q->where('to_user_id', Auth::id())
+                  ->orWhere('from_user_id', Auth::id());
+            })
+            ->with(['fromUser', 'toUser', 'client']);
 
-        return view('communications.index', compact('messages'));
+        // Filter by type
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            if ($request->status == 'unread') {
+                $query->where('to_user_id', Auth::id())->where('is_read', false);
+            } elseif ($request->status == 'read') {
+                $query->where('to_user_id', Auth::id())->where('is_read', true);
+            }
+        }
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('subject', 'like', "%{$search}%")
+                  ->orWhere('message', 'like', "%{$search}%");
+            });
+        }
+
+        $messages = $query->latest()->paginate(20)->withQueryString();
+
+        // Statistics
+        $stats = [
+            'total_messages' => Message::where('to_user_id', Auth::id())->orWhere('from_user_id', Auth::id())->count(),
+            'unread_messages' => Message::where('to_user_id', Auth::id())->where('is_read', false)->count(),
+            'sent_messages' => Message::where('from_user_id', Auth::id())->count(),
+            'announcements' => Message::where('to_user_id', Auth::id())->where('type', 'announcement')->count(),
+        ];
+
+        return view('communications.index', compact('messages', 'stats'));
     }
 
     /**

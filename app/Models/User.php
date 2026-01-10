@@ -36,6 +36,8 @@ class User extends Authenticatable
         'type',
         'status',
         'role_id',
+        'avatar',
+        'cover_image',
         'last_login',
         'create_time',
         'update_time',

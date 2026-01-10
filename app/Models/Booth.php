@@ -25,6 +25,7 @@ class Booth extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'floor_plan_id',
         'booth_number',
         'type',
         'price',
@@ -120,6 +121,14 @@ class Booth extends Model
     }
 
     /**
+     * Get the floor plan that owns this booth
+     */
+    public function floorPlan()
+    {
+        return $this->belongsTo(FloorPlan::class, 'floor_plan_id');
+    }
+
+    /**
      * Check if booth is available
      */
     public function isAvailable(): bool
@@ -180,38 +189,70 @@ class Booth extends Model
     {
         parent::boot();
 
-        // Before creating, check for duplicate booth_number
+        // Before creating, check for duplicate booth_number within the same floor plan (floor-plan-specific)
         static::creating(function ($booth) {
-            $existing = self::where('booth_number', $booth->booth_number)->first();
+            $query = self::where('booth_number', $booth->booth_number);
+            
+            // Filter by floor_plan_id if specified (floor-plan-specific uniqueness)
+            if (!empty($booth->floor_plan_id)) {
+                $query->where('floor_plan_id', $booth->floor_plan_id);
+            } else {
+                // If no floor_plan_id specified, check globally (backward compatibility)
+                // This allows booths without floor_plan_id to still work
+            }
+            
+            $existing = $query->first();
             if ($existing) {
+                $message = !empty($booth->floor_plan_id) 
+                    ? 'This booth number already exists in this floor plan. Please choose a different number.'
+                    : 'This booth number already exists. Please choose a different number.';
+                
                 throw ValidationException::withMessages([
-                    'booth_number' => 'This booth number already exists. Please choose a different number.'
+                    'booth_number' => $message
                 ]);
             }
         });
 
-        // Before updating, check for duplicate booth_number (excluding current record)
+        // Before updating, check for duplicate booth_number within the same floor plan (excluding current record)
         static::updating(function ($booth) {
-            $existing = self::where('booth_number', $booth->booth_number)
-                ->where('id', '!=', $booth->id)
-                ->first();
+            $query = self::where('booth_number', $booth->booth_number)
+                ->where('id', '!=', $booth->id);
+            
+            // Filter by floor_plan_id if specified (floor-plan-specific uniqueness)
+            if (!empty($booth->floor_plan_id)) {
+                $query->where('floor_plan_id', $booth->floor_plan_id);
+            }
+            
+            $existing = $query->first();
             if ($existing) {
+                $message = !empty($booth->floor_plan_id) 
+                    ? 'This booth number already exists in this floor plan. Please choose a different number.'
+                    : 'This booth number already exists. Please choose a different number.';
+                
                 throw ValidationException::withMessages([
-                    'booth_number' => 'This booth number already exists. Please choose a different number.'
+                    'booth_number' => $message
                 ]);
             }
         });
     }
 
     /**
-     * Check if a booth number already exists
+     * Check if a booth number already exists (floor-plan-specific)
      */
-    public static function numberExists(string $boothNumber, ?int $excludeId = null): bool
+    public static function numberExists(string $boothNumber, ?int $excludeId = null, ?int $floorPlanId = null): bool
     {
         $query = self::where('booth_number', $boothNumber);
+        
+        // Filter by floor_plan_id if specified (floor-plan-specific uniqueness)
+        if ($floorPlanId !== null) {
+            $query->where('floor_plan_id', $floorPlanId);
+        }
+        
+        // Exclude current booth when checking for updates
         if ($excludeId) {
             $query->where('id', '!=', $excludeId);
         }
+        
         return $query->exists();
     }
 }

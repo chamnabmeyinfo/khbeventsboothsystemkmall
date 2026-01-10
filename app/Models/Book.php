@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class Book extends Model
 {
@@ -24,6 +25,8 @@ class Book extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'event_id',
+        'floor_plan_id',
         'clientid',
         'boothid',
         'date_book',
@@ -61,5 +64,29 @@ class Book extends Model
             return collect([]);
         }
         return Booth::whereIn('id', $boothIds)->get();
+    }
+    
+    /**
+     * Get the floor plan this booking belongs to
+     */
+    public function floorPlan()
+    {
+        return $this->belongsTo(FloorPlan::class, 'floor_plan_id');
+    }
+    
+    /**
+     * Get the event/project this booking belongs to
+     */
+    public function event()
+    {
+        // Check if events table exists before trying to use relationship
+        if (\Schema::hasTable('events') && $this->event_id) {
+            try {
+                return $this->belongsTo(Event::class, 'event_id');
+            } catch (\Exception $e) {
+                return null;
+            }
+        }
+        return null;
     }
 }

@@ -1,0 +1,331 @@
+@extends('layouts.adminlte')
+
+@section('title', 'Edit Booking')
+@section('page-title', 'Edit Booking')
+@section('breadcrumb', 'Bookings / Edit')
+
+@push('styles')
+<style>
+    .form-section {
+        background: #f8f9fc;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #007bff;
+    }
+    .form-section h6 {
+        color: #495057;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    .booth-selector {
+        max-height: 400px;
+        overflow-y: auto;
+        background: #f8f9fc;
+    }
+    .booth-option {
+        cursor: pointer;
+        transition: all 0.2s;
+        background: white;
+    }
+    .booth-option:hover {
+        background-color: #e7f3ff;
+        border-color: #007bff !important;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0,123,255,0.2);
+    }
+    .booth-option.selected {
+        background-color: #cfe2ff;
+        border-color: #007bff !important;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+    }
+    .booth-option input[type="checkbox"] {
+        margin-right: 0.5rem;
+        cursor: pointer;
+    }
+    .booth-option label {
+        cursor: pointer;
+        width: 100%;
+    }
+    .selected-booths-summary {
+        position: sticky;
+        top: 0;
+        background: white;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+</style>
+@endpush
+
+@section('content')
+<div class="container-fluid">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('books.index') }}">Bookings</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('books.show', $book) }}">Booking #{{ $book->id }}</a></li>
+            <li class="breadcrumb-item active">Edit</li>
+        </ol>
+    </nav>
+
+    <div class="card card-warning card-outline">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-edit mr-2"></i>Edit Booking #{{ $book->id }}</h3>
+            <div class="card-tools">
+                <a href="{{ route('books.show', $book) }}" class="btn btn-sm btn-secondary">
+                    <i class="fas fa-arrow-left mr-1"></i>Back to Booking
+                </a>
+            </div>
+        </div>
+        <form action="{{ route('books.update', $book) }}" method="POST" id="bookingForm">
+            @csrf
+            @method('PUT')
+            <div class="card-body">
+                <!-- General Error Display -->
+                @if($errors->any())
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <h6><i class="fas fa-exclamation-triangle mr-2"></i>Please fix the following errors:</h6>
+                        <ul class="mb-0">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                @endif
+
+                <!-- Client Selection -->
+                <div class="form-section">
+                    <h6><i class="fas fa-building mr-2"></i>Client Information</h6>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <label for="clientid" class="form-label">Select Client <span class="text-danger">*</span></label>
+                            <select class="form-control @error('clientid') is-invalid @enderror" 
+                                    id="clientid" name="clientid" required>
+                                <option value="">Search or select a client...</option>
+                                @foreach($clients as $client)
+                                    <option value="{{ $client->id }}" {{ (old('clientid', $book->clientid) == $client->id) ? 'selected' : '' }}>
+                                        {{ $client->company ?? $client->name }} 
+                                        @if($client->company && $client->name) - {{ $client->name }} @endif
+                                        @if($client->phone_number) ({{ $client->phone_number }}) @endif
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('clientid')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-4">
+                            <label>&nbsp;</label>
+                            <div>
+                                <a href="{{ route('clients.create') }}" class="btn btn-success btn-block" target="_blank">
+                                    <i class="fas fa-plus mr-1"></i>New Client
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Details -->
+                <div class="form-section">
+                    <h6><i class="fas fa-calendar-alt mr-2"></i>Booking Details</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="date_book" class="form-label">Booking Date & Time <span class="text-danger">*</span></label>
+                                <input type="datetime-local" 
+                                       class="form-control @error('date_book') is-invalid @enderror" 
+                                       id="date_book" 
+                                       name="date_book" 
+                                       value="{{ old('date_book', $book->date_book ? \Carbon\Carbon::parse($book->date_book)->format('Y-m-d\TH:i') : now()->format('Y-m-d\TH:i')) }}" 
+                                       required>
+                                @error('date_book')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="type" class="form-label">Booking Type</label>
+                                <select class="form-control @error('type') is-invalid @enderror" id="type" name="type">
+                                    <option value="1" {{ old('type', $book->type ?? 1) == 1 ? 'selected' : '' }}>Regular</option>
+                                    <option value="2" {{ old('type', $book->type) == 2 ? 'selected' : '' }}>Special</option>
+                                    <option value="3" {{ old('type', $book->type) == 3 ? 'selected' : '' }}>Temporary</option>
+                                </select>
+                                @error('type')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">Select the type of booking</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booth Selection -->
+                <div class="form-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0"><i class="fas fa-cube mr-2"></i>Select Booths <span class="text-danger">*</span></h6>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-outline-primary" onclick="selectAllBooths()">
+                                <i class="fas fa-check-double mr-1"></i>Select All
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="clearAllBooths()">
+                                <i class="fas fa-times mr-1"></i>Clear All
+                            </button>
+                        </div>
+                    </div>
+                    
+                    @error('booth_ids')
+                        <div class="alert alert-danger">{{ $message }}</div>
+                    @enderror
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="booth-selector p-3 border rounded">
+                                @forelse($allBooths as $booth)
+                                    @php
+                                        $isSelected = in_array($booth->id, old('booth_ids', $boothIds ?? []));
+                                        $isReserved = !in_array($booth->status, [\App\Models\Booth::STATUS_AVAILABLE, \App\Models\Booth::STATUS_HIDDEN]);
+                                        $isCurrentBooth = in_array($booth->id, $boothIds ?? []);
+                                        $isDisabled = $isReserved && !$isCurrentBooth;
+                                    @endphp
+                                    <div class="booth-option p-2 mb-2 border rounded {{ $isSelected ? 'selected' : '' }} {{ $isDisabled ? 'opacity-50' : '' }}" 
+                                         onclick="{{ !$isDisabled ? "toggleBooth({$booth->id})" : '' }}">
+                                        <input type="checkbox" 
+                                               name="booth_ids[]" 
+                                               value="{{ $booth->id }}" 
+                                               id="booth_{{ $booth->id }}"
+                                               {{ $isSelected ? 'checked' : '' }}
+                                               {{ $isDisabled ? 'disabled' : '' }}
+                                               onchange="updateSelectedCount()">
+                                        <label for="booth_{{ $booth->id }}" style="cursor: pointer; margin-bottom: 0;">
+                                            <strong>{{ $booth->booth_number }}</strong>
+                                            @if($booth->price)
+                                                - ${{ number_format($booth->price, 2) }}
+                                            @endif
+                                            <span class="badge badge-{{ $booth->getStatusColor() }}">
+                                                {{ $booth->getStatusLabel() }}
+                                            </span>
+                                            @if($isDisabled && !$isCurrentBooth)
+                                                <small class="text-danger">(Reserved)</small>
+                                            @endif
+                                        </label>
+                                    </div>
+                                @empty
+                                    <div class="alert alert-info">No booths available</div>
+                                @endforelse
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="selected-booths-summary">
+                                <h6><i class="fas fa-list mr-2"></i>Selected Booths (<span id="selectedCount">0</span>)</h6>
+                                <div id="selectedBoothsList" class="mt-2" style="max-height: 300px; overflow-y: auto;">
+                                    <p class="text-muted small">No booths selected</p>
+                                </div>
+                                <div class="mt-3">
+                                    <strong>Total Amount: $<span id="totalAmount">0.00</span></strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save mr-1"></i>Update Booking
+                </button>
+                <a href="{{ route('books.show', $book) }}" class="btn btn-secondary">
+                    <i class="fas fa-times mr-1"></i>Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+@endsection
+
+@push('scripts')
+<script>
+// Initialize selected booths count and list
+let allBooths = @json($allBooths->keyBy('id'));
+let selectedBooths = @json(old('booth_ids', $boothIds ?? []));
+
+function toggleBooth(boothId) {
+    const checkbox = document.getElementById('booth_' + boothId);
+    if (checkbox && !checkbox.disabled) {
+        checkbox.checked = !checkbox.checked;
+        updateSelectedCount();
+    }
+}
+
+function updateSelectedCount() {
+    const checkboxes = document.querySelectorAll('input[name="booth_ids[]"]:checked');
+    const count = checkboxes.length;
+    document.getElementById('selectedCount').textContent = count;
+    
+    // Update selected booths list
+    const listDiv = document.getElementById('selectedBoothsList');
+    if (count === 0) {
+        listDiv.innerHTML = '<p class="text-muted small">No booths selected</p>';
+        document.getElementById('totalAmount').textContent = '0.00';
+    } else {
+        let html = '<ul class="list-unstyled mb-0">';
+        let total = 0;
+        checkboxes.forEach(cb => {
+            const boothId = parseInt(cb.value);
+            const booth = allBooths[boothId];
+            if (booth) {
+                const price = parseFloat(booth.price || 0);
+                total += price;
+                html += `<li class="mb-1">
+                    <i class="fas fa-cube text-primary mr-1"></i>
+                    <strong>${booth.booth_number}</strong>
+                    ${price > 0 ? ` - $${price.toFixed(2)}` : ''}
+                </li>`;
+            }
+        });
+        html += '</ul>';
+        listDiv.innerHTML = html;
+        document.getElementById('totalAmount').textContent = total.toFixed(2);
+    }
+}
+
+function selectAllBooths() {
+    document.querySelectorAll('input[name="booth_ids[]"]:not(:disabled)').forEach(cb => {
+        cb.checked = true;
+    });
+    updateSelectedCount();
+}
+
+function clearAllBooths() {
+    document.querySelectorAll('input[name="booth_ids[]"]:not(:disabled)').forEach(cb => {
+        cb.checked = false;
+    });
+    updateSelectedCount();
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateSelectedCount();
+});
+
+// Form validation
+document.getElementById('bookingForm').addEventListener('submit', function(e) {
+    const selectedBooths = document.querySelectorAll('input[name="booth_ids[]"]:checked');
+    if (selectedBooths.length === 0) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'error',
+            title: 'No Booths Selected',
+            text: 'Please select at least one booth for this booking.',
+            confirmButtonColor: '#007bff'
+        });
+        return false;
+    }
+    showLoading();
+});
+</script>
+@endpush

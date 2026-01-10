@@ -6,50 +6,296 @@
 
 @push('styles')
 <style>
-    .detail-card {
-        border-left: 4px solid;
+    /* Profile Header with Cover and Avatar */
+    .profile-header {
+        position: relative;
+        margin-bottom: 32px;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+    }
+
+    .profile-cover {
+        width: 100%;
+        height: 300px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-cover img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .profile-cover-upload {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .profile-cover:hover .profile-cover-upload {
+        display: flex;
+    }
+
+    .profile-avatar-wrapper {
+        position: absolute;
+        bottom: -64px;
+        left: 32px;
+        z-index: 10;
+    }
+
+    .profile-avatar {
+        width: 128px;
+        height: 128px;
+        border-radius: 50%;
+        border: 4px solid white;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        position: relative;
+        cursor: pointer;
+        transition: transform 0.3s;
+    }
+
+    .profile-avatar:hover {
+        transform: scale(1.05);
+    }
+
+    .profile-avatar-upload {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: 3px solid white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         transition: transform 0.2s;
     }
-    .detail-card:hover {
-        transform: translateX(5px);
+
+    .profile-avatar-upload:hover {
+        transform: scale(1.1);
     }
-    .detail-card.primary { border-left-color: #007bff; }
-    .detail-card.success { border-left-color: #28a745; }
-    .detail-card.warning { border-left-color: #ffc107; }
+
+    .profile-avatar-upload i {
+        color: white;
+        font-size: 16px;
+    }
+
+    .profile-info {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 80px 32px 32px 32px;
+        border-top: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .profile-actions {
+        position: absolute;
+        top: 24px;
+        right: 24px;
+        z-index: 20;
+    }
+
+    .detail-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        border-left: 4px solid;
+        transition: transform 0.2s;
+        margin-bottom: 24px;
+    }
+
+    .detail-card:hover {
+        transform: translateX(4px);
+    }
+
+    .detail-card.primary { border-left-color: #667eea; }
+    .detail-card.success { border-left-color: #84fab0; }
+    .detail-card.warning { border-left-color: #fa709a; }
+
     .info-row {
         padding: 0.75rem 0;
-        border-bottom: 1px solid #f0f0f0;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
     }
+
     .info-row:last-child {
         border-bottom: none;
     }
+
     .stat-card {
         text-align: center;
-        padding: 1rem;
-        border-radius: 0.5rem;
+        padding: 1.5rem;
+        border-radius: 12px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
+        transition: transform 0.3s;
+        height: 100%;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
     }
 </style>
 @endpush
 
 @section('content')
 <div class="container-fluid">
-    <!-- Header Actions -->
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('users.index') }}">Users</a></li>
+            <li class="breadcrumb-item active">{{ $user->username }}</li>
+        </ol>
+    </nav>
+
+    <!-- Profile Header with Cover and Avatar -->
+    <div class="profile-header">
+        <!-- Cover Image -->
+        <div class="profile-cover" id="profileCover">
+            @if($user->cover_image)
+                <img src="{{ asset($user->cover_image) }}" alt="Cover Image" id="coverImage">
+            @endif
+            <div class="profile-cover-upload" onclick="openCoverUploadModal()">
+                <div style="text-align: center; color: white;">
+                    <i class="fas fa-camera fa-2x mb-2"></i>
+                    <p class="mb-0">Change Cover</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Avatar -->
+        <div class="profile-avatar-wrapper">
+            <div class="profile-avatar" onclick="openAvatarUploadModal()">
+                <x-avatar 
+                    :avatar="$user->avatar" 
+                    :name="$user->username" 
+                    :size="'xl'" 
+                    :type="$user->isAdmin() ? 'admin' : 'user'"
+                    :shape="'circle'"
+                />
+                <div class="profile-avatar-upload" onclick="event.stopPropagation(); openAvatarUploadModal()">
+                    <i class="fas fa-camera"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Info Bar -->
+        <div class="profile-info">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h2 style="font-weight: 700; color: #2d3748; margin-bottom: 8px;">
+                        {{ $user->username }}
+                    </h2>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        @if($user->isAdmin())
+                            <span class="badge badge-danger" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
+                                <i class="fas fa-shield-alt mr-1"></i>Administrator
+                            </span>
+                        @else
+                            <span class="badge badge-secondary" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
+                                <i class="fas fa-user-tie mr-1"></i>Sale Staff
+                            </span>
+                        @endif
+                        @if($user->role)
+                            <span class="badge badge-info" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
+                                <i class="fas fa-shield mr-1"></i>{{ $user->role->name }}
+                            </span>
+                        @endif
+                        @if($user->isActive())
+                            <span class="badge badge-success" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
+                                <i class="fas fa-check-circle mr-1"></i>Active
+                            </span>
+                        @else
+                            <span class="badge badge-warning" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
+                                <i class="fas fa-times-circle mr-1"></i>Inactive
+                            </span>
+                        @endif
+                    </div>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-hashtag mr-1"></i>User ID: #{{ $user->id }}
+                        @if($user->last_login)
+                            <span class="ml-3">
+                                <i class="fas fa-clock mr-1"></i>Last Login: {{ $user->last_login }}
+                            </span>
+                        @endif
+                    </p>
+                </div>
+                <div class="col-md-4 text-right">
+                    <div class="profile-actions">
+                        <div class="btn-group" role="group">
+                            <a href="{{ route('users.index') }}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-arrow-left mr-1"></i>Back
+                            </a>
+                            <a href="{{ route('users.edit', $user) }}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit mr-1"></i>Edit
+                            </a>
+                            @if(auth()->user()->isAdmin() && $user->id != auth()->id())
+                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteUser({{ $user->id }}, '{{ $user->username }}')">
+                                <i class="fas fa-trash mr-1"></i>Delete
+                            </button>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
     <div class="row mb-4">
-        <div class="col">
-            <div class="btn-group">
-                <a href="{{ route('users.index') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left mr-1"></i>Back to Users
-                </a>
-                <a href="{{ route('users.edit', $user) }}" class="btn btn-warning">
-                    <i class="fas fa-edit mr-1"></i>Edit User
-                </a>
-                @if(auth()->user()->isAdmin() && $user->id != auth()->id())
-                <button type="button" class="btn btn-danger" onclick="deleteUser({{ $user->id }}, '{{ $user->username }}')">
-                    <i class="fas fa-trash mr-1"></i>Delete User
-                </button>
-                @endif
+        @php
+            try {
+                $boothCount = $user->booths()->count();
+            } catch (\Exception $e) {
+                $boothCount = 0;
+            }
+            try {
+                $bookingCount = $user->books()->count();
+            } catch (\Exception $e) {
+                $bookingCount = 0;
+            }
+            try {
+                $permissionsCount = $user->getPermissions()->count();
+            } catch (\Exception $e) {
+                $permissionsCount = 0;
+            }
+        @endphp
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <i class="fas fa-cube fa-2x mb-2"></i>
+                <h3 class="mb-1" style="font-weight: 700;">{{ number_format($boothCount) }}</h3>
+                <small style="opacity: 0.9;">Total Booths</small>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <i class="fas fa-calendar-check fa-2x mb-2"></i>
+                <h3 class="mb-1" style="font-weight: 700;">{{ number_format($bookingCount) }}</h3>
+                <small style="opacity: 0.9;">Total Bookings</small>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <i class="fas fa-key fa-2x mb-2"></i>
+                <h3 class="mb-1" style="font-weight: 700;">{{ number_format($permissionsCount) }}</h3>
+                <small style="opacity: 0.9;">Total Permissions</small>
             </div>
         </div>
     </div>
@@ -58,10 +304,10 @@
         <!-- User Information -->
         <div class="col-md-6 mb-4">
             <div class="card detail-card primary">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px 12px 0 0;">
                     <h5 class="mb-0"><i class="fas fa-user mr-2"></i>User Information</h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body" style="padding: 24px;">
                     <div class="info-row">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="text-muted"><i class="fas fa-hashtag mr-2"></i>User ID:</span>
@@ -126,80 +372,27 @@
             </div>
         </div>
 
-        <!-- Statistics -->
-        <div class="col-md-6 mb-4">
-            <div class="card detail-card success">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="fas fa-chart-bar mr-2"></i>Activity Statistics</h5>
-                </div>
-                <div class="card-body">
-                    @php
-                        try {
-                            $boothCount = $user->booths()->count();
-                        } catch (\Exception $e) {
-                            $boothCount = 0;
-                        }
-                        try {
-                            $bookingCount = $user->books()->count();
-                        } catch (\Exception $e) {
-                            $bookingCount = 0;
-                        }
-                        try {
-                            $permissionsCount = $user->getPermissions()->count();
-                        } catch (\Exception $e) {
-                            $permissionsCount = 0;
-                        }
-                    @endphp
-                    <div class="row text-center">
-                        <div class="col-6 mb-3">
-                            <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                                <i class="fas fa-cube fa-2x mb-2"></i>
-                                <h3 class="mb-0">{{ $boothCount }}</h3>
-                                <small>Booths</small>
-                            </div>
-                        </div>
-                        <div class="col-6 mb-3">
-                            <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                                <i class="fas fa-calendar-check fa-2x mb-2"></i>
-                                <h3 class="mb-0">{{ $bookingCount }}</h3>
-                                <small>Bookings</small>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                                <i class="fas fa-key fa-2x mb-2"></i>
-                                <h3 class="mb-0">{{ $permissionsCount }}</h3>
-                                <small>Total Permissions</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Permissions & Change Password -->
-    <div class="row">
         <!-- Permissions -->
         @if($user->role)
         <div class="col-md-6 mb-4">
             <div class="card detail-card warning">
-                <div class="card-header bg-warning text-dark">
+                <div class="card-header" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; border-radius: 12px 12px 0 0;">
                     <h5 class="mb-0"><i class="fas fa-key mr-2"></i>Role Permissions</h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body" style="padding: 24px; max-height: 400px; overflow-y: auto;">
                     @php
                         $permissions = $user->getPermissions()->groupBy('module');
                     @endphp
                     @if($permissions->count() > 0)
                         @foreach($permissions as $module => $modulePermissions)
                         <div class="mb-3">
-                            <h6 class="text-muted">
-                                <i class="fas fa-folder mr-1"></i>{{ ucfirst($module) }}
+                            <h6 class="text-muted mb-2" style="font-weight: 600;">
+                                <i class="fas fa-folder mr-1"></i>{{ ucfirst($module ?: 'General') }}
+                                <span class="badge badge-secondary ml-2">{{ $modulePermissions->count() }}</span>
                             </h6>
                             <div class="d-flex flex-wrap">
                                 @foreach($modulePermissions as $permission)
-                                <span class="badge badge-primary mr-2 mb-2">
+                                <span class="badge badge-primary mr-2 mb-2" style="font-size: 0.75rem; padding: 0.35rem 0.65rem;">
                                     {{ $permission->name }}
                                 </span>
                                 @endforeach
@@ -213,57 +406,115 @@
             </div>
         </div>
         @endif
+    </div>
 
-        <!-- Change Password -->
-        <div class="col-md-6 mb-4">
+    <!-- Change Password -->
+    <div class="row">
+        <div class="col-md-12 mb-4">
             <div class="card detail-card primary">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px 12px 0 0;">
                     <h5 class="mb-0"><i class="fas fa-key mr-2"></i>Change Password</h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body" style="padding: 24px;">
                     <form action="{{ route('users.password.update', $user->id) }}" method="POST" id="passwordForm">
                         @csrf
                         @method('POST')
-                        <div class="form-group">
-                            <label for="password" class="form-label">New Password <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                </div>
-                                <input type="password" class="form-control @error('password') is-invalid @enderror" 
-                                       id="password" name="password" placeholder="Enter new password" required>
-                                <div class="input-group-append">
-                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password')">
-                                        <i class="fas fa-eye" id="passwordToggleIcon"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            @error('password')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                            <small class="form-text text-muted">Minimum 6 characters</small>
-                        </div>
-                        <div class="form-group">
-                            <label for="password_confirmation" class="form-label">Confirm Password <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                </div>
-                                <input type="password" class="form-control" 
-                                       id="password_confirmation" name="password_confirmation" 
-                                       placeholder="Confirm new password" required>
-                                <div class="input-group-append">
-                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password_confirmation')">
-                                        <i class="fas fa-eye" id="passwordConfirmationToggleIcon"></i>
-                                    </button>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="password" class="form-label"><i class="fas fa-lock mr-1"></i>New Password <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                        </div>
+                                        <input type="password" class="form-control @error('password') is-invalid @enderror" 
+                                               id="password" name="password" placeholder="Enter new password" required>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password')">
+                                                <i class="fas fa-eye" id="passwordToggleIcon"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    @error('password')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                    <small class="form-text text-muted">Minimum 6 characters</small>
                                 </div>
                             </div>
-                            <div id="passwordMatch" class="mt-2"></div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="password_confirmation" class="form-label"><i class="fas fa-lock mr-1"></i>Confirm Password <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                        </div>
+                                        <input type="password" class="form-control" 
+                                               id="password_confirmation" name="password_confirmation" 
+                                               placeholder="Confirm new password" required>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password_confirmation')">
+                                                <i class="fas fa-eye" id="passwordConfirmationToggleIcon"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div id="passwordMatch" class="mt-2"></div>
+                                </div>
+                            </div>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-block">
+                        <button type="submit" class="btn btn-primary">
                             <i class="fas fa-key mr-1"></i>Update Password
                         </button>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Avatar Upload Modal -->
+    <div class="modal fade" id="avatarUploadModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h5 class="modal-title">
+                        <i class="fas fa-camera mr-2"></i>Upload Avatar
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <x-image-upload 
+                        type="avatar"
+                        entity-type="user"
+                        entity-id="{{ $user->id }}"
+                        current-image="{{ $user->avatar }}"
+                        name="{{ $user->username }}"
+                    />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cover Upload Modal -->
+    <div class="modal fade" id="coverUploadModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h5 class="modal-title">
+                        <i class="fas fa-image mr-2"></i>Upload Cover Image
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <x-image-upload 
+                        type="cover"
+                        entity-type="user"
+                        entity-id="{{ $user->id }}"
+                        current-image="{{ $user->cover_image }}"
+                        name="{{ $user->username }}"
+                    />
                 </div>
             </div>
         </div>
@@ -273,6 +524,14 @@
 
 @push('scripts')
 <script>
+function openAvatarUploadModal() {
+    $('#avatarUploadModal').modal('show');
+}
+
+function openCoverUploadModal() {
+    $('#coverUploadModal').modal('show');
+}
+
 function togglePassword(fieldId) {
     const field = document.getElementById(fieldId);
     const icon = document.getElementById(fieldId + 'ToggleIcon');
@@ -317,7 +576,7 @@ $('#passwordForm').on('submit', function(e) {
             icon: 'error',
             title: 'Password Mismatch',
             text: 'Password and confirmation password do not match.',
-            confirmButtonColor: '#007bff'
+            confirmButtonColor: '#667eea'
         });
         return false;
     }

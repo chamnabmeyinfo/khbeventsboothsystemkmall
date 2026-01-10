@@ -29,6 +29,8 @@ class Client extends Model
         'position',
         'company',
         'phone_number',
+        'avatar',
+        'cover_image',
     ];
 
     /**

@@ -6,6 +6,15 @@
 
 @section('content')
 <div class="container-fluid">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('activity-logs.index') }}">Activity Logs</a></li>
+            <li class="breadcrumb-item active">Log #{{ $activityLog->id }}</li>
+        </ol>
+    </nav>
+
     <div class="card">
         <div class="card-header">
             <h3 class="card-title"><i class="fas fa-history mr-2"></i>Activity Log Details</h3>

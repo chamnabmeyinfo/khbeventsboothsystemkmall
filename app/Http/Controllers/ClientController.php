@@ -9,7 +9,7 @@ class ClientController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Client::query();
+        $query = Client::withCount(['booths', 'books']);
         
         // Search functionality
         if ($request->filled('search')) {
@@ -20,6 +20,11 @@ class ClientController extends Controller
                   ->orWhere('phone_number', 'like', "%{$search}%")
                   ->orWhere('position', 'like', "%{$search}%");
             });
+        }
+        
+        // Filter by company
+        if ($request->filled('company')) {
+            $query->where('company', 'like', "%{$request->company}%");
         }
         
         // Sort functionality
@@ -34,7 +39,22 @@ class ClientController extends Controller
         
         $clients = $query->paginate(20)->withQueryString();
         
-        return view('clients.index', compact('clients', 'sortBy', 'sortDir'));
+        // Get statistics
+        $stats = [
+            'total_clients' => Client::count(),
+            'clients_with_bookings' => Client::has('books')->count(),
+            'clients_with_booths' => Client::has('booths')->count(),
+            'total_bookings' => \App\Models\Book::count(),
+        ];
+        
+        // Get unique companies for filter
+        $companies = Client::whereNotNull('company')
+            ->where('company', '!=', '')
+            ->distinct()
+            ->orderBy('company')
+            ->pluck('company');
+        
+        return view('clients.index', compact('clients', 'sortBy', 'sortDir', 'stats', 'companies'));
     }
 
     public function create()
@@ -60,7 +80,23 @@ class ClientController extends Controller
 
     public function show(Client $client)
     {
-        $client->load('booths', 'books');
+        $client->load(['booths', 'books.user', 'books.booths']);
+        
+        // Calculate statistics
+        $stats = [
+            'total_booths' => $client->booths->count(),
+            'total_bookings' => $client->books->count(),
+            'paid_booths' => $client->booths->where('status', \App\Models\Booth::STATUS_PAID)->count(),
+            'confirmed_booths' => $client->booths->where('status', \App\Models\Booth::STATUS_CONFIRMED)->count(),
+            'reserved_booths' => $client->booths->where('status', \App\Models\Booth::STATUS_RESERVED)->count(),
+        ];
+        
+        // Calculate total revenue from paid booths
+        $totalRevenue = $client->booths->where('status', \App\Models\Booth::STATUS_PAID)->sum('price');
+        $stats['total_revenue'] = $totalRevenue;
+        
+        // Get recent bookings
+        $recentBookings = $client->books()->with('user')->latest('date_book')->take(10)->get();
         
         // Return JSON if request expects JSON (for API calls)
         if (request()->expectsJson() || request()->wantsJson()) {
@@ -74,7 +110,7 @@ class ClientController extends Controller
             ]);
         }
         
-        return view('clients.show', compact('client'));
+        return view('clients.show', compact('client', 'stats', 'recentBookings'));
     }
 
     public function edit(Client $client)
