@@ -1631,6 +1631,8 @@ class BoothController extends Controller
     public function bookBooth(Request $request)
     {
         try {
+            DB::beginTransaction();
+            
             $validated = $request->validate([
                 'booth_id' => 'required|integer|exists:booth,id',
                 'client_id' => 'nullable|integer|exists:client,id',
@@ -1645,6 +1647,7 @@ class BoothController extends Controller
                 'website' => 'nullable|url|max:255',
                 'notes' => 'nullable|string',
                 'status' => 'required|integer|in:2,3,5', // 2=Confirmed, 3=Reserved, 5=Paid
+                'type' => 'nullable|integer|in:1,2,3', // 1=Regular, 2=Special, 3=Temporary
             ]);
 
             // Normalize sex to integer (1=Male, 2=Female, 3=Other)
@@ -1664,8 +1667,19 @@ class BoothController extends Controller
                 }
             }
 
-            // Find the booth
-            $booth = Booth::findOrFail($validated['booth_id']);
+            // Find the booth with lock to prevent race conditions
+            $booth = Booth::where('id', $validated['booth_id'])
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            // Check if booth is available before booking
+            if (!in_array($booth->status, [Booth::STATUS_AVAILABLE, Booth::STATUS_HIDDEN])) {
+                DB::rollBack();
+                return response()->json([
+                    'status' => 403,
+                    'message' => 'Booth is not available for booking. Current status: ' . $booth->getStatusLabel()
+                ], 403);
+            }
 
             // Check if client_id is provided (from search/selection)
             $client = null;
@@ -1703,20 +1717,40 @@ class BoothController extends Controller
             }
 
             // Get user ID (ensure it's an integer)
-            $userId = null;
-            if (auth()->check()) {
-                $user = auth()->user();
-                // Get the actual ID from the user object (not the auth identifier)
-                $userId = isset($user->id) ? (int) $user->id : null;
+            $userId = auth()->user()->id ?? null;
+            if ($userId) {
+                $userId = (int) $userId;
             }
 
-            // Map status to booking type (2=Confirmed, 3=Reserved, 5=Paid)
+            // Map status to booking type OR use provided type
             // Booking types: 1=Regular=RESERVED, 2=Special=CONFIRMED, 3=Temporary=RESERVED
-            $bookingType = 1; // Default to Regular
-            if ($validated['status'] == Booth::STATUS_CONFIRMED) {
-                $bookingType = 2; // Special/Confirmed
-            } elseif ($validated['status'] == Booth::STATUS_PAID) {
-                $bookingType = 2; // Special/Paid (treated as confirmed)
+            // If type is provided, use it; otherwise map from status
+            $bookingType = $validated['type'] ?? null;
+            if (!$bookingType) {
+                // Map status to booking type
+                if ($validated['status'] == Booth::STATUS_CONFIRMED || $validated['status'] == Booth::STATUS_PAID) {
+                    $bookingType = 2; // Special/Confirmed or Paid
+                } else {
+                    $bookingType = 1; // Regular/Reserved
+                }
+            }
+            
+            // Ensure status matches booking type for consistency
+            // Type 1 (Regular) or 3 (Temporary) = RESERVED
+            // Type 2 (Special) = CONFIRMED (or PAID if status is 5)
+            $finalStatus = $validated['status'];
+            if ($bookingType == 1 || $bookingType == 3) {
+                // Regular or Temporary should be RESERVED
+                if ($finalStatus != Booth::STATUS_RESERVED) {
+                    $finalStatus = Booth::STATUS_RESERVED;
+                }
+            } elseif ($bookingType == 2) {
+                // Special should be CONFIRMED (or PAID if explicitly set)
+                if ($finalStatus == Booth::STATUS_PAID) {
+                    $finalStatus = Booth::STATUS_PAID;
+                } else {
+                    $finalStatus = Booth::STATUS_CONFIRMED;
+                }
             }
 
             // Get floor plan and event from booth
@@ -1726,14 +1760,6 @@ class BoothController extends Controller
             if ($floorPlanId) {
                 $floorPlan = FloorPlan::find($floorPlanId);
                 $eventId = $floorPlan ? $floorPlan->event_id : null;
-            }
-
-            // Check if booth is available before booking
-            if (!in_array($booth->status, [Booth::STATUS_AVAILABLE, Booth::STATUS_HIDDEN])) {
-                return response()->json([
-                    'status' => 403,
-                    'message' => 'Booth is not available for booking'
-                ], 403);
             }
 
             // Create Book record to link booking with floor plan and event
@@ -1750,10 +1776,12 @@ class BoothController extends Controller
             // Update booth with client, status, and book ID
             $booth->update([
                 'client_id' => $client->id,
-                'status' => $validated['status'],
+                'status' => $finalStatus,
                 'userid' => $userId,
                 'bookid' => $book->id,
             ]);
+            
+            DB::commit();
 
             return response()->json([
                 'status' => 200,
@@ -1765,15 +1793,18 @@ class BoothController extends Controller
                 'client_name' => $client->name,
                 'client_company' => $client->company,
                 'status' => $booth->status,
+                'booking_type' => $bookingType,
                 'floor_plan_id' => $floorPlanId
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
             return response()->json([
                 'status' => 422,
                 'message' => 'Validation failed',
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
+            DB::rollBack();
             \Log::error('Error booking booth: ' . $e->getMessage(), [
                 'request_data' => $request->all(),
                 'trace' => $e->getTraceAsString()

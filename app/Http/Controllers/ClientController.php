@@ -179,6 +179,31 @@ class ClientController extends Controller
     public function search(Request $request)
     {
         $query = $request->input('q', '');
+        $clientId = $request->input('id', null);
+        
+        // If specific ID is requested, return that client
+        if ($clientId) {
+            $client = Client::find($clientId);
+            if ($client) {
+                return response()->json([[
+                    'id' => $client->id,
+                    'name' => $client->name,
+                    'company' => $client->company,
+                    'email' => $client->email,
+                    'phone_number' => $client->phone_number,
+                    'address' => $client->address,
+                    'position' => $client->position,
+                    'sex' => $client->sex,
+                    'tax_id' => $client->tax_id,
+                    'website' => $client->website,
+                    'notes' => $client->notes,
+                    'display_text' => ($client->company ?? $client->name) . 
+                        ($client->email ? ' (' . $client->email . ')' : '') . 
+                        ($client->phone_number ? ' | ' . $client->phone_number : '')
+                ]]);
+            }
+            return response()->json([]);
+        }
         
         if (empty($query)) {
             return response()->json([]);
@@ -189,7 +214,7 @@ class ClientController extends Controller
             ->orWhere('email', 'like', "%{$query}%")
             ->orWhere('phone_number', 'like', "%{$query}%")
             ->orderBy('company')
-            ->limit(10)
+            ->limit(20)
             ->get();
         
         $results = $clients->map(function ($client) {

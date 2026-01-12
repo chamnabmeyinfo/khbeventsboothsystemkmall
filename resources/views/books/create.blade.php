@@ -6,85 +6,381 @@
 
 @push('styles')
 <style>
+    /* ============================================
+       MODERN BOOKING CREATE PAGE DESIGN 2026
+       Glassmorphism + Gradients + Smooth Animations
+       ============================================ */
+    
+    :root {
+        --booking-primary: #667eea;
+        --booking-secondary: #764ba2;
+        --booking-success: #1cc88a;
+        --booking-warning: #f6c23e;
+        --booking-danger: #e74a3b;
+        --booking-info: #36b9cc;
+    }
+    
+    /* Modern Form Sections */
     .form-section {
-        background: #f8f9fc;
-        padding: 1.5rem;
-        border-radius: 0.5rem;
-        margin-bottom: 1.5rem;
-        border-left: 4px solid #007bff;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(102, 126, 234, 0.1);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
     }
+    
+    .form-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, var(--booking-primary) 0%, var(--booking-secondary) 100%);
+    }
+    
+    .form-section:hover {
+        box-shadow: 
+            0 12px 48px rgba(102, 126, 234, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        transform: translateY(-2px);
+    }
+    
     .form-section h6 {
-        color: #495057;
+        color: #1a1a2e;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        font-size: 1.1rem;
+        letter-spacing: 0.3px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .form-section h6 i {
+        background: linear-gradient(135deg, var(--booking-primary) 0%, var(--booking-secondary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-right: 0.75rem;
+        font-size: 1.2rem;
+    }
+    
+    /* Modern Card */
+    .card-modern {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(102, 126, 234, 0.1);
+        border-radius: 16px;
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        overflow: hidden;
+    }
+    
+    .card-header-modern {
+        background: linear-gradient(135deg, 
+            rgba(102, 126, 234, 0.1) 0%,
+            rgba(118, 75, 162, 0.1) 100%);
+        border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+        padding: 1.5rem;
+        font-weight: 700;
+    }
+    
+    .card-header-modern h3 {
+        margin: 0;
+        color: #1a1a2e;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--booking-primary) 0%, var(--booking-secondary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    /* Modern Form Controls */
+    .form-control-modern {
+        border-radius: 12px;
+        border: 2px solid rgba(102, 126, 234, 0.1);
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+    
+    .form-control-modern:focus {
+        border-color: var(--booking-primary);
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        transform: translateY(-1px);
+    }
+    
+    /* Modern Buttons */
+    .btn-modern {
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
         font-weight: 600;
-        margin-bottom: 1rem;
+        letter-spacing: 0.3px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
+    
+    .btn-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-modern-primary {
+        background: linear-gradient(135deg, var(--booking-primary) 0%, var(--booking-secondary) 100%);
+        color: white;
+    }
+    
+    .btn-modern-primary:hover {
+        background: linear-gradient(135deg, var(--booking-secondary) 0%, var(--booking-primary) 100%);
+        color: white;
+    }
+    
+    .btn-modern-success {
+        background: linear-gradient(135deg, var(--booking-success) 0%, #17a673 100%);
+        color: white;
+    }
+    
+    .btn-modern-info {
+        background: linear-gradient(135deg, var(--booking-info) 0%, #2c9faf 100%);
+        color: white;
+    }
+    
+    /* Booth Selector */
     .booth-selector {
-        max-height: 400px;
+        max-height: 500px;
         overflow-y: auto;
-        background: #f8f9fc;
+        background: rgba(248, 249, 252, 0.5);
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 2px solid rgba(102, 126, 234, 0.1);
     }
+    
+    .booth-selector::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .booth-selector::-webkit-scrollbar-track {
+        background: rgba(102, 126, 234, 0.05);
+        border-radius: 10px;
+    }
+    
+    .booth-selector::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, var(--booking-primary) 0%, var(--booking-secondary) 100%);
+        border-radius: 10px;
+    }
+    
     .booth-option {
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         background: white;
+        border: 2px solid rgba(102, 126, 234, 0.1) !important;
+        border-radius: 12px;
+        padding: 1rem;
+        position: relative;
+        overflow: hidden;
     }
+    
+    .booth-option::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, var(--booking-primary) 0%, var(--booking-secondary) 100%);
+        transform: scaleY(0);
+        transition: transform 0.3s ease;
+    }
+    
     .booth-option:hover {
-        background-color: #e7f3ff;
-        border-color: #007bff !important;
-        transform: translateY(-2px);
-        box-shadow: 0 2px 8px rgba(0,123,255,0.2);
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        border-color: var(--booking-primary) !important;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
     }
+    
+    .booth-option:hover::before {
+        transform: scaleY(1);
+    }
+    
     .booth-option.selected {
-        background-color: #cfe2ff;
-        border-color: #007bff !important;
-        box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border-color: var(--booking-primary) !important;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
     }
+    
+    .booth-option.selected::before {
+        transform: scaleY(1);
+    }
+    
     .booth-option input[type="checkbox"] {
-        margin-right: 0.5rem;
+        margin-right: 0.75rem;
         cursor: pointer;
+        width: 20px;
+        height: 20px;
+        accent-color: var(--booking-primary);
     }
+    
     .booth-option label {
         cursor: pointer;
         width: 100%;
+        margin: 0;
     }
+    
+    /* Selected Booths Summary */
     .selected-booths-summary {
         position: sticky;
-        top: 0;
-        background: white;
+        top: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        padding: 1.5rem;
+        border-radius: 16px;
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(102, 126, 234, 0.1);
+    }
+    
+    .selected-booths-summary h6 {
+        color: #1a1a2e;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        font-size: 1rem;
+    }
+    
+    /* Modern Alert */
+    .alert-modern {
+        border-radius: 12px;
+        border: none;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .alert-modern-info {
+        background: linear-gradient(135deg, rgba(54, 185, 204, 0.1) 0%, rgba(44, 159, 175, 0.1) 100%);
+        border-left: 4px solid var(--booking-info);
+        color: #1a1a2e;
+    }
+    
+    /* Client Search Modal */
+    .modal-content-modern {
+        border-radius: 16px;
+        border: none;
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+    }
+    
+    .modal-header-modern {
+        background: linear-gradient(135deg, var(--booking-primary) 0%, var(--booking-secondary) 100%);
+        color: white;
+        padding: 1.5rem;
+        border: none;
+    }
+    
+    .modal-header-modern .close {
+        color: white;
+        opacity: 0.9;
+        text-shadow: none;
+    }
+    
+    .modal-header-modern .close:hover {
+        opacity: 1;
+    }
+    
+    .client-search-result {
+        border: 2px solid rgba(102, 126, 234, 0.1);
+        border-radius: 12px;
         padding: 1rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 0.75rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        background: white;
+    }
+    
+    .client-search-result:hover,
+    .client-search-result.highlighted {
+        border-color: var(--booking-primary);
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        transform: translateX(4px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+    
+    .client-search-result.highlighted {
+        border-width: 2px;
+    }
+    
+    /* Selected Client Info Card */
+    .selected-client-card {
+        background: linear-gradient(135deg, rgba(54, 185, 204, 0.1) 0%, rgba(44, 159, 175, 0.1) 100%);
+        border: 2px solid var(--booking-info);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    /* Badge Modern */
+    .badge-modern {
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .form-section {
+            padding: 1.25rem;
+        }
+        
+        .selected-booths-summary {
+            position: relative;
+            top: 0;
+            margin-top: 1.5rem;
+        }
     }
 </style>
 @endpush
 
 @section('content')
 <div class="container-fluid">
-    <div class="card card-primary card-outline">
-        <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-calendar-plus mr-2"></i>Create New Booking</h3>
-            <div class="card-tools">
+    <div class="card-modern">
+        <div class="card-header-modern d-flex justify-content-between align-items-center">
+            <h3 class="m-0"><i class="fas fa-calendar-plus mr-2"></i>Create New Booking</h3>
+            <div>
                 @if(isset($currentFloorPlan) && $currentFloorPlan)
-                <a href="{{ route('booths.index', ['floor_plan_id' => $currentFloorPlan->id]) }}" class="btn btn-sm btn-info mr-2">
+                <a href="{{ route('booths.index', ['floor_plan_id' => $currentFloorPlan->id]) }}" class="btn btn-modern btn-modern-info btn-sm mr-2">
                     <i class="fas fa-map-marked-alt mr-1"></i>View Floor Plan Canvas
                 </a>
                 @endif
-                <a href="{{ route('books.index') }}" class="btn btn-sm btn-secondary">
+                <a href="{{ route('books.index') }}" class="btn btn-modern btn-sm" style="background: #6c757d; color: white;">
                     <i class="fas fa-arrow-left mr-1"></i>Back to Bookings
                 </a>
             </div>
         </div>
         <form action="{{ route('books.store') }}" method="POST" id="bookingForm">
             @csrf
-            <div class="card-body">
+            <div class="card-body" style="padding: 2rem;">
                 @if(isset($currentFloorPlan) && $currentFloorPlan)
-                <div class="alert alert-info">
-                    <i class="fas fa-map mr-2"></i>
-                    <strong>Booking for Floor Plan:</strong> {{ $currentFloorPlan->name }}
-                    @if($currentFloorPlan->event) - {{ $currentFloorPlan->event->title }} @endif
-                    <a href="{{ route('books.create') }}" class="btn btn-sm btn-secondary float-right">
-                        <i class="fas fa-times mr-1"></i>Clear Filter
-                    </a>
+                <div class="alert alert-modern alert-modern-info mb-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-map mr-2"></i>
+                            <strong>Booking for Floor Plan:</strong> {{ $currentFloorPlan->name }}
+                            @if($currentFloorPlan->event) - {{ $currentFloorPlan->event->title }} @endif
+                        </div>
+                        <a href="{{ route('books.create') }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-times mr-1"></i>Clear Filter
+                        </a>
+                    </div>
                 </div>
                 @endif
 
@@ -95,8 +391,8 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="form-group">
-                                <label for="floor_plan_filter" class="form-label">Filter Booths by Floor Plan</label>
-                                <select class="form-control" id="floor_plan_filter" name="floor_plan_filter" onchange="filterByFloorPlan(this.value)">
+                                <label for="floor_plan_filter" class="form-label font-weight-bold">Filter Booths by Floor Plan</label>
+                                <select class="form-control form-control-modern" id="floor_plan_filter" name="floor_plan_filter" onchange="filterByFloorPlan(this.value)">
                                     <option value="">All Floor Plans</option>
                                     @foreach($floorPlans as $fp)
                                         <option value="{{ $fp->id }}" {{ (isset($floorPlanId) && $floorPlanId == $fp->id) ? 'selected' : '' }}>
@@ -106,7 +402,7 @@
                                         </option>
                                     @endforeach
                                 </select>
-                                <small class="form-text text-muted">Select a floor plan to filter available booths, or leave blank to see all booths</small>
+                                <small class="form-text text-muted mt-1"><i class="fas fa-info-circle mr-1"></i>Select a floor plan to filter available booths, or leave blank to see all booths</small>
                             </div>
                         </div>
                     </div>
@@ -118,27 +414,57 @@
                     <h6><i class="fas fa-building mr-2"></i>Client Information</h6>
                     <div class="row">
                         <div class="col-md-8">
-                            <label for="clientid" class="form-label">Select Client <span class="text-danger">*</span></label>
-                            <select class="form-control @error('clientid') is-invalid @enderror" 
-                                    id="clientid" name="clientid" required>
-                                <option value="">Search or select a client...</option>
-                                @foreach($clients as $client)
-                                    <option value="{{ $client->id }}" {{ old('clientid') == $client->id ? 'selected' : '' }}>
-                                        {{ $client->company ?? $client->name }} 
-                                        @if($client->company && $client->name) - {{ $client->name }} @endif
-                                        @if($client->email) ({{ $client->email }}) @endif
-                                        @if($client->phone_number) | {{ $client->phone_number }} @endif
-                                    </option>
-                                @endforeach
-                            </select>
+                            <label for="clientid" class="form-label font-weight-bold">Select Client <span class="text-danger">*</span></label>
+                            <div style="position: relative;">
+                                <div class="input-group">
+                                    <input type="hidden" id="clientid" name="clientid" value="{{ old('clientid') }}" required>
+                                    <input type="text" 
+                                           class="form-control form-control-modern @error('clientid') is-invalid @enderror" 
+                                           id="clientSearchInline" 
+                                           placeholder="Start typing to search clients automatically..." 
+                                           autocomplete="off"
+                                           required>
+                                    <div class="input-group-prepend" style="position: absolute; right: 60px; top: 50%; transform: translateY(-50%); z-index: 10; pointer-events: none;">
+                                        <span class="input-group-text" style="background: transparent; border: none; padding: 0.5rem;">
+                                            <i class="fas fa-search text-muted" id="searchIcon"></i>
+                                        </span>
+                                    </div>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-modern btn-modern-primary" id="btnSearchSelectClient" data-toggle="modal" data-target="#searchClientModal">
+                                            <i class="fas fa-search mr-1"></i>Advanced
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="inlineClientResults" style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; margin-top: 0.5rem;">
+                                    <div class="card-modern" style="max-height: 400px; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
+                                        <div class="card-body p-2">
+                                            <div id="inlineClientResultsList"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="selectedClientInfo" class="mt-3" style="display: none;">
+                                <div class="selected-client-card">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong id="selectedClientName" class="d-block mb-1"></strong>
+                                            <small id="selectedClientDetails" class="text-muted"></small>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" id="btnClearClient">
+                                            <i class="fas fa-times mr-1"></i>Clear
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                             @error('clientid')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
+                            <small class="form-text text-muted mt-1"><i class="fas fa-info-circle mr-1"></i>Start typing to see automatic suggestions, or click "Advanced" for detailed search</small>
                         </div>
                         <div class="col-md-4">
-                            <label>&nbsp;</label>
+                            <label class="form-label font-weight-bold">&nbsp;</label>
                             <div>
-                                <button type="button" class="btn btn-success btn-block" data-toggle="modal" data-target="#createClientModal">
+                                <button type="button" class="btn btn-modern btn-modern-success btn-block" data-toggle="modal" data-target="#createClientModal">
                                     <i class="fas fa-plus mr-1"></i>New Client
                                 </button>
                             </div>
@@ -152,31 +478,29 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="date_book" class="form-label">Booking Date & Time <span class="text-danger">*</span></label>
+                                <label for="date_book" class="form-label font-weight-bold">Booking Date & Time <span class="text-danger">*</span></label>
                                 <input type="datetime-local" 
-                                       class="form-control @error('date_book') is-invalid @enderror" 
+                                       class="form-control form-control-modern @error('date_book') is-invalid @enderror" 
                                        id="date_book" 
                                        name="date_book" 
                                        value="{{ old('date_book', now()->format('Y-m-d\TH:i')) }}" 
                                        required>
                                 @error('date_book')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="type" class="form-label">Booking Type</label>
-                                <select class="form-control @error('type') is-invalid @enderror" id="type" name="type">
-                                    <option value="1" {{ old('type', 1) == 1 ? 'selected' : '' }}>
-                                        <i class="fas fa-calendar"></i> Regular
-                                    </option>
+                                <label for="type" class="form-label font-weight-bold">Booking Type</label>
+                                <select class="form-control form-control-modern @error('type') is-invalid @enderror" id="type" name="type">
+                                    <option value="1" {{ old('type', 1) == 1 ? 'selected' : '' }}>Regular</option>
                                     <option value="2" {{ old('type') == 2 ? 'selected' : '' }}>Special</option>
                                     <option value="3" {{ old('type') == 3 ? 'selected' : '' }}>Temporary</option>
                                 </select>
-                                <small class="form-text text-muted">Select the type of booking</small>
+                                <small class="form-text text-muted mt-1"><i class="fas fa-info-circle mr-1"></i>Select the type of booking</small>
                                 @error('type')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
@@ -185,13 +509,13 @@
 
                 <!-- Booth Selection -->
                 <div class="form-section">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
                         <h6 class="mb-0"><i class="fas fa-cube mr-2"></i>Select Booths <span class="text-danger">*</span></h6>
-                        <div class="btn-group btn-group-sm">
-                            <button type="button" class="btn btn-outline-primary" onclick="selectAllBooths()">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-modern btn-sm" style="background: linear-gradient(135deg, var(--booking-primary) 0%, var(--booking-secondary) 100%); color: white;" onclick="selectAllBooths()">
                                 <i class="fas fa-check-double mr-1"></i>Select All
                             </button>
-                            <button type="button" class="btn btn-outline-secondary" onclick="clearSelection()">
+                            <button type="button" class="btn btn-modern btn-sm" style="background: #6c757d; color: white;" onclick="clearSelection()">
                                 <i class="fas fa-times mr-1"></i>Clear
                             </button>
                         </div>
@@ -199,7 +523,7 @@
                     
                     <div class="row">
                         <div class="col-md-8">
-                            <div class="booth-selector" id="boothSelector" style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.35rem; padding: 1rem;">
+                            <div class="booth-selector" id="boothSelector">
                                 @if($booths->count() > 0)
                                     <div class="row">
                                         @foreach($booths as $booth)
@@ -212,26 +536,31 @@
                                                            class="booth-checkbox"
                                                            {{ in_array($booth->id, old('booth_ids', [])) ? 'checked' : '' }}
                                                            onchange="updateSelection()">
-                                                    <strong class="text-primary">{{ $booth->booth_number }}</strong>
-                                                    <span class="badge badge-{{ $booth->getStatusColor() }} ml-2">
-                                                        {{ $booth->getStatusLabel() }}
-                                                    </span>
-                                                    @if($booth->category)
-                                                    <br><small class="text-muted ml-4">
-                                                        <i class="fas fa-folder"></i> {{ $booth->category->name }}
-                                                    </small>
-                                                    @endif
-                                                    <div class="mt-1 text-right">
-                                                        <strong class="text-success">${{ number_format($booth->price, 2) }}</strong>
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <div>
+                                                            <strong style="color: var(--booking-primary); font-size: 1.1rem;">{{ $booth->booth_number }}</strong>
+                                                            <span class="badge-modern ml-2" style="background: linear-gradient(135deg, {{ $booth->getStatusColor() == 'success' ? '#1cc88a' : ($booth->getStatusColor() == 'warning' ? '#f6c23e' : ($booth->getStatusColor() == 'danger' ? '#e74a3b' : '#36b9cc')) }} 0%, {{ $booth->getStatusColor() == 'success' ? '#17a673' : ($booth->getStatusColor() == 'warning' ? '#dda20a' : ($booth->getStatusColor() == 'danger' ? '#c23321' : '#2c9faf')) }} 100%); color: white;">
+                                                                {{ $booth->getStatusLabel() }}
+                                                            </span>
+                                                        </div>
+                                                        <strong style="color: var(--booking-success); font-size: 1.2rem;">${{ number_format($booth->price, 2) }}</strong>
                                                     </div>
+                                                    @if($booth->category)
+                                                    <div class="mt-2">
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-folder mr-1" style="color: var(--booking-info);"></i>{{ $booth->category->name }}
+                                                        </small>
+                                                    </div>
+                                                    @endif
                                                 </label>
                                             </div>
                                         </div>
                                         @endforeach
                                     </div>
                                 @else
-                                    <div class="alert alert-warning">
-                                        <i class="fas fa-exclamation-triangle mr-2"></i>No available booths found.
+                                    <div class="alert alert-modern alert-warning text-center py-4">
+                                        <i class="fas fa-exclamation-triangle mr-2" style="font-size: 2rem;"></i>
+                                        <p class="mb-0 mt-2"><strong>No available booths found.</strong></p>
                                     </div>
                                 @endif
                             </div>
@@ -242,17 +571,17 @@
                         <div class="col-md-4">
                             <div class="selected-booths-summary">
                                 <h6 class="mb-3"><i class="fas fa-list mr-2"></i>Selected Booths</h6>
-                                <div id="selectedBoothsList" class="mb-3" style="max-height: 250px; overflow-y: auto; min-height: 100px;">
+                                <div id="selectedBoothsList" class="mb-3" style="max-height: 300px; overflow-y: auto; min-height: 100px;">
                                     <p class="text-muted text-center mb-0 py-4">No booths selected</p>
                                 </div>
-                                <hr>
-                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                <hr style="border-color: rgba(102, 126, 234, 0.2);">
+                                <div class="d-flex justify-content-between align-items-center mb-3 p-2" style="background: rgba(102, 126, 234, 0.05); border-radius: 8px;">
                                     <strong><i class="fas fa-cube mr-1"></i>Total Booths:</strong>
-                                    <span id="totalBooths" class="badge badge-info badge-lg">0</span>
+                                    <span id="totalBooths" class="badge-modern badge-modern-primary" style="font-size: 1rem; padding: 0.5rem 1rem;">0</span>
                                 </div>
-                                <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex justify-content-between align-items-center p-2" style="background: linear-gradient(135deg, rgba(28, 200, 138, 0.1) 0%, rgba(23, 166, 115, 0.1) 100%); border-radius: 8px;">
                                     <strong><i class="fas fa-dollar-sign mr-1"></i>Total Amount:</strong>
-                                    <span id="totalAmount" class="text-success font-weight-bold" style="font-size: 1.2rem;">$0.00</span>
+                                    <span id="totalAmount" class="font-weight-bold" style="font-size: 1.3rem; color: var(--booking-success);">$0.00</span>
                                 </div>
                             </div>
                         </div>
@@ -262,16 +591,70 @@
                     </small>
                 </div>
             </div>
-            <div class="card-footer">
-                <button type="submit" class="btn btn-primary" id="submitBtn">
+            <div class="card-footer" style="background: rgba(102, 126, 234, 0.05); border-top: 1px solid rgba(102, 126, 234, 0.1); padding: 1.5rem;">
+                <button type="submit" class="btn btn-modern btn-modern-primary" id="submitBtn">
                     <i class="fas fa-save mr-1"></i>Create Booking
                 </button>
-                <a href="{{ route('books.index') }}" class="btn btn-default">Cancel</a>
-                <span id="selectionWarning" class="text-danger ml-3" style="display: none;">
+                <a href="{{ route('books.index') }}" class="btn btn-modern" style="background: #6c757d; color: white; margin-left: 0.5rem;">Cancel</a>
+                <span id="selectionWarning" class="text-danger ml-3" style="display: none; font-weight: 600;">
                     <i class="fas fa-exclamation-triangle mr-1"></i>Please select at least one booth
                 </span>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- Search & Select Client Modal -->
+<div class="modal fade" id="searchClientModal" tabindex="-1" role="dialog" aria-labelledby="searchClientModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content modal-content-modern">
+            <div class="modal-header modal-header-modern">
+                <h5 class="modal-title" id="searchClientModalLabel">
+                    <i class="fas fa-search mr-2"></i>Search & Select Client
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 2rem;">
+                <div class="form-group">
+                    <label for="clientSearchInput" class="font-weight-bold mb-2">
+                        <i class="fas fa-search mr-1"></i> Search Client
+                    </label>
+                    <div class="input-group">
+                        <input type="text" 
+                               class="form-control form-control-modern" 
+                               id="clientSearchInput" 
+                               placeholder="Type to search by name, company, email, or phone number..." 
+                               autocomplete="off">
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-modern btn-modern-primary" id="btnSearchClient">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                            <button type="button" class="btn btn-modern" id="btnClearClientSearch" style="background: #6c757d; color: white; display: none;">
+                                <i class="fas fa-times"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                    <small class="form-text text-muted mt-2"><i class="fas fa-info-circle mr-1"></i>Type at least 2 characters to search for existing clients</small>
+                </div>
+                
+                <div id="clientSearchResults" class="mt-4" style="display: none;">
+                    <h6 class="mb-3 font-weight-bold"><i class="fas fa-list mr-1"></i>Search Results</h6>
+                    <div id="clientSearchResultsList" style="max-height: 450px; overflow-y: auto;"></div>
+                </div>
+                
+                <div id="noClientResults" class="alert alert-modern alert-modern-info mt-4 text-center" style="display: none;">
+                    <i class="fas fa-info-circle mr-2" style="font-size: 1.5rem;"></i>
+                    <p class="mb-0 mt-2"><strong>No clients found.</strong> You can create a new client using the "New Client" button.</p>
+                </div>
+            </div>
+            <div class="modal-footer" style="background: rgba(102, 126, 234, 0.05); border-top: 1px solid rgba(102, 126, 234, 0.1);">
+                <button type="button" class="btn btn-modern" style="background: #6c757d; color: white;" data-dismiss="modal">
+                    <i class="fas fa-times mr-1"></i>Close
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -429,26 +812,23 @@ $(document).ready(function() {
                 if (response.status === 'success' && response.client) {
                     const client = response.client;
                     
-                    // Add new client to dropdown
-                    const clientSelect = $('#clientid');
-                    const optionText = client.company + (client.name ? ' - ' + client.name : '') + 
-                                     (client.email ? ' (' + client.email + ')' : '') + 
-                                     (client.phone_number ? ' | ' + client.phone_number : '');
-                    
-                    const newOption = $('<option></option>')
-                        .attr('value', client.id)
-                        .text(optionText);
-                    
-                    clientSelect.append(newOption);
-                    
-                    // Select the newly created client
-                    clientSelect.val(client.id);
-                    
-                    // If Select2 is initialized, trigger change for Select2
-                    if (clientSelect.hasClass('select2-hidden-accessible')) {
-                        clientSelect.trigger('change.select2');
+                    // Select the newly created client using the selectClient function
+                    if (typeof selectClient === 'function') {
+                        selectClient(client);
                     } else {
-                        clientSelect.trigger('change');
+                        // Fallback if selectClient is not available
+                        $('#clientid').val(client.id);
+                        const displayText = client.company + (client.name ? ' - ' + client.name : '') + 
+                                         (client.email ? ' (' + client.email + ')' : '') + 
+                                         (client.phone_number ? ' | ' + client.phone_number : '');
+                        $('#clientSearchInline').val(displayText);
+                        $('#selectedClientName').text(client.company || client.name);
+                        let details = [];
+                        if (client.name && client.company) details.push(client.name);
+                        if (client.email) details.push(client.email);
+                        if (client.phone_number) details.push(client.phone_number);
+                        $('#selectedClientDetails').text(details.join(' • '));
+                        $('#selectedClientInfo').show();
                     }
                     
                     // Close modal and reset form
@@ -499,17 +879,403 @@ $(document).ready(function() {
     });
 });
 
-// Select2 for client dropdown
+    // Client Search & Select Functionality
 $(document).ready(function() {
-    if (typeof $.fn.select2 !== 'undefined') {
-        $('#clientid').select2({
-            placeholder: 'Search or select a client...',
-            allowClear: true,
-            theme: 'bootstrap4',
-            width: '100%',
-            dropdownParent: $('#clientid').closest('.form-section')
+    let clientSearchTimeout;
+    let inlineSearchTimeout;
+    let selectedClient = null;
+    
+    // Initialize - check if client is already selected
+    @if(old('clientid'))
+        const oldClientId = {{ old('clientid') }};
+        // Try to find and display the selected client
+        $.ajax({
+            url: '{{ route("clients.search") }}',
+            method: 'GET',
+            data: { q: '', id: oldClientId },
+            success: function(clients) {
+                if (clients && clients.length > 0) {
+                    const client = clients.find(c => c.id == oldClientId);
+                    if (client) {
+                        selectClient(client);
+                    }
+                }
+            }
+        });
+    @endif
+    
+    // Inline Client Search - Auto-suggest function
+    function searchClientsInline(query) {
+        if (!query || query.length < 2) {
+            $('#inlineClientResults').hide();
+            return;
+        }
+        
+        // Show loading indicator
+        const resultsDiv = $('#inlineClientResults');
+        const resultsList = $('#inlineClientResultsList');
+        const searchIcon = $('#searchIcon');
+        
+        // Update search icon to show loading
+        if (searchIcon.length) {
+            searchIcon.removeClass('fa-search').addClass('fa-spinner fa-spin');
+        }
+        
+        resultsDiv.show();
+        resultsList.html('<div class="text-center p-3"><i class="fas fa-spinner fa-spin mr-2"></i>Searching clients...</div>');
+        
+        $.ajax({
+            url: '{{ route("clients.search") }}',
+            method: 'GET',
+            data: { q: query },
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            success: function(clients) {
+                // Reset search icon
+                const searchIcon = $('#searchIcon');
+                if (searchIcon.length) {
+                    searchIcon.removeClass('fa-spinner fa-spin').addClass('fa-search');
+                }
+                
+                resultsList.empty();
+                
+                if (!clients || clients.length === 0) {
+                    resultsList.html('<div class="text-center p-3 text-muted"><i class="fas fa-info-circle mr-2"></i>No clients found. Try different keywords or create a new client.</div>');
+                    return;
+                }
+                
+                // Show up to 8 results for better visibility
+                clients.slice(0, 8).forEach(function(client, index) {
+                    const displayName = (client.company || client.name);
+                    const highlightQuery = query.toLowerCase();
+                    
+                    // Highlight matching text
+                    let highlightedName = displayName;
+                    if (highlightQuery) {
+                        // Escape special regex characters
+                        const escapedQuery = highlightQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                        const regex = new RegExp(`(${escapedQuery})`, 'gi');
+                        highlightedName = displayName.replace(regex, '<mark style="background: rgba(102, 126, 234, 0.2); padding: 0.1rem 0.2rem; border-radius: 3px; font-weight: 600;">$1</mark>');
+                    }
+                    
+                    const item = $('<div class="client-search-result" style="margin: 0.5rem; cursor: pointer;"></div>')
+                        .html('<div class="d-flex justify-content-between align-items-start">' +
+                            '<div class="flex-grow-1">' +
+                                '<h6 class="mb-1 font-weight-bold" style="color: #1a1a2e; font-size: 0.95rem;">' + 
+                                    '<i class="fas fa-building mr-2" style="color: var(--booking-primary);"></i>' +
+                                    highlightedName + 
+                                '</h6>' +
+                                (client.name && client.company ? '<div class="mb-1"><i class="fas fa-user mr-2 text-muted" style="font-size: 0.75rem;"></i><small class="text-muted">' + client.name + '</small></div>' : '') +
+                                (client.email ? '<div class="mb-1"><i class="fas fa-envelope mr-2 text-primary" style="font-size: 0.8rem;"></i><small>' + client.email + '</small></div>' : '') +
+                                (client.phone_number ? '<div><i class="fas fa-phone mr-2 text-success" style="font-size: 0.8rem;"></i><small>' + client.phone_number + '</small></div>' : '') +
+                            '</div>' +
+                            '<button type="button" class="btn btn-modern btn-modern-primary btn-sm select-client-inline-btn ml-2" data-client-id="' + client.id + '" style="align-self: center;">' +
+                                '<i class="fas fa-check"></i>' +
+                            '</button>' +
+                            '</div>')
+                        .data('client', client);
+                    
+                    // Add hover effect
+                    item.on('mouseenter', function() {
+                        $(this).css('background', 'linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%)');
+                    }).on('mouseleave', function() {
+                        if (!$(this).hasClass('highlighted')) {
+                            $(this).css('background', 'white');
+                        }
+                    });
+                    
+                    resultsList.append(item);
+                });
+                
+                // Bind inline select button click
+                $(document).off('click', '.select-client-inline-btn').on('click', '.select-client-inline-btn', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const client = $(this).closest('.client-search-result').data('client');
+                    if (client) {
+                        selectClient(client);
+                        $('#inlineClientResults').hide();
+                    }
+                });
+                
+                // Bind inline result item click
+                $(document).off('click', '#inlineClientResultsList .client-search-result').on('click', '#inlineClientResultsList .client-search-result', function(e) {
+                    if (!$(e.target).closest('.select-client-inline-btn').length) {
+                        e.preventDefault();
+                        const client = $(this).data('client');
+                        if (client) {
+                            selectClient(client);
+                            $('#inlineClientResults').hide();
+                        }
+                    }
+                });
+            },
+            error: function() {
+                // Reset search icon
+                const searchIcon = $('#searchIcon');
+                if (searchIcon.length) {
+                    searchIcon.removeClass('fa-spinner fa-spin').addClass('fa-search');
+                }
+                resultsList.html('<div class="text-center p-3 text-danger"><i class="fas fa-exclamation-triangle mr-2"></i>Error searching clients. Please try again.</div>');
+            }
         });
     }
+    
+    // Inline search input handler - Auto-suggest as user types
+    $('#clientSearchInline').on('input keyup paste', function(e) {
+        // Don't trigger on arrow keys, enter, escape, etc.
+        if ([38, 40, 13, 27].includes(e.keyCode)) {
+            return;
+        }
+        
+        const query = $(this).val().trim();
+        
+        clearTimeout(inlineSearchTimeout);
+        
+        // If query is empty or too short, hide results
+        if (query.length < 2) {
+            $('#inlineClientResults').hide();
+            // Reset search icon
+            const searchIcon = $('#searchIcon');
+            if (searchIcon.length) {
+                searchIcon.removeClass('fa-spinner fa-spin').addClass('fa-search');
+            }
+            // If cleared, also clear selection
+            if (query.length === 0 && selectedClient) {
+                selectedClient = null;
+                $('#clientid').val('');
+                $('#selectedClientInfo').hide();
+            }
+            return;
+        }
+        
+        // Auto-search after 300ms delay (debounce)
+        inlineSearchTimeout = setTimeout(function() {
+            searchClientsInline(query);
+        }, 300);
+    });
+    
+    // Handle keyboard navigation in inline results
+    $('#clientSearchInline').on('keydown', function(e) {
+        const results = $('#inlineClientResults:visible');
+        if (results.length === 0) return;
+        
+        const items = results.find('.client-search-result');
+        if (items.length === 0) return;
+        
+        let currentIndex = items.index(items.filter('.highlighted'));
+        
+        if (e.keyCode === 40) { // Down arrow
+            e.preventDefault();
+            items.removeClass('highlighted');
+            currentIndex = (currentIndex + 1) % items.length;
+            items.eq(currentIndex).addClass('highlighted').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else if (e.keyCode === 38) { // Up arrow
+            e.preventDefault();
+            items.removeClass('highlighted');
+            currentIndex = currentIndex <= 0 ? items.length - 1 : currentIndex - 1;
+            items.eq(currentIndex).addClass('highlighted').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else if (e.keyCode === 13) { // Enter
+            e.preventDefault();
+            const highlighted = items.filter('.highlighted');
+            if (highlighted.length > 0) {
+                const client = highlighted.data('client');
+                if (client) {
+                    selectClient(client);
+                    $('#inlineClientResults').hide();
+                }
+            } else if (items.length > 0) {
+                // Select first item if none highlighted
+                const client = items.first().data('client');
+                if (client) {
+                    selectClient(client);
+                    $('#inlineClientResults').hide();
+                }
+            }
+        } else if (e.keyCode === 27) { // Escape
+            $('#inlineClientResults').hide();
+        }
+    });
+    
+    // Hide inline results when clicking outside
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('#clientSearchInline, #inlineClientResults').length) {
+            $('#inlineClientResults').hide();
+        }
+    });
+    
+    // Prevent form submission when selecting from dropdown
+    $('#clientSearchInline').on('keydown', function(e) {
+        if (e.keyCode === 13 && $('#inlineClientResults:visible').length > 0) {
+            e.preventDefault();
+        }
+    });
+    
+    // Client Search Function
+    function searchClients(query) {
+        if (!query || query.length < 2) {
+            $('#clientSearchResults').hide();
+            $('#noClientResults').hide();
+            return;
+        }
+        
+        $.ajax({
+            url: '{{ route("clients.search") }}',
+            method: 'GET',
+            data: { q: query },
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            success: function(clients) {
+                const resultsDiv = $('#clientSearchResults');
+                const resultsList = $('#clientSearchResultsList');
+                const noResultsDiv = $('#noClientResults');
+                
+                resultsList.empty();
+                
+                if (!clients || clients.length === 0) {
+                    resultsDiv.hide();
+                    noResultsDiv.show();
+                    return;
+                }
+                
+                noResultsDiv.hide();
+                resultsDiv.show();
+                
+                clients.forEach(function(client) {
+                    const item = $('<div class="client-search-result"></div>')
+                        .html('<div class="d-flex justify-content-between align-items-start">' +
+                            '<div class="flex-grow-1">' +
+                                '<h6 class="mb-2 font-weight-bold" style="color: #1a1a2e;">' + 
+                                    '<i class="fas fa-building mr-2" style="color: var(--booking-primary);"></i>' +
+                                    (client.company || client.name) + 
+                                '</h6>' +
+                                (client.name && client.company ? '<p class="mb-2 text-muted"><small><i class="fas fa-user mr-1"></i>' + client.name + '</small></p>' : '') +
+                                '<div class="mb-1">' +
+                                    (client.email ? '<div class="mb-1"><i class="fas fa-envelope mr-2 text-primary"></i><small>' + client.email + '</small></div>' : '') +
+                                    (client.phone_number ? '<div class="mb-1"><i class="fas fa-phone mr-2 text-success"></i><small>' + client.phone_number + '</small></div>' : '') +
+                                    (client.address ? '<div class="mb-1"><i class="fas fa-map-marker-alt mr-2 text-info"></i><small>' + client.address + '</small></div>' : '') +
+                                '</div>' +
+                            '</div>' +
+                            '<button type="button" class="btn btn-modern btn-modern-primary btn-sm select-client-btn ml-3" data-client-id="' + client.id + '" style="align-self: center;">' +
+                                '<i class="fas fa-check mr-1"></i>Select' +
+                            '</button>' +
+                            '</div>')
+                        .data('client', client);
+                    
+                    resultsList.append(item);
+                });
+                
+                // Bind select button click
+                $('.select-client-btn').on('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const client = $(this).closest('.client-search-result').data('client');
+                    selectClient(client);
+                });
+                
+                // Bind result item click
+                resultsList.find('.client-search-result').on('click', function(e) {
+                    if (!$(e.target).closest('.select-client-btn').length) {
+                        e.preventDefault();
+                        const client = $(this).data('client');
+                        selectClient(client);
+                    }
+                });
+            },
+            error: function() {
+                $('#clientSearchResults').hide();
+                $('#noClientResults').show();
+            }
+        });
+    }
+    
+    // Select Client Function
+    function selectClient(client) {
+        selectedClient = client;
+        
+        // Set hidden input value
+        $('#clientid').val(client.id);
+        
+        // Update display input
+        const displayText = (client.company || client.name) + 
+            (client.email ? ' (' + client.email + ')' : '') + 
+            (client.phone_number ? ' | ' + client.phone_number : '');
+        $('#clientSearchInline').val(displayText);
+        
+        // Show selected client info
+        $('#selectedClientName').text(client.company || client.name);
+        let details = [];
+        if (client.name && client.company) details.push(client.name);
+        if (client.email) details.push(client.email);
+        if (client.phone_number) details.push(client.phone_number);
+        $('#selectedClientDetails').text(details.join(' • '));
+        $('#selectedClientInfo').show();
+        
+        // Close modal
+        $('#searchClientModal').modal('hide');
+        
+        // Clear search
+        $('#clientSearchInput').val('');
+        $('#clientSearchResults').hide();
+        $('#noClientResults').hide();
+        $('#btnClearClientSearch').hide();
+        $('#inlineClientResults').hide();
+    }
+    
+    // Clear Client Selection
+    $('#btnClearClient').on('click', function() {
+        selectedClient = null;
+        $('#clientid').val('');
+        $('#clientSearchInline').val('');
+        $('#selectedClientInfo').hide();
+        $('#inlineClientResults').hide();
+    });
+    
+    // Search input handlers
+    $('#clientSearchInput').on('input keyup', function(e) {
+        const query = $(this).val().trim();
+        
+        clearTimeout(clientSearchTimeout);
+        
+        if (query.length < 2) {
+            $('#clientSearchResults').hide();
+            $('#noClientResults').hide();
+            $('#btnClearClientSearch').hide();
+            return;
+        }
+        
+        $('#btnClearClientSearch').show();
+        
+        clientSearchTimeout = setTimeout(function() {
+            searchClients(query);
+        }, 300);
+    });
+    
+    $('#btnSearchClient').on('click', function() {
+        const query = $('#clientSearchInput').val().trim();
+        if (query.length >= 2) {
+            searchClients(query);
+        }
+    });
+    
+    $('#btnClearClientSearch').on('click', function() {
+        $('#clientSearchInput').val('');
+        $('#clientSearchResults').hide();
+        $('#noClientResults').hide();
+        $(this).hide();
+    });
+    
+    // Reset modal when closed
+    $('#searchClientModal').on('hidden.bs.modal', function() {
+        $('#clientSearchInput').val('');
+        $('#clientSearchResults').hide();
+        $('#noClientResults').hide();
+        $('#btnClearClientSearch').hide();
+    });
     
     // Update selection on page load if there are checked boxes
     updateSelection();
@@ -547,9 +1313,9 @@ function updateSelection() {
     if (selected.length > 0) {
         let html = '';
         selected.forEach(function(booth) {
-            html += '<div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded border">';
-            html += '<div><i class="fas fa-cube text-primary mr-1"></i><strong>' + booth.number + '</strong></div>';
-            html += '<strong class="text-success">$' + booth.price.toFixed(2) + '</strong>';
+            html += '<div class="d-flex justify-content-between align-items-center mb-2 p-2" style="background: rgba(102, 126, 234, 0.05); border-radius: 8px; border: 1px solid rgba(102, 126, 234, 0.1);">';
+            html += '<div><i class="fas fa-cube mr-2" style="color: var(--booking-primary);"></i><strong>' + booth.number + '</strong></div>';
+            html += '<strong style="color: var(--booking-success); font-size: 1.1rem;">$' + booth.price.toFixed(2) + '</strong>';
             html += '</div>';
         });
         listContainer.html(html);

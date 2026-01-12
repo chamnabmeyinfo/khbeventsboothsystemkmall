@@ -253,6 +253,11 @@ class BookController extends Controller
                 $eventId = $floorPlan ? $floorPlan->event_id : null;
             }
             
+            // Map booking type to booth status
+            // Booking types: 1=Regular=RESERVED, 2=Special=CONFIRMED, 3=Temporary=RESERVED
+            $bookingType = $validated['type'] ?? 1;
+            $boothStatus = ($bookingType == 2) ? Booth::STATUS_CONFIRMED : Booth::STATUS_RESERVED;
+            
             // Create booking with project/floor plan tracking
             $book = Book::create([
                 'event_id' => $eventId,
@@ -261,7 +266,7 @@ class BookController extends Controller
                 'boothid' => json_encode($validated['booth_ids']),
                 'date_book' => $validated['date_book'],
                 'userid' => auth()->user()->id,
-                'type' => $validated['type'] ?? 1,
+                'type' => $bookingType,
             ]);
 
             // Update booths status - use lockForUpdate to prevent race conditions
@@ -269,7 +274,7 @@ class BookController extends Controller
                 ->whereIn('status', [Booth::STATUS_AVAILABLE, Booth::STATUS_HIDDEN])
                 ->lockForUpdate()
                 ->update([
-                    'status' => Booth::STATUS_RESERVED,
+                    'status' => $boothStatus,
                     'client_id' => $validated['clientid'],
                     'userid' => auth()->user()->id,
                     'bookid' => $book->id,
