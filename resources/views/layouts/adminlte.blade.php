@@ -96,39 +96,22 @@
         }
         
         /* ============================================
-           ULTRA MODERN SIDEBAR DESIGN 2026
-           Glassmorphism + Vibrant Gradients + Smooth Animations
+           ULTRA MODERN SIDEBAR DESIGN 2026 - CLEAN & CLEAR
+           Minimalist Design with Perfect Spacing
            ============================================ */
         
-        /* Sidebar Container - Glassmorphism Effect */
+        /* Sidebar Container - Clean Modern Design */
         .main-sidebar {
-            background: linear-gradient(135deg, 
-                rgba(30, 30, 46, 0.95) 0%, 
-                rgba(20, 20, 35, 0.98) 50%,
-                rgba(15, 15, 30, 1) 100%);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: linear-gradient(180deg, 
+                #1a1f3a 0%, 
+                #15182e 50%,
+                #0f1222 100%);
             box-shadow: 
-                4px 0 20px rgba(0, 0, 0, 0.3),
-                inset -1px 0 0 rgba(255, 255, 255, 0.05);
-            border-right: 1px solid rgba(255, 255, 255, 0.08);
+                2px 0 24px rgba(0, 0, 0, 0.15),
+                inset -1px 0 0 rgba(255, 255, 255, 0.03);
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
             position: relative;
             overflow: hidden;
-        }
-        
-        .main-sidebar::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 200px;
-            background: linear-gradient(180deg, 
-                rgba(102, 126, 234, 0.15) 0%,
-                rgba(118, 75, 162, 0.1) 50%,
-                transparent 100%);
-            pointer-events: none;
-            z-index: 0;
         }
         
         .main-sidebar > * {
@@ -136,260 +119,149 @@
             z-index: 1;
         }
         
-        /* Brand Logo - Modern Glass Card */
+        /* Brand Logo - Clean & Minimal */
         .brand-link {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 1.5rem 1.5rem;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 1.25rem 1.5rem;
+            transition: all 0.3s ease;
             position: relative;
-            overflow: hidden;
-        }
-        
-        .brand-link::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, 
-                transparent, 
-                rgba(102, 126, 234, 0.1), 
-                transparent);
-            transition: left 0.6s ease;
-        }
-        
-        .brand-link:hover::before {
-            left: 100%;
         }
         
         .brand-link:hover {
-            background: rgba(255, 255, 255, 0.06);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.2);
+            background: rgba(255, 255, 255, 0.04);
         }
         
         .brand-image {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%) !important;
-            box-shadow: 
-                0 8px 32px rgba(102, 126, 234, 0.4),
-                0 0 0 3px rgba(102, 126, 234, 0.2),
-                inset 0 2px 4px rgba(255, 255, 255, 0.2);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            animation: gradientShift 3s ease infinite;
-        }
-        
-        @keyframes gradientShift {
-            0%, 100% { 
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            }
-            50% { 
-                background: linear-gradient(135deg, #764ba2 0%, #f093fb 50%, #667eea 100%);
-            }
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
         }
         
         .brand-link:hover .brand-image {
-            transform: scale(1.15) rotate(5deg);
-            box-shadow: 
-                0 12px 40px rgba(102, 126, 234, 0.5),
-                0 0 0 4px rgba(102, 126, 234, 0.3),
-                inset 0 2px 4px rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
         
         .brand-text {
             font-weight: 700;
-            font-size: 1.15rem;
-            letter-spacing: 0.8px;
-            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            color: #ffffff;
         }
         
-        /* User Panel - Modern Card Design */
+        /* User Panel - Clean Card */
         .user-panel {
-            background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 1.25rem 1rem;
-            margin: 1rem 1rem 1.5rem 1rem;
-            box-shadow: 
-                0 4px 16px rgba(0, 0, 0, 0.2),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 1rem 1rem 1.25rem 1rem;
             transition: all 0.3s ease;
         }
         
         .user-panel:hover {
-            background: rgba(255, 255, 255, 0.06);
-            transform: translateY(-2px);
-            box-shadow: 
-                0 8px 24px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(102, 126, 234, 0.2);
         }
         
         .user-panel .image span {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-            box-shadow: 
-                0 6px 20px rgba(102, 126, 234, 0.4),
-                0 0 0 2px rgba(102, 126, 234, 0.2);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
             transition: all 0.3s ease;
         }
         
         .user-panel:hover .image span {
-            transform: scale(1.1) rotate(5deg);
-            box-shadow: 
-                0 8px 28px rgba(102, 126, 234, 0.5),
-                0 0 0 3px rgba(102, 126, 234, 0.3);
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
         }
         
         .user-panel .info a {
-            font-weight: 700;
-            font-size: 1rem;
+            font-weight: 600;
+            font-size: 0.95rem;
             color: #ffffff;
             text-decoration: none;
-            letter-spacing: 0.3px;
         }
         
         .user-panel .info small {
-            color: rgba(255, 255, 255, 0.7) !important;
-            font-weight: 500;
+            color: rgba(255, 255, 255, 0.65) !important;
+            font-weight: 400;
+            font-size: 0.8rem;
         }
         
-        /* Navigation Links - Ultra Modern Design */
+        /* Navigation Links - Clean & Clear */
         .nav-link {
-            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 12px;
-            margin: 0.3rem 0.75rem;
-            padding: 0.85rem 1.15rem;
+            transition: all 0.25s ease;
+            border-radius: 10px;
+            margin: 0.25rem 0.75rem;
+            padding: 0.75rem 1rem;
             position: relative;
-            overflow: hidden;
             background: transparent;
-            border: 1px solid transparent;
+            border: none;
         }
         
         .nav-link::before {
             content: '';
             position: absolute;
             left: 0;
-            top: 0;
-            height: 100%;
-            width: 4px;
-            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
-            transform: scaleY(0);
-            transform-origin: bottom;
-            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 0 4px 4px 0;
-        }
-        
-        .nav-link::after {
-            content: '';
-            position: absolute;
             top: 50%;
-            left: 0;
-            width: 100%;
+            transform: translateY(-50%);
             height: 0;
-            background: linear-gradient(90deg, 
-                rgba(102, 126, 234, 0.15) 0%,
-                rgba(118, 75, 162, 0.1) 100%);
-            transform: translateY(-50%) scaleX(0);
-            transform-origin: left;
-            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: -1;
-            border-radius: 12px;
+            width: 3px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            border-radius: 0 3px 3px 0;
+            transition: height 0.25s ease;
         }
         
         .nav-link:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(102, 126, 234, 0.3);
-            transform: translateX(6px);
-            box-shadow: 
-                0 4px 12px rgba(102, 126, 234, 0.2),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        }
-        
-        .nav-link:hover::before {
-            transform: scaleY(1);
-        }
-        
-        .nav-link:hover::after {
-            transform: translateY(-50%) scaleX(1);
-        }
-        
-        .nav-link.active {
-            background: linear-gradient(90deg, 
-                rgba(102, 126, 234, 0.25) 0%,
-                rgba(118, 75, 162, 0.15) 100%);
-            border-color: rgba(102, 126, 234, 0.4);
-            color: #ffffff;
-            font-weight: 700;
-            box-shadow: 
-                0 6px 20px rgba(102, 126, 234, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.15),
-                0 0 0 1px rgba(102, 126, 234, 0.2);
+            background: rgba(255, 255, 255, 0.04);
             transform: translateX(4px);
         }
         
+        .nav-link:hover::before {
+            height: 60%;
+        }
+        
+        .nav-link.active {
+            background: rgba(102, 126, 234, 0.15);
+            color: #ffffff;
+            font-weight: 600;
+        }
+        
         .nav-link.active::before {
-            transform: scaleY(1);
-            box-shadow: 0 0 10px rgba(102, 126, 234, 0.6);
+            height: 70%;
+            box-shadow: 0 0 8px rgba(102, 126, 234, 0.5);
         }
         
-        .nav-link.active::after {
-            transform: translateY(-50%) scaleX(1);
-        }
-        
-        /* Navigation Icons - Animated */
+        /* Navigation Icons */
         .nav-icon {
-            width: 22px;
+            width: 20px;
             text-align: center;
-            margin-right: 0.85rem;
-            font-size: 1.15rem;
-            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
+            margin-right: 0.75rem;
+            font-size: 1rem;
+            transition: all 0.25s ease;
             display: inline-block;
         }
         
         .nav-link:hover .nav-icon {
-            transform: scale(1.2) rotate(5deg);
+            transform: scale(1.1);
             color: #667eea;
-            text-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
         }
         
         .nav-link.active .nav-icon {
             color: #ffffff;
-            transform: scale(1.15);
-            text-shadow: 0 0 15px rgba(102, 126, 234, 0.6);
         }
         
-        /* Section Headers - Modern Gradient Design */
+        /* Section Headers - Clean Design */
         .nav-header {
-            color: rgba(255, 255, 255, 0.6) !important;
-            font-size: 0.7rem !important;
-            font-weight: 800 !important;
+            color: rgba(255, 255, 255, 0.5) !important;
+            font-size: 0.65rem !important;
+            font-weight: 700 !important;
             text-transform: uppercase !important;
-            letter-spacing: 1.5px;
-            padding: 1.25rem 1.5rem 0.75rem 1.5rem !important;
-            margin-top: 0.75rem;
+            letter-spacing: 1px;
+            padding: 1rem 1.5rem 0.5rem 1.5rem !important;
+            margin-top: 0.5rem;
             position: relative;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 8px;
-            margin-left: 0.75rem;
-            margin-right: 0.75rem;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        
-        .nav-header::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 3px;
-            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
-            border-radius: 0 3px 3px 0;
         }
         
         .nav-header::after {
@@ -401,44 +273,36 @@
             height: 1px;
             background: linear-gradient(90deg, 
                 transparent 0%,
-                rgba(102, 126, 234, 0.3) 50%,
+                rgba(255, 255, 255, 0.1) 50%,
                 transparent 100%);
         }
         
         .nav-header i {
-            margin-right: 0.6rem;
-            font-size: 0.9rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            margin-right: 0.5rem;
+            font-size: 0.75rem;
+            color: rgba(102, 126, 234, 0.6);
         }
         
-        /* Treeview - Modern Collapsible */
+        /* Treeview */
         .nav-treeview {
-            padding-left: 0.75rem;
+            padding-left: 0.5rem;
             margin-top: 0.25rem;
         }
         
         .nav-treeview .nav-link {
-            padding-left: 3rem;
-            font-size: 0.9rem;
-            margin: 0.25rem 0.75rem;
-            border-left: 2px solid transparent;
-        }
-        
-        .nav-treeview .nav-link:hover {
-            padding-left: 3.25rem;
-            border-left-color: rgba(102, 126, 234, 0.4);
+            padding-left: 2.5rem;
+            font-size: 0.875rem;
+            margin: 0.2rem 0.75rem;
         }
         
         .has-treeview > .nav-link {
-            font-weight: 600;
+            font-weight: 500;
         }
         
         .has-treeview > .nav-link .right {
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            color: rgba(255, 255, 255, 0.5);
+            transition: transform 0.3s ease;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.75rem;
         }
         
         .has-treeview.menu-open > .nav-link .right {
@@ -446,69 +310,56 @@
             color: #667eea;
         }
         
-        /* Badge - Modern Pulse Animation */
+        /* Badge */
         .nav-link .badge {
             position: absolute;
             right: 1rem;
             top: 50%;
             transform: translateY(-50%);
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
-            animation: pulseGlow 2s ease-in-out infinite;
+            box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
         }
         
-        @keyframes pulseGlow {
-            0%, 100% { 
-                opacity: 1;
-                box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
-            }
-            50% { 
-                opacity: 0.8;
-                box-shadow: 0 4px 20px rgba(245, 87, 108, 0.6);
-                transform: translateY(-50%) scale(1.1);
-            }
-        }
-        
-        /* Scrollbar - Modern Design */
+        /* Scrollbar */
         .sidebar::-webkit-scrollbar {
-            width: 8px;
+            width: 6px;
         }
         
         .sidebar::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.1);
         }
         
         .sidebar::-webkit-scrollbar-thumb {
-            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
-            border-radius: 4px;
-            box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+            background: rgba(102, 126, 234, 0.3);
+            border-radius: 3px;
         }
         
         .sidebar::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(180deg, #764ba2 0%, #667eea 100%);
+            background: rgba(102, 126, 234, 0.5);
         }
         
         /* Spacing & Typography */
         .sidebar .nav {
-            padding: 0.75rem 0;
+            padding: 0.5rem 0;
         }
         
         .nav-item {
-            margin-bottom: 0.2rem;
+            margin-bottom: 0.15rem;
         }
         
         .nav-link p {
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
             margin: 0;
-            font-size: 0.95rem;
-            font-weight: 500;
-            letter-spacing: 0.2px;
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.85);
         }
         
         .nav-link.active p {
             color: #ffffff;
-            font-weight: 700;
+            font-weight: 600;
         }
         
         .nav-link:hover p {
@@ -518,20 +369,18 @@
         /* Mobile Responsive */
         @media (max-width: 768px) {
             .nav-link {
-                margin: 0.25rem 0.5rem;
-                padding: 0.75rem 1rem;
+                margin: 0.2rem 0.5rem;
+                padding: 0.65rem 0.85rem;
             }
             
             .nav-header {
-                padding: 1rem 1.25rem 0.5rem 1.25rem !important;
-                font-size: 0.65rem !important;
-                margin-left: 0.5rem;
-                margin-right: 0.5rem;
+                padding: 0.85rem 1.25rem 0.4rem 1.25rem !important;
+                font-size: 0.6rem !important;
             }
             
             .user-panel {
                 margin: 0.75rem 0.5rem 1rem 0.5rem;
-                padding: 1rem 0.75rem;
+                padding: 0.85rem;
             }
         }
         

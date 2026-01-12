@@ -7,32 +7,31 @@
 @push('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">
 <style>
-    /* Modern Dashboard Styles - Glassmorphism & Neumorphism */
+    /* Modern Dashboard Styles - Clean & Clear Design */
     :root {
         --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --success-gradient: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
-        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        --info-gradient: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
-        --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-        --card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-        --card-background: rgba(255, 255, 255, 0.95);
-        --glass-border: 1px solid rgba(255, 255, 255, 0.18);
+        --success-gradient: linear-gradient(135deg, #1cc88a 0%, #17a673 100%);
+        --warning-gradient: linear-gradient(135deg, #f6c23e 0%, #dda20a 100%);
+        --info-gradient: linear-gradient(135deg, #36b9cc 0%, #2c9faf 100%);
+        --danger-gradient: linear-gradient(135deg, #e74a3b 0%, #c23321 100%);
+        --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        --card-hover-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+        --card-background: #ffffff;
+        --border-color: #e2e8f0;
     }
 
     body {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: #f8f9fc;
+        font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
-    /* Glassmorphism KPI Cards */
+    /* Clean KPI Cards */
     .kpi-card {
         background: var(--card-background);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border-radius: 16px;
-        border: var(--glass-border);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
         box-shadow: var(--card-shadow);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
         height: 100%;
@@ -51,8 +50,9 @@
     }
 
     .kpi-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 40px rgba(31, 38, 135, 0.5);
+        transform: translateY(-4px);
+        box-shadow: var(--card-hover-shadow);
+        border-color: rgba(102, 126, 234, 0.2);
     }
 
     .kpi-card:hover::before {
@@ -66,17 +66,16 @@
     .kpi-card.danger::before { background: var(--danger-gradient); }
 
     .kpi-icon {
-        width: 64px;
-        height: 64px;
-        border-radius: 16px;
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 28px;
+        font-size: 24px;
         color: white;
-        margin-bottom: 16px;
+        margin-bottom: 12px;
         position: relative;
-        overflow: hidden;
     }
 
     .kpi-card.primary .kpi-icon { background: var(--primary-gradient); }
@@ -86,17 +85,17 @@
     .kpi-card.danger .kpi-icon { background: var(--danger-gradient); }
 
     .kpi-value {
-        font-size: 2.5rem;
+        font-size: 2.25rem;
         font-weight: 700;
-        color: #2d3748;
-        margin: 8px 0;
-        line-height: 1;
+        color: #1a202c;
+        margin: 6px 0;
+        line-height: 1.2;
     }
 
     .kpi-label {
-        font-size: 0.875rem;
+        font-size: 0.8rem;
         color: #718096;
-        font-weight: 500;
+        font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
@@ -104,21 +103,21 @@
     .kpi-change {
         font-size: 0.75rem;
         font-weight: 600;
-        padding: 4px 8px;
-        border-radius: 8px;
+        padding: 4px 10px;
+        border-radius: 6px;
         display: inline-flex;
         align-items: center;
-        margin-top: 8px;
+        margin-top: 6px;
     }
 
     .kpi-change.positive {
-        background: rgba(72, 187, 120, 0.1);
-        color: #38a169;
+        background: rgba(28, 200, 138, 0.1);
+        color: #1cc88a;
     }
 
     .kpi-change.negative {
-        background: rgba(245, 101, 101, 0.1);
-        color: #e53e3e;
+        background: rgba(231, 74, 59, 0.1);
+        color: #e74a3b;
     }
 
     .kpi-change i {
@@ -129,37 +128,41 @@
     /* Chart Cards */
     .chart-card {
         background: var(--card-background);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
-        border: var(--glass-border);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
         box-shadow: var(--card-shadow);
         padding: 24px;
         margin-bottom: 24px;
+        transition: all 0.3s ease;
+    }
+
+    .chart-card:hover {
+        box-shadow: var(--card-hover-shadow);
     }
 
     .chart-header {
         display: flex;
-        justify-content: between;
+        justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
         padding-bottom: 16px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        border-bottom: 1px solid var(--border-color);
     }
 
     .chart-title {
-        font-size: 1.125rem;
+        font-size: 1.1rem;
         font-weight: 600;
-        color: #2d3748;
+        color: #1a202c;
         margin: 0;
     }
 
     /* Activity Feed */
     .activity-item {
         padding: 12px 0;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        border-bottom: 1px solid var(--border-color);
         display: flex;
         align-items: flex-start;
-        transition: background 0.2s;
+        transition: all 0.2s ease;
     }
 
     .activity-item:last-child {
@@ -167,57 +170,60 @@
     }
 
     .activity-item:hover {
-        background: rgba(0, 0, 0, 0.02);
+        background: #f8f9fc;
         margin: 0 -12px;
         padding: 12px;
         border-radius: 8px;
     }
 
     .activity-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
         margin-right: 12px;
-        font-size: 16px;
+        font-size: 14px;
         flex-shrink: 0;
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
     }
 
     /* Notification Badge */
     .notification-item {
         padding: 12px;
-        border-radius: 12px;
+        border-radius: 8px;
         margin-bottom: 8px;
-        background: rgba(255, 255, 255, 0.7);
-        border-left: 3px solid;
-        transition: all 0.2s;
+        background: #f8f9fc;
+        border-left: 3px solid transparent;
+        transition: all 0.2s ease;
         cursor: pointer;
     }
 
     .notification-item:hover {
-        background: rgba(255, 255, 255, 0.9);
-        transform: translateX(4px);
+        background: #ffffff;
+        transform: translateX(2px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 
     .notification-item.unread {
-        background: rgba(66, 153, 225, 0.1);
-        border-left-color: #4299e1;
+        background: rgba(102, 126, 234, 0.05);
+        border-left-color: #667eea;
     }
 
     /* Filter Controls */
     .filter-bar {
         background: var(--card-background);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
-        border: var(--glass-border);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
         padding: 16px 24px;
         margin-bottom: 24px;
         display: flex;
         align-items: center;
         gap: 16px;
         flex-wrap: wrap;
+        box-shadow: var(--card-shadow);
     }
 
     .filter-group {
@@ -228,20 +234,21 @@
 
     .filter-group label {
         font-size: 0.875rem;
-        font-weight: 500;
+        font-weight: 600;
         color: #4a5568;
         margin: 0;
     }
 
     .btn-filter {
-        background: white;
-        border: 1px solid #e2e8f0;
+        background: #f8f9fc;
+        border: 1px solid var(--border-color);
         color: #4a5568;
         padding: 8px 16px;
         border-radius: 8px;
         font-size: 0.875rem;
         font-weight: 500;
         transition: all 0.2s;
+        text-decoration: none;
     }
 
     .btn-filter:hover,
@@ -249,16 +256,44 @@
         background: var(--primary-gradient);
         border-color: transparent;
         color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
     }
 
     /* Stats Grid */
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 24px;
+        gap: 20px;
         margin-bottom: 24px;
+    }
+    
+    /* Content Wrapper */
+    .content-wrapper {
+        background: #f8f9fc;
+    }
+    
+    /* Card Enhancements */
+    .card {
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        box-shadow: var(--card-hover-shadow);
+    }
+    
+    .card-header {
+        background: #ffffff;
+        border-bottom: 1px solid var(--border-color);
+        padding: 16px 24px;
+        border-radius: 12px 12px 0 0;
+    }
+    
+    .card-body {
+        padding: 24px;
     }
 
     /* Responsive */
@@ -295,35 +330,92 @@
     }
 
     .empty-state i {
-        font-size: 4rem;
-        margin-bottom: 16px;
-        opacity: 0.3;
+        font-size: 3rem;
+        margin-bottom: 12px;
+        opacity: 0.25;
+        color: #cbd5e0;
+    }
+    
+    /* Table Enhancements */
+    .table {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .table thead {
+        background: #f8f9fc;
+    }
+    
+    .table thead th {
+        font-weight: 600;
+        color: #4a5568;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        padding: 12px 16px;
+        border-bottom: 2px solid var(--border-color);
+    }
+    
+    .table tbody tr {
+        transition: all 0.2s ease;
+    }
+    
+    .table tbody tr:hover {
+        background: #f8f9fc;
+    }
+    
+    .table tbody td {
+        padding: 12px 16px;
+        vertical-align: middle;
+    }
+    
+    /* Progress Bar */
+    .progress {
+        height: 24px;
+        border-radius: 12px;
+        background: #e2e8f0;
+        overflow: hidden;
+    }
+    
+    .progress-bar {
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .bg-gradient-primary {
+        background: var(--primary-gradient) !important;
     }
 </style>
 @endpush
 
 @section('content')
 <div class="container-fluid">
-    <!-- Welcome Header -->
+    <!-- Welcome Header - Clean Design -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="kpi-card" style="padding: 24px; background: var(--primary-gradient); border: none;">
-                <div class="d-flex justify-content-between align-items-center flex-wrap">
-                    <div>
-                        <h2 class="text-white mb-2" style="font-weight: 700;">
-                            Welcome back, {{ auth()->user()->username }}! 👋
-                        </h2>
-                        <p class="text-white mb-0" style="opacity: 0.9;">
-                            Here's your system overview and analytics
-                        </p>
-                    </div>
-                    <div class="d-flex gap-2 mt-3 mt-md-0">
-                        <button type="button" class="btn btn-light btn-sm" onclick="refreshDashboard()">
-                            <i class="fas fa-sync-alt mr-1"></i>Refresh
-                        </button>
-                        <a href="{{ route('settings.index') }}" class="btn btn-light btn-sm">
-                            <i class="fas fa-cog mr-1"></i>Settings
-                        </a>
+            <div class="card" style="border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-radius: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body" style="padding: 28px 32px;">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                        <div>
+                            <h2 class="text-white mb-2" style="font-weight: 700; font-size: 1.75rem;">
+                                Welcome back, {{ auth()->user()->username }}! 👋
+                            </h2>
+                            <p class="text-white mb-0" style="opacity: 0.95; font-size: 0.95rem;">
+                                Here's your system overview and analytics
+                            </p>
+                        </div>
+                        <div class="d-flex gap-2 mt-3 mt-md-0">
+                            <button type="button" class="btn btn-light btn-sm" onclick="refreshDashboard()" style="border-radius: 8px; padding: 8px 16px; font-weight: 500;">
+                                <i class="fas fa-sync-alt mr-1"></i>Refresh
+                            </button>
+                            <a href="{{ route('settings.index') }}" class="btn btn-light btn-sm" style="border-radius: 8px; padding: 8px 16px; font-weight: 500;">
+                                <i class="fas fa-cog mr-1"></i>Settings
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
