@@ -306,3 +306,4 @@ function viewNotification(id) {
 }
 </script>
 @endpush
+

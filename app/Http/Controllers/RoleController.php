@@ -96,6 +96,21 @@ class RoleController extends Controller
             $role->assignPermissions($validated['permissions']);
         }
 
+        // Return JSON if request expects JSON (for AJAX/modal requests)
+        if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Role created successfully.',
+                'role' => [
+                    'id' => $role->id,
+                    'name' => $role->name,
+                    'slug' => $role->slug,
+                    'description' => $role->description,
+                    'is_active' => $role->is_active,
+                ]
+            ], 200);
+        }
+
         return redirect()->route('roles.index')
             ->with('success', 'Role created successfully.');
     }
@@ -170,3 +185,4 @@ class RoleController extends Controller
             ->with('success', 'Role deleted successfully.');
     }
 }
+

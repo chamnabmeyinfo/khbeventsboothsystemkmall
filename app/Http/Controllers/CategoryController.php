@@ -170,7 +170,22 @@ class CategoryController extends Controller
             'status' => 'required|integer|in:0,1',
         ]);
 
-        Category::create($validated);
+        $category = Category::create($validated);
+
+        // Return JSON if request expects JSON (for AJAX/modal requests)
+        if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Category created successfully.',
+                'category' => [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'parent_id' => $category->parent_id,
+                    'limit' => $category->limit,
+                    'status' => $category->status,
+                ]
+            ], 200);
+        }
 
         return redirect()->route('categories.index')
             ->with('success', 'Category created successfully.');
@@ -204,3 +219,4 @@ class CategoryController extends Controller
             ->with('success', 'Category deleted successfully.');
     }
 }
+

@@ -717,6 +717,7 @@ class BoothController extends Controller
                 'border_width' => 'nullable|integer|min:0|max:10',
                 'border_radius' => 'nullable|integer|min:0|max:50',
                 'opacity' => 'nullable|numeric|min:0|max:1',
+                'price' => 'nullable|numeric|min:0',
                 // Appearance properties
                 'background_color' => 'nullable|string|max:50',
                 'border_color' => 'nullable|string|max:50',
@@ -817,6 +818,7 @@ class BoothController extends Controller
                 'booths.*.border_width' => 'nullable|integer|min:0|max:10',
                 'booths.*.border_radius' => 'nullable|integer|min:0|max:50',
                 'booths.*.opacity' => 'nullable|numeric|min:0|max:1',
+                'booths.*.price' => 'nullable|numeric|min:0',
                 // Appearance properties
                 'booths.*.background_color' => 'nullable|string|max:50',
                 'booths.*.border_color' => 'nullable|string|max:50',
@@ -856,6 +858,11 @@ class BoothController extends Controller
                     $booth->border_width = $boothData['border_width'] ?? 2;
                     $booth->border_radius = $boothData['border_radius'] ?? 6;
                     $booth->opacity = $boothData['opacity'] ?? 1.00;
+                    
+                    // Save price if provided
+                    if (isset($boothData['price'])) {
+                        $booth->price = $boothData['price'];
+                    }
                     
                     // Save appearance properties
                     if (isset($boothData['background_color'])) {
@@ -1231,6 +1238,10 @@ class BoothController extends Controller
             $floorPlanId = $validated['floor_plan_id'];
             $floorPlan = FloorPlan::findOrFail($floorPlanId);
 
+            // Get zone price from zone settings (floor-plan-specific)
+            $zoneSettings = ZoneSetting::getZoneDefaults($zoneName, $floorPlanId);
+            $zonePrice = $zoneSettings['price'] ?? 500; // Default to 500 if not set
+
             $createdBooths = [];
             $skippedBooths = [];
             $errors = [];
@@ -1273,7 +1284,7 @@ class BoothController extends Controller
                         $booth = Booth::create([
                             'booth_number' => $boothNumber,
                             'type' => 2, // Default type
-                            'price' => 500, // Default price
+                            'price' => $zonePrice, // Use zone price
                             'status' => Booth::STATUS_AVAILABLE,
                             'floor_plan_id' => $floorPlanId, // Assign to current floor plan
                         ]);
@@ -1325,7 +1336,7 @@ class BoothController extends Controller
                         $booth = Booth::create([
                             'booth_number' => $boothNumber,
                             'type' => 2, // Default type
-                            'price' => 500, // Default price
+                            'price' => $zonePrice, // Use zone price
                             'status' => Booth::STATUS_AVAILABLE,
                             'floor_plan_id' => $floorPlanId, // Assign to current floor plan
                         ]);
@@ -1581,6 +1592,7 @@ class BoothController extends Controller
                 'borderRadius' => 'required|numeric|min:0|max:50',
                 'borderWidth' => 'required|numeric|min:0|max:10',
                 'opacity' => 'required|numeric|min:0|max:1',
+                'price' => 'nullable|numeric|min:0',
                 'floor_plan_id' => 'required|exists:floor_plans,id',
             ]);
 
@@ -1621,11 +1633,17 @@ class BoothController extends Controller
         try {
             $validated = $request->validate([
                 'booth_id' => 'required|integer|exists:booth,id',
+                'client_id' => 'nullable|integer|exists:client,id',
                 'name' => 'required|string|max:255',
-                'sex' => 'nullable',
+                'sex' => 'nullable|integer|in:1,2,3',
                 'company' => 'required|string|max:255',
                 'position' => 'nullable|string|max:255',
                 'phone_number' => 'required|string|max:50',
+                'email' => 'required|email|max:191',
+                'address' => 'required|string',
+                'tax_id' => 'nullable|string|max:50',
+                'website' => 'nullable|url|max:255',
+                'notes' => 'nullable|string',
                 'status' => 'required|integer|in:2,3,5', // 2=Confirmed, 3=Reserved, 5=Paid
             ]);
 
@@ -1649,33 +1667,39 @@ class BoothController extends Controller
             // Find the booth
             $booth = Booth::findOrFail($validated['booth_id']);
 
-            // Check if client already exists (by phone number or company name)
-            $client = Client::where('phone_number', $validated['phone_number'])
-                ->orWhere(function($query) use ($validated) {
-                    $query->where('company', $validated['company'])
-                          ->where('name', $validated['name']);
-                })
-                ->first();
+            // Check if client_id is provided (from search/selection)
+            $client = null;
+            if (isset($validated['client_id']) && !empty($validated['client_id'])) {
+                $client = Client::find($validated['client_id']);
+            }
+            
+            // If client not found by ID, check by email or phone number
+            if (!$client) {
+                $client = Client::where('email', $validated['email'])
+                    ->orWhere('phone_number', $validated['phone_number'])
+                    ->first();
+            }
 
-            // Create or update client
+            // Create or update client with ALL required information
+            $clientData = [
+                'name' => $validated['name'],
+                'sex' => $sex ?? null,
+                'company' => $validated['company'],
+                'position' => $validated['position'] ?? null,
+                'phone_number' => $validated['phone_number'],
+                'email' => $validated['email'],
+                'address' => $validated['address'],
+                'tax_id' => $validated['tax_id'] ?? null,
+                'website' => $validated['website'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+            ];
+
             if ($client) {
-                // Update existing client
-                $client->update([
-                    'name' => $validated['name'],
-                    'sex' => $sex ?? $client->sex,
-                    'company' => $validated['company'],
-                    'position' => $validated['position'] ?? $client->position,
-                    'phone_number' => $validated['phone_number'],
-                ]);
+                // Update existing client with latest information
+                $client->update($clientData);
             } else {
                 // Create new client
-                $client = Client::create([
-                    'name' => $validated['name'],
-                    'sex' => $sex ?? null,
-                    'company' => $validated['company'],
-                    'position' => $validated['position'] ?? null,
-                    'phone_number' => $validated['phone_number'],
-                ]);
+                $client = Client::create($clientData);
             }
 
             // Get user ID (ensure it's an integer)
@@ -1686,11 +1710,49 @@ class BoothController extends Controller
                 $userId = isset($user->id) ? (int) $user->id : null;
             }
 
-            // Update booth with client and status
+            // Map status to booking type (2=Confirmed, 3=Reserved, 5=Paid)
+            // Booking types: 1=Regular=RESERVED, 2=Special=CONFIRMED, 3=Temporary=RESERVED
+            $bookingType = 1; // Default to Regular
+            if ($validated['status'] == Booth::STATUS_CONFIRMED) {
+                $bookingType = 2; // Special/Confirmed
+            } elseif ($validated['status'] == Booth::STATUS_PAID) {
+                $bookingType = 2; // Special/Paid (treated as confirmed)
+            }
+
+            // Get floor plan and event from booth
+            $floorPlanId = $booth->floor_plan_id;
+            $eventId = null;
+            
+            if ($floorPlanId) {
+                $floorPlan = FloorPlan::find($floorPlanId);
+                $eventId = $floorPlan ? $floorPlan->event_id : null;
+            }
+
+            // Check if booth is available before booking
+            if (!in_array($booth->status, [Booth::STATUS_AVAILABLE, Booth::STATUS_HIDDEN])) {
+                return response()->json([
+                    'status' => 403,
+                    'message' => 'Booth is not available for booking'
+                ], 403);
+            }
+
+            // Create Book record to link booking with floor plan and event
+            $book = Book::create([
+                'event_id' => $eventId,
+                'floor_plan_id' => $floorPlanId,
+                'clientid' => $client->id,
+                'boothid' => json_encode([$booth->id]),
+                'date_book' => now(),
+                'userid' => $userId,
+                'type' => $bookingType,
+            ]);
+
+            // Update booth with client, status, and book ID
             $booth->update([
                 'client_id' => $client->id,
                 'status' => $validated['status'],
-                'userid' => $userId, // Set current user ID if authenticated
+                'userid' => $userId,
+                'bookid' => $book->id,
             ]);
 
             return response()->json([
@@ -1698,10 +1760,12 @@ class BoothController extends Controller
                 'message' => 'Booth booked successfully!',
                 'booth_id' => $booth->id,
                 'booth_number' => $booth->booth_number,
+                'book_id' => $book->id,
                 'client_id' => $client->id,
                 'client_name' => $client->name,
                 'client_company' => $client->company,
-                'status' => $booth->status
+                'status' => $booth->status,
+                'floor_plan_id' => $floorPlanId
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
@@ -1722,3 +1786,4 @@ class BoothController extends Controller
         }
     }
 }
+

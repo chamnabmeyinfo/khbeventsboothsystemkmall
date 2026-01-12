@@ -64,6 +64,11 @@
         <div class="card-header">
             <h3 class="card-title"><i class="fas fa-calendar-plus mr-2"></i>Create New Booking</h3>
             <div class="card-tools">
+                @if(isset($currentFloorPlan) && $currentFloorPlan)
+                <a href="{{ route('booths.index', ['floor_plan_id' => $currentFloorPlan->id]) }}" class="btn btn-sm btn-info mr-2">
+                    <i class="fas fa-map-marked-alt mr-1"></i>View Floor Plan Canvas
+                </a>
+                @endif
                 <a href="{{ route('books.index') }}" class="btn btn-sm btn-secondary">
                     <i class="fas fa-arrow-left mr-1"></i>Back to Bookings
                 </a>
@@ -72,6 +77,42 @@
         <form action="{{ route('books.store') }}" method="POST" id="bookingForm">
             @csrf
             <div class="card-body">
+                @if(isset($currentFloorPlan) && $currentFloorPlan)
+                <div class="alert alert-info">
+                    <i class="fas fa-map mr-2"></i>
+                    <strong>Booking for Floor Plan:</strong> {{ $currentFloorPlan->name }}
+                    @if($currentFloorPlan->event) - {{ $currentFloorPlan->event->title }} @endif
+                    <a href="{{ route('books.create') }}" class="btn btn-sm btn-secondary float-right">
+                        <i class="fas fa-times mr-1"></i>Clear Filter
+                    </a>
+                </div>
+                @endif
+
+                <!-- Floor Plan Selection -->
+                @if(isset($floorPlans) && $floorPlans->count() > 0)
+                <div class="form-section">
+                    <h6><i class="fas fa-map mr-2"></i>Floor Plan (Optional Filter)</h6>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="floor_plan_filter" class="form-label">Filter Booths by Floor Plan</label>
+                                <select class="form-control" id="floor_plan_filter" name="floor_plan_filter" onchange="filterByFloorPlan(this.value)">
+                                    <option value="">All Floor Plans</option>
+                                    @foreach($floorPlans as $fp)
+                                        <option value="{{ $fp->id }}" {{ (isset($floorPlanId) && $floorPlanId == $fp->id) ? 'selected' : '' }}>
+                                            {{ $fp->name }}
+                                            @if($fp->is_default) (Default) @endif
+                                            @if($fp->event) - {{ $fp->event->title }} @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <small class="form-text text-muted">Select a floor plan to filter available booths, or leave blank to see all booths</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Client Selection -->
                 <div class="form-section">
                     <h6><i class="fas fa-building mr-2"></i>Client Information</h6>
@@ -85,7 +126,8 @@
                                     <option value="{{ $client->id }}" {{ old('clientid') == $client->id ? 'selected' : '' }}>
                                         {{ $client->company ?? $client->name }} 
                                         @if($client->company && $client->name) - {{ $client->name }} @endif
-                                        @if($client->phone_number) ({{ $client->phone_number }}) @endif
+                                        @if($client->email) ({{ $client->email }}) @endif
+                                        @if($client->phone_number) | {{ $client->phone_number }} @endif
                                     </option>
                                 @endforeach
                             </select>
@@ -96,9 +138,9 @@
                         <div class="col-md-4">
                             <label>&nbsp;</label>
                             <div>
-                                <a href="{{ route('clients.create') }}" class="btn btn-success btn-block" target="_blank">
+                                <button type="button" class="btn btn-success btn-block" data-toggle="modal" data-target="#createClientModal">
                                     <i class="fas fa-plus mr-1"></i>New Client
-                                </a>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -232,10 +274,231 @@
         </form>
     </div>
 </div>
+
+<!-- Create Client Modal -->
+<div class="modal fade" id="createClientModal" tabindex="-1" role="dialog" aria-labelledby="createClientModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="createClientModalLabel">
+                    <i class="fas fa-user-plus mr-2"></i>Create New Client
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="createClientForm" method="POST" action="{{ route('clients.store') }}">
+                @csrf
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <div id="createClientError" class="alert alert-danger" style="display: none;"></div>
+                    
+                    <!-- Basic Information -->
+                    <div class="form-group">
+                        <h6><i class="fas fa-user mr-2"></i>Basic Information</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="modal_name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="modal_name" name="name" required placeholder="Enter client full name">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="modal_sex" class="form-label">Gender</label>
+                                <select class="form-control" id="modal_sex" name="sex">
+                                    <option value="">Select Gender...</option>
+                                    <option value="1">Male</option>
+                                    <option value="2">Female</option>
+                                    <option value="3">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Company Information -->
+                    <div class="form-group">
+                        <h6><i class="fas fa-building mr-2"></i>Company Information</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="modal_company" class="form-label">Company Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="modal_company" name="company" required placeholder="Enter company name">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="modal_position" class="form-label">Position/Title</label>
+                                <input type="text" class="form-control" id="modal_position" name="position" placeholder="Enter position or title">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="form-group">
+                        <h6><i class="fas fa-phone mr-2"></i>Contact Information</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="modal_phone_number" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="modal_phone_number" name="phone_number" required placeholder="Enter phone number">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="modal_email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="modal_email" name="email" required placeholder="Enter email address">
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                <label for="modal_address" class="form-label">Address <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="modal_address" name="address" rows="2" required placeholder="Enter complete address (street, city, country)"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Information -->
+                    <div class="form-group">
+                        <h6><i class="fas fa-info-circle mr-2"></i>Additional Information (Optional)</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="modal_tax_id" class="form-label">Tax ID / Business Registration Number</label>
+                                <input type="text" class="form-control" id="modal_tax_id" name="tax_id" placeholder="Enter tax ID or business registration number">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="modal_website" class="form-label">Website</label>
+                                <input type="url" class="form-control" id="modal_website" name="website" placeholder="https://example.com">
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                <label for="modal_notes" class="form-label">Additional Notes</label>
+                                <textarea class="form-control" id="modal_notes" name="notes" rows="2" placeholder="Enter any additional information or notes"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-success" id="createClientSubmitBtn">
+                        <i class="fas fa-save mr-1"></i>Create Client
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
 <script>
+function filterByFloorPlan(floorPlanId) {
+    if (floorPlanId) {
+        window.location.href = '{{ route("books.create") }}?floor_plan_id=' + floorPlanId;
+    } else {
+        window.location.href = '{{ route("books.create") }}';
+    }
+}
+
+// Handle Create Client Modal Form Submission
+$(document).ready(function() {
+    $('#createClientForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const submitBtn = $('#createClientSubmitBtn');
+        const errorDiv = $('#createClientError');
+        const originalText = submitBtn.html();
+        
+        // Hide error message
+        errorDiv.hide();
+        
+        // Validate form
+        if (!form[0].checkValidity()) {
+            form[0].reportValidity();
+            return;
+        }
+        
+        // Disable submit button and show loading
+        submitBtn.prop('disabled', true);
+        submitBtn.html('<i class="fas fa-spinner fa-spin mr-1"></i>Creating...');
+        
+        // Submit via AJAX
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            data: form.serialize(),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            success: function(response) {
+                if (response.status === 'success' && response.client) {
+                    const client = response.client;
+                    
+                    // Add new client to dropdown
+                    const clientSelect = $('#clientid');
+                    const optionText = client.company + (client.name ? ' - ' + client.name : '') + 
+                                     (client.email ? ' (' + client.email + ')' : '') + 
+                                     (client.phone_number ? ' | ' + client.phone_number : '');
+                    
+                    const newOption = $('<option></option>')
+                        .attr('value', client.id)
+                        .text(optionText);
+                    
+                    clientSelect.append(newOption);
+                    
+                    // Select the newly created client
+                    clientSelect.val(client.id);
+                    
+                    // If Select2 is initialized, trigger change for Select2
+                    if (clientSelect.hasClass('select2-hidden-accessible')) {
+                        clientSelect.trigger('change.select2');
+                    } else {
+                        clientSelect.trigger('change');
+                    }
+                    
+                    // Close modal and reset form
+                    $('#createClientModal').modal('hide');
+                    form[0].reset();
+                    errorDiv.hide();
+                    
+                    // Show success message
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Client Created!',
+                            text: 'Client "' + client.company + '" has been created and selected.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        alert('Client created successfully!');
+                    }
+                }
+            },
+            error: function(xhr) {
+                let errorMessage = 'An error occurred while creating the client.';
+                
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    const errors = xhr.responseJSON.errors;
+                    const firstError = Object.values(errors)[0];
+                    errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+                }
+                
+                errorDiv.html('<i class="fas fa-exclamation-triangle mr-1"></i>' + errorMessage);
+                errorDiv.show();
+            },
+            complete: function() {
+                // Re-enable submit button
+                submitBtn.prop('disabled', false);
+                submitBtn.html(originalText);
+            }
+        });
+    });
+    
+    // Reset form when modal is closed
+    $('#createClientModal').on('hidden.bs.modal', function() {
+        $('#createClientForm')[0].reset();
+        $('#createClientError').hide();
+    });
+});
+
 // Select2 for client dropdown
 $(document).ready(function() {
     if (typeof $.fn.select2 !== 'undefined') {
@@ -343,3 +606,4 @@ $('#bookingForm').on('submit', function(e) {
 updateSelection();
 </script>
 @endpush
+

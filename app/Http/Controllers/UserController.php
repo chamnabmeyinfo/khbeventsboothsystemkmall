@@ -78,7 +78,22 @@ class UserController extends Controller
 
         $validated['password'] = Hash::make($validated['password']);
 
-        User::create($validated);
+        $user = User::create($validated);
+
+        // Return JSON if request expects JSON (for AJAX/modal requests)
+        if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'User created successfully.',
+                'user' => [
+                    'id' => $user->id,
+                    'username' => $user->username,
+                    'type' => $user->type,
+                    'status' => $user->status,
+                    'role_id' => $user->role_id,
+                ]
+            ], 200);
+        }
 
         return redirect()->route('users.index')
             ->with('success', 'User created successfully.');
@@ -180,3 +195,4 @@ class UserController extends Controller
             ->with('success', 'User deleted successfully.');
     }
 }
+

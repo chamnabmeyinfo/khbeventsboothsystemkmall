@@ -166,9 +166,9 @@
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <div class="btn-group" role="group">
-                        <a href="{{ route('clients.create') }}" class="btn btn-primary">
+                        <button type="button" class="btn btn-primary" onclick="showCreateClientModal()">
                             <i class="fas fa-plus mr-1"></i>New Client
-                        </a>
+                        </button>
                         <a href="{{ route('export.clients') }}" class="btn btn-success">
                             <i class="fas fa-file-csv mr-1"></i>Export CSV
                         </a>
@@ -374,9 +374,9 @@
                                     <div class="text-muted">
                                         <i class="fas fa-users-slash fa-3x mb-3"></i>
                                         <p class="mb-0">No clients found</p>
-                                        <a href="{{ route('clients.create') }}" class="btn btn-primary btn-sm mt-3">
+                                        <button type="button" class="btn btn-primary btn-sm mt-3" onclick="showCreateClientModal()">
                                             <i class="fas fa-plus mr-1"></i>Create First Client
-                                        </a>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -484,9 +484,9 @@
                     <div class="card-body text-center py-5">
                         <i class="fas fa-users-slash fa-3x text-muted mb-3"></i>
                         <p class="text-muted mb-3">No clients found</p>
-                        <a href="{{ route('clients.create') }}" class="btn btn-primary">
+                        <button type="button" class="btn btn-primary" onclick="showCreateClientModal()">
                             <i class="fas fa-plus mr-1"></i>Create First Client
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -520,6 +520,114 @@
         @endif
     </div>
 </div>
+
+<!-- Create Client Modal -->
+<div class="modal fade" id="createClientModal" tabindex="-1" role="dialog" aria-labelledby="createClientModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg" role="document" style="max-width: 900px;">
+        <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; border-radius: 20px 20px 0 0; padding: 24px 32px;">
+                <h5 class="modal-title" id="createClientModalLabel" style="font-size: 1.5rem; font-weight: 700;">
+                    <i class="fas fa-user-plus mr-2"></i>Create New Client
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; opacity: 0.9; font-size: 1.5rem;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="createClientForm" method="POST" action="{{ route('clients.store') }}">
+                @csrf
+                <div class="modal-body" style="padding: 32px; max-height: calc(100vh - 200px); overflow-y: auto;">
+                    <div id="createClientError" class="alert alert-danger" style="display: none; border-radius: 12px;"></div>
+                    
+                    <!-- Basic Information -->
+                    <div class="form-group mb-4">
+                        <h6 style="font-weight: 600; margin-bottom: 16px; color: #495057;"><i class="fas fa-user mr-2 text-primary"></i>Basic Information</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="modal_client_name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="modal_client_name" name="name" required placeholder="Enter client full name" style="border-radius: 8px;">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="modal_client_sex" class="form-label">Gender</label>
+                                <select class="form-control" id="modal_client_sex" name="sex" style="border-radius: 8px;">
+                                    <option value="">Select Gender...</option>
+                                    <option value="1">Male</option>
+                                    <option value="2">Female</option>
+                                    <option value="3">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Company Information -->
+                    <div class="form-group mb-4">
+                        <h6 style="font-weight: 600; margin-bottom: 16px; color: #495057;"><i class="fas fa-building mr-2 text-primary"></i>Company Information</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="modal_client_company" class="form-label">Company Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="modal_client_company" name="company" required placeholder="Enter company name" style="border-radius: 8px;">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="modal_client_position" class="form-label">Position/Title</label>
+                                <input type="text" class="form-control" id="modal_client_position" name="position" placeholder="Enter position or title" style="border-radius: 8px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="form-group mb-4">
+                        <h6 style="font-weight: 600; margin-bottom: 16px; color: #495057;"><i class="fas fa-phone mr-2 text-primary"></i>Contact Information</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="modal_client_phone" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="modal_client_phone" name="phone_number" required placeholder="Enter phone number" style="border-radius: 8px;">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="modal_client_email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="modal_client_email" name="email" required placeholder="Enter email address" style="border-radius: 8px;">
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                <label for="modal_client_address" class="form-label">Address <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="modal_client_address" name="address" rows="2" required placeholder="Enter complete address" style="border-radius: 8px;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Information -->
+                    <div class="form-group mb-0">
+                        <h6 style="font-weight: 600; margin-bottom: 16px; color: #495057;"><i class="fas fa-info-circle mr-2 text-primary"></i>Additional Information (Optional)</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="modal_client_tax_id" class="form-label">Tax ID / Business Registration Number</label>
+                                <input type="text" class="form-control" id="modal_client_tax_id" name="tax_id" placeholder="Enter tax ID" style="border-radius: 8px;">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="modal_client_website" class="form-label">Website</label>
+                                <input type="url" class="form-control" id="modal_client_website" name="website" placeholder="https://example.com" style="border-radius: 8px;">
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                <label for="modal_client_notes" class="form-label">Additional Notes</label>
+                                <textarea class="form-control" id="modal_client_notes" name="notes" rows="2" placeholder="Enter any additional information" style="border-radius: 8px;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #e2e8f0; padding: 20px 32px; border-radius: 0 0 20px 20px;">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" style="border-radius: 12px; padding: 10px 24px;">
+                        <i class="fas fa-times mr-1"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-success" id="createClientSubmitBtn" style="border-radius: 12px; padding: 10px 24px;">
+                        <i class="fas fa-save mr-1"></i>Create Client
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -610,5 +718,92 @@ function refreshPage() {
         location.reload();
     }, 500);
 }
+
+// Show Create Client Modal
+function showCreateClientModal() {
+    $('#createClientModal').modal('show');
+    $('#createClientForm')[0].reset();
+    $('#createClientError').hide();
+}
+
+// Handle Create Client Form Submission
+$(document).ready(function() {
+    $('#createClientForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const submitBtn = $('#createClientSubmitBtn');
+        const errorDiv = $('#createClientError');
+        const originalText = submitBtn.html();
+        
+        errorDiv.hide();
+        
+        if (!form[0].checkValidity()) {
+            form[0].reportValidity();
+            return;
+        }
+        
+        submitBtn.prop('disabled', true);
+        submitBtn.html('<i class="fas fa-spinner fa-spin mr-1"></i>Creating...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            data: form.serialize(),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            success: function(response) {
+                if (response.status === 'success' && response.client) {
+                    $('#createClientModal').modal('hide');
+                    form[0].reset();
+                    errorDiv.hide();
+                    
+                    if (typeof toastr !== 'undefined') {
+                        toastr.success(response.message || 'Client created successfully');
+                    } else if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: response.message || 'Client created successfully',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        alert(response.message || 'Client created successfully');
+                    }
+                    
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                }
+            },
+            error: function(xhr) {
+                let errorMessage = 'An error occurred while creating the client.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    const errors = xhr.responseJSON.errors;
+                    const firstError = Object.values(errors)[0];
+                    errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+                }
+                errorDiv.html('<i class="fas fa-exclamation-triangle mr-1"></i>' + errorMessage).show();
+                errorDiv[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false);
+                submitBtn.html(originalText);
+            }
+        });
+    });
+    
+    // Reset form when modal is closed
+    $('#createClientModal').on('hidden.bs.modal', function() {
+        $('#createClientForm')[0].reset();
+        $('#createClientError').hide();
+    });
+});
 </script>
 @endpush
+

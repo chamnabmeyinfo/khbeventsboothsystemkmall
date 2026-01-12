@@ -158,21 +158,34 @@
                     $canvasSettings = $floorPlan->canvas_settings ?? null;
                 @endphp
                 
-                <!-- Floor Plan Image Preview -->
-                @if($floorPlan->floor_image && file_exists(public_path($floorPlan->floor_image)))
-                <div style="position: relative; height: 180px; overflow: hidden; border-radius: 12px 12px 0 0; background: #f5f5f5;">
-                    <img src="{{ asset($floorPlan->floor_image) }}" 
+                <!-- Feature Image Preview (if available, otherwise floor_image) -->
+                @php
+                    $previewImage = null;
+                    if ($floorPlan->feature_image && file_exists(public_path($floorPlan->feature_image))) {
+                        $previewImage = $floorPlan->feature_image;
+                    } elseif ($floorPlan->floor_image && file_exists(public_path($floorPlan->floor_image))) {
+                        $previewImage = $floorPlan->floor_image;
+                    }
+                @endphp
+                @if($previewImage)
+                <div style="position: relative; height: 200px; overflow: hidden; border-radius: 12px 12px 0 0; background: #f5f5f5;">
+                    <img src="{{ asset($previewImage) }}" 
                          alt="{{ $floorPlan->name }}" 
                          style="width: 100%; height: 100%; object-fit: cover;"
                          onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'display:flex;align-items:center;justify-content:center;height:100%;color:#999;\'><i class=\'fas fa-image fa-3x\'></i></div>'">
                     @if($floorPlan->is_default)
-                    <div style="position: absolute; top: 8px; right: 8px; background: rgba(245, 158, 11, 0.9); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">
+                    <div style="position: absolute; top: 8px; right: 8px; background: rgba(245, 158, 11, 0.9); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; z-index: 10;">
                         <i class="fas fa-star mr-1"></i>Default
+                    </div>
+                    @endif
+                    @if($floorPlan->feature_image)
+                    <div style="position: absolute; top: 8px; left: 8px; background: rgba(40, 167, 69, 0.9); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; z-index: 10;">
+                        <i class="fas fa-image mr-1"></i>Feature
                     </div>
                     @endif
                 </div>
                 @else
-                <div style="height: 180px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; border-radius: 12px 12px 0 0;">
+                <div style="height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; border-radius: 12px 12px 0 0;">
                     <div style="text-align: center; color: white;">
                         <i class="fas fa-map fa-4x mb-2"></i>
                         <div style="font-size: 0.875rem; opacity: 0.9;">No Image</div>
@@ -256,9 +269,65 @@
                             @endif
                             
                             @if($floorPlan->description)
-                                <p class="text-muted mt-2 mb-0" style="font-size: 0.8125rem; line-height: 1.4;">
+                                <p class="text-muted mt-2 mb-1" style="font-size: 0.8125rem; line-height: 1.4;">
                                     {{ Str::limit($floorPlan->description, 80) }}
                                 </p>
+                            @endif
+                            
+                            <!-- Event Information -->
+                            @if($floorPlan->event_start_date || $floorPlan->event_location || $floorPlan->event_venue)
+                            <div class="mt-2 mb-2" style="background: #e8f4f8; padding: 8px; border-radius: 6px; font-size: 0.75rem;">
+                                @if($floorPlan->event_start_date)
+                                <div class="mb-1">
+                                    <i class="fas fa-calendar text-info mr-1"></i>
+                                    <strong>Date:</strong> 
+                                    {{ \Carbon\Carbon::parse($floorPlan->event_start_date)->format('M d, Y') }}
+                                    @if($floorPlan->event_end_date && $floorPlan->event_end_date != $floorPlan->event_start_date)
+                                        - {{ \Carbon\Carbon::parse($floorPlan->event_end_date)->format('M d, Y') }}
+                                    @endif
+                                </div>
+                                @endif
+                                @if($floorPlan->event_start_time)
+                                <div class="mb-1">
+                                    <i class="fas fa-clock text-info mr-1"></i>
+                                    <strong>Time:</strong> 
+                                    {{ \Carbon\Carbon::parse($floorPlan->event_start_time)->format('g:i A') }}
+                                    @if($floorPlan->event_end_time)
+                                        - {{ \Carbon\Carbon::parse($floorPlan->event_end_time)->format('g:i A') }}
+                                    @endif
+                                </div>
+                                @endif
+                                @if($floorPlan->event_venue)
+                                <div class="mb-1">
+                                    <i class="fas fa-building text-info mr-1"></i>
+                                    <strong>Venue:</strong> {{ Str::limit($floorPlan->event_venue, 40) }}
+                                </div>
+                                @endif
+                                @if($floorPlan->event_location)
+                                <div class="mb-1">
+                                    <i class="fas fa-map-marker-alt text-info mr-1"></i>
+                                    <strong>Location:</strong> {{ Str::limit($floorPlan->event_location, 40) }}
+                                </div>
+                                @endif
+                            </div>
+                            @endif
+                            
+                            <!-- Google Map Location Badge -->
+                            @if($floorPlan->google_map_location)
+                            <div class="mt-2 mb-2">
+                                <span class="badge badge-info" style="background: #17a2b8;">
+                                    <i class="fas fa-map-marked-alt mr-1"></i>Map Available
+                                </span>
+                            </div>
+                            @endif
+                            
+                            <!-- Proposal Badge -->
+                            @if($floorPlan->proposal)
+                            <div class="mt-2 mb-2">
+                                <span class="badge badge-primary">
+                                    <i class="fas fa-file-alt mr-1"></i>Proposal Available
+                                </span>
+                            </div>
                             @endif
                             
                             <!-- Status Badge -->
@@ -272,13 +341,16 @@
                         </div>
                     </div>
                     <div class="btn-group btn-group-sm w-100" role="group">
-                        <a href="{{ route('booths.index', ['floor_plan_id' => $floorPlan->id]) }}" class="btn btn-primary">
-                            <i class="fas fa-eye mr-1"></i>View Booths
+                        <a href="{{ route('booths.index', ['floor_plan_id' => $floorPlan->id]) }}" class="btn btn-primary" title="View Floor Plan Canvas">
+                            <i class="fas fa-eye mr-1"></i>View Canvas
                         </a>
-                        <a href="{{ route('floor-plans.show', $floorPlan) }}" class="btn btn-info">
+                        <a href="{{ route('books.create', ['floor_plan_id' => $floorPlan->id]) }}" class="btn btn-success" title="Book Booths for this Floor Plan">
+                            <i class="fas fa-calendar-plus mr-1"></i>Book
+                        </a>
+                        <a href="{{ route('floor-plans.show', $floorPlan) }}" class="btn btn-info" title="View Details">
                             <i class="fas fa-info-circle"></i>
                         </a>
-                        <a href="{{ route('floor-plans.edit', $floorPlan) }}" class="btn btn-warning">
+                        <a href="{{ route('floor-plans.edit', $floorPlan) }}" class="btn btn-warning" title="Edit Floor Plan">
                             <i class="fas fa-edit"></i>
                         </a>
                         @if(!$floorPlan->is_default)
@@ -497,3 +569,4 @@ $(document).on('submit', '#deleteFloorPlanForm', function(e) {
 </script>
 @endpush
 @endsection
+

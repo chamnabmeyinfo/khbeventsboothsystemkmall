@@ -2,7 +2,7 @@
 
 @section('title', 'Record Payment')
 @section('page-title', 'Record Payment')
-@section('breadcrumb', 'Payments / Create')
+@section('breadcrumb', 'Finance / Payments / Create')
 
 @section('content')
 <div class="container-fluid">
@@ -10,7 +10,7 @@
         <div class="card-header">
             <h3 class="card-title"><i class="fas fa-money-bill-wave mr-2"></i>Record New Payment</h3>
         </div>
-        <form action="{{ route('payments.store') }}" method="POST">
+        <form action="{{ route('finance.payments.store') }}" method="POST">
             @csrf
             <div class="card-body">
                 <!-- General Error Display -->
@@ -79,9 +79,10 @@
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save mr-1"></i>Record Payment
                 </button>
-                <a href="{{ route('payments.index') }}" class="btn btn-default">Cancel</a>
+                <a href="{{ route('finance.payments.index') }}" class="btn btn-default">Cancel</a>
             </div>
         </form>
     </div>
 </div>
 @endsection
+

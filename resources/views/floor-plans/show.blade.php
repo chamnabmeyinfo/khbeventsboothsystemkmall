@@ -367,3 +367,4 @@ document.getElementById('deleteFloorPlanForm').addEventListener('submit', functi
 </script>
 @endpush
 @endsection
+

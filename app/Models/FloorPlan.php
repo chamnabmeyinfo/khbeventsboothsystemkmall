@@ -21,6 +21,15 @@ class FloorPlan extends Model
         'description',
         'project_name',
         'floor_image',
+        'google_map_location',
+        'feature_image',
+        'proposal',
+        'event_start_date',
+        'event_end_date',
+        'event_start_time',
+        'event_end_time',
+        'event_location',
+        'event_venue',
         'canvas_width',
         'canvas_height',
         'is_active',
@@ -40,6 +49,8 @@ class FloorPlan extends Model
         'canvas_height' => 'integer',
         'created_by' => 'integer', // Ensure created_by is always cast as integer
         'event_id' => 'integer', // Ensure event_id is always cast as integer
+        'event_start_date' => 'date',
+        'event_end_date' => 'date',
     ];
 
     /**

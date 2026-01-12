@@ -128,9 +128,9 @@
         <div class="card-body">
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <a href="{{ route('roles.create') }}" class="btn btn-primary">
+                    <button type="button" class="btn btn-primary" onclick="showCreateRoleModal()">
                         <i class="fas fa-plus mr-1"></i>Create Role
-                    </a>
+                    </button>
                     <button type="button" class="btn btn-info" onclick="refreshPage()">
                         <i class="fas fa-sync-alt mr-1"></i>Refresh
                     </button>
@@ -240,9 +240,9 @@
                     <div class="card-body text-center py-5">
                         <i class="fas fa-user-shield fa-3x text-muted mb-3"></i>
                         <p class="text-muted mb-3">No roles found</p>
-                        <a href="{{ route('roles.create') }}" class="btn btn-primary">
-                            <i class="fas fa-plus mr-1"></i>Create First Role
-                        </a>
+                        <button type="button" class="btn btn-primary" onclick="showCreateRoleModal()">
+                    <i class="fas fa-plus mr-1"></i>Create First Role
+                </button>
                     </div>
                 </div>
             </div>
@@ -327,7 +327,171 @@
         </div>
     </div>
 </div>
+
+<!-- Create Role Modal -->
+<div class="modal fade" id="createRoleModal" tabindex="-1" role="dialog" aria-labelledby="createRoleModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg" role="document" style="max-width: 700px;">
+        <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 20px 20px 0 0; padding: 24px 32px;">
+                <h5 class="modal-title" id="createRoleModalLabel" style="font-size: 1.5rem; font-weight: 700;">
+                    <i class="fas fa-user-shield mr-2"></i>Create New Role
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; opacity: 0.9; font-size: 1.5rem;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="createRoleForm" method="POST" action="{{ route('roles.store') }}">
+                @csrf
+                <div class="modal-body" style="padding: 32px; max-height: calc(100vh - 200px); overflow-y: auto;">
+                    <div id="createRoleError" class="alert alert-danger" style="display: none; border-radius: 12px;"></div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="modal_role_name" class="form-label">Role Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="modal_role_name" name="name" required placeholder="Enter role name" style="border-radius: 8px;">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="modal_role_slug" class="form-label">Slug <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="modal_role_slug" name="slug" required placeholder="e.g., sales-manager" style="border-radius: 8px;">
+                            <small class="form-text text-muted">Unique identifier (lowercase, hyphens)</small>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="modal_role_is_active" class="form-label">Status <span class="text-danger">*</span></label>
+                            <select class="form-control" id="modal_role_is_active" name="is_active" required style="border-radius: 8px;">
+                                <option value="1" selected>Active</option>
+                                <option value="0">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="modal_role_sort_order" class="form-label">Sort Order</label>
+                            <input type="number" class="form-control" id="modal_role_sort_order" name="sort_order" value="0" min="0" style="border-radius: 8px;">
+                        </div>
+                    </div>
+                    <div class="row mb-0">
+                        <div class="col-md-12">
+                            <label for="modal_role_description" class="form-label">Description</label>
+                            <textarea class="form-control" id="modal_role_description" name="description" rows="3" placeholder="Enter role description (optional)" style="border-radius: 8px;"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #e2e8f0; padding: 20px 32px; border-radius: 0 0 20px 20px;">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" style="border-radius: 12px; padding: 10px 24px;">
+                        <i class="fas fa-times mr-1"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="createRoleSubmitBtn" style="border-radius: 12px; padding: 10px 24px;">
+                        <i class="fas fa-save mr-1"></i>Create Role
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
+
+@push('scripts')
+<script>
+// Show Create Role Modal
+function showCreateRoleModal() {
+    $('#createRoleModal').modal('show');
+    $('#createRoleForm')[0].reset();
+    $('#createRoleError').hide();
+    $('#modal_role_is_active').val('1');
+    $('#modal_role_sort_order').val('0');
+    
+    // Auto-generate slug from name
+    $('#modal_role_name').on('input', function() {
+        const name = $(this).val();
+        const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        $('#modal_role_slug').val(slug);
+    });
+}
+
+// Handle Create Role Form Submission
+$(document).ready(function() {
+    $('#createRoleForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const submitBtn = $('#createRoleSubmitBtn');
+        const errorDiv = $('#createRoleError');
+        const originalText = submitBtn.html();
+        
+        errorDiv.hide();
+        
+        if (!form[0].checkValidity()) {
+            form[0].reportValidity();
+            return;
+        }
+        
+        submitBtn.prop('disabled', true);
+        submitBtn.html('<i class="fas fa-spinner fa-spin mr-1"></i>Creating...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            data: form.serialize(),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('#createRoleModal').modal('hide');
+                    form[0].reset();
+                    errorDiv.hide();
+                    
+                    if (typeof toastr !== 'undefined') {
+                        toastr.success(response.message || 'Role created successfully');
+                    } else if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: response.message || 'Role created successfully',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        alert(response.message || 'Role created successfully');
+                    }
+                    
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                }
+            },
+            error: function(xhr) {
+                let errorMessage = 'An error occurred while creating the role.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    const errors = xhr.responseJSON.errors;
+                    const firstError = Object.values(errors)[0];
+                    errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+                }
+                errorDiv.html('<i class="fas fa-exclamation-triangle mr-1"></i>' + errorMessage).show();
+                errorDiv[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false);
+                submitBtn.html(originalText);
+            }
+        });
+    });
+    
+    // Reset form when modal is closed
+    $('#createRoleModal').on('hidden.bs.modal', function() {
+        $('#createRoleForm')[0].reset();
+        $('#createRoleError').hide();
+        $('#modal_role_is_active').val('1');
+        $('#modal_role_sort_order').val('0');
+        $('#modal_role_name').off('input'); // Remove auto-slug generation
+    });
+});
+</script>
+@endpush
 
 @push('scripts')
 <script>
@@ -409,3 +573,4 @@ function refreshPage() {
 }
 </script>
 @endpush
+

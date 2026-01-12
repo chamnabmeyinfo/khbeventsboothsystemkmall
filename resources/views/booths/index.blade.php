@@ -968,6 +968,19 @@
     cursor: grabbing !important;
 }
 
+.booth-number-item.selected {
+    background: #667eea !important;
+    color: #fff !important;
+    border-color: #5568d3 !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3) !important;
+    transform: scale(1.05);
+}
+
+.booth-number-item.selected:hover {
+    background: #5568d3 !important;
+    transform: scale(1.08);
+}
+
 /* Dropped Booths on Canvas */
 .dropped-booth {
     position: absolute;
@@ -1893,6 +1906,12 @@
                                                 onclick="event.stopPropagation(); FloorPlanDesigner.addAllZoneToCanvas('{{ $zoneName }}');">
                                             <i class="fas fa-plus-circle"></i> Add All
                                         </button>
+                                        <button class="btn-add-selected-zone" 
+                                                data-zone="{{ $zoneName }}" 
+                                                title="Add Selected Booths in Zone {{ $zoneName }} to Canvas (Stick Together)"
+                                                onclick="event.stopPropagation(); FloorPlanDesigner.addSelectedZoneBoothsToCanvas('{{ $zoneName }}');">
+                                            <i class="fas fa-layer-group"></i> Add Selected
+                                        </button>
                                         <button class="btn-add-all-zone-click" 
                                                 data-zone="{{ $zoneName }}" 
                                                 title="Add All Booths in Zone {{ $zoneName }} - Click on Canvas to Place"
@@ -2347,9 +2366,35 @@
             <div class="modal-body">
                 <form id="bookBoothForm">
                     <input type="hidden" id="bookBoothId" name="booth_id">
+                    <input type="hidden" id="selectedClientId" name="client_id" value="">
                     <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> <strong>Fill in the client information below to secure this booth location.</strong>
+                        <i class="fas fa-info-circle"></i> <strong>Search for an existing client or fill in the form to create a new client. All fields marked with * are mandatory.</strong>
                     </div>
+                    
+                    <!-- Client Search -->
+                    <div class="form-group">
+                        <label for="clientSearch">
+                            <i class="fas fa-search"></i> Search Existing Client
+                        </label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="clientSearch" placeholder="Search by name, company, email, or phone number..." autocomplete="off">
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-primary" id="btnSearchClient">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="btnClearSearch" style="display: none;">
+                                    <i class="fas fa-times"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                        <div id="clientSearchResults" class="mt-2" style="display: none; position: relative; z-index: 1050;">
+                            <div class="list-group" id="clientSearchResultsList" style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"></div>
+                        </div>
+                        <small class="form-text text-muted">Type at least 2 characters to search for existing clients</small>
+                    </div>
+                    
+                    <hr>
+                    <h6 class="mb-3"><i class="fas fa-user-edit mr-2"></i>Client Information</h6>
                     
                     <div class="row">
                         <div class="col-md-6">
@@ -2394,11 +2439,56 @@
                         </div>
                     </div>
                     
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="clientPhone">
+                                    <i class="fas fa-phone"></i> Phone Number <span class="text-danger">*</span>
+                                </label>
+                                <input type="tel" class="form-control" id="clientPhone" name="phone_number" required placeholder="Enter phone number">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="clientEmail">
+                                    <i class="fas fa-envelope"></i> Email Address <span class="text-danger">*</span>
+                                </label>
+                                <input type="email" class="form-control" id="clientEmail" name="email" required placeholder="Enter email address">
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="form-group">
-                        <label for="clientPhone">
-                            <i class="fas fa-phone"></i> Phone Number <span class="text-danger">*</span>
+                        <label for="clientAddress">
+                            <i class="fas fa-map-marker-alt"></i> Address <span class="text-danger">*</span>
                         </label>
-                        <input type="tel" class="form-control" id="clientPhone" name="phone_number" required placeholder="Enter phone number">
+                        <textarea class="form-control" id="clientAddress" name="address" rows="2" required placeholder="Enter complete address (street, city, country)"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="clientTaxId">
+                                    <i class="fas fa-id-card"></i> Tax ID / Business Registration Number
+                                </label>
+                                <input type="text" class="form-control" id="clientTaxId" name="tax_id" placeholder="Enter tax ID or business registration number">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="clientWebsite">
+                                    <i class="fas fa-globe"></i> Website
+                                </label>
+                                <input type="url" class="form-control" id="clientWebsite" name="website" placeholder="Enter website URL (e.g., https://example.com)">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="clientNotes">
+                            <i class="fas fa-sticky-note"></i> Additional Notes
+                        </label>
+                        <textarea class="form-control" id="clientNotes" name="notes" rows="2" placeholder="Enter any additional information or notes"></textarea>
                     </div>
                     
                     <div class="form-group">
@@ -3634,6 +3724,7 @@ const FloorPlanDesigner = {
             self.setupDragAndDrop();
             self.setupToolbar();
             self.setupCanvas();
+            self.setupZoneBoothSelection();
             self.setupKeyboard();
             self.setupZoomSelection();
             self.loadCanvasSettings();
@@ -4080,6 +4171,261 @@ const FloorPlanDesigner = {
             // Save state
             self.saveState();
         });
+    },
+    
+    // Add selected booths from a zone to canvas (stick together)
+    addSelectedZoneBoothsToCanvas: function(zoneName) {
+        const self = this;
+        const canvas = self._cachedElements.canvas;
+        if (!canvas) {
+            console.error('Canvas not found');
+            return;
+        }
+        
+        // Ensure zoneName is a string and trimmed
+        zoneName = String(zoneName).trim();
+        console.log('Adding selected booths from Zone:', zoneName);
+        
+        // Find the zone section
+        let zoneSection = document.querySelector('[data-zone="' + zoneName + '"]');
+        if (!zoneSection) {
+            const allZoneSections = document.querySelectorAll('[data-zone]');
+            for (let i = 0; i < allZoneSections.length; i++) {
+                const section = allZoneSections[i];
+                if (section.getAttribute('data-zone').toUpperCase() === zoneName.toUpperCase()) {
+                    zoneSection = section;
+                    break;
+                }
+            }
+        }
+        
+        if (!zoneSection) {
+            console.error('Zone section not found for:', zoneName);
+            showNotification('Zone ' + zoneName + ' not found', 'error');
+            return;
+        }
+        
+        // Ensure zone section is expanded
+        if (zoneSection.classList.contains('collapsed')) {
+            zoneSection.classList.remove('collapsed');
+        }
+        
+        // Get selected booth items in this zone
+        const zoneContent = zoneSection.querySelector('.zone-content');
+        if (!zoneContent) {
+            console.error('Zone content not found for:', zoneName);
+            return;
+        }
+        
+        const selectedBoothItems = zoneContent.querySelectorAll('.booth-number-item.selected');
+        console.log('Found', selectedBoothItems.length, 'selected booths in Zone', zoneName);
+        
+        if (selectedBoothItems.length === 0) {
+            showNotification('Please select at least one booth from Zone ' + zoneName, 'warning');
+            return;
+        }
+        
+        // Fetch zone settings first
+        self.getZoneSettings(zoneName, function(zoneSettings) {
+            const effectiveSettings = zoneSettings || self.getEffectiveBoothSettings('');
+            const spacingX = effectiveSettings.width + 15; // Tighter spacing for sticking together
+            const spacingY = effectiveSettings.height + 15;
+            
+            // Calculate grid dimensions for selected booths
+            const gridCols = Math.ceil(Math.sqrt(selectedBoothItems.length));
+            
+            // Calculate starting position (center of visible canvas area)
+            let startX = 500;
+            let startY = 300;
+            const container = self.getElement('printContainer');
+            if (container) {
+                const containerRect = container.getBoundingClientRect();
+                let scale = 1;
+                let panX = 0;
+                let panY = 0;
+                if (self.panzoomInstance) {
+                    if (self.panzoomInstance.getScale) {
+                        scale = self.panzoomInstance.getScale();
+                    }
+                    if (self.panzoomInstance.getTransform) {
+                        const transform = self.panzoomInstance.getTransform();
+                        panX = transform.x || 0;
+                        panY = transform.y || 0;
+                    }
+                }
+                const containerCenterX = containerRect.width / 2;
+                const containerCenterY = containerRect.height / 2;
+                startX = (containerCenterX - panX) / scale;
+                startY = (containerCenterY - panY) / scale;
+            }
+            
+            let addedCount = 0;
+            let skippedCount = 0;
+            const boothsToRemove = [];
+            const boothsToSave = [];
+            
+            // Add selected booths to canvas in a compact grid (stick together)
+            Array.from(selectedBoothItems).forEach(function(boothItem, index) {
+                const boothId = boothItem.getAttribute('data-booth-id');
+                const boothNumber = boothItem.getAttribute('data-booth-number');
+                
+                if (!boothId) {
+                    console.warn('Booth item missing data-booth-id:', boothItem, 'Zone:', zoneName);
+                    return;
+                }
+                
+                const existingBooth = canvas.querySelector('[data-booth-id="' + boothId + '"]');
+                if (existingBooth) {
+                    console.log('Booth', boothNumber, '(ID:', boothId, ') already on canvas, skipping');
+                    skippedCount++;
+                    return;
+                }
+                
+                // Prepare booth data
+                const boothData = {
+                    id: boothId,
+                    number: boothNumber,
+                    status: boothItem.getAttribute('data-booth-status'),
+                    clientId: boothItem.getAttribute('data-client-id') || '',
+                    userId: boothItem.getAttribute('data-user-id') || '',
+                    categoryId: boothItem.getAttribute('data-category-id') || '',
+                    subCategoryId: boothItem.getAttribute('data-sub-category-id') || '',
+                    assetId: boothItem.getAttribute('data-asset-id') || '',
+                    boothTypeId: boothItem.getAttribute('data-booth-type-id') || ''
+                };
+                
+                // Calculate compact grid position (stick together)
+                const col = index % gridCols;
+                const row = Math.floor(index / gridCols);
+                const x = startX + (col * spacingX);
+                const y = startY + (row * spacingY);
+                
+                // Snap to grid if enabled
+                let finalX = x;
+                let finalY = y;
+                if (self.snapEnabled) {
+                    finalX = Math.round(x / self.gridSize) * self.gridSize;
+                    finalY = Math.round(y / self.gridSize) * self.gridSize;
+                }
+                
+                console.log('Adding selected booth', boothNumber, 'to canvas at', finalX, finalY, 'Zone:', zoneName);
+                
+                // Add booth to canvas (skip individual save)
+                self.addBoothToCanvas(boothData, finalX, finalY, true);
+                
+                // Collect booth data for batch save
+                const boothElement = canvas.querySelector('[data-booth-id="' + boothId + '"]');
+                if (boothElement) {
+                    const width = parseFloat(boothElement.style.width) || effectiveSettings.width;
+                    const height = parseFloat(boothElement.style.height) || effectiveSettings.height;
+                    const rotation = parseFloat(boothElement.getAttribute('data-rotation')) || effectiveSettings.rotation;
+                    const zIndex = parseFloat(boothElement.style.zIndex) || effectiveSettings.zIndex;
+                    const fontSize = parseFloat(boothElement.style.fontSize) || effectiveSettings.fontSize;
+                    const borderWidth = parseFloat(boothElement.style.borderWidth) || effectiveSettings.borderWidth;
+                    const borderRadius = parseFloat(boothElement.style.borderRadius) || effectiveSettings.borderRadius;
+                    const opacity = parseFloat(boothElement.style.opacity) || effectiveSettings.opacity;
+                    
+                    const backgroundColor = boothElement.style.backgroundColor || boothElement.getAttribute('data-background-color') || effectiveSettings.background_color || self.defaultBackgroundColor;
+                    const borderColor = boothElement.style.borderColor || boothElement.getAttribute('data-border-color') || effectiveSettings.border_color || self.defaultBorderColor;
+                    const textColor = boothElement.style.color || boothElement.getAttribute('data-text-color') || effectiveSettings.text_color || self.defaultTextColor;
+                    const fontWeight = boothElement.style.fontWeight || boothElement.getAttribute('data-font-weight') || effectiveSettings.font_weight || self.defaultFontWeight;
+                    const fontFamily = boothElement.style.fontFamily || boothElement.getAttribute('data-font-family') || effectiveSettings.font_family || self.defaultFontFamily;
+                    const textAlign = boothElement.style.textAlign || boothElement.getAttribute('data-text-align') || effectiveSettings.text_align || self.defaultTextAlign;
+                    const boxShadow = boothElement.style.boxShadow || boothElement.getAttribute('data-box-shadow') || effectiveSettings.box_shadow || self.defaultBoxShadow;
+                    
+                    const boothIdInt = parseInt(boothId);
+                    if (isNaN(boothIdInt) || boothIdInt <= 0) {
+                        console.error('Invalid booth ID:', boothId);
+                        return;
+                    }
+                    
+                    const boothDataToSave = {
+                        id: boothIdInt,
+                        position_x: (isNaN(finalX) || finalX === null || finalX === undefined) ? null : Number(finalX),
+                        position_y: (isNaN(finalY) || finalY === null || finalY === undefined) ? null : Number(finalY),
+                        width: (isNaN(width) || width === null || width === undefined) ? null : Number(width),
+                        height: (isNaN(height) || height === null || height === undefined) ? null : Number(height),
+                        rotation: (isNaN(rotation) || rotation === null || rotation === undefined) ? 0 : Number(rotation),
+                        z_index: (isNaN(zIndex) || zIndex === null || zIndex === undefined) ? 10 : parseInt(zIndex),
+                        font_size: (isNaN(fontSize) || fontSize === null || fontSize === undefined) ? 14 : parseInt(fontSize),
+                        border_width: (isNaN(borderWidth) || borderWidth === null || borderWidth === undefined) ? 2 : parseInt(borderWidth),
+                        border_radius: (isNaN(borderRadius) || borderRadius === null || borderRadius === undefined) ? 6 : parseInt(borderRadius),
+                        opacity: (isNaN(opacity) || opacity === null || opacity === undefined) ? 1.00 : Number(opacity),
+                        background_color: backgroundColor ? String(backgroundColor) : null,
+                        border_color: borderColor ? String(borderColor) : null,
+                        text_color: textColor ? String(textColor) : null,
+                        font_weight: fontWeight ? String(fontWeight) : null,
+                        font_family: fontFamily ? String(fontFamily) : null,
+                        text_align: textAlign ? String(textAlign) : null,
+                        box_shadow: boxShadow ? String(boxShadow) : null
+                    };
+                    
+                    boothsToSave.push(boothDataToSave);
+                }
+                
+                // Remove selection state and collect for removal
+                boothItem.classList.remove('selected');
+                boothsToRemove.push(boothItem);
+                addedCount++;
+            });
+            
+            // Remove booths from sidebar after adding to canvas
+            boothsToRemove.forEach(function(boothItem) {
+                self.removeBoothFromSidebar(boothItem);
+            });
+            
+            // Update "Add Selected" button state
+            self.updateZoneAddSelectedButton(zoneName);
+            
+            // Batch save all booths
+            if (boothsToSave.length > 0) {
+                console.log('Saving', boothsToSave.length, 'selected booths from Zone', zoneName, 'to database');
+                self.saveBoothsBatch(boothsToSave).then(function(result) {
+                    console.log('✅ Selected booths from Zone', zoneName, 'saved successfully:', result);
+                }).catch(function(error) {
+                    console.error('❌ Error saving selected booths from Zone', zoneName, ':', error);
+                    showNotification('Error saving selected booths from Zone ' + zoneName + ' to database', 'error');
+                });
+            }
+            
+            // Show notification
+            if (addedCount > 0) {
+                console.log('✅ Successfully added', addedCount, 'selected booth(s) from Zone', zoneName, 'to canvas (stuck together)');
+                showNotification(addedCount + ' selected booth' + (addedCount !== 1 ? 's' : '') + ' from Zone ' + zoneName + ' added to canvas (stuck together)' + (skippedCount > 0 ? ' (' + skippedCount + ' already on canvas)' : ''), 'success');
+            } else if (skippedCount > 0) {
+                showNotification('All selected booths from Zone ' + zoneName + ' are already on canvas', 'info');
+            }
+            
+            // Update booth count
+            if (self.updateBoothCount) {
+                self.updateBoothCount();
+            }
+            
+            // Save state
+            self.saveState();
+        });
+    },
+    
+    // Update "Add Selected" button state based on selected booths
+    updateZoneAddSelectedButton: function(zoneName) {
+        const zoneSection = document.querySelector('[data-zone="' + zoneName + '"]');
+        if (!zoneSection) return;
+        
+        const zoneContent = zoneSection.querySelector('.zone-content');
+        if (!zoneContent) return;
+        
+        const selectedBoothItems = zoneContent.querySelectorAll('.booth-number-item.selected');
+        const addSelectedBtn = zoneSection.querySelector('.btn-add-selected-zone');
+        
+        if (addSelectedBtn) {
+            if (selectedBoothItems.length > 0) {
+                addSelectedBtn.disabled = false;
+                addSelectedBtn.title = 'Add ' + selectedBoothItems.length + ' Selected Booth' + (selectedBoothItems.length !== 1 ? 's' : '') + ' to Canvas (Stick Together)';
+            } else {
+                addSelectedBtn.disabled = true;
+                addSelectedBtn.title = 'Select booths first to add them to canvas';
+            }
+        }
     },
     
     // Enable click-to-place mode for adding all booths from a zone
@@ -4947,6 +5293,11 @@ const FloorPlanDesigner = {
                         document.getElementById('clientCompany').value = client.company || '';
                         document.getElementById('clientPosition').value = client.position || '';
                         document.getElementById('clientPhone').value = client.phone_number || '';
+                        document.getElementById('clientEmail').value = client.email || '';
+                        document.getElementById('clientAddress').value = client.address || '';
+                        document.getElementById('clientTaxId').value = client.tax_id || '';
+                        document.getElementById('clientWebsite').value = client.website || '';
+                        document.getElementById('clientNotes').value = client.notes || '';
                     }
                 })
                 .catch(function(error) {
@@ -4958,6 +5309,153 @@ const FloorPlanDesigner = {
         if (status && status !== '1') {
             document.getElementById('bookingStatus').value = status;
         }
+        
+        // Reset search and form
+        $('#clientSearch').val('');
+        $('#selectedClientId').val('');
+        $('#clientSearchResults').hide();
+        $('#btnClearSearch').hide();
+        $('#bookBoothForm')[0].reset();
+        document.getElementById('bookBoothId').value = boothId;
+        
+        // Client Search Functionality - Define functions first
+        let searchTimeout;
+        
+        function searchClients(query) {
+            if (!query || query.length < 2) {
+                $('#clientSearchResults').hide();
+                return;
+            }
+            
+            console.log('Searching for clients with query:', query);
+            
+            $.ajax({
+                url: '{{ route("clients.search") }}',
+                method: 'GET',
+                data: { q: query },
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                success: function(clients) {
+                    console.log('Search results received:', clients);
+                    const resultsDiv = $('#clientSearchResults');
+                    const resultsList = $('#clientSearchResultsList');
+                    resultsList.empty();
+                    
+                    if (!clients || clients.length === 0) {
+                        resultsList.html('<div class="list-group-item text-muted">No clients found. You can create a new client by filling in the form below.</div>');
+                        resultsDiv.show();
+                        return;
+                    }
+                    
+                    clients.forEach(function(client) {
+                        const item = $('<a href="#" class="list-group-item list-group-item-action"></a>')
+                            .html('<div class="d-flex justify-content-between align-items-center">' +
+                                '<div>' +
+                                '<strong>' + (client.company || client.name) + '</strong>' +
+                                (client.company && client.name ? ' - ' + client.name : '') +
+                                '<br><small class="text-muted">' +
+                                (client.email ? client.email : '') +
+                                (client.phone_number ? (client.email ? ' | ' : '') + client.phone_number : '') +
+                                '</small>' +
+                                '</div>' +
+                                '<i class="fas fa-check-circle text-success"></i>' +
+                                '</div>')
+                            .on('click', function(e) {
+                                e.preventDefault();
+                                selectClient(client);
+                            });
+                        resultsList.append(item);
+                    });
+                    
+                    resultsDiv.show();
+                    console.log('Search results displayed');
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error searching clients:', error, xhr);
+                    const errorMsg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Error searching clients. Please try again.';
+                    $('#clientSearchResultsList').html('<div class="list-group-item text-danger">' + errorMsg + '</div>');
+                    $('#clientSearchResults').show();
+                }
+            });
+        }
+        
+        function selectClient(client) {
+            // Set selected client ID
+            $('#selectedClientId').val(client.id);
+            
+            // Fill in form fields
+            $('#clientName').val(client.name || '');
+            $('#clientCompany').val(client.company || '');
+            $('#clientPhone').val(client.phone_number || '');
+            $('#clientEmail').val(client.email || '');
+            $('#clientAddress').val(client.address || '');
+            $('#clientPosition').val(client.position || '');
+            $('#clientSex').val(client.sex || '');
+            $('#clientTaxId').val(client.tax_id || '');
+            $('#clientWebsite').val(client.website || '');
+            $('#clientNotes').val(client.notes || '');
+            
+            // Hide search results and show clear button
+            $('#clientSearchResults').hide();
+            $('#clientSearch').val(client.company || client.name);
+            $('#btnClearSearch').show();
+            
+            // Show success message
+            if (typeof customAlert !== 'undefined') {
+                customAlert('Client "' + (client.company || client.name) + '" selected. You can edit the information if needed.', 'success');
+            }
+        }
+        
+        // Unbind existing handlers to prevent duplicates
+        $('#clientSearch').off('input keyup');
+        $('#btnSearchClient').off('click');
+        $('#btnClearSearch').off('click');
+        
+        // Bind event handlers
+        $('#clientSearch').on('input keyup', function(e) {
+            const query = $(this).val().trim();
+            
+            clearTimeout(searchTimeout);
+            
+            if (query.length < 2) {
+                $('#clientSearchResults').hide();
+                return;
+            }
+            
+            searchTimeout = setTimeout(function() {
+                searchClients(query);
+            }, 300);
+        });
+        
+        // Test if handlers are attached (debug)
+        console.log('Client search handlers attached');
+        
+        $('#btnSearchClient').on('click', function() {
+            const query = $('#clientSearch').val().trim();
+            if (query.length >= 2) {
+                searchClients(query);
+            }
+        });
+        
+        $('#btnClearSearch').on('click', function() {
+            $('#clientSearch').val('');
+            $('#selectedClientId').val('');
+            $('#clientSearchResults').hide();
+            $(this).hide();
+            // Clear form fields
+            $('#clientName').val('');
+            $('#clientCompany').val('');
+            $('#clientPhone').val('');
+            $('#clientEmail').val('');
+            $('#clientAddress').val('');
+            $('#clientPosition').val('');
+            $('#clientSex').val('');
+            $('#clientTaxId').val('');
+            $('#clientWebsite').val('');
+            $('#clientNotes').val('');
+        });
         
         // Show modal
         $('#bookBoothModal').modal('show');
@@ -4974,21 +5472,37 @@ const FloorPlanDesigner = {
                 return;
             }
             
-            // Get form data
+            // Get form data - ALL fields are now collected
+            const selectedClientId = document.getElementById('selectedClientId').value;
             const formData = {
                 booth_id: parseInt(document.getElementById('bookBoothId').value),
+                client_id: selectedClientId ? parseInt(selectedClientId) : null,
                 name: document.getElementById('clientName').value.trim(),
                 sex: document.getElementById('clientSex').value ? parseInt(document.getElementById('clientSex').value) : null,
                 company: document.getElementById('clientCompany').value.trim(),
                 position: document.getElementById('clientPosition').value.trim(),
                 phone_number: document.getElementById('clientPhone').value.trim(),
+                email: document.getElementById('clientEmail').value.trim(),
+                address: document.getElementById('clientAddress').value.trim(),
+                tax_id: document.getElementById('clientTaxId').value.trim() || null,
+                website: document.getElementById('clientWebsite').value.trim() || null,
+                notes: document.getElementById('clientNotes').value.trim() || null,
                 status: parseInt(document.getElementById('bookingStatus').value)
             };
             
-            // Validate required fields
-            if (!formData.name || !formData.company || !formData.phone_number) {
+            // Validate ALL required fields (Name, Company, Phone, Email, Address)
+            if (!formData.name || !formData.company || !formData.phone_number || !formData.email || !formData.address) {
                 const errorDiv = document.getElementById('bookBoothError');
-                errorDiv.textContent = 'Please fill in all required fields (Name, Company, Phone Number)';
+                errorDiv.textContent = 'Please fill in all required fields: Name, Company, Phone Number, Email Address, and Address';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(formData.email)) {
+                const errorDiv = document.getElementById('bookBoothError');
+                errorDiv.textContent = 'Please enter a valid email address';
                 errorDiv.style.display = 'block';
                 return;
             }
@@ -5076,6 +5590,9 @@ const FloorPlanDesigner = {
         contextMenu.id = 'boothContextMenu';
         contextMenu.className = 'booth-context-menu';
         contextMenu.innerHTML = `
+            <div class="context-menu-item" data-action="set-price">
+                <i class="fas fa-dollar-sign"></i> Set Price
+            </div>
             <div class="context-menu-item" data-action="book">
                 <i class="fas fa-calendar-check"></i> Book Booth
             </div>
@@ -5128,7 +5645,90 @@ const FloorPlanDesigner = {
                 e.preventDefault();
                 const action = this.getAttribute('data-action');
                 
-                if (action === 'book') {
+                if (action === 'set-price') {
+                    // Get current price
+                    let currentPrice = 500; // Default
+                    if (typeof window.boothsData !== 'undefined' && Array.isArray(window.boothsData)) {
+                        const boothData = window.boothsData.find(b => b.id == boothId);
+                        if (boothData && boothData.price !== undefined) {
+                            currentPrice = parseFloat(boothData.price) || 500;
+                        }
+                    }
+                    
+                    // Show SweetAlert2 dialog for price input
+                    Swal.fire({
+                        title: 'Set Price for Booth ' + boothNumber,
+                        html: '<input type="number" id="boothPriceInput" class="swal2-input" value="' + currentPrice.toFixed(2) + '" min="0" step="0.01" placeholder="Enter price">',
+                        icon: 'info',
+                        showCancelButton: true,
+                        confirmButtonText: 'Set Price',
+                        cancelButtonText: 'Cancel',
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#aaa',
+                        focusConfirm: false,
+                        preConfirm: function() {
+                            const priceInput = document.getElementById('boothPriceInput');
+                            const price = parseFloat(priceInput.value);
+                            
+                            if (isNaN(price) || price < 0) {
+                                Swal.showValidationMessage('Please enter a valid price (must be >= 0)');
+                                return false;
+                            }
+                            
+                            return price;
+                        }
+                    }).then(function(result) {
+                        if (result.isConfirmed && result.value !== false) {
+                            const newPrice = result.value;
+                            
+                            // Get current position and properties
+                            const x = parseFloat(boothElement.style.left) || 0;
+                            const y = parseFloat(boothElement.style.top) || 0;
+                            const width = parseFloat(boothElement.style.width) || 80;
+                            const height = parseFloat(boothElement.style.height) || 50;
+                            const rotation = parseFloat(boothElement.getAttribute('data-rotation')) || 0;
+                            const zIndex = parseFloat(boothElement.style.zIndex) || 10;
+                            const fontSize = parseFloat(boothElement.style.fontSize) || 14;
+                            const borderWidth = parseFloat(boothElement.style.borderWidth) || 2;
+                            const borderRadius = parseFloat(boothElement.style.borderRadius) || 6;
+                            const opacity = parseFloat(boothElement.style.opacity) || 1.00;
+                            
+                            // Save price using saveBoothPosition
+                            self.saveBoothPosition(boothId, x, y, width, height, rotation, zIndex, fontSize, borderWidth, borderRadius, opacity, undefined, undefined, undefined, undefined, undefined, undefined, undefined, newPrice)
+                                .then(function(response) {
+                                    // Update boothsData if available
+                                    if (typeof window.boothsData !== 'undefined' && Array.isArray(window.boothsData)) {
+                                        const boothData = window.boothsData.find(b => b.id == boothId);
+                                        if (boothData) {
+                                            boothData.price = newPrice;
+                                        }
+                                    }
+                                    
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Price Updated',
+                                        text: 'Price for Booth ' + boothNumber + ' has been set to $' + newPrice.toFixed(2),
+                                        timer: 2000,
+                                        showConfirmButton: false,
+                                        toast: true,
+                                        position: 'bottom-right'
+                                    });
+                                })
+                                .catch(function(error) {
+                                    console.error('Error saving price:', error);
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: 'Failed to save price. Please try again.',
+                                        timer: 3000,
+                                        showConfirmButton: false,
+                                        toast: true,
+                                        position: 'bottom-right'
+                                    });
+                                });
+                        }
+                    });
+                } else if (action === 'book') {
                     self.showBookBoothModal(boothId, boothNumber, boothElement);
                 }
                 
@@ -5220,7 +5820,7 @@ const FloorPlanDesigner = {
             return response.json();
         })
         .then(function(data) {
-            let currentWidth, currentHeight, currentRotation, currentZIndex, currentBorderRadius, currentBorderWidth, currentOpacity;
+            let currentWidth, currentHeight, currentRotation, currentZIndex, currentBorderRadius, currentBorderWidth, currentOpacity, currentPrice;
             
             // Use saved zone settings if available, otherwise use current booth values
             if (data.status === 200 && data.settings) {
@@ -5237,6 +5837,7 @@ const FloorPlanDesigner = {
                 currentBorderRadius = data.settings.borderRadius || 6;
                 currentBorderWidth = data.settings.borderWidth || 2;
                 currentOpacity = data.settings.opacity || 1.00;
+                currentPrice = data.settings.price || 500;
             } else {
                 // Fallback: Get values from first booth
                 const firstBooth = zoneBooths[0];
@@ -5255,6 +5856,7 @@ const FloorPlanDesigner = {
                 currentBorderRadius = parseFloat(firstBooth.style.borderRadius) || 6;
                 currentBorderWidth = parseFloat(firstBooth.style.borderWidth) || 2;
                 currentOpacity = parseFloat(firstBooth.style.opacity) || 1.00;
+                currentPrice = 500; // Default price if not in settings
             }
             
             self.showZoneSettingsModal(zoneName, zoneBooths.length, {
@@ -5264,7 +5866,8 @@ const FloorPlanDesigner = {
                 zIndex: currentZIndex,
                 borderRadius: currentBorderRadius,
                 borderWidth: currentBorderWidth,
-                opacity: currentOpacity
+                opacity: currentOpacity,
+                price: currentPrice || 500
             });
         })
         .catch(function(error) {
@@ -5285,6 +5888,7 @@ const FloorPlanDesigner = {
             const currentBorderRadius = parseFloat(firstBooth.style.borderRadius) || 6;
             const currentBorderWidth = parseFloat(firstBooth.style.borderWidth) || 2;
             const currentOpacity = parseFloat(firstBooth.style.opacity) || 1.00;
+            const currentPrice = 500; // Default price in fallback case
             
             self.showZoneSettingsModal(zoneName, zoneBooths.length, {
                 width: currentWidth,
@@ -5293,7 +5897,8 @@ const FloorPlanDesigner = {
                 zIndex: currentZIndex,
                 borderRadius: currentBorderRadius,
                 borderWidth: currentBorderWidth,
-                opacity: currentOpacity
+                opacity: currentOpacity,
+                price: currentPrice
             });
         });
     },
@@ -5356,8 +5961,14 @@ const FloorPlanDesigner = {
         modalHtml += '</label>';
         modalHtml += '<input type="number" id="zoneOpacity" class="swal2-input" value="' + settings.opacity + '" min="0" max="1" step="0.1" style="width: 100%;">';
         modalHtml += '</div>';
+        modalHtml += '<div style="margin-bottom: 15px;">';
+        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
+        modalHtml += '<i class="fas fa-dollar-sign"></i> Default Price (for new booths in this zone)';
+        modalHtml += '</label>';
+        modalHtml += '<input type="number" id="zonePrice" class="swal2-input" value="' + (settings.price || 500) + '" min="0" step="0.01" style="width: 100%;">';
+        modalHtml += '</div>';
         modalHtml += '<p style="font-size: 11px; color: #999; margin-top: 10px;">';
-        modalHtml += '<i class="fas fa-info-circle"></i> All fields are required. Values will be applied to all booths in this zone and saved for future use.';
+        modalHtml += '<i class="fas fa-info-circle"></i> All fields are required. Values will be applied to all booths in this zone and saved for future use. Price will be used when creating new booths in this zone.';
         modalHtml += '</p>';
         modalHtml += '</div>';
         
@@ -5378,9 +5989,10 @@ const FloorPlanDesigner = {
                 const borderRadius = document.getElementById('zoneBorderRadius').value;
                 const borderWidth = document.getElementById('zoneBorderWidth').value;
                 const opacity = document.getElementById('zoneOpacity').value;
+                const price = document.getElementById('zonePrice').value;
                 
                 // Validate all fields
-                if (!width || !height || rotation === '' || !zIndex || borderRadius === '' || borderWidth === '' || opacity === '') {
+                if (!width || !height || rotation === '' || !zIndex || borderRadius === '' || borderWidth === '' || opacity === '' || !price) {
                     Swal.showValidationMessage('Please fill in all fields');
                     return false;
                 }
@@ -5392,7 +6004,8 @@ const FloorPlanDesigner = {
                     zIndex: parseInt(zIndex),
                     borderRadius: parseFloat(borderRadius),
                     borderWidth: parseFloat(borderWidth),
-                    opacity: parseFloat(opacity)
+                    opacity: parseFloat(opacity),
+                    price: parseFloat(price)
                 };
             }
         }).then((result) => {
@@ -5508,6 +6121,7 @@ const FloorPlanDesigner = {
                 borderRadius: settings.borderRadius,
                 borderWidth: settings.borderWidth,
                 opacity: settings.opacity,
+                price: settings.price,
                 floor_plan_id: floorPlanId
             })
         })
@@ -5530,7 +6144,8 @@ const FloorPlanDesigner = {
                     zIndex: settings.zIndex,
                     borderRadius: settings.borderRadius,
                     borderWidth: settings.borderWidth,
-                    opacity: settings.opacity
+                    opacity: settings.opacity,
+                    price: settings.price
                 };
             }
         })
@@ -6696,6 +7311,18 @@ const FloorPlanDesigner = {
                 FloorPlanDesigner.addAllZoneToCanvas(zoneName);
             };
             
+            // Add "Add Selected" button
+            const addSelectedBtn = document.createElement('button');
+            addSelectedBtn.className = 'btn-add-selected-zone';
+            addSelectedBtn.setAttribute('data-zone', zoneName);
+            addSelectedBtn.setAttribute('title', 'Select booths first to add them to canvas');
+            addSelectedBtn.innerHTML = '<i class="fas fa-layer-group"></i> Add Selected';
+            addSelectedBtn.disabled = true;
+            addSelectedBtn.onclick = function(e) {
+                e.stopPropagation();
+                FloorPlanDesigner.addSelectedZoneBoothsToCanvas(zoneName);
+            };
+            
             // Add click-to-place button
             const clickToPlaceBtn = document.createElement('button');
             clickToPlaceBtn.className = 'btn-add-all-zone-click';
@@ -6742,6 +7369,7 @@ const FloorPlanDesigner = {
             
             zoneHeader.appendChild(zoneHeaderLeft);
             zoneHeader.appendChild(addAllBtn);
+            zoneHeader.appendChild(addSelectedBtn);
             zoneHeader.appendChild(clickToPlaceBtn);
             zoneHeader.appendChild(zoneSettingsBtn);
             zoneHeader.appendChild(clearZoneBtn);
@@ -8886,9 +9514,21 @@ const FloorPlanDesigner = {
         const opacity = parseFloat(element.style.opacity) || 1;
         const zIndex = parseFloat(element.style.zIndex) || 10;
         
+        // Get booth price from boothsData
+        let boothPrice = 500; // Default price
+        if (typeof window.boothsData !== 'undefined' && Array.isArray(window.boothsData)) {
+            const boothData = window.boothsData.find(b => b.id == boothId);
+            if (boothData && boothData.price !== undefined) {
+                boothPrice = parseFloat(boothData.price) || 500;
+            }
+        }
+        
         var propHtml = '';
         propHtml += '<h6 class="mb-3"><i class="fas fa-cube"></i> Booth: ' + boothNumber + '</h6>';
-        propHtml += '<div class="mb-3"><strong>Position</strong></div>';
+        propHtml += '<div class="mb-3"><strong>Booth Details</strong></div>';
+        propHtml += '<div class="mb-2"><label class="form-label small"><i class="fas fa-dollar-sign"></i> Price:</label>';
+        propHtml += '<input type="number" class="form-control form-control-sm prop-price" value="' + boothPrice.toFixed(2) + '" min="0" step="0.01"></div>';
+        propHtml += '<div class="mb-3 mt-3"><strong>Position</strong></div>';
         propHtml += '<div class="mb-2"><label class="form-label small"><i class="fas fa-arrows-alt-h"></i> Position X (px):</label>';
         propHtml += '<input type="number" class="form-control form-control-sm prop-x" value="' + Math.round(x) + '" step="' + self.gridSize + '"></div>';
         propHtml += '<div class="mb-2"><label class="form-label small"><i class="fas fa-arrows-alt-v"></i> Position Y (px):</label>';
@@ -8923,14 +9563,22 @@ const FloorPlanDesigner = {
             return value;
         };
         
-        // Helper function to save booth position
+        // Helper function to save booth position and properties
         const saveBoothProps = function() {
             const x = parseFloat(element.style.left) || 0;
             const y = parseFloat(element.style.top) || 0;
             const w = parseFloat(element.style.width) || 80;
             const h = parseFloat(element.style.height) || 50;
             const r = parseFloat(element.getAttribute('data-rotation')) || 0;
-            self.saveBoothPosition(boothId, x, y, w, h, r);
+            const z = parseFloat(element.style.zIndex) || 10;
+            const fs = parseFloat(element.style.fontSize) || 14;
+            const bw = parseFloat(element.style.borderWidth) || 2;
+            const br = parseFloat(element.style.borderRadius) || 6;
+            const op = parseFloat(element.style.opacity) || 1.00;
+            const priceInput = content.querySelector('.prop-price');
+            const price = priceInput ? parseFloat(priceInput.value) || null : null;
+            // Save with price as last parameter
+            self.saveBoothPosition(boothId, x, y, w, h, r, z, fs, bw, br, op, undefined, undefined, undefined, undefined, undefined, undefined, undefined, price);
         };
         
         // Helper function to add mouse wheel support to input
@@ -9137,6 +9785,25 @@ const FloorPlanDesigner = {
             // Add mouse wheel support for Opacity
             const propOpacity = content.querySelector('.prop-opacity');
             addWheelSupport(propOpacity, 0.1, 0, 1, null);
+        }
+        
+        // Add event listener for price field
+        if (content.querySelector('.prop-price')) {
+            content.querySelector('.prop-price').addEventListener('change', function() {
+                const price = Math.max(0, parseFloat(this.value) || 500);
+                this.value = price.toFixed(2); // Ensure 2 decimal places
+                saveBoothProps();
+                // Update boothsData if available
+                if (typeof window.boothsData !== 'undefined' && Array.isArray(window.boothsData)) {
+                    const boothData = window.boothsData.find(b => b.id == boothId);
+                    if (boothData) {
+                        boothData.price = price;
+                    }
+                }
+            });
+            // Add mouse wheel support for Price
+            const propPrice = content.querySelector('.prop-price');
+            addWheelSupport(propPrice, 10, 0, undefined, null);
         }
         
         // Show properties panel as popup modal (only if enabled)
@@ -9520,9 +10187,17 @@ const FloorPlanDesigner = {
     },
     
     // Save booth position, size, and rotation
-    saveBoothPosition: function(boothId, x, y, width, height, rotation, zIndex, fontSize, borderWidth, borderRadius, opacity, backgroundColor, borderColor, textColor, fontWeight, fontFamily, textAlign, boxShadow) {
+    saveBoothPosition: function(boothId, x, y, width, height, rotation, zIndex, fontSize, borderWidth, borderRadius, opacity, backgroundColor, borderColor, textColor, fontWeight, fontFamily, textAlign, boxShadow, price) {
         const canvas = document.getElementById('print');
         const boothElement = canvas ? canvas.querySelector('[data-booth-id="' + boothId + '"]') : null;
+        
+        // Get price from boothsData if not provided
+        if (price === undefined && typeof window.boothsData !== 'undefined' && Array.isArray(window.boothsData)) {
+            const boothData = window.boothsData.find(b => b.id == boothId);
+            if (boothData && boothData.price !== undefined) {
+                price = parseFloat(boothData.price);
+            }
+        }
         
         // Get style properties from element if not provided
         if (boothElement) {
@@ -9567,6 +10242,11 @@ const FloorPlanDesigner = {
             border_radius: borderRadius,
             opacity: opacity
         };
+        
+        // Add price if provided
+        if (price !== undefined && price !== null) {
+            payload.price = price;
+        }
         
         // Add appearance properties if provided
         if (backgroundColor !== undefined && backgroundColor !== null) {
@@ -9720,6 +10400,15 @@ const FloorPlanDesigner = {
             // Get lock state
             const isLocked = booth.classList.contains('locked') || booth.getAttribute('data-locked') === 'true';
             
+            // Get price from boothsData if available
+            let price = null;
+            if (typeof window.boothsData !== 'undefined' && Array.isArray(window.boothsData)) {
+                const boothInfo = window.boothsData.find(b => b.id == boothId);
+                if (boothInfo && boothInfo.price !== undefined) {
+                    price = parseFloat(boothInfo.price) || null;
+                }
+            }
+            
             if (boothId && (x !== null || y !== null)) {
                 boothData.push({
                     id: parseInt(boothId),
@@ -9733,6 +10422,7 @@ const FloorPlanDesigner = {
                     border_width: borderWidth,
                     border_radius: borderRadius,
                     opacity: opacity,
+                    price: price,
                     // Appearance properties
                     background_color: backgroundColor,
                     border_color: borderColor,
@@ -9784,7 +10474,19 @@ const FloorPlanDesigner = {
             // Show success message
             let successMsg = 'Successfully saved ' + result.boothData.saved + ' out of ' + result.boothData.total + ' booth(s)!';
             if (result.canvasSaved) {
-                successMsg += '\nCanvas settings (grid, zoom, pan) saved.';
+                successMsg += '\n\nCanvas settings saved:\n';
+                successMsg += '• Grid: ' + (self.gridEnabled ? 'Visible' : 'Hidden') + '\n';
+                successMsg += '• Snap to Grid: ' + (self.snapEnabled ? 'Enabled' : 'Disabled') + '\n';
+                successMsg += '• Grid Size: ' + self.gridSize + 'px\n';
+                successMsg += '• Canvas Size: ' + self.canvasWidth + 'x' + self.canvasHeight + 'px\n';
+                if (self.panzoomInstance) {
+                    try {
+                        const scale = self.panzoomInstance.getScale();
+                        if (scale) {
+                            successMsg += '• Zoom: ' + Math.round(scale * 100) + '%\n';
+                        }
+                    } catch (e) {}
+                }
             }
             let alertType = 'success';
             if (result.boothData.errors && result.boothData.errors.length > 0) {
@@ -9882,13 +10584,14 @@ const FloorPlanDesigner = {
     },
     
     // Save canvas settings to database
+    // This function saves ALL canvas settings including grid, snap, zoom, pan, dimensions, etc.
     saveCanvasSettingsToDatabase: function() {
         const self = this;
         
         // Get current floor plan ID (floor-plan-specific settings)
         const floorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
         
-        // Only send defined values to avoid validation errors
+        // Prepare settings object - Save EVERYTHING that the canvas has
         const settings = {};
         
         // Include floor_plan_id for floor-plan-specific canvas settings
@@ -9896,6 +10599,7 @@ const FloorPlanDesigner = {
             settings.floor_plan_id = floorPlanId;
         }
         
+        // Canvas dimensions
         if (self.canvasWidth !== undefined && self.canvasWidth !== null) {
             settings.canvas_width = parseInt(self.canvasWidth) || 1200;
         }
@@ -9905,15 +10609,15 @@ const FloorPlanDesigner = {
         if (self.canvasResolution !== undefined && self.canvasResolution !== null) {
             settings.canvas_resolution = parseInt(self.canvasResolution) || 300;
         }
+        
+        // Grid settings - Always save current state
         if (self.gridSize !== undefined && self.gridSize !== null) {
             settings.grid_size = parseInt(self.gridSize) || 10;
         }
-        if (self.gridEnabled !== undefined) {
-            settings.grid_enabled = Boolean(self.gridEnabled);
-        }
-        if (self.snapEnabled !== undefined) {
-            settings.snap_to_grid = Boolean(self.snapEnabled);
-        }
+        // Save grid enabled state (show/hide grid) - Always save current state
+        settings.grid_enabled = self.gridEnabled !== undefined ? Boolean(self.gridEnabled) : false;
+        // Save snap to grid state - Always save current state
+        settings.snap_to_grid = self.snapEnabled !== undefined ? Boolean(self.snapEnabled) : false;
         
         // Get zoom and pan if panzoom is initialized
         if (self.panzoomInstance) {
@@ -9976,6 +10680,9 @@ const FloorPlanDesigner = {
                 localStorage.setItem('canvasHeight', self.canvasHeight);
                 localStorage.setItem('canvasResolution', self.canvasResolution);
                 localStorage.setItem('gridSize', self.gridSize);
+                localStorage.setItem('gridEnabled', self.gridEnabled);
+                localStorage.setItem('snapEnabled', self.snapEnabled);
+                console.log('[Canvas Settings] All canvas settings saved:', settings);
                 return data;
             }
         })
@@ -9986,6 +10693,9 @@ const FloorPlanDesigner = {
             localStorage.setItem('canvasHeight', self.canvasHeight);
             localStorage.setItem('canvasResolution', self.canvasResolution);
             localStorage.setItem('gridSize', self.gridSize);
+            localStorage.setItem('gridEnabled', self.gridEnabled);
+            localStorage.setItem('snapEnabled', self.snapEnabled);
+            console.warn('[Canvas Settings] Failed to save to database, saved to localStorage:', error);
         });
     },
     
@@ -10240,6 +10950,26 @@ const FloorPlanDesigner = {
                 self.gridEnabled = settings.grid_enabled !== undefined ? settings.grid_enabled : true;
                 self.snapEnabled = settings.snap_to_grid !== undefined ? settings.snap_to_grid : false;
                 
+                // Restore grid visibility state in UI
+                const gridOverlay = $('#gridOverlay');
+                const btnGrid = $('#btnGrid');
+                if (self.gridEnabled) {
+                    gridOverlay.addClass('visible');
+                    btnGrid.addClass('active');
+                } else {
+                    gridOverlay.removeClass('visible');
+                    btnGrid.removeClass('active');
+                }
+                
+                // Restore snap to grid state in UI
+                const btnSnap = $('#btnSnap');
+                btnSnap.toggleClass('active', self.snapEnabled);
+                if (self.snapEnabled) {
+                    btnSnap.attr('title', 'Snap to Grid: ON (Click to disable)').css('background', 'rgba(40, 167, 69, 0.3)');
+                } else {
+                    btnSnap.attr('title', 'Snap to Grid: OFF (Click to enable)').css('background', 'rgba(108, 117, 125, 0.3)');
+                }
+                
                 // Apply saved dimensions
                 self.setCanvasSize(self.canvasWidth, self.canvasHeight);
                 
@@ -10338,6 +11068,8 @@ const FloorPlanDesigner = {
             const savedHeight = localStorage.getItem('canvasHeight');
             const savedResolution = localStorage.getItem('canvasResolution');
             const savedGridSize = localStorage.getItem('gridSize');
+            const savedGridEnabled = localStorage.getItem('gridEnabled');
+            const savedSnapEnabled = localStorage.getItem('snapEnabled');
             
             if (savedWidth) {
                 self.canvasWidth = parseInt(savedWidth);
@@ -10350,6 +11082,30 @@ const FloorPlanDesigner = {
             }
             if (savedGridSize) {
                 self.setGridSize(parseInt(savedGridSize));
+            }
+            if (savedGridEnabled !== null) {
+                self.gridEnabled = savedGridEnabled === 'true';
+                // Update UI
+                const gridOverlay = $('#gridOverlay');
+                const btnGrid = $('#btnGrid');
+                if (self.gridEnabled) {
+                    gridOverlay.addClass('visible');
+                    btnGrid.addClass('active');
+                } else {
+                    gridOverlay.removeClass('visible');
+                    btnGrid.removeClass('active');
+                }
+            }
+            if (savedSnapEnabled !== null) {
+                self.snapEnabled = savedSnapEnabled === 'true';
+                // Update UI
+                const btnSnap = $('#btnSnap');
+                btnSnap.toggleClass('active', self.snapEnabled);
+                if (self.snapEnabled) {
+                    btnSnap.attr('title', 'Snap to Grid: ON (Click to disable)').css('background', 'rgba(40, 167, 69, 0.3)');
+                } else {
+                    btnSnap.attr('title', 'Snap to Grid: OFF (Click to enable)').css('background', 'rgba(108, 117, 125, 0.3)');
+                }
             }
             
             // Apply saved dimensions
@@ -10874,6 +11630,58 @@ const FloorPlanDesigner = {
         if (self.updateBoothCount) {
             self.updateBoothCount();
         }
+    },
+    
+    // Setup zone booth selection
+    setupZoneBoothSelection: function() {
+        const self = this;
+        
+        // Handle booth item click for selection (Ctrl+Click or regular click to toggle)
+        $(document).on('click', '.booth-number-item', function(e) {
+            // Don't interfere with drag and drop
+            if (e.ctrlKey || e.metaKey) {
+                // Ctrl+Click: Toggle selection
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).toggleClass('selected');
+                
+                // Update "Add Selected" button state
+                const zoneName = $(this).attr('data-booth-zone');
+                if (zoneName) {
+                    self.updateZoneAddSelectedButton(zoneName);
+                }
+            } else if (e.shiftKey) {
+                // Shift+Click: Multi-select range (future enhancement)
+                e.preventDefault();
+                e.stopPropagation();
+            } else {
+                // Regular click: Toggle selection (but allow drag to work)
+                // Only toggle if not dragging
+                setTimeout(function() {
+                    if (!self.draggedElement || self.draggedElement !== this) {
+                        // Check if this is a click (not a drag start)
+                        const wasDragging = $(this).hasClass('dragging');
+                        if (!wasDragging) {
+                            $(this).toggleClass('selected');
+                            
+                            // Update "Add Selected" button state
+                            const zoneName = $(this).attr('data-booth-zone');
+                            if (zoneName) {
+                                self.updateZoneAddSelectedButton(zoneName);
+                            }
+                        }
+                    }
+                }.bind(this), 100);
+            }
+        });
+        
+        // Initialize "Add Selected" button states for all zones
+        document.querySelectorAll('.zone-section').forEach(function(zoneSection) {
+            const zoneName = zoneSection.getAttribute('data-zone');
+            if (zoneName) {
+                self.updateZoneAddSelectedButton(zoneName);
+            }
+        });
     },
     
     // Setup toolbar
@@ -13466,3 +14274,4 @@ function switchFloorPlan(floorPlanId) {
 }
 </script>
 @endpush
+

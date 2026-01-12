@@ -228,3 +228,4 @@ class EmailTemplateController extends Controller
         return $categoryData[$category] ?? $default;
     }
 }
+

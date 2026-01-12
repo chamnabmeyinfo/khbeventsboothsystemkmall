@@ -108,7 +108,7 @@ class PaymentController extends Controller
             $booth->update(['status' => Booth::STATUS_PAID]);
         }
 
-        return redirect()->route('payments.index')
+        return redirect()->route('finance.payments.index')
             ->with('success', 'Payment recorded successfully');
     }
 
@@ -183,7 +183,7 @@ class PaymentController extends Controller
 
             \DB::commit();
 
-            return redirect()->route('payments.index')
+            return redirect()->route('finance.payments.index')
                 ->with('success', 'Payment refunded successfully. Refund payment #' . $refundPayment->id . ' created.');
         } catch (\Exception $e) {
             \DB::rollBack();
@@ -237,7 +237,7 @@ class PaymentController extends Controller
 
             \DB::commit();
 
-            return redirect()->route('payments.index')
+            return redirect()->route('finance.payments.index')
                 ->with('success', 'Payment voided successfully.');
         } catch (\Exception $e) {
             \DB::rollBack();
@@ -245,3 +245,4 @@ class PaymentController extends Controller
         }
     }
 }
+

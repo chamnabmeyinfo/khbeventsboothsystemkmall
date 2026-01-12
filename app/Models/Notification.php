@@ -16,6 +16,7 @@ class Notification extends Model
         'user_id',
         'client_id',
         'booking_id',
+        'link',
         'is_read',
         'read_at',
         'email_sent',

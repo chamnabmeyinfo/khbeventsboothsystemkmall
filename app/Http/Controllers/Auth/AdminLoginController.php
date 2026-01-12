@@ -64,3 +64,4 @@ class AdminLoginController extends Controller
         return redirect('/admin/login');
     }
 }
+

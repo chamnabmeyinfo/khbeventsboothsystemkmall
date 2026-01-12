@@ -63,6 +63,7 @@
                                     <option value="">Select Gender...</option>
                                     <option value="1" {{ old('sex') == 1 ? 'selected' : '' }}>Male</option>
                                     <option value="2" {{ old('sex') == 2 ? 'selected' : '' }}>Female</option>
+                                    <option value="3" {{ old('sex') == 3 ? 'selected' : '' }}>Other</option>
                                 </select>
                                 @error('sex')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -79,19 +80,19 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="company" class="form-label">Company Name</label>
+                                <label for="company" class="form-label">Company Name <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text"><i class="fas fa-building"></i></span>
                                     </div>
                                     <input type="text" class="form-control @error('company') is-invalid @enderror" 
                                            id="company" name="company" value="{{ old('company') }}" 
-                                           placeholder="Enter company name">
+                                           placeholder="Enter company name" required>
                                 </div>
                                 @error('company')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
-                                <small class="form-text text-muted">Optional: Company or organization name</small>
+                                <small class="form-text text-muted">Company or organization name (required)</small>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -120,19 +121,110 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="phone_number" class="form-label">Phone Number</label>
+                                <label for="phone_number" class="form-label">Phone Number <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text"><i class="fas fa-phone"></i></span>
                                     </div>
                                     <input type="text" class="form-control @error('phone_number') is-invalid @enderror" 
                                            id="phone_number" name="phone_number" value="{{ old('phone_number') }}" 
-                                           placeholder="Enter phone number">
+                                           placeholder="Enter phone number" required>
                                 </div>
                                 @error('phone_number')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
-                                <small class="form-text text-muted">Optional: Contact phone number</small>
+                                <small class="form-text text-muted">Contact phone number (required)</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                    </div>
+                                    <input type="email" class="form-control @error('email') is-invalid @enderror" 
+                                           id="email" name="email" value="{{ old('email') }}" 
+                                           placeholder="Enter email address" required>
+                                </div>
+                                @error('email')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">Email address (required, must be unique)</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="address" class="form-label">Address <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                                    </div>
+                                    <textarea class="form-control @error('address') is-invalid @enderror" 
+                                              id="address" name="address" rows="2" 
+                                              placeholder="Enter complete address (street, city, country)" required>{{ old('address') }}</textarea>
+                                </div>
+                                @error('address')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">Complete physical address (required)</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="form-section">
+                    <h6><i class="fas fa-info-circle mr-2"></i>Additional Information</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="tax_id" class="form-label">Tax ID / Business Registration Number</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                    </div>
+                                    <input type="text" class="form-control @error('tax_id') is-invalid @enderror" 
+                                           id="tax_id" name="tax_id" value="{{ old('tax_id') }}" 
+                                           placeholder="Enter tax ID or business registration number">
+                                </div>
+                                @error('tax_id')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">Optional: Tax ID or business registration number</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="website" class="form-label">Website</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-globe"></i></span>
+                                    </div>
+                                    <input type="url" class="form-control @error('website') is-invalid @enderror" 
+                                           id="website" name="website" value="{{ old('website') }}" 
+                                           placeholder="https://example.com">
+                                </div>
+                                @error('website')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">Optional: Company website URL</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="notes" class="form-label">Additional Notes</label>
+                                <textarea class="form-control @error('notes') is-invalid @enderror" 
+                                          id="notes" name="notes" rows="3" 
+                                          placeholder="Enter any additional information or notes">{{ old('notes') }}</textarea>
+                                @error('notes')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">Optional: Additional information or notes about the client</small>
                             </div>
                         </div>
                     </div>
@@ -156,3 +248,4 @@ $('#clientForm').on('submit', function() {
 });
 </script>
 @endpush
+

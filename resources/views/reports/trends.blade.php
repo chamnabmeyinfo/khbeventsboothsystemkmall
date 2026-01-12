@@ -320,3 +320,4 @@ function switchChartType(type) {
 }
 </script>
 @endpush
+

@@ -135,3 +135,4 @@ class CommunicationController extends Controller
             ->with('success', 'Announcement sent to all users');
     }
 }
+

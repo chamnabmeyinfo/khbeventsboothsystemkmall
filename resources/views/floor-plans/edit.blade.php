@@ -99,6 +99,184 @@
                     @enderror
                 </div>
 
+                <hr class="my-4">
+                <h5 class="mb-3"><i class="fas fa-image mr-2"></i>Event Information</h5>
+
+                <div class="form-group">
+                    <label for="feature_image">Feature Image</label>
+                    @php
+                        $featureImageExists = false;
+                        $featureImagePath = null;
+                        if ($floorPlan->feature_image) {
+                            $fullPath = public_path($floorPlan->feature_image);
+                            if (file_exists($fullPath)) {
+                                $featureImageExists = true;
+                                $featureImagePath = $floorPlan->feature_image;
+                            }
+                        }
+                    @endphp
+                    
+                    @if($featureImageExists)
+                    <div class="mb-3">
+                        <p class="text-muted small mb-2">
+                            <i class="fas fa-image mr-1"></i><strong>Current Feature Image:</strong>
+                        </p>
+                        <img src="{{ asset($featureImagePath) }}" 
+                             id="currentFeatureImagePreview"
+                             alt="Current feature image" 
+                             class="img-thumbnail" 
+                             style="max-height: 200px; max-width: 100%; display: block; margin-bottom: 10px;"
+                             onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'150\'%3E%3Crect fill=\'%23ddd\' width=\'200\' height=\'150\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23999\'%3EImage not found%3C/text%3E%3C/svg%3E';">
+                    </div>
+                    @endif
+                    
+                    <input type="file" 
+                           class="form-control-file @error('feature_image') is-invalid @enderror" 
+                           id="feature_image" 
+                           name="feature_image" 
+                           accept="image/jpeg,image/png,image/jpg,image/gif"
+                           onchange="previewFeatureImage(this)">
+                    <small class="form-text text-muted">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Upload a feature image for this event/floor plan (JPEG, PNG, GIF). Max size: 5MB. This is different from the floor plan map image.
+                        @if($featureImageExists)
+                            <br><span class="text-warning"><i class="fas fa-exclamation-triangle mr-1"></i>Uploading a new image will replace the current one.</span>
+                        @endif
+                    </small>
+                    @error('feature_image')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
+                    
+                    <!-- Feature Image Preview (for new upload) -->
+                    <div id="featureImagePreview" style="display: none; margin-top: 15px;">
+                        <p class="text-muted small mb-2">
+                            <i class="fas fa-eye mr-1"></i><strong>Preview (New Image):</strong>
+                        </p>
+                        <img id="previewFeatureImage" 
+                             src="" 
+                             alt="Preview" 
+                             class="img-thumbnail" 
+                             style="max-height: 200px; max-width: 100%;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="google_map_location">Google Map Location</label>
+                    <textarea class="form-control @error('google_map_location') is-invalid @enderror" 
+                              id="google_map_location" name="google_map_location" rows="4" 
+                              placeholder="Paste Google Maps embed code (iframe) or coordinates here...">{{ old('google_map_location', $floorPlan->google_map_location) }}</textarea>
+                    <small class="form-text text-muted">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Paste the Google Maps embed iframe code or coordinates. You can get this from Google Maps by clicking "Share" → "Embed a map".
+                    </small>
+                    @error('google_map_location')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label for="proposal">Proposal</label>
+                    <textarea class="form-control @error('proposal') is-invalid @enderror" 
+                              id="proposal" name="proposal" rows="5" 
+                              placeholder="Enter proposal details, terms, conditions, or other information...">{{ old('proposal', $floorPlan->proposal) }}</textarea>
+                    <small class="form-text text-muted">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Enter proposal content, terms, conditions, or any additional information about this event/floor plan.
+                    </small>
+                    @error('proposal')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="event_start_date">Event Start Date</label>
+                            <input type="date" 
+                                   class="form-control @error('event_start_date') is-invalid @enderror" 
+                                   id="event_start_date" 
+                                   name="event_start_date" 
+                                   value="{{ old('event_start_date', $floorPlan->event_start_date ? \Carbon\Carbon::parse($floorPlan->event_start_date)->format('Y-m-d') : '') }}">
+                            @error('event_start_date')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="event_end_date">Event End Date</label>
+                            <input type="date" 
+                                   class="form-control @error('event_end_date') is-invalid @enderror" 
+                                   id="event_end_date" 
+                                   name="event_end_date" 
+                                   value="{{ old('event_end_date', $floorPlan->event_end_date ? \Carbon\Carbon::parse($floorPlan->event_end_date)->format('Y-m-d') : '') }}">
+                            @error('event_end_date')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="event_start_time">Event Start Time</label>
+                            <input type="time" 
+                                   class="form-control @error('event_start_time') is-invalid @enderror" 
+                                   id="event_start_time" 
+                                   name="event_start_time" 
+                                   value="{{ old('event_start_time', $floorPlan->event_start_time ? \Carbon\Carbon::parse($floorPlan->event_start_time)->format('H:i') : '') }}">
+                            @error('event_start_time')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="event_end_time">Event End Time</label>
+                            <input type="time" 
+                                   class="form-control @error('event_end_time') is-invalid @enderror" 
+                                   id="event_end_time" 
+                                   name="event_end_time" 
+                                   value="{{ old('event_end_time', $floorPlan->event_end_time ? \Carbon\Carbon::parse($floorPlan->event_end_time)->format('H:i') : '') }}">
+                            @error('event_end_time')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="event_location">Event Location</label>
+                            <input type="text" 
+                                   class="form-control @error('event_location') is-invalid @enderror" 
+                                   id="event_location" 
+                                   name="event_location" 
+                                   value="{{ old('event_location', $floorPlan->event_location) }}"
+                                   placeholder="e.g., 123 Main Street, City">
+                            @error('event_location')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="event_venue">Event Venue</label>
+                            <input type="text" 
+                                   class="form-control @error('event_venue') is-invalid @enderror" 
+                                   id="event_venue" 
+                                   name="event_venue" 
+                                   value="{{ old('event_venue', $floorPlan->event_venue) }}"
+                                   placeholder="e.g., Convention Center, Mall">
+                            @error('event_venue')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label for="floor_image">Floor Plan Image</label>
                     @php
@@ -213,6 +391,33 @@
 
 @push('scripts')
 <script>
+function previewFeatureImage(input) {
+    const preview = document.getElementById('featureImagePreview');
+    const previewImg = document.getElementById('previewFeatureImage');
+    const currentImg = document.getElementById('currentFeatureImagePreview');
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            preview.style.display = 'block';
+            
+            // Hide current image preview when new image is selected
+            if (currentImg) {
+                currentImg.style.opacity = '0.5';
+            }
+        };
+        
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        preview.style.display = 'none';
+        if (currentImg) {
+            currentImg.style.opacity = '1';
+        }
+    }
+}
+
 function previewImage(input) {
     const preview = document.getElementById('imagePreview');
     const previewImg = document.getElementById('previewImage');
@@ -264,3 +469,4 @@ function previewImage(input) {
 </script>
 @endpush
 @endsection
+

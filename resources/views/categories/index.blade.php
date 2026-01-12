@@ -129,9 +129,9 @@
         <div class="card-body">
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <a href="{{ route('categories.create') }}" class="btn btn-primary">
+                    <button type="button" class="btn btn-primary" onclick="showCreateCategoryModal()">
                         <i class="fas fa-plus mr-1"></i>Add Category
-                    </a>
+                    </button>
                     <button type="button" class="btn btn-info" onclick="refreshPage()">
                         <i class="fas fa-sync-alt mr-1"></i>Refresh
                     </button>
@@ -231,14 +231,75 @@
             <div class="card-body text-center py-5">
                 <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
                 <p class="text-muted mb-3">No categories found</p>
-                <a href="{{ route('categories.create') }}" class="btn btn-primary">
+                <button type="button" class="btn btn-primary" onclick="showCreateCategoryModal()">
                     <i class="fas fa-plus mr-1"></i>Create First Category
-                </a>
+                </button>
             </div>
         </div>
         @endforelse
     </div>
 </div>
+
+<!-- Create Category Modal -->
+<div class="modal fade" id="createCategoryModal" tabindex="-1" role="dialog" aria-labelledby="createCategoryModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg" role="document" style="max-width: 700px;">
+        <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 20px 20px 0 0; padding: 24px 32px;">
+                <h5 class="modal-title" id="createCategoryModalLabel" style="font-size: 1.5rem; font-weight: 700;">
+                    <i class="fas fa-tag mr-2"></i>Create New Category
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; opacity: 0.9; font-size: 1.5rem;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="createCategoryForm" method="POST" action="{{ route('categories.store') }}">
+                @csrf
+                <div class="modal-body" style="padding: 32px;">
+                    <div id="createCategoryError" class="alert alert-danger" style="display: none; border-radius: 12px;"></div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="modal_category_name" class="form-label">Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="modal_category_name" name="name" required placeholder="Enter category name" style="border-radius: 8px;">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="modal_category_parent_id" class="form-label">Parent Category</label>
+                            <select class="form-control" id="modal_category_parent_id" name="parent_id" style="border-radius: 8px;">
+                                <option value="">None (Main Category)</option>
+                                @foreach(\App\Models\Category::where('parent_id', 0)->orderBy('name')->get() as $parent)
+                                    <option value="{{ $parent->id }}">{{ $parent->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="modal_category_limit" class="form-label">Limit</label>
+                            <input type="number" class="form-control" id="modal_category_limit" name="limit" min="0" placeholder="Leave empty for unlimited" style="border-radius: 8px;">
+                            <small class="form-text text-muted">Leave empty for unlimited.</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="modal_category_status" class="form-label">Status <span class="text-danger">*</span></label>
+                            <select class="form-control" id="modal_category_status" name="status" required style="border-radius: 8px;">
+                                <option value="1" selected>Active</option>
+                                <option value="0">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #e2e8f0; padding: 20px 32px; border-radius: 0 0 20px 20px;">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" style="border-radius: 12px; padding: 10px 24px;">
+                        <i class="fas fa-times mr-1"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="createCategorySubmitBtn" style="border-radius: 12px; padding: 10px 24px;">
+                        <i class="fas fa-save mr-1"></i>Create Category
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -296,5 +357,94 @@ function refreshPage() {
         location.reload();
     }, 500);
 }
+
+// Show Create Category Modal
+function showCreateCategoryModal() {
+    $('#createCategoryModal').modal('show');
+    $('#createCategoryForm')[0].reset();
+    $('#createCategoryError').hide();
+    $('#modal_category_status').val('1');
+}
+
+// Handle Create Category Form Submission
+$(document).ready(function() {
+    $('#createCategoryForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const submitBtn = $('#createCategorySubmitBtn');
+        const errorDiv = $('#createCategoryError');
+        const originalText = submitBtn.html();
+        
+        errorDiv.hide();
+        
+        if (!form[0].checkValidity()) {
+            form[0].reportValidity();
+            return;
+        }
+        
+        submitBtn.prop('disabled', true);
+        submitBtn.html('<i class="fas fa-spinner fa-spin mr-1"></i>Creating...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            data: form.serialize(),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('#createCategoryModal').modal('hide');
+                    form[0].reset();
+                    errorDiv.hide();
+                    
+                    if (typeof toastr !== 'undefined') {
+                        toastr.success(response.message || 'Category created successfully');
+                    } else if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: response.message || 'Category created successfully',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        alert(response.message || 'Category created successfully');
+                    }
+                    
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                }
+            },
+            error: function(xhr) {
+                let errorMessage = 'An error occurred while creating the category.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    const errors = xhr.responseJSON.errors;
+                    const firstError = Object.values(errors)[0];
+                    errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+                }
+                errorDiv.html('<i class="fas fa-exclamation-triangle mr-1"></i>' + errorMessage).show();
+                errorDiv[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false);
+                submitBtn.html(originalText);
+            }
+        });
+    });
+    
+    // Reset form when modal is closed
+    $('#createCategoryModal').on('hidden.bs.modal', function() {
+        $('#createCategoryForm')[0].reset();
+        $('#createCategoryError').hide();
+        $('#modal_category_status').val('1');
+    });
+});
 </script>
 @endpush
+

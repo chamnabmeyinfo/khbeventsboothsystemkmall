@@ -2,7 +2,7 @@
 
 @section('title', 'Payments')
 @section('page-title', 'Payment Management')
-@section('breadcrumb', 'Operations / Payments')
+@section('breadcrumb', 'Finance / Payments')
 
 @push('styles')
 <style>
@@ -160,7 +160,7 @@
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <div class="btn-group" role="group">
-                        <a href="{{ route('payments.create') }}" class="btn btn-primary">
+                        <a href="{{ route('finance.payments.create') }}" class="btn btn-primary">
                             <i class="fas fa-plus mr-1"></i>Record Payment
                         </a>
                         <button type="button" class="btn btn-success" onclick="exportPayments()">
@@ -177,7 +177,7 @@
 
     <!-- Advanced Filters -->
     <div class="filter-bar">
-        <form method="GET" action="{{ route('payments.index') }}" id="filterForm">
+        <form method="GET" action="{{ route('finance.payments.index') }}" id="filterForm">
             <div class="row">
                 <div class="col-md-3 mb-3">
                     <label><i class="fas fa-search mr-1"></i>Search</label>
@@ -230,7 +230,7 @@
             </div>
             <div class="row">
                 <div class="col-12">
-                    <a href="{{ route('payments.index') }}" class="btn btn-secondary btn-sm">
+                    <a href="{{ route('finance.payments.index') }}" class="btn btn-secondary btn-sm">
                         <i class="fas fa-times mr-1"></i>Clear Filters
                     </a>
                     @if(request()->hasAny(['search', 'status', 'payment_method', 'date_from', 'date_to']))
@@ -349,7 +349,7 @@
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm" role="group">
-                                    <a href="{{ route('payments.invoice', $payment->id) }}" 
+                                    <a href="{{ route('finance.payments.invoice', $payment->id) }}" 
                                        class="btn btn-info" 
                                        target="_blank"
                                        title="View Invoice">
@@ -394,7 +394,7 @@
                                 <div class="text-muted">
                                     <i class="fas fa-money-bill-wave-slash fa-3x mb-3"></i>
                                     <p class="mb-0">No payments found</p>
-                                    <a href="{{ route('payments.create') }}" class="btn btn-primary btn-sm mt-3">
+                                    <a href="{{ route('finance.payments.create') }}" class="btn btn-primary btn-sm mt-3">
                                         <i class="fas fa-plus mr-1"></i>Record First Payment
                                     </a>
                                 </div>
@@ -462,7 +462,7 @@ function refundPayment(paymentId, amount) {
         },
         showLoaderOnConfirm: true,
         preConfirm: (notes) => {
-            return fetch(`/payments/${paymentId}/refund`, {
+            return fetch(`/finance/payments/${paymentId}/refund`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -516,7 +516,7 @@ function voidPayment(paymentId) {
         },
         showLoaderOnConfirm: true,
         preConfirm: (notes) => {
-            return fetch(`/payments/${paymentId}/void`, {
+            return fetch(`/finance/payments/${paymentId}/void`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -553,3 +553,5 @@ function voidPayment(paymentId) {
 }
 </script>
 @endpush
+
+

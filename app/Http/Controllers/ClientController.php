@@ -66,13 +66,35 @@ class ClientController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:45',
-            'sex' => 'nullable|integer',
+            'sex' => 'nullable|integer|in:1,2,3',
             'position' => 'nullable|string|max:191',
-            'company' => 'nullable|string|max:191',
-            'phone_number' => 'nullable|string|max:15',
+            'company' => 'required|string|max:191',
+            'phone_number' => 'required|string|max:20',
+            'email' => 'required|email|max:191|unique:client,email',
+            'address' => 'required|string',
+            'tax_id' => 'nullable|string|max:50',
+            'website' => 'nullable|url|max:255',
+            'notes' => 'nullable|string',
         ]);
 
-        Client::create($validated);
+        $client = Client::create($validated);
+
+        // Return JSON if request expects JSON (for AJAX/modal requests)
+        if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Client created successfully.',
+                'client' => [
+                    'id' => $client->id,
+                    'name' => $client->name,
+                    'company' => $client->company,
+                    'email' => $client->email,
+                    'phone_number' => $client->phone_number,
+                    'address' => $client->address,
+                    'position' => $client->position,
+                ]
+            ], 200);
+        }
 
         return redirect()->route('clients.index')
             ->with('success', 'Client created successfully.');
@@ -107,6 +129,11 @@ class ClientController extends Controller
                 'company' => $client->company,
                 'position' => $client->position,
                 'phone_number' => $client->phone_number,
+                'email' => $client->email,
+                'address' => $client->address,
+                'tax_id' => $client->tax_id,
+                'website' => $client->website,
+                'notes' => $client->notes,
             ]);
         }
         
@@ -122,10 +149,15 @@ class ClientController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:45',
-            'sex' => 'nullable|integer',
+            'sex' => 'nullable|integer|in:1,2,3',
             'position' => 'nullable|string|max:191',
-            'company' => 'nullable|string|max:191',
-            'phone_number' => 'nullable|string|max:15',
+            'company' => 'required|string|max:191',
+            'phone_number' => 'required|string|max:20',
+            'email' => 'required|email|max:191|unique:client,email,' . $client->id,
+            'address' => 'required|string',
+            'tax_id' => 'nullable|string|max:50',
+            'website' => 'nullable|url|max:255',
+            'notes' => 'nullable|string',
         ]);
 
         $client->update($validated);
@@ -140,4 +172,46 @@ class ClientController extends Controller
         return redirect()->route('clients.index')
             ->with('success', 'Client deleted successfully.');
     }
+
+    /**
+     * Search clients for AJAX requests (used in booking modal)
+     */
+    public function search(Request $request)
+    {
+        $query = $request->input('q', '');
+        
+        if (empty($query)) {
+            return response()->json([]);
+        }
+        
+        $clients = Client::where('name', 'like', "%{$query}%")
+            ->orWhere('company', 'like', "%{$query}%")
+            ->orWhere('email', 'like', "%{$query}%")
+            ->orWhere('phone_number', 'like', "%{$query}%")
+            ->orderBy('company')
+            ->limit(10)
+            ->get();
+        
+        $results = $clients->map(function ($client) {
+            return [
+                'id' => $client->id,
+                'name' => $client->name,
+                'company' => $client->company,
+                'email' => $client->email,
+                'phone_number' => $client->phone_number,
+                'address' => $client->address,
+                'position' => $client->position,
+                'sex' => $client->sex,
+                'tax_id' => $client->tax_id,
+                'website' => $client->website,
+                'notes' => $client->notes,
+                'display_text' => ($client->company ?? $client->name) . 
+                    ($client->email ? ' (' . $client->email . ')' : '') . 
+                    ($client->phone_number ? ' | ' . $client->phone_number : '')
+            ];
+        });
+        
+        return response()->json($results);
+    }
 }
+

@@ -109,3 +109,4 @@ class ClientPortalController extends Controller
         return redirect()->route('client-portal.login');
     }
 }
+

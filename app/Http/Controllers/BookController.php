@@ -8,6 +8,7 @@ use App\Models\Booth;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class BookController extends Controller
 {
@@ -15,6 +16,49 @@ class BookController extends Controller
      * Display a listing of bookings
      */
     public function index(Request $request)
+    {
+        // If AJAX request for lazy loading
+        if ($request->ajax() && $request->has('page')) {
+            return $this->lazyLoad($request);
+        }
+
+        $query = Book::with(['client', 'user']);
+        
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('client', function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('company', 'like', "%{$search}%");
+            })->orWhereHas('user', function($q) use ($search) {
+                $q->where('username', 'like', "%{$search}%");
+            });
+        }
+        
+        // Date filter
+        if ($request->filled('date_from')) {
+            $query->whereDate('date_book', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('date_book', '<=', $request->date_to);
+        }
+        
+        // Type filter
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+        
+        // Get initial 20 records for lazy loading
+        $books = $query->latest('date_book')->limit(20)->get();
+        $total = $query->count();
+        
+        return view('books.index', compact('books', 'total'));
+    }
+
+    /**
+     * Lazy load bookings (AJAX endpoint)
+     */
+    public function lazyLoad(Request $request)
     {
         $query = Book::with(['client', 'user']);
         
@@ -42,23 +86,122 @@ class BookController extends Controller
             $query->where('type', $request->type);
         }
         
-        $books = $query->latest('date_book')->paginate(20)->withQueryString();
+        $page = $request->input('page', 1);
+        $perPage = 20;
+        $offset = ($page - 1) * $perPage;
         
-        return view('books.index', compact('books'));
+        // Get total before pagination
+        $total = $query->count();
+        
+        $books = $query->latest('date_book')->offset($offset)->limit($perPage)->get();
+        $hasMore = ($offset + $books->count()) < $total;
+        
+        $view = $request->input('view', 'table'); // 'table' or 'card'
+        $html = '';
+        
+        foreach ($books as $book) {
+            $boothIds = json_decode($book->boothid, true) ?? [];
+            $boothCount = count($boothIds);
+            $typeBadge = 'badge-modern-primary';
+            $typeClass = 'regular';
+            if ($book->type == 2) {
+                $typeBadge = 'badge-modern-warning';
+                $typeClass = 'special';
+            } elseif ($book->type == 3) {
+                $typeBadge = 'badge-modern-danger';
+                $typeClass = 'temporary';
+            }
+            
+            if ($view === 'table') {
+                // Table row HTML
+                $html .= view('books.partials.table-row', compact('book', 'boothCount', 'typeBadge'))->render();
+            } else {
+                // Card HTML
+                $html .= view('books.partials.card-item', compact('book', 'boothCount', 'typeBadge', 'typeClass'))->render();
+            }
+        }
+        
+        return response()->json([
+            'success' => true,
+            'html' => $html,
+            'hasMore' => $hasMore,
+            'total' => $total,
+            'loaded' => $offset + $books->count()
+        ]);
     }
 
     /**
      * Show the form for creating a new booking
      */
-    public function create()
+    public function create(Request $request)
     {
         $clients = Client::orderBy('company')->get();
-        $booths = Booth::whereIn('status', [Booth::STATUS_AVAILABLE, Booth::STATUS_HIDDEN])
-            ->orderBy('booth_number')
+        
+        // Get floor plan filter (from query param)
+        $floorPlanId = $request->input('floor_plan_id');
+        
+        // Get all floor plans for selector
+        $floorPlans = \App\Models\FloorPlan::where('is_active', true)
+            ->orderBy('is_default', 'desc')
+            ->orderBy('name', 'asc')
             ->get();
+        
+        // Filter booths by floor plan if specified
+        $boothsQuery = Booth::whereIn('status', [Booth::STATUS_AVAILABLE, Booth::STATUS_HIDDEN]);
+        
+        if ($floorPlanId) {
+            $boothsQuery->where('floor_plan_id', $floorPlanId);
+        }
+        
+        $booths = $boothsQuery->orderBy('booth_number')->get();
+        
         $categories = Category::where('status', 1)->orderBy('name')->get();
         
-        return view('books.create', compact('clients', 'booths', 'categories'));
+        // Get current floor plan if specified
+        $currentFloorPlan = $floorPlanId ? \App\Models\FloorPlan::find($floorPlanId) : null;
+        
+        return view('books.create', compact('clients', 'booths', 'categories', 'floorPlans', 'floorPlanId', 'currentFloorPlan'));
+    }
+
+    /**
+     * Get booths for modal (AJAX endpoint)
+     */
+    public function getBooths(Request $request)
+    {
+        $floorPlanId = $request->input('floor_plan_id');
+        
+        // Filter booths by floor plan if specified
+        $boothsQuery = Booth::whereIn('status', [Booth::STATUS_AVAILABLE, Booth::STATUS_HIDDEN]);
+        
+        if ($floorPlanId) {
+            $boothsQuery->where('floor_plan_id', $floorPlanId);
+        }
+        
+        $booths = $boothsQuery->orderBy('booth_number')->get();
+        
+        $html = '';
+        if ($booths->count() > 0) {
+            foreach ($booths as $booth) {
+                $html .= '<div class="col-md-6 mb-2">';
+                $html .= '<div class="booth-option-modal border rounded p-2" data-booth-id="' . $booth->id . '" data-price="' . ($booth->price ?? 0) . '" style="cursor: pointer; transition: all 0.2s; background: white;">';
+                $html .= '<label class="mb-0 w-100" style="cursor: pointer;">';
+                $html .= '<input type="checkbox" name="booth_ids[]" value="' . $booth->id . '" class="modal-booth-checkbox" onchange="modalUpdateSelection()">';
+                $html .= '<strong class="text-primary">' . e($booth->booth_number) . '</strong>';
+                $html .= '<span class="badge badge-' . ($booth->getStatusColor() ?? 'secondary') . ' ml-2" style="font-size: 0.75rem;">' . e($booth->getStatusLabel() ?? 'Available') . '</span>';
+                if ($booth->category) {
+                    $html .= '<br><small class="text-muted ml-4" style="font-size: 0.8125rem;"><i class="fas fa-folder"></i> ' . e($booth->category->name) . '</small>';
+                }
+                $html .= '<div class="mt-1 text-right"><strong class="text-success" style="font-size: 0.875rem;">$' . number_format($booth->price ?? 0, 2) . '</strong></div>';
+                $html .= '</label></div></div>';
+            }
+        } else {
+            $html = '<div class="col-12"><div class="alert alert-warning"><i class="fas fa-exclamation-triangle mr-2"></i>No available booths found.</div></div>';
+        }
+        
+        return response()->json([
+            'success' => true,
+            'html' => $html
+        ]);
     }
 
     /**
@@ -141,6 +284,18 @@ class BookController extends Controller
 
             DB::commit();
 
+            // Return JSON response for AJAX requests
+            if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Booking created successfully.',
+                    'booking' => [
+                        'id' => $book->id,
+                        'client' => $book->client ? ($book->client->company ?? $book->client->name) : 'N/A',
+                    ]
+                ]);
+            }
+
             return redirect()->route('books.index')
                 ->with('success', 'Booking created successfully.');
         } catch (\Exception $e) {
@@ -150,6 +305,16 @@ class BookController extends Controller
                 'client_id' => $validated['clientid'] ?? null,
                 'booth_ids' => $validated['booth_ids'] ?? [],
             ]);
+            
+            // Return JSON response for AJAX requests
+            if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error creating booking: ' . $e->getMessage(),
+                    'errors' => ['error' => [$e->getMessage()]]
+                ], 422);
+            }
+            
             return back()->withErrors([
                 'error' => 'Error creating booking: ' . $e->getMessage()
             ])->withInput();
@@ -381,6 +546,112 @@ class BookController extends Controller
     }
 
     /**
+     * Delete all booking records (requires password verification)
+     */
+    public function deleteAll(Request $request)
+    {
+        // Only allow admin users
+        if (!auth()->user()->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized. Admin access required.'
+            ], 403);
+        }
+
+        $request->validate([
+            'password' => 'required|string',
+        ]);
+
+        // Verify password
+        $user = auth()->user();
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid password. Please try again.'
+            ], 401);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $totalCount = Book::count();
+            
+            if ($totalCount === 0) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No booking records to delete.'
+                ], 400);
+            }
+
+            // Get all bookings to release booths
+            $books = Book::all();
+            $boothIdsToRelease = [];
+
+            foreach ($books as $book) {
+                $boothIds = json_decode($book->boothid, true) ?? [];
+                $boothIdsToRelease = array_merge($boothIdsToRelease, $boothIds);
+            }
+
+            // Release all booths (set status to available) - but NOT if they are PAID
+            if (!empty($boothIdsToRelease)) {
+                $booths = Booth::whereIn('id', array_unique($boothIdsToRelease))->get();
+                $paidBooths = [];
+
+                foreach ($booths as $booth) {
+                    if ($booth->status === Booth::STATUS_PAID) {
+                        $paidBooths[] = $booth->booth_number;
+                        // Keep paid booths as-is, just remove booking reference
+                        $booth->update([
+                            'bookid' => null,
+                        ]);
+                    } else {
+                        // Release non-paid booths
+                        $booth->update([
+                            'status' => Booth::STATUS_AVAILABLE,
+                            'client_id' => null,
+                            'userid' => null,
+                            'bookid' => null,
+                        ]);
+                    }
+                }
+
+                if (!empty($paidBooths)) {
+                    \Log::warning('All bookings deleted with paid booths', [
+                        'paid_booths' => $paidBooths,
+                        'deleted_by' => auth()->id(),
+                    ]);
+                }
+            }
+
+            // Delete all bookings
+            Book::query()->delete();
+
+            DB::commit();
+
+            \Log::info('All booking records deleted', [
+                'total_deleted' => $totalCount,
+                'deleted_by' => auth()->id(),
+                'deleted_by_username' => auth()->user()->username,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => "All {$totalCount} booking record(s) deleted successfully."
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Delete all bookings failed: ' . $e->getMessage(), [
+                'deleted_by' => auth()->id(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Error deleting records: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Booking action - Creates a new booking with client creation
      * This matches the Yii actionBooking logic
      */
@@ -406,17 +677,33 @@ class BookController extends Controller
             ], 403);
         }
         
-        // Validate required fields
-        $requiredFields = ['book', 'inputCpnName', 'inputPosition', 'inputName', 'inputPhone', 'booth'];
+        // Validate required fields - ALL client information is now required for successful booking
+        $requiredFields = [
+            'book', 
+            'inputCpnName',      // Company name
+            'inputName',         // Client name
+            'inputPhone',        // Phone number
+            'inputEmail',        // Email (NEW - required)
+            'inputAddress',      // Address (NEW - required)
+            'booth'              // Booth IDs
+        ];
+        
+        // Always require all fields for any booking type (no exceptions)
         foreach ($requiredFields as $field) {
             if (!isset($data[$field]) || empty($data[$field])) {
-                if ($data['book'] != 3) { // Allow book=3 without all fields
-                    return response()->json([
-                        'status' => 403,
-                        'message' => 'Please Check Data Before Submit'
-                    ], 403);
-                }
+                return response()->json([
+                    'status' => 403,
+                    'message' => 'Please fill in all required client information fields (Name, Company, Phone, Email, Address)'
+                ], 403);
             }
+        }
+        
+        // Validate email format
+        if (isset($data['inputEmail']) && !filter_var($data['inputEmail'], FILTER_VALIDATE_EMAIL)) {
+            return response()->json([
+                'status' => 403,
+                'message' => 'Please enter a valid email address'
+            ], 403);
         }
         
         // Check category limits
@@ -461,15 +748,32 @@ class BookController extends Controller
             $userid = auth()->id();
             $clientID = 0;
             
-            // Create client if information provided
-            if (!empty($data['inputCpnName']) && !empty($data['inputPosition']) 
-                && !empty($data['inputName']) && !empty($data['inputPhone'])) {
-                $client = Client::create([
-                    'company' => $data['inputCpnName'],
-                    'position' => $data['inputPosition'],
-                    'name' => $data['inputName'],
-                    'phone_number' => $data['inputPhone'],
-                ]);
+            // Create client with ALL required information (all fields are now required)
+            $clientData = [
+                'company' => $data['inputCpnName'],
+                'name' => $data['inputName'],
+                'phone_number' => $data['inputPhone'],
+                'email' => $data['inputEmail'],
+                'address' => $data['inputAddress'],
+                'position' => $data['inputPosition'] ?? null,
+                'sex' => isset($data['inputSex']) && !empty($data['inputSex']) ? (int)$data['inputSex'] : null,
+                'tax_id' => $data['inputTaxId'] ?? null,
+                'website' => $data['inputWebsite'] ?? null,
+                'notes' => $data['inputNotes'] ?? null,
+            ];
+            
+            // Check if client already exists by email or phone (avoid duplicates)
+            $existingClient = Client::where('email', $clientData['email'])
+                ->orWhere('phone_number', $clientData['phone_number'])
+                ->first();
+            
+            if ($existingClient) {
+                // Update existing client with latest information
+                $existingClient->update($clientData);
+                $clientID = $existingClient->id;
+            } else {
+                // Create new client
+                $client = Client::create($clientData);
                 $clientID = $client->id;
             }
             
@@ -738,3 +1042,4 @@ class BookController extends Controller
         }
     }
 }
+

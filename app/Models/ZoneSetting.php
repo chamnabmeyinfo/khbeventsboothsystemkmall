@@ -19,6 +19,7 @@ class ZoneSetting extends Model
         'border_radius',
         'border_width',
         'opacity',
+        'price',
     ];
 
     protected $casts = [
@@ -30,6 +31,7 @@ class ZoneSetting extends Model
         'border_radius' => 'float',
         'border_width' => 'float',
         'opacity' => 'float',
+        'price' => 'decimal:2',
     ];
     
     /**
@@ -83,6 +85,7 @@ class ZoneSetting extends Model
                 'border_radius' => $settings['borderRadius'] ?? $settings['border_radius'] ?? 6,
                 'border_width' => $settings['borderWidth'] ?? $settings['border_width'] ?? 2,
                 'opacity' => $settings['opacity'] ?? 1.0,
+                'price' => $settings['price'] ?? 500,
             ]
         );
     }
@@ -103,6 +106,7 @@ class ZoneSetting extends Model
                 'borderRadius' => $zoneSetting->border_radius,
                 'borderWidth' => $zoneSetting->border_width,
                 'opacity' => $zoneSetting->opacity,
+                'price' => $zoneSetting->price ?? 500,
             ];
         }
 
@@ -115,6 +119,7 @@ class ZoneSetting extends Model
             'borderRadius' => 6,
             'borderWidth' => 2,
             'opacity' => 1.0,
+            'price' => 500,
         ];
     }
 }

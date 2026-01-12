@@ -24,7 +24,7 @@
             <button onclick="window.print()" class="btn btn-primary">
                 <i class="fas fa-print me-2"></i>Print Invoice
             </button>
-            <a href="{{ route('payments.index') }}" class="btn btn-secondary">
+            <a href="{{ route('finance.payments.index') }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left me-2"></i>Back to Payments
             </a>
         </div>
@@ -102,3 +102,4 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+

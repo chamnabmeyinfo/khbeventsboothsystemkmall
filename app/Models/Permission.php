@@ -20,19 +20,19 @@ class Permission extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'sort_order' => 'integer',
     ];
 
     /**
-     * Get roles that have this permission
+     * Get the roles that have this permission.
      */
     public function roles()
     {
-        return $this->belongsToMany(Role::class, 'role_permissions', 'permission_id', 'role_id')
-            ->withTimestamps();
+        return $this->belongsToMany(Role::class, 'role_permissions', 'permission_id', 'role_id');
     }
 
     /**
-     * Scope to get permissions by module
+     * Get permissions by module.
      */
     public function scopeByModule($query, $module)
     {

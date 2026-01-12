@@ -29,6 +29,11 @@ class Client extends Model
         'position',
         'company',
         'phone_number',
+        'email',
+        'address',
+        'tax_id',
+        'website',
+        'notes',
         'avatar',
         'cover_image',
     ];

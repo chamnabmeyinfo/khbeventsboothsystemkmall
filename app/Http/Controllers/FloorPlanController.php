@@ -172,6 +172,15 @@ class FloorPlanController extends Controller
             'description' => 'nullable|string',
             'project_name' => 'nullable|string|max:255',
             'floor_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
+            'feature_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
+            'google_map_location' => 'nullable|string',
+            'proposal' => 'nullable|string',
+            'event_start_date' => 'nullable|date',
+            'event_end_date' => 'nullable|date|after_or_equal:event_start_date',
+            'event_start_time' => 'nullable',
+            'event_end_time' => 'nullable',
+            'event_location' => 'nullable|string|max:255',
+            'event_venue' => 'nullable|string|max:255',
             'canvas_width' => 'nullable|integer|min:100|max:5000',
             'canvas_height' => 'nullable|integer|min:100|max:5000',
             'is_active' => 'nullable|boolean',
@@ -198,7 +207,7 @@ class FloorPlanController extends Controller
         
         $validated = $request->validate($rules);
 
-        // Handle image upload (store with unique name including floor_plan_id will be added after creation)
+        // Handle floor image upload (store with unique name including floor_plan_id will be added after creation)
         if ($request->hasFile('floor_image')) {
             $image = $request->file('floor_image');
             $imageExtension = $image->getClientOriginalExtension();
@@ -219,6 +228,19 @@ class FloorPlanController extends Controller
                     $validated['canvas_height'] = $imageInfo[1];
                 }
             }
+        }
+        
+        // Handle feature image upload
+        if ($request->hasFile('feature_image')) {
+            $image = $request->file('feature_image');
+            $imageExtension = $image->getClientOriginalExtension();
+            $imageName = time() . '_feature_temp.' . $imageExtension; // Temporary name, will update after creation
+            $imagePath = public_path('images/floor-plans/features');
+            if (!file_exists($imagePath)) {
+                mkdir($imagePath, 0755, true);
+            }
+            $image->move($imagePath, $imageName);
+            $validated['feature_image'] = 'images/floor-plans/features/' . $imageName;
         }
 
         // Get user ID safely - ensure it's always an integer, never username
@@ -251,7 +273,7 @@ class FloorPlanController extends Controller
         // Create floor plan - created_by will be properly cast as integer by the model
         $floorPlan = FloorPlan::create($validated);
         
-        // Update image name to include floor_plan_id for uniqueness
+        // Update floor image name to include floor_plan_id for uniqueness
         if ($floorPlan->floor_image && strpos($floorPlan->floor_image, '_floor_plan_temp') !== false) {
             $oldPath = public_path($floorPlan->floor_image);
             $imageExtension = pathinfo($floorPlan->floor_image, PATHINFO_EXTENSION);
@@ -261,6 +283,20 @@ class FloorPlanController extends Controller
             if (file_exists($oldPath)) {
                 rename($oldPath, $newPath);
                 $floorPlan->floor_image = 'images/floor-plans/' . $newImageName;
+                $floorPlan->save();
+            }
+        }
+        
+        // Update feature image name to include floor_plan_id for uniqueness
+        if ($floorPlan->feature_image && strpos($floorPlan->feature_image, '_feature_temp') !== false) {
+            $oldPath = public_path($floorPlan->feature_image);
+            $imageExtension = pathinfo($floorPlan->feature_image, PATHINFO_EXTENSION);
+            $newImageName = time() . '_feature_' . $floorPlan->id . '.' . $imageExtension;
+            $newPath = public_path('images/floor-plans/features/' . $newImageName);
+            
+            if (file_exists($oldPath)) {
+                rename($oldPath, $newPath);
+                $floorPlan->feature_image = 'images/floor-plans/features/' . $newImageName;
                 $floorPlan->save();
             }
         }
@@ -354,6 +390,15 @@ class FloorPlanController extends Controller
             'description' => 'nullable|string',
             'project_name' => 'nullable|string|max:255',
             'floor_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'feature_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'google_map_location' => 'nullable|string',
+            'proposal' => 'nullable|string',
+            'event_start_date' => 'nullable|date',
+            'event_end_date' => 'nullable|date|after_or_equal:event_start_date',
+            'event_start_time' => 'nullable',
+            'event_end_time' => 'nullable',
+            'event_location' => 'nullable|string|max:255',
+            'event_venue' => 'nullable|string|max:255',
             'canvas_width' => 'nullable|integer|min:100|max:5000',
             'canvas_height' => 'nullable|integer|min:100|max:5000',
             'is_active' => 'nullable|boolean',
@@ -446,16 +491,52 @@ class FloorPlanController extends Controller
 
         $validated['is_active'] = $request->has('is_active') ? true : false;
 
+        // Handle feature image upload
+        if ($request->hasFile('feature_image')) {
+            try {
+                $image = $request->file('feature_image');
+                $imageExtension = $image->getClientOriginalExtension();
+                $imageName = time() . '_feature_' . $floorPlan->id . '.' . $imageExtension;
+                
+                $imagePath = public_path('images/floor-plans/features');
+                if (!file_exists($imagePath)) {
+                    mkdir($imagePath, 0755, true);
+                }
+                
+                $newImagePath = $imagePath . '/' . $imageName;
+                $image->move($imagePath, $imageName);
+                
+                if (!file_exists($newImagePath)) {
+                    throw new \Exception('Failed to upload feature image file');
+                }
+                
+                $validated['feature_image'] = 'images/floor-plans/features/' . $imageName;
+            } catch (\Exception $e) {
+                \Log::error('Error uploading feature image: ' . $e->getMessage());
+                unset($validated['feature_image']);
+            }
+        }
+        
         // IMPORTANT: Preserve existing floor_image unless explicitly uploading new one
         if (!isset($validated['floor_image'])) {
             // Not uploading image - preserve existing floor_image
             unset($validated['floor_image']);
         }
+        
+        // IMPORTANT: Preserve existing feature_image unless explicitly uploading new one
+        if (!isset($validated['feature_image'])) {
+            // Not uploading image - preserve existing feature_image
+            unset($validated['feature_image']);
+        }
 
-        // Store old image path before update (for cleanup after successful save)
+        // Store old image paths before update (for cleanup after successful save)
         $oldImagePath = $floorPlan->floor_image ? public_path($floorPlan->floor_image) : null;
         $oldImageExists = $oldImagePath && file_exists($oldImagePath);
         $isUploadingNewImage = isset($validated['floor_image']);
+        
+        $oldFeatureImagePath = $floorPlan->feature_image ? public_path($floorPlan->feature_image) : null;
+        $oldFeatureImageExists = $oldFeatureImagePath && file_exists($oldFeatureImagePath);
+        $isUploadingNewFeatureImage = isset($validated['feature_image']);
 
         // Update floor plan (only fields that were provided)
         $floorPlan->update($validated);
@@ -463,7 +544,7 @@ class FloorPlanController extends Controller
         // Refresh floor plan from database to get latest values
         $floorPlan->refresh();
         
-        // Delete old image AFTER successful database update (only if uploading new image)
+        // Delete old floor image AFTER successful database update (only if uploading new image)
         if ($isUploadingNewImage && $oldImageExists) {
             try {
                 $newImagePath = $floorPlan->floor_image ? public_path($floorPlan->floor_image) : null;
@@ -480,6 +561,27 @@ class FloorPlanController extends Controller
                 \Log::warning('Could not delete old floor plan image (non-critical): ' . $e->getMessage(), [
                     'floor_plan_id' => $floorPlan->id,
                     'old_image_path' => $oldImagePath
+                ]);
+            }
+        }
+        
+        // Delete old feature image AFTER successful database update (only if uploading new image)
+        if ($isUploadingNewFeatureImage && $oldFeatureImageExists) {
+            try {
+                $newFeatureImagePath = $floorPlan->feature_image ? public_path($floorPlan->feature_image) : null;
+                // Only delete if it's different from the new image
+                if ($newFeatureImagePath && $oldFeatureImagePath !== $newFeatureImagePath) {
+                    unlink($oldFeatureImagePath);
+                    \Log::info('Deleted old feature image after successful upload from edit form', [
+                        'floor_plan_id' => $floorPlan->id,
+                        'old_image' => str_replace(public_path() . '/', '', $oldFeatureImagePath),
+                        'new_image' => $floorPlan->feature_image
+                    ]);
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Could not delete old feature image (non-critical): ' . $e->getMessage(), [
+                    'floor_plan_id' => $floorPlan->id,
+                    'old_image_path' => $oldFeatureImagePath
                 ]);
             }
         }
@@ -683,3 +785,4 @@ class FloorPlanController extends Controller
         }
     }
 }
+

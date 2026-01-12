@@ -80,6 +80,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Clients
     Route::resource('clients', ClientController::class);
+    Route::get('/clients/search', [ClientController::class, 'search'])->name('clients.search');
     
     // Export Routes
     Route::get('/export', [ExportController::class, 'index'])->name('export.index');
@@ -92,6 +93,8 @@ Route::middleware(['auth'])->group(function () {
     // Books
     Route::resource('books', BookController::class);
     Route::delete('/books/{book}', [BookController::class, 'destroy'])->name('books.destroy');
+    Route::post('/books/delete-all', [BookController::class, 'deleteAll'])->name('books.delete-all');
+    Route::get('/books/get-booths', [BookController::class, 'getBooths'])->name('books.get-booths');
     Route::post('/books/booking', [BookController::class, 'booking'])->name('books.booking');
     Route::post('/books/upbooking', [BookController::class, 'upbooking'])->name('books.upbooking');
     Route::get('/books/info/{id}', [BookController::class, 'info'])->name('books.info');
@@ -121,14 +124,30 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
     });
 
-    // Payments
-    Route::prefix('payments')->name('payments.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\PaymentController::class, 'index'])->name('index');
-        Route::get('/create', [\App\Http\Controllers\PaymentController::class, 'create'])->name('create');
-        Route::post('/', [\App\Http\Controllers\PaymentController::class, 'store'])->name('store');
-        Route::get('/{id}/invoice', [\App\Http\Controllers\PaymentController::class, 'invoice'])->name('invoice');
-        Route::post('/{id}/refund', [\App\Http\Controllers\PaymentController::class, 'refund'])->name('refund');
-        Route::post('/{id}/void', [\App\Http\Controllers\PaymentController::class, 'void'])->name('void');
+    // Finance Module
+    Route::prefix('finance')->name('finance.')->group(function () {
+        // Payments
+        Route::prefix('payments')->name('payments.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\PaymentController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\PaymentController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\PaymentController::class, 'store'])->name('store');
+            Route::get('/{id}/invoice', [\App\Http\Controllers\PaymentController::class, 'invoice'])->name('invoice');
+            Route::post('/{id}/refund', [\App\Http\Controllers\PaymentController::class, 'refund'])->name('refund');
+            Route::post('/{id}/void', [\App\Http\Controllers\PaymentController::class, 'void'])->name('void');
+        });
+        
+        // Finance Management
+        Route::resource('costings', \App\Http\Controllers\Finance\CostingController::class);
+        Route::resource('expenses', \App\Http\Controllers\Finance\ExpenseController::class);
+        Route::resource('revenues', \App\Http\Controllers\Finance\RevenueController::class);
+        Route::resource('categories', \App\Http\Controllers\Finance\FinanceCategoryController::class);
+        
+        // Booth Pricing routes
+        Route::get('booth-pricing', [\App\Http\Controllers\Finance\BoothPricingController::class, 'index'])->name('booth-pricing.index');
+        Route::get('booth-pricing/{id}/edit', [\App\Http\Controllers\Finance\BoothPricingController::class, 'edit'])->name('booth-pricing.edit');
+        Route::put('booth-pricing/{id}', [\App\Http\Controllers\Finance\BoothPricingController::class, 'update'])->name('booth-pricing.update');
+        Route::post('booth-pricing/bulk-update', [\App\Http\Controllers\Finance\BoothPricingController::class, 'bulkUpdate'])->name('booth-pricing.bulk-update');
+        Route::get('booth-pricing/export', [\App\Http\Controllers\Finance\BoothPricingController::class, 'export'])->name('booth-pricing.export');
     });
 
     // Communications
@@ -169,6 +188,75 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/booths/delete', [\App\Http\Controllers\BulkOperationController::class, 'bulkDeleteBooths'])->name('booths.delete');
         Route::post('/clients/update', [\App\Http\Controllers\BulkOperationController::class, 'bulkUpdateClients'])->name('clients.update');
         Route::post('/clients/delete', [\App\Http\Controllers\BulkOperationController::class, 'bulkDeleteClients'])->name('clients.delete');
+    });
+
+    // HR Routes
+    Route::prefix('hr')->name('hr.')->group(function () {
+        // HR Dashboard
+        Route::get('/dashboard', [\App\Http\Controllers\HR\HRDashboardController::class, 'index'])->name('dashboard')->middleware('permission:hr.dashboard.view');
+        
+        // Employees
+        Route::resource('employees', \App\Http\Controllers\HR\EmployeeController::class)->middleware('permission:hr.employees.view');
+        Route::post('/employees/{employee}/duplicate', [\App\Http\Controllers\HR\EmployeeController::class, 'duplicate'])->name('employees.duplicate')->middleware('permission:hr.employees.create');
+        
+        // Departments
+        Route::resource('departments', \App\Http\Controllers\HR\DepartmentController::class)->middleware('permission:hr.departments.view');
+        Route::post('/departments/{department}/duplicate', [\App\Http\Controllers\HR\DepartmentController::class, 'duplicate'])->name('departments.duplicate')->middleware('permission:hr.departments.create');
+        
+        // Positions
+        Route::resource('positions', \App\Http\Controllers\HR\PositionController::class)->middleware('permission:hr.positions.view');
+        Route::post('/positions/{position}/duplicate', [\App\Http\Controllers\HR\PositionController::class, 'duplicate'])->name('positions.duplicate')->middleware('permission:hr.positions.create');
+        
+        // Attendance
+        Route::resource('attendance', \App\Http\Controllers\HR\AttendanceController::class)->middleware('permission:hr.attendance.view');
+        Route::post('/attendance/{attendance}/approve', [\App\Http\Controllers\HR\AttendanceController::class, 'approve'])->name('attendance.approve')->middleware('permission:hr.attendance.approve');
+        
+        // Leave Requests
+        Route::resource('leaves', \App\Http\Controllers\HR\LeaveController::class)->middleware('permission:hr.leaves.view');
+        Route::post('/leaves/{leaveRequest}/approve', [\App\Http\Controllers\HR\LeaveController::class, 'approve'])->name('leaves.approve')->middleware('permission:hr.leaves.approve');
+        Route::post('/leaves/{leaveRequest}/reject', [\App\Http\Controllers\HR\LeaveController::class, 'reject'])->name('leaves.reject')->middleware('permission:hr.leaves.approve');
+        Route::post('/leaves/{leaveRequest}/cancel', [\App\Http\Controllers\HR\LeaveController::class, 'cancel'])->name('leaves.cancel')->middleware('permission:hr.leaves.manage');
+        
+        // Leave Calendar
+        Route::get('/leave-calendar', [\App\Http\Controllers\HR\LeaveCalendarController::class, 'index'])->name('leave-calendar.index')->middleware('permission:hr.leaves.view');
+        Route::get('/leave-calendar/data', [\App\Http\Controllers\HR\LeaveCalendarController::class, 'getCalendarData'])->name('leave-calendar.data')->middleware('permission:hr.leaves.view');
+        
+        // Leave Types
+        Route::resource('leave-types', \App\Http\Controllers\HR\LeaveTypeController::class)->middleware('permission:hr.leaves.manage');
+        
+        // Performance Reviews
+        Route::resource('performance', \App\Http\Controllers\HR\PerformanceReviewController::class)->middleware('permission:hr.performance.view');
+        
+        // Training
+        Route::resource('training', \App\Http\Controllers\HR\TrainingController::class)->middleware('permission:hr.training.view');
+        
+        // Documents
+        Route::resource('documents', \App\Http\Controllers\HR\DocumentController::class)->middleware('permission:hr.documents.view');
+        Route::get('/documents/{document}/download', [\App\Http\Controllers\HR\DocumentController::class, 'download'])->name('documents.download')->middleware('permission:hr.documents.view');
+        
+        // Salary History
+        Route::resource('salary', \App\Http\Controllers\HR\SalaryHistoryController::class)->middleware('permission:hr.salary.view');
+    });
+
+    // Employee Self-Service Portal
+    Route::prefix('employee-portal')->name('employee.')->middleware('auth')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\HR\EmployeePortalController::class, 'dashboard'])->name('dashboard');
+        Route::get('/profile', [\App\Http\Controllers\HR\EmployeePortalController::class, 'profile'])->name('profile');
+        Route::put('/profile', [\App\Http\Controllers\HR\EmployeePortalController::class, 'updateProfile'])->name('profile.update');
+        Route::get('/leaves', [\App\Http\Controllers\HR\EmployeePortalController::class, 'leaves'])->name('leaves');
+        Route::post('/leaves/apply', [\App\Http\Controllers\HR\EmployeePortalController::class, 'applyLeave'])->name('leaves.apply');
+        Route::get('/attendance', [\App\Http\Controllers\HR\EmployeePortalController::class, 'attendance'])->name('attendance');
+        Route::get('/documents', [\App\Http\Controllers\HR\EmployeePortalController::class, 'documents'])->name('documents');
+        Route::get('/documents/{document}/download', [\App\Http\Controllers\HR\EmployeePortalController::class, 'downloadDocument'])->name('documents.download');
+    });
+
+    // Manager Dashboard
+    Route::prefix('manager')->name('manager.')->middleware('auth')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\HR\ManagerDashboardController::class, 'index'])->name('dashboard');
+        Route::post('/leaves/{leaveRequest}/approve', [\App\Http\Controllers\HR\ManagerDashboardController::class, 'approveLeave'])->name('leaves.approve');
+        Route::post('/leaves/{leaveRequest}/reject', [\App\Http\Controllers\HR\ManagerDashboardController::class, 'rejectLeave'])->name('leaves.reject');
+        Route::post('/attendance/{attendance}/approve', [\App\Http\Controllers\HR\ManagerDashboardController::class, 'approveAttendance'])->name('attendance.approve');
+        Route::post('/leaves/bulk-approve', [\App\Http\Controllers\HR\ManagerDashboardController::class, 'bulkApproveLeaves'])->name('leaves.bulk-approve');
     });
 
     // Admin Routes

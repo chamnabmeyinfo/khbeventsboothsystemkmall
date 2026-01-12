@@ -160,6 +160,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the employee record for this user
+     */
+    public function employee()
+    {
+        return $this->hasOne(\App\Models\HR\Employee::class, 'user_id');
+    }
+
+    /**
      * Check if user has a specific permission
      */
     public function hasPermission($permissionSlug): bool

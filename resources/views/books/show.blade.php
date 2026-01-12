@@ -66,11 +66,11 @@
                 </a>
                 @endif
                 @if(!isset($payment) || !$payment)
-                <a href="{{ route('payments.create', ['booking_id' => $book->id]) }}" class="btn btn-success">
+                <a href="{{ route('finance.payments.create', ['booking_id' => $book->id]) }}" class="btn btn-success">
                     <i class="fas fa-money-bill-wave mr-1"></i>Record Payment
                 </a>
                 @else
-                <a href="{{ route('payments.index', ['search' => '#'.$book->id]) }}" class="btn btn-info">
+                <a href="{{ route('finance.payments.index', ['search' => '#'.$book->id]) }}" class="btn btn-info">
                     <i class="fas fa-receipt mr-1"></i>View Payment
                 </a>
                 @endif
@@ -299,3 +299,4 @@ function deleteBooking(id) {
 }
 </script>
 @endpush
+

@@ -174,9 +174,9 @@
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <div class="btn-group" role="group">
-                        <a href="{{ route('users.create') }}" class="btn btn-primary">
+                        <button type="button" class="btn btn-primary" onclick="showCreateUserModal()">
                             <i class="fas fa-plus mr-1"></i>New User
-                        </a>
+                        </button>
                         <button type="button" class="btn btn-info" onclick="refreshPage()">
                             <i class="fas fa-sync-alt mr-1"></i>Refresh
                         </button>
@@ -413,9 +413,9 @@
                                     <div class="text-muted">
                                         <i class="fas fa-user-slash fa-3x mb-3"></i>
                                         <p class="mb-0">No users found</p>
-                                        <a href="{{ route('users.create') }}" class="btn btn-primary btn-sm mt-3">
+                                        <button type="button" class="btn btn-primary btn-sm mt-3" onclick="showCreateUserModal()">
                                             <i class="fas fa-plus mr-1"></i>Create First User
-                                        </a>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -544,9 +544,9 @@
                     <div class="card-body text-center py-5">
                         <i class="fas fa-user-slash fa-3x text-muted mb-3"></i>
                         <p class="text-muted mb-3">No users found</p>
-                        <a href="{{ route('users.create') }}" class="btn btn-primary">
+                        <button type="button" class="btn btn-primary" onclick="showCreateUserModal()">
                             <i class="fas fa-plus mr-1"></i>Create First User
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -580,6 +580,101 @@
         @endif
     </div>
 </div>
+
+<!-- Create User Modal -->
+<div class="modal fade" id="createUserModal" tabindex="-1" role="dialog" aria-labelledby="createUserModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg" role="document" style="max-width: 800px;">
+        <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 20px 20px 0 0; padding: 24px 32px;">
+                <h5 class="modal-title" id="createUserModalLabel" style="font-size: 1.5rem; font-weight: 700;">
+                    <i class="fas fa-user-plus mr-2"></i>Create New User
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; opacity: 0.9; font-size: 1.5rem;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="createUserForm" method="POST" action="{{ route('users.store') }}">
+                @csrf
+                <div class="modal-body" style="padding: 32px; max-height: calc(100vh - 200px); overflow-y: auto;">
+                    <div id="createUserError" class="alert alert-danger" style="display: none; border-radius: 12px;"></div>
+                    
+                    <!-- Basic Information -->
+                    <div class="form-group mb-4">
+                        <h6 style="font-weight: 600; margin-bottom: 16px; color: #495057;"><i class="fas fa-user mr-2 text-primary"></i>Basic Information</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="modal_user_username" class="form-label">Username <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="modal_user_username" name="username" required placeholder="Enter username" style="border-radius: 8px;">
+                                <small class="form-text text-muted">Username must be unique</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="modal_user_type" class="form-label">User Type <span class="text-danger">*</span></label>
+                                <select class="form-control" id="modal_user_type" name="type" required style="border-radius: 8px;">
+                                    <option value="2" selected>Sale Staff</option>
+                                    <option value="1">Administrator</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Role & Status -->
+                    <div class="form-group mb-4">
+                        <h6 style="font-weight: 600; margin-bottom: 16px; color: #495057;"><i class="fas fa-user-shield mr-2 text-primary"></i>Role & Status</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="modal_user_role_id" class="form-label">Assign Role</label>
+                                <select class="form-control" id="modal_user_role_id" name="role_id" style="border-radius: 8px;">
+                                    <option value="">No Role Assigned</option>
+                                    @foreach(\App\Models\Role::where('is_active', true)->orderBy('name')->get() as $role)
+                                    <option value="{{ $role->id }}">
+                                        {{ $role->name }}
+                                        @if($role->permissions->count() > 0)
+                                            ({{ $role->permissions->count() }} permissions)
+                                        @endif
+                                    </option>
+                                    @endforeach
+                                </select>
+                                <small class="form-text text-muted">Optional: Assign a role for permission-based access control</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="modal_user_status" class="form-label">Status <span class="text-danger">*</span></label>
+                                <select class="form-control" id="modal_user_status" name="status" required style="border-radius: 8px;">
+                                    <option value="1" selected>Active</option>
+                                    <option value="0">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="form-group mb-0">
+                        <h6 style="font-weight: 600; margin-bottom: 16px; color: #495057;"><i class="fas fa-key mr-2 text-primary"></i>Password</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="modal_user_password" class="form-label">Password <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="modal_user_password" name="password" required placeholder="Enter password" style="border-radius: 8px;">
+                                <small class="form-text text-muted">Minimum 6 characters</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="modal_user_password_confirmation" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="modal_user_password_confirmation" name="password_confirmation" required placeholder="Confirm password" style="border-radius: 8px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #e2e8f0; padding: 20px 32px; border-radius: 0 0 20px 20px;">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" style="border-radius: 12px; padding: 10px 24px;">
+                        <i class="fas fa-times mr-1"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="createUserSubmitBtn" style="border-radius: 12px; padding: 10px 24px;">
+                        <i class="fas fa-save mr-1"></i>Create User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -729,5 +824,104 @@ function refreshPage() {
         location.reload();
     }, 500);
 }
+
+// Show Create User Modal
+function showCreateUserModal() {
+    $('#createUserModal').modal('show');
+    $('#createUserForm')[0].reset();
+    $('#createUserError').hide();
+    $('#modal_user_type').val('2');
+    $('#modal_user_status').val('1');
+}
+
+// Handle Create User Form Submission
+$(document).ready(function() {
+    $('#createUserForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const submitBtn = $('#createUserSubmitBtn');
+        const errorDiv = $('#createUserError');
+        const originalText = submitBtn.html();
+        
+        errorDiv.hide();
+        
+        // Validate password match
+        const password = $('#modal_user_password').val();
+        const passwordConfirmation = $('#modal_user_password_confirmation').val();
+        if (password !== passwordConfirmation) {
+            errorDiv.html('<i class="fas fa-exclamation-triangle mr-1"></i>Password and confirmation password do not match.').show();
+            return;
+        }
+        
+        if (!form[0].checkValidity()) {
+            form[0].reportValidity();
+            return;
+        }
+        
+        submitBtn.prop('disabled', true);
+        submitBtn.html('<i class="fas fa-spinner fa-spin mr-1"></i>Creating...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            data: form.serialize(),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('#createUserModal').modal('hide');
+                    form[0].reset();
+                    errorDiv.hide();
+                    
+                    if (typeof toastr !== 'undefined') {
+                        toastr.success(response.message || 'User created successfully');
+                    } else if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: response.message || 'User created successfully',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        alert(response.message || 'User created successfully');
+                    }
+                    
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                }
+            },
+            error: function(xhr) {
+                let errorMessage = 'An error occurred while creating the user.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    const errors = xhr.responseJSON.errors;
+                    const firstError = Object.values(errors)[0];
+                    errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+                }
+                errorDiv.html('<i class="fas fa-exclamation-triangle mr-1"></i>' + errorMessage).show();
+                errorDiv[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false);
+                submitBtn.html(originalText);
+            }
+        });
+    });
+    
+    // Reset form when modal is closed
+    $('#createUserModal').on('hidden.bs.modal', function() {
+        $('#createUserForm')[0].reset();
+        $('#createUserError').hide();
+        $('#modal_user_type').val('2');
+        $('#modal_user_status').val('1');
+    });
+});
 </script>
 @endpush
+

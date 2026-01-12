@@ -66,3 +66,4 @@ class AdminDashboardController extends Controller
         return view('admin.dashboard', compact('stats', 'recentEvents', 'eventsByStatus', 'topCategories'));
     }
 }
+

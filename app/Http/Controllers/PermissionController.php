@@ -147,3 +147,4 @@ class PermissionController extends Controller
             ->with('success', 'Permission deleted successfully.');
     }
 }
+

@@ -587,3 +587,4 @@ function deleteClient(id, name) {
 }
 </script>
 @endpush
+
