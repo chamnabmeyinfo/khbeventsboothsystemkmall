@@ -169,12 +169,18 @@ class User extends Authenticatable
 
     /**
      * Check if user has a specific permission
+     * Optimized to load role and permissions efficiently
      */
     public function hasPermission($permissionSlug): bool
     {
         // Admin always has all permissions
         if ($this->isAdmin()) {
             return true;
+        }
+
+        // Load role with permissions if not already loaded (prevents N+1 queries)
+        if (!$this->relationLoaded('role')) {
+            $this->load('role.permissions');
         }
 
         // Check if user's role has the permission
@@ -212,16 +218,16 @@ class User extends Authenticatable
     }
 
     /**
-     * Get all permissions for this user
+     * Get all permissions for this user (including inactive - for free assignment)
      */
     public function getPermissions()
     {
         if ($this->isAdmin()) {
-            return Permission::active()->get();
+            return Permission::get(); // Return all permissions for admin
         }
 
         if ($this->role) {
-            return $this->role->permissions()->active()->get();
+            return $this->role->permissions()->get(); // Return all assigned permissions (active and inactive)
         }
 
         return collect([]);

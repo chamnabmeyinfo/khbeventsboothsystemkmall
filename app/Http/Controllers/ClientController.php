@@ -102,7 +102,18 @@ class ClientController extends Controller
 
     public function show(Client $client)
     {
-        $client->load(['booths', 'books.user', 'books.booths']);
+        // Load valid relationships only (books.booths is not a real relationship)
+        $client->load(['booths', 'books.user']);
+        
+        // Manually load booths for each book since boothid is stored as JSON
+        $client->books->each(function($book) {
+            $boothIds = json_decode($book->boothid, true) ?? [];
+            if (!empty($boothIds)) {
+                $book->setRelation('booths', \App\Models\Booth::whereIn('id', $boothIds)->get());
+            } else {
+                $book->setRelation('booths', collect([]));
+            }
+        });
         
         // Calculate statistics
         $stats = [
@@ -117,8 +128,18 @@ class ClientController extends Controller
         $totalRevenue = $client->booths->where('status', \App\Models\Booth::STATUS_PAID)->sum('price');
         $stats['total_revenue'] = $totalRevenue;
         
-        // Get recent bookings
+        // Get recent bookings with user relationship
         $recentBookings = $client->books()->with('user')->latest('date_book')->take(10)->get();
+        
+        // Manually load booths for recent bookings
+        $recentBookings->each(function($book) {
+            $boothIds = json_decode($book->boothid, true) ?? [];
+            if (!empty($boothIds)) {
+                $book->setRelation('booths', \App\Models\Booth::whereIn('id', $boothIds)->with('category')->get());
+            } else {
+                $book->setRelation('booths', collect([]));
+            }
+        });
         
         // Return JSON if request expects JSON (for API calls)
         if (request()->expectsJson() || request()->wantsJson()) {
@@ -178,65 +199,89 @@ class ClientController extends Controller
      */
     public function search(Request $request)
     {
-        $query = $request->input('q', '');
-        $clientId = $request->input('id', null);
-        
-        // If specific ID is requested, return that client
-        if ($clientId) {
-            $client = Client::find($clientId);
-            if ($client) {
-                return response()->json([[
-                    'id' => $client->id,
-                    'name' => $client->name,
-                    'company' => $client->company,
-                    'email' => $client->email,
-                    'phone_number' => $client->phone_number,
-                    'address' => $client->address,
-                    'position' => $client->position,
-                    'sex' => $client->sex,
-                    'tax_id' => $client->tax_id,
-                    'website' => $client->website,
-                    'notes' => $client->notes,
-                    'display_text' => ($client->company ?? $client->name) . 
-                        ($client->email ? ' (' . $client->email . ')' : '') . 
-                        ($client->phone_number ? ' | ' . $client->phone_number : '')
-                ]]);
+        try {
+            $query = $request->input('q', '');
+            $clientId = $request->input('id', null);
+            
+            // If specific ID is requested, return that client
+            if ($clientId) {
+                $client = Client::find($clientId);
+                if ($client) {
+                    return response()->json([[
+                        'id' => $client->id,
+                        'name' => $client->name ?? '',
+                        'company' => $client->company ?? '',
+                        'email' => property_exists($client, 'email') ? ($client->email ?? null) : null,
+                        'phone_number' => $client->phone_number ?? '',
+                        'address' => property_exists($client, 'address') ? ($client->address ?? null) : null,
+                        'position' => $client->position ?? '',
+                        'sex' => $client->sex ?? null,
+                        'tax_id' => property_exists($client, 'tax_id') ? ($client->tax_id ?? null) : null,
+                        'website' => property_exists($client, 'website') ? ($client->website ?? null) : null,
+                        'notes' => property_exists($client, 'notes') ? ($client->notes ?? null) : null,
+                        'display_text' => ($client->company ?? $client->name ?? 'N/A') . 
+                            (property_exists($client, 'email') && $client->email ? ' (' . $client->email . ')' : '') . 
+                            ($client->phone_number ? ' | ' . $client->phone_number : '')
+                    ]]);
+                }
+                return response()->json([]);
             }
-            return response()->json([]);
+            
+            if (empty($query)) {
+                return response()->json([]);
+            }
+            
+            // Check which columns exist in the database
+            $columns = \DB::select("SHOW COLUMNS FROM `client`");
+            $columnNames = array_map(function($col) {
+                return $col->Field;
+            }, $columns);
+            
+            // Build search query with only existing columns
+            $clients = Client::where(function($q) use ($query, $columnNames) {
+                    $q->where('name', 'like', "%{$query}%")
+                      ->orWhere('company', 'like', "%{$query}%")
+                      ->orWhere('phone_number', 'like', "%{$query}%");
+                    
+                    // Add email search only if column exists
+                    if (in_array('email', $columnNames)) {
+                        $q->orWhere('email', 'like', "%{$query}%");
+                    }
+                });
+            
+            // Order by company (handle NULLs) then by name
+            $clients = $clients->orderByRaw('CASE WHEN company IS NULL OR company = "" THEN 1 ELSE 0 END')
+                ->orderBy('company')
+                ->orderBy('name')
+                ->limit(20)
+                ->get();
+            
+            $results = $clients->map(function ($client) use ($columnNames) {
+                return [
+                    'id' => $client->id,
+                    'name' => $client->name ?? '',
+                    'company' => $client->company ?? '',
+                    'email' => in_array('email', $columnNames) ? ($client->email ?? null) : null,
+                    'phone_number' => $client->phone_number ?? '',
+                    'address' => in_array('address', $columnNames) ? ($client->address ?? null) : null,
+                    'position' => $client->position ?? '',
+                    'sex' => $client->sex ?? null,
+                    'tax_id' => in_array('tax_id', $columnNames) ? ($client->tax_id ?? null) : null,
+                    'website' => in_array('website', $columnNames) ? ($client->website ?? null) : null,
+                    'notes' => in_array('notes', $columnNames) ? ($client->notes ?? null) : null,
+                    'display_text' => ($client->company ?? $client->name ?? 'N/A') . 
+                        (in_array('email', $columnNames) && isset($client->email) && $client->email ? ' (' . $client->email . ')' : '') . 
+                        ($client->phone_number ? ' | ' . $client->phone_number : '')
+                ];
+            });
+            
+            return response()->json($results->values()->all());
+        } catch (\Exception $e) {
+            \Log::error('Client search error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'Search failed: ' . $e->getMessage()], 500);
         }
-        
-        if (empty($query)) {
-            return response()->json([]);
-        }
-        
-        $clients = Client::where('name', 'like', "%{$query}%")
-            ->orWhere('company', 'like', "%{$query}%")
-            ->orWhere('email', 'like', "%{$query}%")
-            ->orWhere('phone_number', 'like', "%{$query}%")
-            ->orderBy('company')
-            ->limit(20)
-            ->get();
-        
-        $results = $clients->map(function ($client) {
-            return [
-                'id' => $client->id,
-                'name' => $client->name,
-                'company' => $client->company,
-                'email' => $client->email,
-                'phone_number' => $client->phone_number,
-                'address' => $client->address,
-                'position' => $client->position,
-                'sex' => $client->sex,
-                'tax_id' => $client->tax_id,
-                'website' => $client->website,
-                'notes' => $client->notes,
-                'display_text' => ($client->company ?? $client->name) . 
-                    ($client->email ? ' (' . $client->email . ')' : '') . 
-                    ($client->phone_number ? ' | ' . $client->phone_number : '')
-            ];
-        });
-        
-        return response()->json($results);
     }
 }
 

@@ -53,7 +53,8 @@ class LoginController extends Controller
             'password' => 'required|string',
         ]);
 
-        $user = User::where('username', $request->username)->first();
+        // Load user with role and permissions to prevent N+1 queries
+        $user = User::with('role.permissions')->where('username', $request->username)->first();
 
         if (!$user) {
             return back()->withErrors([

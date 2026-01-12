@@ -33,7 +33,8 @@
             inset 0 1px 0 rgba(255, 255, 255, 0.8);
         transition: all 0.3s ease;
         position: relative;
-        overflow: hidden;
+        overflow: visible; /* Changed from hidden to allow dropdowns */
+        z-index: 1;
     }
     
     .form-section::before {
@@ -81,7 +82,9 @@
         box-shadow: 
             0 8px 32px rgba(0, 0, 0, 0.1),
             inset 0 1px 0 rgba(255, 255, 255, 0.8);
-        overflow: hidden;
+        overflow: visible; /* Changed from hidden to allow dropdowns */
+        position: relative;
+        z-index: 1;
     }
     
     .card-header-modern {
@@ -296,35 +299,310 @@
         opacity: 1;
     }
     
-    .client-search-result {
-        border: 2px solid rgba(102, 126, 234, 0.1);
+    /* Client Search Wrapper - Redesigned */
+    .client-search-wrapper {
+        margin-bottom: 0;
+        position: relative;
+        z-index: 100;
+        /* Create stacking context to prevent overlap */
+        isolation: isolate;
+    }
+    
+    .input-group-modern {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         border-radius: 12px;
-        padding: 1rem;
-        margin-bottom: 0.75rem;
-        transition: all 0.3s ease;
-        cursor: pointer;
+        overflow: visible; /* Changed from hidden to allow dropdown */
+        position: relative;
         background: white;
     }
     
-    .client-search-result:hover,
-    .client-search-result.highlighted {
+    .input-group-modern .input-group-prepend {
+        border-right: none;
+    }
+    
+    .input-group-modern .input-group-text {
+        border-radius: 12px 0 0 12px;
+        border: 2px solid rgba(102, 126, 234, 0.1);
+        border-right: none;
+        background: white;
+        padding: 0.75rem 1rem;
+        z-index: 1;
+    }
+    
+    .input-group-modern .form-control {
+        border-left: none;
+        border-right: none;
+        border-top: 2px solid rgba(102, 126, 234, 0.1);
+        border-bottom: 2px solid rgba(102, 126, 234, 0.1);
+        padding: 0.75rem 1rem;
+        background: white;
+        z-index: 1;
+    }
+    
+    .input-group-modern .form-control:focus {
         border-color: var(--booking-primary);
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+        z-index: 2;
+    }
+    
+    .input-group-modern .input-group-append {
+        border-left: none;
+    }
+    
+    .input-group-modern .input-group-append .btn {
+        border-radius: 0 12px 12px 0;
+        border-left: 2px solid rgba(102, 126, 234, 0.1);
+        z-index: 1;
+    }
+    
+    /* Client Results Dropdown - Fixed Positioning */
+    .client-results-dropdown {
+        position: absolute;
+        top: calc(100% + 0.5rem);
+        left: 0;
+        right: 0;
+        z-index: 9999; /* Very high z-index to ensure it's on top */
+        animation: slideDown 0.2s ease-out;
+        /* Ensure it doesn't get clipped */
+        pointer-events: auto;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .client-results-dropdown .card-modern {
+        max-height: 400px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        box-shadow: 
+            0 12px 48px rgba(0, 0, 0, 0.2),
+            0 4px 16px rgba(102, 126, 234, 0.15);
+        border: 2px solid rgba(102, 126, 234, 0.25);
+        margin: 0;
+        background: white;
+        /* Ensure it's above everything */
+        position: relative;
+        z-index: 9999;
+    }
+    
+    .client-results-dropdown .card-body {
+        padding: 0.75rem;
+    }
+    
+    /* Ensure form sections don't overlap */
+    .form-section {
+        position: relative;
+        z-index: 1;
+        overflow: visible; /* Allow dropdowns to show */
+    }
+    
+    /* Container adjustments */
+    .container-fluid {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .card-modern {
+        position: relative;
+        z-index: 1;
+        overflow: visible; /* Allow dropdowns */
+    }
+    
+    .card-body {
+        position: relative;
+        z-index: 1;
+        overflow: visible; /* Allow dropdowns */
+    }
+    
+    /* Client Search Result Item */
+    .client-search-result {
+        border: 2px solid rgba(102, 126, 234, 0.1);
+        border-radius: 10px;
+        padding: 0.875rem 1rem;
+        margin-bottom: 0.5rem;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .client-search-result::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(180deg, var(--booking-primary) 0%, var(--booking-secondary) 100%);
+        transform: scaleY(0);
+        transition: transform 0.25s ease;
+    }
+    
+    .client-search-result:hover {
+        border-color: var(--booking-primary);
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
         transform: translateX(4px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
+    }
+    
+    .client-search-result:hover::before {
+        transform: scaleY(1);
     }
     
     .client-search-result.highlighted {
-        border-width: 2px;
+        border-color: var(--booking-primary);
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.12) 0%, rgba(118, 75, 162, 0.12) 100%);
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.25);
+    }
+    
+    .client-search-result.highlighted::before {
+        transform: scaleY(1);
+    }
+    
+    .client-search-result:last-child {
+        margin-bottom: 0;
+    }
+    
+    /* Client Result Content */
+    .client-result-content {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .client-result-name {
+        color: #1a1a2e;
+        font-weight: 700;
+        font-size: 0.95rem;
+        margin-bottom: 0.375rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .client-result-name i {
+        color: var(--booking-primary);
+        margin-right: 0.5rem;
+        font-size: 1rem;
+    }
+    
+    .client-result-name mark {
+        background: rgba(102, 126, 234, 0.25);
+        padding: 0.1rem 0.25rem;
+        border-radius: 4px;
+        font-weight: 800;
+        color: var(--booking-primary);
+    }
+    
+    .client-result-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        margin-top: 0.375rem;
+    }
+    
+    .client-result-detail {
+        display: flex;
+        align-items: center;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .client-result-detail i {
+        width: 16px;
+        margin-right: 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .client-result-detail.email i {
+        color: var(--booking-primary);
+    }
+    
+    .client-result-detail.phone i {
+        color: var(--booking-success);
+    }
+    
+    .client-result-detail.user i {
+        color: var(--booking-info);
+    }
+    
+    /* Select Button */
+    .select-client-inline-btn {
+        margin-left: 0.75rem;
+        flex-shrink: 0;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: all 0.25s ease;
+    }
+    
+    .select-client-inline-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    /* Empty State */
+    .client-results-empty {
+        text-align: center;
+        padding: 2rem 1rem;
+        color: #6c757d;
+    }
+    
+    .client-results-empty i {
+        font-size: 2.5rem;
+        color: #dee2e6;
+        margin-bottom: 0.75rem;
+        display: block;
+    }
+    
+    /* Loading State */
+    .client-results-loading {
+        text-align: center;
+        padding: 2rem 1rem;
+        color: var(--booking-primary);
+    }
+    
+    .client-results-loading i {
+        font-size: 1.5rem;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
     }
     
     /* Selected Client Info Card */
     .selected-client-card {
-        background: linear-gradient(135deg, rgba(54, 185, 204, 0.1) 0%, rgba(44, 159, 175, 0.1) 100%);
-        border: 2px solid var(--booking-info);
+        background: linear-gradient(135deg, rgba(28, 200, 138, 0.08) 0%, rgba(23, 166, 115, 0.08) 100%);
+        border: 2px solid rgba(28, 200, 138, 0.3);
         border-radius: 12px;
-        padding: 1rem;
-        margin-top: 1rem;
+        padding: 1.25rem;
+        box-shadow: 0 4px 12px rgba(28, 200, 138, 0.1);
+    }
+    
+    .selected-client-card strong {
+        color: #1a1a2e;
+        font-size: 1.05rem;
+    }
+    
+    .selected-client-card small {
+        color: #6c757d;
+        font-size: 0.9rem;
     }
     
     /* Badge Modern */
@@ -335,10 +613,23 @@
         font-size: 0.8rem;
     }
     
-    /* Responsive */
+    /* Prevent body overflow issues */
+    body {
+        overflow-x: hidden;
+    }
+    
+    /* Ensure dropdown doesn't get cut off */
     @media (max-width: 768px) {
+        .client-results-dropdown {
+            left: -1rem;
+            right: -1rem;
+            margin-left: 1rem;
+            margin-right: 1rem;
+        }
+        
         .form-section {
             padding: 1.25rem;
+            margin-bottom: 1.5rem;
         }
         
         .selected-booths-summary {
@@ -346,6 +637,25 @@
             top: 0;
             margin-top: 1.5rem;
         }
+        
+        .client-results-dropdown .card-modern {
+            max-height: 300px;
+        }
+    }
+    
+    /* Additional spacing for dropdown */
+    .client-results-dropdown {
+        margin-top: 0.5rem;
+    }
+    
+    /* Ensure proper stacking */
+    .form-section:has(.client-search-wrapper) {
+        z-index: 10;
+    }
+    
+    /* Fallback for browsers that don't support :has() */
+    .form-section.client-search-section {
+        z-index: 10;
     }
 </style>
 @endpush
@@ -368,7 +678,7 @@
         </div>
         <form action="{{ route('books.store') }}" method="POST" id="bookingForm">
             @csrf
-            <div class="card-body" style="padding: 2rem;">
+            <div class="card-body" style="padding: 2rem; position: relative; z-index: 1; overflow: visible;">
                 @if(isset($currentFloorPlan) && $currentFloorPlan)
                 <div class="alert alert-modern alert-modern-info mb-4">
                     <div class="d-flex justify-content-between align-items-center">
@@ -410,63 +720,74 @@
                 @endif
 
                 <!-- Client Selection -->
-                <div class="form-section">
+                <div class="form-section client-search-section">
                     <h6><i class="fas fa-building mr-2"></i>Client Information</h6>
-                    <div class="row">
-                        <div class="col-md-8">
-                            <label for="clientid" class="form-label font-weight-bold">Select Client <span class="text-danger">*</span></label>
-                            <div style="position: relative;">
-                                <div class="input-group">
-                                    <input type="hidden" id="clientid" name="clientid" value="{{ old('clientid') }}" required>
-                                    <input type="text" 
-                                           class="form-control form-control-modern @error('clientid') is-invalid @enderror" 
-                                           id="clientSearchInline" 
-                                           placeholder="Start typing to search clients automatically..." 
-                                           autocomplete="off"
-                                           required>
-                                    <div class="input-group-prepend" style="position: absolute; right: 60px; top: 50%; transform: translateY(-50%); z-index: 10; pointer-events: none;">
-                                        <span class="input-group-text" style="background: transparent; border: none; padding: 0.5rem;">
-                                            <i class="fas fa-search text-muted" id="searchIcon"></i>
-                                        </span>
+                    <input type="hidden" id="clientid" name="clientid" value="{{ old('clientid') }}" required>
+                    
+                    <!-- Selected Client Display -->
+                    <div id="selectedClientInfo" class="mb-3" style="display: none;">
+                        <div class="selected-client-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-check-circle text-success mr-2" style="font-size: 1.2rem;"></i>
+                                        <strong id="selectedClientName" class="d-block mb-0" style="font-size: 1.05rem; color: #1a1a2e;"></strong>
                                     </div>
-                                    <div class="input-group-append">
-                                        <button type="button" class="btn btn-modern btn-modern-primary" id="btnSearchSelectClient" data-toggle="modal" data-target="#searchClientModal">
-                                            <i class="fas fa-search mr-1"></i>Advanced
-                                        </button>
-                                    </div>
+                                    <small id="selectedClientDetails" class="text-muted d-block ml-4"></small>
                                 </div>
-                                <div id="inlineClientResults" style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; margin-top: 0.5rem;">
-                                    <div class="card-modern" style="max-height: 400px; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
-                                        <div class="card-body p-2">
-                                            <div id="inlineClientResultsList"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="selectedClientInfo" class="mt-3" style="display: none;">
-                                <div class="selected-client-card">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong id="selectedClientName" class="d-block mb-1"></strong>
-                                            <small id="selectedClientDetails" class="text-muted"></small>
-                                        </div>
-                                        <button type="button" class="btn btn-sm btn-outline-danger" id="btnClearClient">
-                                            <i class="fas fa-times mr-1"></i>Clear
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            @error('clientid')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                            <small class="form-text text-muted mt-1"><i class="fas fa-info-circle mr-1"></i>Start typing to see automatic suggestions, or click "Advanced" for detailed search</small>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label font-weight-bold">&nbsp;</label>
-                            <div>
-                                <button type="button" class="btn btn-modern btn-modern-success btn-block" data-toggle="modal" data-target="#createClientModal">
-                                    <i class="fas fa-plus mr-1"></i>New Client
+                                <button type="button" class="btn btn-sm btn-outline-danger ml-3" id="btnClearClient">
+                                    <i class="fas fa-times mr-1"></i>Change Client
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Client Search (shown when no client selected) -->
+                    <div id="clientSearchContainer">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label for="clientSearchInline" class="form-label font-weight-bold">Search Client <span class="text-danger">*</span></label>
+                                <div class="client-search-wrapper">
+                                    <div class="input-group input-group-modern">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0">
+                                                <i class="fas fa-search text-muted" id="searchIcon"></i>
+                                            </span>
+                                        </div>
+                                        <input type="text" 
+                                               class="form-control form-control-modern border-left-0 @error('clientid') is-invalid @enderror" 
+                                               id="clientSearchInline" 
+                                               placeholder="Type client name, company, email, or phone number..." 
+                                               autocomplete="off">
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-modern btn-modern-primary" id="btnSearchSelectClient" data-toggle="modal" data-target="#searchClientModal">
+                                                <i class="fas fa-search-plus mr-1"></i>Advanced Search
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Inline Search Results Dropdown - Fixed Positioning -->
+                                    <div id="inlineClientResults" class="client-results-dropdown" style="display: none;">
+                                        <div class="card-modern">
+                                            <div class="card-body p-0">
+                                                <div id="inlineClientResultsList" class="p-2"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                @error('clientid')
+                                    <div class="invalid-feedback d-block mt-2">{{ $message }}</div>
+                                @enderror
+                                
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <small class="form-text text-muted mb-0">
+                                        <i class="fas fa-info-circle mr-1"></i>Start typing to see instant suggestions
+                                    </small>
+                                    <button type="button" class="btn btn-modern btn-modern-success btn-sm" data-toggle="modal" data-target="#createClientModal">
+                                        <i class="fas fa-plus mr-1"></i>Create New Client
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -641,7 +962,7 @@
                 
                 <div id="clientSearchResults" class="mt-4" style="display: none;">
                     <h6 class="mb-3 font-weight-bold"><i class="fas fa-list mr-1"></i>Search Results</h6>
-                    <div id="clientSearchResultsList" style="max-height: 450px; overflow-y: auto;"></div>
+                    <div id="clientSearchResultsList" style="max-height: 450px; overflow-y: auto; padding: 0.75rem;"></div>
                 </div>
                 
                 <div id="noClientResults" class="alert alert-modern alert-modern-info mt-4 text-center" style="display: none;">
@@ -911,6 +1232,8 @@ $(document).ready(function() {
             return;
         }
         
+        console.log('searchClientsInline called with query:', query);
+        
         // Show loading indicator
         const resultsDiv = $('#inlineClientResults');
         const resultsList = $('#inlineClientResultsList');
@@ -922,17 +1245,28 @@ $(document).ready(function() {
         }
         
         resultsDiv.show();
-        resultsList.html('<div class="text-center p-3"><i class="fas fa-spinner fa-spin mr-2"></i>Searching clients...</div>');
+        resultsList.html(
+            '<div class="client-results-loading">' +
+                '<i class="fas fa-spinner fa-spin"></i>' +
+                '<p class="mb-0 mt-2">Searching clients...</p>' +
+            '</div>'
+        );
+        
+        const searchUrl = '{{ route("clients.search") }}';
+        console.log('Making AJAX request to:', searchUrl, 'with query:', query);
         
         $.ajax({
-            url: '{{ route("clients.search") }}',
+            url: searchUrl,
             method: 'GET',
             data: { q: query },
+            dataType: 'json',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
             },
             success: function(clients) {
+                console.log('Inline search successful, clients found:', clients);
+                
                 // Reset search icon
                 const searchIcon = $('#searchIcon');
                 if (searchIcon.length) {
@@ -941,14 +1275,23 @@ $(document).ready(function() {
                 
                 resultsList.empty();
                 
-                if (!clients || clients.length === 0) {
-                    resultsList.html('<div class="text-center p-3 text-muted"><i class="fas fa-info-circle mr-2"></i>No clients found. Try different keywords or create a new client.</div>');
+                // Handle both array and object responses
+                const clientsArray = Array.isArray(clients) ? clients : (clients ? Object.values(clients) : []);
+                
+                if (!clientsArray || clientsArray.length === 0) {
+                    resultsList.html(
+                        '<div class="client-results-empty">' +
+                            '<i class="fas fa-search"></i>' +
+                            '<p class="mb-0"><strong>No clients found</strong></p>' +
+                            '<p class="mb-0 mt-1" style="font-size: 0.85rem;">Try different keywords or create a new client</p>' +
+                        '</div>'
+                    );
                     return;
                 }
                 
                 // Show up to 8 results for better visibility
-                clients.slice(0, 8).forEach(function(client, index) {
-                    const displayName = (client.company || client.name);
+                clientsArray.slice(0, 8).forEach(function(client, index) {
+                    const displayName = (client.company || client.name || 'N/A');
                     const highlightQuery = query.toLowerCase();
                     
                     // Highlight matching text
@@ -957,34 +1300,37 @@ $(document).ready(function() {
                         // Escape special regex characters
                         const escapedQuery = highlightQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                         const regex = new RegExp(`(${escapedQuery})`, 'gi');
-                        highlightedName = displayName.replace(regex, '<mark style="background: rgba(102, 126, 234, 0.2); padding: 0.1rem 0.2rem; border-radius: 3px; font-weight: 600;">$1</mark>');
+                        highlightedName = displayName.replace(regex, '<mark>$1</mark>');
                     }
                     
-                    const item = $('<div class="client-search-result" style="margin: 0.5rem; cursor: pointer;"></div>')
-                        .html('<div class="d-flex justify-content-between align-items-start">' +
-                            '<div class="flex-grow-1">' +
-                                '<h6 class="mb-1 font-weight-bold" style="color: #1a1a2e; font-size: 0.95rem;">' + 
-                                    '<i class="fas fa-building mr-2" style="color: var(--booking-primary);"></i>' +
-                                    highlightedName + 
-                                '</h6>' +
-                                (client.name && client.company ? '<div class="mb-1"><i class="fas fa-user mr-2 text-muted" style="font-size: 0.75rem;"></i><small class="text-muted">' + client.name + '</small></div>' : '') +
-                                (client.email ? '<div class="mb-1"><i class="fas fa-envelope mr-2 text-primary" style="font-size: 0.8rem;"></i><small>' + client.email + '</small></div>' : '') +
-                                (client.phone_number ? '<div><i class="fas fa-phone mr-2 text-success" style="font-size: 0.8rem;"></i><small>' + client.phone_number + '</small></div>' : '') +
-                            '</div>' +
-                            '<button type="button" class="btn btn-modern btn-modern-primary btn-sm select-client-inline-btn ml-2" data-client-id="' + client.id + '" style="align-self: center;">' +
-                                '<i class="fas fa-check"></i>' +
-                            '</button>' +
-                            '</div>')
-                        .data('client', client);
+                    // Build details HTML
+                    let detailsHTML = '<div class="client-result-details">';
+                    if (client.name && client.company) {
+                        detailsHTML += '<div class="client-result-detail user"><i class="fas fa-user"></i><span>' + client.name + '</span></div>';
+                    }
+                    if (client.email) {
+                        detailsHTML += '<div class="client-result-detail email"><i class="fas fa-envelope"></i><span>' + client.email + '</span></div>';
+                    }
+                    if (client.phone_number) {
+                        detailsHTML += '<div class="client-result-detail phone"><i class="fas fa-phone"></i><span>' + client.phone_number + '</span></div>';
+                    }
+                    detailsHTML += '</div>';
                     
-                    // Add hover effect
-                    item.on('mouseenter', function() {
-                        $(this).css('background', 'linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%)');
-                    }).on('mouseleave', function() {
-                        if (!$(this).hasClass('highlighted')) {
-                            $(this).css('background', 'white');
-                        }
-                    });
+                    // Build result item
+                    const item = $('<div class="client-search-result"></div>')
+                        .html(
+                            '<div class="client-result-content">' +
+                                '<div class="client-result-name">' +
+                                    '<i class="fas fa-building"></i>' +
+                                    '<span>' + highlightedName + '</span>' +
+                                '</div>' +
+                                detailsHTML +
+                            '</div>' +
+                            '<button type="button" class="btn btn-modern btn-modern-primary select-client-inline-btn" data-client-id="' + client.id + '" title="Select this client">' +
+                                '<i class="fas fa-check"></i>' +
+                            '</button>'
+                        )
+                        .data('client', client);
                     
                     resultsList.append(item);
                 });
@@ -1012,13 +1358,36 @@ $(document).ready(function() {
                     }
                 });
             },
-            error: function() {
+            error: function(xhr, status, error) {
+                console.error('Search error:', {
+                    status: status,
+                    error: error,
+                    response: xhr.responseText,
+                    statusCode: xhr.status
+                });
+                
                 // Reset search icon
                 const searchIcon = $('#searchIcon');
                 if (searchIcon.length) {
                     searchIcon.removeClass('fa-spinner fa-spin').addClass('fa-search');
                 }
-                resultsList.html('<div class="text-center p-3 text-danger"><i class="fas fa-exclamation-triangle mr-2"></i>Error searching clients. Please try again.</div>');
+                
+                let errorMessage = 'Error searching clients. Please try again.';
+                if (xhr.status === 401) {
+                    errorMessage = 'Please refresh the page and try again.';
+                } else if (xhr.status === 500) {
+                    errorMessage = 'Server error. Please contact administrator.';
+                } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+                
+                resultsList.html(
+                    '<div class="client-results-empty" style="color: var(--booking-danger);">' +
+                        '<i class="fas fa-exclamation-triangle"></i>' +
+                        '<p class="mb-0"><strong>Error</strong></p>' +
+                        '<p class="mb-0 mt-1" style="font-size: 0.85rem;">' + errorMessage + '</p>' +
+                    '</div>'
+                );
             }
         });
     }
@@ -1047,12 +1416,15 @@ $(document).ready(function() {
                 selectedClient = null;
                 $('#clientid').val('');
                 $('#selectedClientInfo').hide();
+                $('#clientSearchContainer').show();
             }
             return;
         }
         
         // Auto-search after 300ms delay (debounce)
+        console.log('Triggering search for query:', query);
         inlineSearchTimeout = setTimeout(function() {
+            console.log('Executing searchClientsInline with query:', query);
             searchClientsInline(query);
         }, 300);
     });
@@ -1113,7 +1485,7 @@ $(document).ready(function() {
         }
     });
     
-    // Client Search Function
+    // Client Search Function (for modal)
     function searchClients(query) {
         if (!query || query.length < 2) {
             $('#clientSearchResults').hide();
@@ -1127,16 +1499,22 @@ $(document).ready(function() {
             data: { q: query },
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(clients) {
+                console.log('Modal search successful, clients found:', clients);
+                
                 const resultsDiv = $('#clientSearchResults');
                 const resultsList = $('#clientSearchResultsList');
                 const noResultsDiv = $('#noClientResults');
                 
                 resultsList.empty();
                 
-                if (!clients || clients.length === 0) {
+                // Handle both array and object responses
+                const clientsArray = Array.isArray(clients) ? clients : (clients ? Object.values(clients) : []);
+                
+                if (!clientsArray || clientsArray.length === 0) {
                     resultsDiv.hide();
                     noResultsDiv.show();
                     return;
@@ -1145,25 +1523,39 @@ $(document).ready(function() {
                 noResultsDiv.hide();
                 resultsDiv.show();
                 
-                clients.forEach(function(client) {
+                clientsArray.forEach(function(client) {
+                    const displayName = (client.company || client.name || 'N/A');
+                    
+                    // Build details HTML
+                    let detailsHTML = '<div class="client-result-details">';
+                    if (client.name && client.company) {
+                        detailsHTML += '<div class="client-result-detail user"><i class="fas fa-user"></i><span>' + client.name + '</span></div>';
+                    }
+                    if (client.email) {
+                        detailsHTML += '<div class="client-result-detail email"><i class="fas fa-envelope"></i><span>' + client.email + '</span></div>';
+                    }
+                    if (client.phone_number) {
+                        detailsHTML += '<div class="client-result-detail phone"><i class="fas fa-phone"></i><span>' + client.phone_number + '</span></div>';
+                    }
+                    if (client.address) {
+                        detailsHTML += '<div class="client-result-detail"><i class="fas fa-map-marker-alt"></i><span>' + client.address + '</span></div>';
+                    }
+                    detailsHTML += '</div>';
+                    
+                    // Build result item
                     const item = $('<div class="client-search-result"></div>')
-                        .html('<div class="d-flex justify-content-between align-items-start">' +
-                            '<div class="flex-grow-1">' +
-                                '<h6 class="mb-2 font-weight-bold" style="color: #1a1a2e;">' + 
-                                    '<i class="fas fa-building mr-2" style="color: var(--booking-primary);"></i>' +
-                                    (client.company || client.name) + 
-                                '</h6>' +
-                                (client.name && client.company ? '<p class="mb-2 text-muted"><small><i class="fas fa-user mr-1"></i>' + client.name + '</small></p>' : '') +
-                                '<div class="mb-1">' +
-                                    (client.email ? '<div class="mb-1"><i class="fas fa-envelope mr-2 text-primary"></i><small>' + client.email + '</small></div>' : '') +
-                                    (client.phone_number ? '<div class="mb-1"><i class="fas fa-phone mr-2 text-success"></i><small>' + client.phone_number + '</small></div>' : '') +
-                                    (client.address ? '<div class="mb-1"><i class="fas fa-map-marker-alt mr-2 text-info"></i><small>' + client.address + '</small></div>' : '') +
+                        .html(
+                            '<div class="client-result-content">' +
+                                '<div class="client-result-name">' +
+                                    '<i class="fas fa-building"></i>' +
+                                    '<span>' + displayName + '</span>' +
                                 '</div>' +
+                                detailsHTML +
                             '</div>' +
-                            '<button type="button" class="btn btn-modern btn-modern-primary btn-sm select-client-btn ml-3" data-client-id="' + client.id + '" style="align-self: center;">' +
+                            '<button type="button" class="btn btn-modern btn-modern-primary select-client-btn" data-client-id="' + client.id + '" title="Select this client">' +
                                 '<i class="fas fa-check mr-1"></i>Select' +
-                            '</button>' +
-                            '</div>')
+                            '</button>'
+                        )
                         .data('client', client);
                     
                     resultsList.append(item);
@@ -1186,7 +1578,13 @@ $(document).ready(function() {
                     }
                 });
             },
-            error: function() {
+            error: function(xhr, status, error) {
+                console.error('Modal client search error:', {
+                    status: status,
+                    error: error,
+                    response: xhr.responseText,
+                    statusCode: xhr.status
+                });
                 $('#clientSearchResults').hide();
                 $('#noClientResults').show();
             }
@@ -1200,39 +1598,43 @@ $(document).ready(function() {
         // Set hidden input value
         $('#clientid').val(client.id);
         
-        // Update display input
-        const displayText = (client.company || client.name) + 
-            (client.email ? ' (' + client.email + ')' : '') + 
-            (client.phone_number ? ' | ' + client.phone_number : '');
-        $('#clientSearchInline').val(displayText);
-        
-        // Show selected client info
-        $('#selectedClientName').text(client.company || client.name);
+        // Show selected client info card
+        const displayName = client.company || client.name || 'N/A';
         let details = [];
-        if (client.name && client.company) details.push(client.name);
-        if (client.email) details.push(client.email);
-        if (client.phone_number) details.push(client.phone_number);
-        $('#selectedClientDetails').text(details.join(' • '));
+        if (client.email) details.push('<i class="fas fa-envelope mr-1"></i>' + client.email);
+        if (client.phone_number) details.push('<i class="fas fa-phone mr-1"></i>' + client.phone_number);
+        
+        $('#selectedClientName').text(displayName);
+        $('#selectedClientDetails').html(details.length > 0 ? details.join(' <span class="mx-2 text-muted">|</span> ') : '');
         $('#selectedClientInfo').show();
         
-        // Close modal
+        // Hide search container and clear search inputs
+        $('#clientSearchContainer').hide();
+        $('#clientSearchInline').val('');
+        $('#inlineClientResults').hide();
+        
+        // Close modal if open
         $('#searchClientModal').modal('hide');
         
-        // Clear search
+        // Clear modal search
         $('#clientSearchInput').val('');
         $('#clientSearchResults').hide();
         $('#noClientResults').hide();
         $('#btnClearClientSearch').hide();
-        $('#inlineClientResults').hide();
     }
     
     // Clear Client Selection
     $('#btnClearClient').on('click', function() {
         selectedClient = null;
         $('#clientid').val('');
-        $('#clientSearchInline').val('');
         $('#selectedClientInfo').hide();
+        $('#clientSearchContainer').show();
+        $('#clientSearchInline').val('');
         $('#inlineClientResults').hide();
+        // Focus on search input
+        setTimeout(function() {
+            $('#clientSearchInline').focus();
+        }, 100);
     });
     
     // Search input handlers
@@ -1352,19 +1754,61 @@ function clearSelection() {
 }
 
 // Form validation
+// Form validation before submission
 $('#bookingForm').on('submit', function(e) {
-    const selectedCount = $('.booth-checkbox:checked').length;
-    if (selectedCount === 0) {
+    // Validate client selection first
+    const clientId = $('#clientid').val();
+    if (!clientId || clientId === '' || clientId === null) {
         e.preventDefault();
-        Swal.fire({
-            icon: 'warning',
-            title: 'No Booths Selected',
-            text: 'Please select at least one booth for this booking.',
-            confirmButtonColor: '#007bff'
-        });
+        e.stopPropagation();
+        
+        // Show error message
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Client Required',
+                text: 'Please select a client before submitting the booking.',
+                confirmButtonColor: '#667eea'
+            });
+        } else {
+            alert('Please select a client before submitting the booking.');
+        }
+        
+        // Show search container if hidden
+        if ($('#clientSearchContainer').is(':hidden')) {
+            $('#selectedClientInfo').hide();
+            $('#clientSearchContainer').show();
+        }
+        
+        // Focus on search input
+        setTimeout(function() {
+            $('#clientSearchInline').focus();
+        }, 100);
+        
         return false;
     }
     
+    // Validate booth selection
+    const selectedCount = $('.booth-checkbox:checked').length;
+    if (selectedCount === 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Booths Selected',
+                text: 'Please select at least one booth for this booking.',
+                confirmButtonColor: '#667eea'
+            });
+        } else {
+            alert('Please select at least one booth for this booking.');
+        }
+        
+        return false;
+    }
+    
+    // If all validations pass, show loading and allow form submission
     showLoading();
 });
 

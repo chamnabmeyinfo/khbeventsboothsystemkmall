@@ -614,20 +614,24 @@
                 <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
             </li>
             @auth
-            @if(auth()->user()->isAdmin())
+            @if(auth()->user()->hasPermission('users.view') || auth()->user()->isAdmin())
             <li class="nav-item d-none d-sm-inline-block">
                 <a href="{{ route('users.index') }}" class="nav-link">User</a>
             </li>
             @endif
+            @if(auth()->user()->hasPermission('booths.floor-plans') || auth()->user()->isAdmin())
             <li class="nav-item d-none d-sm-inline-block">
                 <a href="{{ route('floor-plans.index') }}" class="nav-link">
                     <i class="fas fa-map mr-2"></i>Floor Plan Management
                 </a>
             </li>
-            @if(auth()->user()->isAdmin())
+            @endif
+            @if(auth()->user()->hasPermission('clients.view') || auth()->user()->isAdmin())
             <li class="nav-item d-none d-sm-inline-block">
                 <a href="{{ route('clients.index') }}" class="nav-link">Clients</a>
             </li>
+            @endif
+            @if(auth()->user()->hasPermission('bookings.view') || auth()->user()->isAdmin())
             <li class="nav-item d-none d-sm-inline-block">
                 <a href="{{ route('books.index') }}" class="nav-link">Bookings</a>
             </li>
@@ -744,11 +748,40 @@
                             <span id="notification-badge" class="badge badge-warning navbar-badge" style="display: none;">0</span>
                         </a>
                     </li>
+                    {{-- Core Features Section --}}
+                    <li class="nav-header">
+                        <i class="fas fa-cube"></i>Core Features
+                    </li>
+                    @if(auth()->user()->hasPermission('booths.floor-plans') || auth()->user()->isAdmin())
+                    <li class="nav-item">
+                        <a href="{{ route('floor-plans.index') }}" class="nav-link {{ request()->routeIs('floor-plans.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-map"></i>
+                            <p>Floor Plans</p>
+                        </a>
+                    </li>
+                    @endif
+                    @if(auth()->user()->hasPermission('booths.view') || auth()->user()->isAdmin())
+                    <li class="nav-item">
+                        <a href="{{ route('booths.index') }}" class="nav-link {{ request()->routeIs('booths.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-cube"></i>
+                            <p>Booths</p>
+                        </a>
+                    </li>
+                    @endif
+                    @if(auth()->user()->hasPermission('clients.view') || auth()->user()->isAdmin())
+                    <li class="nav-item">
+                        <a href="{{ route('clients.index') }}" class="nav-link {{ request()->routeIs('clients.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-building"></i>
+                            <p>Clients</p>
+                        </a>
+                    </li>
+                    @endif
+                    
                     {{-- Business Operations Section --}}
                     <li class="nav-header">
                         <i class="fas fa-briefcase"></i>Business Operations
                     </li>
-                    @if(auth()->user()->isAdmin())
+                    @if(auth()->user()->hasPermission('bookings.view') || auth()->user()->isAdmin())
                     <li class="nav-item">
                         <a href="{{ route('books.index') }}" class="nav-link {{ request()->routeIs('books.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-calendar-check"></i>
@@ -756,13 +789,16 @@
                         </a>
                     </li>
                     @endif
+                    @if(auth()->user()->hasPermission('reports.view') || auth()->user()->isAdmin())
                     <li class="nav-item">
                         <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-chart-bar"></i>
                             <p>Reports & Analytics</p>
                         </a>
                     </li>
+                    @endif
                     {{-- Finance Section --}}
+                    @if(auth()->user()->hasPermission('finance.view') || auth()->user()->hasPermission('payments.view') || auth()->user()->isAdmin())
                     <li class="nav-header">
                         <i class="fas fa-dollar-sign"></i>Finance Management
                     </li>
@@ -775,44 +811,57 @@
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
+                            @if(auth()->user()->hasPermission('payments.view') || auth()->user()->isAdmin())
                             <li class="nav-item">
                                 <a href="{{ route('finance.payments.index') }}" class="nav-link {{ request()->routeIs('finance.payments.*') ? 'active' : '' }}">
                                     <i class="fas fa-money-bill-wave nav-icon"></i>
                                     <p>Payments</p>
                                 </a>
                             </li>
+                            @endif
+                            @if(auth()->user()->hasPermission('finance.costings.view') || auth()->user()->isAdmin())
                             <li class="nav-item">
                                 <a href="{{ route('finance.costings.index') }}" class="nav-link {{ request()->routeIs('finance.costings.*') ? 'active' : '' }}">
                                     <i class="fas fa-calculator nav-icon"></i>
                                     <p>Costing Management</p>
                                 </a>
                             </li>
+                            @endif
+                            @if(auth()->user()->hasPermission('finance.expenses.view') || auth()->user()->isAdmin())
                             <li class="nav-item">
                                 <a href="{{ route('finance.expenses.index') }}" class="nav-link {{ request()->routeIs('finance.expenses.*') ? 'active' : '' }}">
                                     <i class="fas fa-arrow-down nav-icon"></i>
                                     <p>Expense Management</p>
                                 </a>
                             </li>
+                            @endif
+                            @if(auth()->user()->hasPermission('finance.revenues.view') || auth()->user()->isAdmin())
                             <li class="nav-item">
                                 <a href="{{ route('finance.revenues.index') }}" class="nav-link {{ request()->routeIs('finance.revenues.*') ? 'active' : '' }}">
                                     <i class="fas fa-arrow-up nav-icon"></i>
                                     <p>Revenue Management</p>
                                 </a>
                             </li>
+                            @endif
+                            @if(auth()->user()->hasPermission('finance.pricing.view') || auth()->user()->isAdmin())
                             <li class="nav-item">
                                 <a href="{{ route('finance.booth-pricing.index') }}" class="nav-link {{ request()->routeIs('finance.booth-pricing.*') ? 'active' : '' }}">
                                     <i class="fas fa-dollar-sign nav-icon"></i>
                                     <p>Booth Pricing</p>
                                 </a>
                             </li>
+                            @endif
+                            @if(auth()->user()->hasPermission('finance.categories.view') || auth()->user()->isAdmin())
                             <li class="nav-item">
                                 <a href="{{ route('finance.categories.index') }}" class="nav-link {{ request()->routeIs('finance.categories.*') ? 'active' : '' }}">
                                     <i class="fas fa-tags nav-icon"></i>
                                     <p>Categories</p>
                                 </a>
                             </li>
+                            @endif
                         </ul>
                     </li>
+                    @endif
                     {{-- Human Resources Section --}}
                     <li class="nav-header">
                         <i class="fas fa-users"></i>Human Resources
@@ -945,39 +994,50 @@
                     @endif
                     
                     {{-- Communication & Tools Section --}}
+                    @if(auth()->user()->hasPermission('communications.view') || auth()->user()->hasPermission('export.data') || auth()->user()->isAdmin())
                     <li class="nav-header">
                         <i class="fas fa-tools"></i>Communication & Tools
                     </li>
+                    @if(auth()->user()->hasPermission('communications.view') || auth()->user()->isAdmin())
                     <li class="nav-item">
                         <a href="{{ route('communications.index') }}" class="nav-link {{ request()->routeIs('communications.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-envelope"></i>
                             <p>Messages</p>
                         </a>
                     </li>
+                    @endif
+                    @if(auth()->user()->hasPermission('export.data') || auth()->user()->isAdmin())
                     <li class="nav-item">
                         <a href="{{ route('export.index') }}" class="nav-link {{ request()->routeIs('export.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-file-export"></i>
                             <p>Export/Import</p>
                         </a>
                     </li>
+                    @endif
+                    @endif
                     
                     {{-- System Administration Section --}}
-                    @if(auth()->user()->isAdmin())
+                    @if(auth()->user()->hasPermission('system.admin') || auth()->user()->hasPermission('users.view') || auth()->user()->hasPermission('roles.view') || auth()->user()->hasPermission('permissions.view') || auth()->user()->isAdmin())
                     <li class="nav-header">
                         <i class="fas fa-cog"></i>System Administration
                     </li>
+                    @if(auth()->user()->hasPermission('activity-logs.view') || auth()->user()->isAdmin())
                     <li class="nav-item">
                         <a href="{{ route('activity-logs.index') }}" class="nav-link {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-history"></i>
                             <p>Activity Logs</p>
                         </a>
                     </li>
+                    @endif
+                    @if(auth()->user()->hasPermission('email-templates.view') || auth()->user()->isAdmin())
                     <li class="nav-item">
                         <a href="{{ route('email-templates.index') }}" class="nav-link {{ request()->routeIs('email-templates.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-envelope-open-text"></i>
                             <p>Email Templates</p>
                         </a>
                     </li>
+                    @endif
+                    @if(auth()->user()->hasPermission('users.view') || auth()->user()->hasPermission('roles.view') || auth()->user()->hasPermission('permissions.view') || auth()->user()->isAdmin())
                     <li class="nav-item has-treeview {{ request()->routeIs('roles.*') || request()->routeIs('permissions.*') || request()->routeIs('users.*') ? 'menu-open' : '' }}">
                         <a href="#" class="nav-link {{ request()->routeIs('roles.*') || request()->routeIs('permissions.*') || request()->routeIs('users.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-users-cog"></i>
@@ -987,33 +1047,42 @@
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
+                            @if(auth()->user()->hasPermission('users.view') || auth()->user()->isAdmin())
                             <li class="nav-item">
                                 <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
                                     <i class="fas fa-users nav-icon"></i>
                                     <p>Users</p>
                                 </a>
                             </li>
+                            @endif
+                            @if(auth()->user()->hasPermission('roles.view') || auth()->user()->isAdmin())
                             <li class="nav-item">
                                 <a href="{{ route('roles.index') }}" class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}">
                                     <i class="fas fa-user-shield nav-icon"></i>
                                     <p>Roles</p>
                                 </a>
                             </li>
+                            @endif
+                            @if(auth()->user()->hasPermission('permissions.view') || auth()->user()->isAdmin())
                             <li class="nav-item">
                                 <a href="{{ route('permissions.index') }}" class="nav-link {{ request()->routeIs('permissions.*') ? 'active' : '' }}">
                                     <i class="fas fa-key nav-icon"></i>
                                     <p>Permissions</p>
                                 </a>
                             </li>
+                            @endif
                         </ul>
                     </li>
                     @endif
+                    @endif
+                    @if(auth()->user()->hasPermission('categories.view') || auth()->user()->isAdmin())
                     <li class="nav-item">
                         <a href="{{ route('categories.index') }}" class="nav-link {{ request()->routeIs('categories.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-folder"></i>
                             <p>Category & Sub</p>
                         </a>
                     </li>
+                    @endif
                     @endauth
                 </ul>
             </nav>

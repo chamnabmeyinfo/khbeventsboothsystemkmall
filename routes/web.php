@@ -79,8 +79,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/booths/book-booth', [BoothController::class, 'bookBooth'])->name('booths.book-booth');
 
     // Clients
-    Route::resource('clients', ClientController::class);
+    // IMPORTANT: Define specific routes BEFORE resource routes to avoid route conflicts
     Route::get('/clients/search', [ClientController::class, 'search'])->name('clients.search');
+    Route::resource('clients', ClientController::class);
     
     // Export Routes
     Route::get('/export', [ExportController::class, 'index'])->name('export.index');

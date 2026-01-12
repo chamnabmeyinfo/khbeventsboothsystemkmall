@@ -1722,6 +1722,14 @@ function showCreateBookingModal() {
     $('#createBookingForm')[0].reset();
     $('#createBookingError').hide();
     $('#modal_date_book').val(new Date().toISOString().slice(0, 16));
+    
+    // Ensure all checkboxes have correct class and no inline handlers
+    $('#modalBoothSelector .booth-checkbox').each(function() {
+        $(this).removeClass('booth-checkbox').addClass('modal-booth-checkbox');
+        $(this).removeAttr('onchange');
+    });
+    $('#modalBoothSelector .booth-option').removeClass('booth-option').addClass('booth-option-modal');
+    
     modalUpdateSelection();
     
     // Filter booths by floor plan
@@ -1752,10 +1760,28 @@ function filterBoothsInModal(floorPlanId) {
             const newBoothList = tempDiv.find('#boothSelector .row').html() || tempDiv.find('.booth-selector .row').html();
             
             if (newBoothList) {
-                boothList.html(newBoothList);
-                // Re-attach event handlers
-                $('.modal-booth-checkbox').on('change', modalUpdateSelection);
-                $(document).off('click', '.booth-option-modal').on('click', '.booth-option-modal', function(e) {
+                // Clean up the HTML: remove inline onchange handlers and fix classes
+                const cleanedHtml = $(newBoothList);
+                
+                // Remove any inline onchange handlers and update classes
+                cleanedHtml.find('input[type="checkbox"]').each(function() {
+                    // Remove inline onchange attribute
+                    $(this).removeAttr('onchange');
+                    // Ensure it has the modal-booth-checkbox class
+                    $(this).removeClass('booth-checkbox').addClass('modal-booth-checkbox');
+                });
+                
+                // Update booth-option to booth-option-modal
+                cleanedHtml.find('.booth-option').removeClass('booth-option').addClass('booth-option-modal');
+                
+                boothList.html(cleanedHtml);
+                
+                // Re-attach event handlers using event delegation
+                boothList.off('change', '.modal-booth-checkbox').on('change', '.modal-booth-checkbox', function() {
+                    modalUpdateSelection();
+                });
+                
+                $(document).off('click', '#modalBoothSelector .booth-option-modal').on('click', '#modalBoothSelector .booth-option-modal', function(e) {
                     if (e.target.type !== 'checkbox' && !$(e.target).closest('input').length) {
                         const checkbox = $(this).find('input[type="checkbox"]');
                         checkbox.prop('checked', !checkbox.prop('checked')).trigger('change');
@@ -1772,8 +1798,8 @@ function filterBoothsInModal(floorPlanId) {
     });
 }
 
-// Modal Booth Selection Functions
-function modalUpdateSelection() {
+// Modal Booth Selection Functions - Must be global for inline handlers
+window.modalUpdateSelection = function() {
     const selected = [];
     let totalAmount = 0;
     
@@ -1820,15 +1846,15 @@ function modalUpdateSelection() {
     }
 }
 
-function modalSelectAllBooths() {
+window.modalSelectAllBooths = function() {
     $('.modal-booth-checkbox').prop('checked', true);
     modalUpdateSelection();
-}
+};
 
-function modalClearSelection() {
+window.modalClearSelection = function() {
     $('.modal-booth-checkbox').prop('checked', false);
     modalUpdateSelection();
-}
+};
 
 // Handle Create Booking Form Submission
 $(document).ready(function() {
@@ -1949,23 +1975,37 @@ $(document).ready(function() {
             success: function(response) {
                 if (response.status === 'success' && response.client) {
                     const client = response.client;
-                    const clientSelect = $('#modal_clientid');
-                    const optionText = client.company + (client.name ? ' - ' + client.name : '') + 
-                                     (client.email ? ' (' + client.email + ')' : '') + 
-                                     (client.phone_number ? ' | ' + client.phone_number : '');
                     
-                    const newOption = $('<option></option>')
-                        .attr('value', client.id)
-                        .text(optionText);
-                    
-                    clientSelect.append(newOption);
-                    clientSelect.val(client.id);
+                    // Select the newly created client using the modalSelectClient function
+                    if (typeof modalSelectClient === 'function') {
+                        modalSelectClient(client);
+                    } else {
+                        // Fallback if modalSelectClient is not available
+                        $('#modal_clientid').val(client.id);
+                        const displayName = client.company || client.name || 'N/A';
+                        let details = [];
+                        if (client.email) details.push('<i class="fas fa-envelope mr-1"></i>' + client.email);
+                        if (client.phone_number) details.push('<i class="fas fa-phone mr-1"></i>' + client.phone_number);
+                        
+                        $('#modalSelectedClientName').text(displayName);
+                        $('#modalSelectedClientDetails').html(details.length > 0 ? details.join(' <span class="mx-2 text-muted">|</span> ') : '');
+                        $('#modalSelectedClientInfo').show();
+                        $('#modalClientSearchContainer').hide();
+                    }
                     
                     $('#createClientModalInBooking').modal('hide');
                     form[0].reset();
                     errorDiv.hide();
                     
-                    if (typeof toastr !== 'undefined') {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Client Created!',
+                            text: 'Client "' + (client.company || client.name) + '" has been created and selected.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else if (typeof toastr !== 'undefined') {
                         toastr.success('Client created and selected successfully');
                     } else {
                         alert('Client created successfully!');
@@ -1990,12 +2030,65 @@ $(document).ready(function() {
         });
     });
     
+    // Form validation for modal booking form
+    $('#createBookingForm').on('submit', function(e) {
+        // Validate client selection
+        const clientId = $('#modal_clientid').val();
+        if (!clientId || clientId === '' || clientId === null) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Client Required',
+                    text: 'Please select a client before submitting the booking.',
+                    confirmButtonColor: '#667eea'
+                });
+            } else {
+                alert('Please select a client before submitting the booking.');
+            }
+            
+            if ($('#modalClientSearchContainer').is(':hidden')) {
+                $('#modalSelectedClientInfo').hide();
+                $('#modalClientSearchContainer').show();
+            }
+            
+            setTimeout(function() {
+                $('#modalClientSearchInline').focus();
+            }, 100);
+            
+            return false;
+        }
+        
+        // Validate booth selection
+        const selectedCount = $('.modal-booth-checkbox:checked').length;
+        if (selectedCount === 0) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Booths Selected',
+                    text: 'Please select at least one booth for this booking.',
+                    confirmButtonColor: '#667eea'
+                });
+            } else {
+                alert('Please select at least one booth for this booking.');
+            }
+            
+            return false;
+        }
+    });
+    
     // Reset forms when modals are closed
     $('#createBookingModal').on('hidden.bs.modal', function() {
         $('#createBookingForm')[0].reset();
         $('#createBookingError').hide();
         $('.modal-booth-checkbox').prop('checked', false);
         modalUpdateSelection();
+        // Client selection is reset in the modal client search section above
     });
     
     $('#createClientModalInBooking').on('hidden.bs.modal', function() {
@@ -2003,7 +2096,7 @@ $(document).ready(function() {
         $('#createClientErrorInBooking').hide();
     });
     
-    // Booth option click handler
+    // Booth option click handler for modal
     $(document).on('click', '.booth-option-modal', function(e) {
         if (e.target.type !== 'checkbox' && !$(e.target).closest('input').length) {
             const checkbox = $(this).find('input[type="checkbox"]');
@@ -2011,8 +2104,355 @@ $(document).ready(function() {
         }
     });
     
-    // Initialize selection on page load
-    modalUpdateSelection();
+    // Bind change event to modal booth checkboxes
+    // Use event delegation for modal booth checkboxes (handles both initial and dynamically loaded checkboxes)
+    $(document).off('change', '#modalBoothSelector .modal-booth-checkbox').on('change', '#modalBoothSelector .modal-booth-checkbox', function() {
+        modalUpdateSelection();
+    });
+    
+    // Initialize selection when modal is shown
+    $('#createBookingModal').on('shown.bs.modal', function() {
+        modalUpdateSelection();
+    });
+    
+    // ============================================
+    // MODAL CLIENT SEARCH FUNCTIONALITY
+    // Same as main create page
+    // ============================================
+    
+    let modalSelectedClient = null;
+    let modalInlineSearchTimeout = null;
+    let modalClientSearchTimeout = null;
+    
+    // Modal Inline Client Search - Auto-suggest function
+    function modalSearchClientsInline(query) {
+        if (!query || query.length < 2) {
+            $('#modalInlineClientResults').hide();
+            return;
+        }
+        
+        const resultsDiv = $('#modalInlineClientResults');
+        const resultsList = $('#modalInlineClientResultsList');
+        const searchIcon = $('#modalSearchIcon');
+        
+        if (searchIcon.length) {
+            searchIcon.removeClass('fa-search').addClass('fa-spinner fa-spin');
+        }
+        
+        resultsDiv.show();
+        resultsList.html(
+            '<div class="client-results-loading">' +
+                '<i class="fas fa-spinner fa-spin"></i>' +
+                '<p class="mb-0 mt-2">Searching clients...</p>' +
+            '</div>'
+        );
+        
+        $.ajax({
+            url: '{{ route("clients.search") }}',
+            method: 'GET',
+            data: { q: query },
+            dataType: 'json',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            success: function(clients) {
+                if (searchIcon.length) {
+                    searchIcon.removeClass('fa-spinner fa-spin').addClass('fa-search');
+                }
+                
+                resultsList.empty();
+                const clientsArray = Array.isArray(clients) ? clients : (clients ? Object.values(clients) : []);
+                
+                if (!clientsArray || clientsArray.length === 0) {
+                    resultsList.html(
+                        '<div class="client-results-empty">' +
+                            '<i class="fas fa-search"></i>' +
+                            '<p class="mb-0"><strong>No clients found</strong></p>' +
+                            '<p class="mb-0 mt-1" style="font-size: 0.85rem;">Try different keywords or create a new client</p>' +
+                        '</div>'
+                    );
+                    return;
+                }
+                
+                clientsArray.slice(0, 8).forEach(function(client) {
+                    const displayName = (client.company || client.name || 'N/A');
+                    const highlightQuery = query.toLowerCase();
+                    
+                    let highlightedName = displayName;
+                    if (highlightQuery) {
+                        const escapedQuery = highlightQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                        const regex = new RegExp(`(${escapedQuery})`, 'gi');
+                        highlightedName = displayName.replace(regex, '<mark>$1</mark>');
+                    }
+                    
+                    let detailsHTML = '<div class="client-result-details">';
+                    if (client.name && client.company) {
+                        detailsHTML += '<div class="client-result-detail user"><i class="fas fa-user"></i><span>' + client.name + '</span></div>';
+                    }
+                    if (client.email) {
+                        detailsHTML += '<div class="client-result-detail email"><i class="fas fa-envelope"></i><span>' + client.email + '</span></div>';
+                    }
+                    if (client.phone_number) {
+                        detailsHTML += '<div class="client-result-detail phone"><i class="fas fa-phone"></i><span>' + client.phone_number + '</span></div>';
+                    }
+                    detailsHTML += '</div>';
+                    
+                    const item = $('<div class="client-search-result"></div>')
+                        .html(
+                            '<div class="client-result-content">' +
+                                '<div class="client-result-name">' +
+                                    '<i class="fas fa-building"></i>' +
+                                    '<span>' + highlightedName + '</span>' +
+                                '</div>' +
+                                detailsHTML +
+                            '</div>' +
+                            '<button type="button" class="btn btn-modern btn-modern-primary select-client-inline-btn" data-client-id="' + client.id + '">' +
+                                '<i class="fas fa-check"></i>' +
+                            '</button>'
+                        )
+                        .data('client', client);
+                    
+                    resultsList.append(item);
+                });
+                
+                $(document).off('click', '#modalInlineClientResultsList .select-client-inline-btn').on('click', '#modalInlineClientResultsList .select-client-inline-btn', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const client = $(this).closest('.client-search-result').data('client');
+                    if (client) {
+                        modalSelectClient(client);
+                        $('#modalInlineClientResults').hide();
+                    }
+                });
+                
+                $(document).off('click', '#modalInlineClientResultsList .client-search-result').on('click', '#modalInlineClientResultsList .client-search-result', function(e) {
+                    if (!$(e.target).closest('.select-client-inline-btn').length) {
+                        e.preventDefault();
+                        const client = $(this).data('client');
+                        if (client) {
+                            modalSelectClient(client);
+                            $('#modalInlineClientResults').hide();
+                        }
+                    }
+                });
+            },
+            error: function(xhr) {
+                if (searchIcon.length) {
+                    searchIcon.removeClass('fa-spinner fa-spin').addClass('fa-search');
+                }
+                resultsList.html(
+                    '<div class="client-results-empty" style="color: #e74a3b;">' +
+                        '<i class="fas fa-exclamation-triangle"></i>' +
+                        '<p class="mb-0"><strong>Error</strong></p>' +
+                        '<p class="mb-0 mt-1" style="font-size: 0.85rem;">Error searching clients. Please try again.</p>' +
+                    '</div>'
+                );
+            }
+        });
+    }
+    
+    // Modal Inline search input handler
+    $(document).on('input keyup paste', '#modalClientSearchInline', function(e) {
+        if ([38, 40, 13, 27].includes(e.keyCode)) {
+            return;
+        }
+        
+        const query = $(this).val().trim();
+        clearTimeout(modalInlineSearchTimeout);
+        
+        if (query.length < 2) {
+            $('#modalInlineClientResults').hide();
+            const searchIcon = $('#modalSearchIcon');
+            if (searchIcon.length) {
+                searchIcon.removeClass('fa-spinner fa-spin').addClass('fa-search');
+            }
+            if (query.length === 0 && modalSelectedClient) {
+                modalSelectedClient = null;
+                $('#modal_clientid').val('');
+                $('#modalSelectedClientInfo').hide();
+                $('#modalClientSearchContainer').show();
+            }
+            return;
+        }
+        
+        modalInlineSearchTimeout = setTimeout(function() {
+            modalSearchClientsInline(query);
+        }, 300);
+    });
+    
+    // Modal Select Client Function
+    function modalSelectClient(client) {
+        modalSelectedClient = client;
+        $('#modal_clientid').val(client.id);
+        
+        const displayName = client.company || client.name || 'N/A';
+        let details = [];
+        if (client.email) details.push('<i class="fas fa-envelope mr-1"></i>' + client.email);
+        if (client.phone_number) details.push('<i class="fas fa-phone mr-1"></i>' + client.phone_number);
+        
+        $('#modalSelectedClientName').text(displayName);
+        $('#modalSelectedClientDetails').html(details.length > 0 ? details.join(' <span class="mx-2 text-muted">|</span> ') : '');
+        $('#modalSelectedClientInfo').show();
+        $('#modalClientSearchContainer').hide();
+        $('#modalClientSearchInline').val('');
+        $('#modalInlineClientResults').hide();
+        $('#modalSearchClientModal').modal('hide');
+    }
+    
+    // Modal Clear Client Selection
+    $(document).on('click', '#modalBtnClearClient', function() {
+        modalSelectedClient = null;
+        $('#modal_clientid').val('');
+        $('#modalSelectedClientInfo').hide();
+        $('#modalClientSearchContainer').show();
+        $('#modalClientSearchInline').val('');
+        $('#modalInlineClientResults').hide();
+        setTimeout(function() {
+            $('#modalClientSearchInline').focus();
+        }, 100);
+    });
+    
+    // Modal Search Client Function (for modal)
+    function modalSearchClients(query) {
+        if (!query || query.length < 2) {
+            $('#modalClientSearchResults').hide();
+            $('#modalNoClientResults').hide();
+            return;
+        }
+        
+        $.ajax({
+            url: '{{ route("clients.search") }}',
+            method: 'GET',
+            data: { q: query },
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(clients) {
+                const resultsDiv = $('#modalClientSearchResults');
+                const resultsList = $('#modalClientSearchResultsList');
+                const noResultsDiv = $('#modalNoClientResults');
+                
+                resultsList.empty();
+                const clientsArray = Array.isArray(clients) ? clients : (clients ? Object.values(clients) : []);
+                
+                if (!clientsArray || clientsArray.length === 0) {
+                    resultsDiv.hide();
+                    noResultsDiv.show();
+                    return;
+                }
+                
+                noResultsDiv.hide();
+                resultsDiv.show();
+                
+                clientsArray.forEach(function(client) {
+                    const displayName = (client.company || client.name || 'N/A');
+                    
+                    let detailsHTML = '<div class="client-result-details">';
+                    if (client.name && client.company) {
+                        detailsHTML += '<div class="client-result-detail user"><i class="fas fa-user"></i><span>' + client.name + '</span></div>';
+                    }
+                    if (client.email) {
+                        detailsHTML += '<div class="client-result-detail email"><i class="fas fa-envelope"></i><span>' + client.email + '</span></div>';
+                    }
+                    if (client.phone_number) {
+                        detailsHTML += '<div class="client-result-detail phone"><i class="fas fa-phone"></i><span>' + client.phone_number + '</span></div>';
+                    }
+                    if (client.address) {
+                        detailsHTML += '<div class="client-result-detail"><i class="fas fa-map-marker-alt"></i><span>' + client.address + '</span></div>';
+                    }
+                    detailsHTML += '</div>';
+                    
+                    const item = $('<div class="client-search-result"></div>')
+                        .html(
+                            '<div class="client-result-content">' +
+                                '<div class="client-result-name">' +
+                                    '<i class="fas fa-building"></i>' +
+                                    '<span>' + displayName + '</span>' +
+                                '</div>' +
+                                detailsHTML +
+                            '</div>' +
+                            '<button type="button" class="btn btn-modern btn-modern-primary select-client-btn" data-client-id="' + client.id + '">' +
+                                '<i class="fas fa-check mr-1"></i>Select' +
+                            '</button>'
+                        )
+                        .data('client', client);
+                    
+                    resultsList.append(item);
+                });
+                
+                $('.select-client-btn').on('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const client = $(this).closest('.client-search-result').data('client');
+                    modalSelectClient(client);
+                });
+                
+                resultsList.find('.client-search-result').on('click', function(e) {
+                    if (!$(e.target).closest('.select-client-btn').length) {
+                        e.preventDefault();
+                        const client = $(this).data('client');
+                        modalSelectClient(client);
+                    }
+                });
+            },
+            error: function() {
+                $('#modalClientSearchResults').hide();
+                $('#modalNoClientResults').show();
+            }
+        });
+    }
+    
+    // Modal search input handlers
+    $('#modalClientSearchInput').on('input keyup', function(e) {
+        const query = $(this).val().trim();
+        clearTimeout(modalClientSearchTimeout);
+        
+        if (query.length < 2) {
+            $('#modalClientSearchResults').hide();
+            $('#modalNoClientResults').hide();
+            $('#modalBtnClearClientSearch').hide();
+            return;
+        }
+        
+        $('#modalBtnClearClientSearch').show();
+        modalClientSearchTimeout = setTimeout(function() {
+            modalSearchClients(query);
+        }, 300);
+    });
+    
+    $('#modalBtnSearchClient').on('click', function() {
+        const query = $('#modalClientSearchInput').val().trim();
+        if (query.length >= 2) {
+            modalSearchClients(query);
+        }
+    });
+    
+    $('#modalBtnClearClientSearch').on('click', function() {
+        $('#modalClientSearchInput').val('');
+        $('#modalClientSearchResults').hide();
+        $('#modalNoClientResults').hide();
+        $(this).hide();
+    });
+    
+    // Hide inline results when clicking outside
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('#modalClientSearchInline, #modalInlineClientResults').length) {
+            $('#modalInlineClientResults').hide();
+        }
+    });
+    
+    // Reset modal client selection when modal closes
+    $('#createBookingModal').on('hidden.bs.modal', function() {
+        modalSelectedClient = null;
+        $('#modal_clientid').val('');
+        $('#modalSelectedClientInfo').hide();
+        $('#modalClientSearchContainer').show();
+        $('#modalClientSearchInline').val('');
+        $('#modalInlineClientResults').hide();
+    });
 });
 </script>
 @endpush
