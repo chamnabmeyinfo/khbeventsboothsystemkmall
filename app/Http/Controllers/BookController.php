@@ -6,6 +6,7 @@ use App\Models\Book;
 use App\Models\Client;
 use App\Models\Booth;
 use App\Models\Category;
+use App\Models\FloorPlan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -259,7 +260,7 @@ class BookController extends Controller
                 'clientid' => $validated['clientid'],
                 'boothid' => json_encode($validated['booth_ids']),
                 'date_book' => $validated['date_book'],
-                'userid' => auth()->id(),
+                'userid' => auth()->user()->id,
                 'type' => $validated['type'] ?? 1,
             ]);
 
@@ -270,7 +271,7 @@ class BookController extends Controller
                 ->update([
                     'status' => Booth::STATUS_RESERVED,
                     'client_id' => $validated['clientid'],
-                    'userid' => auth()->id(),
+                    'userid' => auth()->user()->id,
                     'bookid' => $book->id,
                 ]);
 
@@ -301,7 +302,7 @@ class BookController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Booking creation failed: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+                'user_id' => auth()->user()->id ?? null,
                 'client_id' => $validated['clientid'] ?? null,
                 'booth_ids' => $validated['booth_ids'] ?? [],
             ]);
@@ -428,7 +429,7 @@ class BookController extends Controller
                     ->update([
                         'status' => Booth::STATUS_RESERVED,
                         'client_id' => $validated['clientid'],
-                        'userid' => auth()->id(),
+                        'userid' => auth()->user()->id,
                         'bookid' => $book->id,
                     ]);
                 
@@ -619,7 +620,7 @@ class BookController extends Controller
                 if (!empty($paidBooths)) {
                     \Log::warning('All bookings deleted with paid booths', [
                         'paid_booths' => $paidBooths,
-                        'deleted_by' => auth()->id(),
+                        'deleted_by' => auth()->user()->id ?? null,
                     ]);
                 }
             }
@@ -631,8 +632,8 @@ class BookController extends Controller
 
             \Log::info('All booking records deleted', [
                 'total_deleted' => $totalCount,
-                'deleted_by' => auth()->id(),
-                'deleted_by_username' => auth()->user()->username,
+                'deleted_by' => auth()->user()->id ?? null,
+                'deleted_by_username' => auth()->user()->username ?? null,
             ]);
 
             return response()->json([
@@ -642,7 +643,7 @@ class BookController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Delete all bookings failed: ' . $e->getMessage(), [
-                'deleted_by' => auth()->id(),
+                'deleted_by' => auth()->user()->id ?? null,
             ]);
             return response()->json([
                 'success' => false,
@@ -745,7 +746,7 @@ class BookController extends Controller
                 ], 403);
             }
             
-            $userid = auth()->id();
+            $userid = auth()->user()->id;
             $clientID = 0;
             
             // Create client with ALL required information (all fields are now required)
@@ -837,7 +838,7 @@ class BookController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Booking API creation failed: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+                'user_id' => auth()->user()->id ?? null,
                 'data' => $data,
             ]);
             return response()->json([
@@ -903,7 +904,7 @@ class BookController extends Controller
         try {
             DB::beginTransaction();
             
-            $userid = auth()->id();
+            $userid = auth()->user()->id;
             
             // Find existing book
             $book = Book::where('clientid', $data['companyID'])->first();
@@ -983,7 +984,7 @@ class BookController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Booking API update failed: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+                'user_id' => auth()->user()->id ?? null,
                 'data' => $data,
             ]);
             return response()->json([
