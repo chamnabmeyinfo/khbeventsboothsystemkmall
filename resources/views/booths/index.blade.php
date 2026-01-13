@@ -1677,6 +1677,7 @@
                     <i class="fas fa-magnet"></i>
             </button>
                 <div class="toolbar-divider"></div>
+                @if(isset($canEditCanvas) && $canEditCanvas)
                 <!-- Center Marker Toggle -->
                 <button class="toolbar-btn" id="btnCenter" title="Toggle Canvas Center Marker">
                     <i class="fas fa-crosshairs"></i>
@@ -1697,24 +1698,31 @@
                     <i class="fas fa-redo"></i>
             </button>
                 <div class="toolbar-divider"></div>
+                @endif
+                @if(isset($canEditCanvas) && $canEditCanvas)
                 <button class="toolbar-btn" id="btnDelete" title="Delete (Del)">
                     <i class="fas fa-trash"></i>
                 </button>
                 <div class="toolbar-divider"></div>
+                @endif
                 <button class="toolbar-btn" id="btnErrorLog" title="Error Log" onclick="ErrorLogger.togglePanel(); return false;" style="position: relative;">
                     <i class="fas fa-exclamation-triangle"></i>
                     <span id="errorLogBadge" style="display: none; position: absolute; top: -5px; right: -5px; background: #ff4444; color: white; border-radius: 10px; padding: 2px 6px; font-size: 10px; font-weight: bold;">0</span>
                 </button>
                 <div class="toolbar-divider"></div>
+                @if(isset($canEditCanvas) && $canEditCanvas)
                 <button class="toolbar-btn" id="btnToggleProperties" title="Toggle Properties Panel (Double-click to open)" style="background: rgba(40, 167, 69, 0.3);">
                     <i class="fas fa-cog"></i> <span id="propertiesToggleText" style="font-size: 10px;">ON</span>
             </button>
+                @endif
                 <button class="toolbar-btn" id="btnToggleBoothNumbers" title="Toggle Booth Numbers Sidebar" style="background: rgba(102, 126, 234, 0.3);">
                     <i class="fas fa-th"></i>
             </button>
+                @if(isset($canEditCanvas) && $canEditCanvas)
                 <button class="toolbar-btn" id="btnClearCanvas" title="Clear Canvas" style="background: rgba(220, 53, 69, 0.3);">
                     <i class="fas fa-eraser"></i>
             </button>
+                @endif
             </div>
             <div class="toolbar-section">
                 <div class="zoom-controls-group">
@@ -1734,6 +1742,7 @@
                 </div>
             </div>
             <div class="toolbar-section">
+                @if(isset($canEditCanvas) && $canEditCanvas)
                 <!-- Floorplan Dropdown -->
                 <div class="dropdown" style="position: relative; display: inline-block;">
                     <button class="toolbar-btn dropdown-toggle" id="btnFloorplanDropdown" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Floorplan Options">
@@ -1766,18 +1775,23 @@
                         <a class="dropdown-item" href="#" id="btnUnlockAll"><i class="fas fa-unlock"></i> Unlock All</a>
                     </div>
                 </div>
+                @endif
                 <button class="toolbar-btn" id="btnShowBooths" title="Show All Booths (Flash Effect)" style="background: rgba(255, 193, 7, 0.3);">
                     <i class="fas fa-th"></i> <span id="boothCountBadge" style="font-size: 10px; margin-left: 4px;">0</span>
                 </button>
+                @if(isset($canEditCanvas) && $canEditCanvas)
                 <button class="toolbar-btn" id="btnSettings" title="Canvas Settings">
                     <i class="fas fa-cog"></i>
                 </button>
+                @endif
                 <button class="toolbar-btn" id="btnPrint" title="Print Floorplan" style="background: rgba(40, 167, 69, 0.3);">
                     <i class="fas fa-print"></i>
                 </button>
+                @if(isset($canEditCanvas) && $canEditCanvas)
                 <button class="toolbar-btn btn-primary" id="btnSave" title="Save Floor Plan">
                     <i class="fas fa-save"></i> Save
             </button>
+                @endif
         </div>
         </div>
         
@@ -3424,8 +3438,11 @@ const FloorPlanDesigner = {
     init: function() {
         const self = this;
         
+        // Check if user can edit canvas (from backend)
+        self.canEditCanvas = @json(isset($canEditCanvas) && $canEditCanvas ? true : false);
+        
         // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/32c840ca-dc83-4c7d-be79-34d96940ebef',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'booths/index.blade.php:2090',message:'init() called',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4'})}).catch(()=>{});
+        fetch('http://127.0.0.1:7244/ingest/32c840ca-dc83-4c7d-be79-34d96940ebef',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'booths/index.blade.php:2090',message:'init() called',data:{timestamp:Date.now(),canEditCanvas:self.canEditCanvas},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4'})}).catch(()=>{});
         // #endregion
         
         // Cache frequently used DOM elements
@@ -3876,6 +3893,19 @@ const FloorPlanDesigner = {
         
         if (!canvas) {
             return;
+        }
+        
+        // If user cannot edit canvas, disable drag and drop
+        if (!self.canEditCanvas) {
+            console.log('[Canvas Permissions] Drag and drop disabled - user does not have canvas edit permission');
+            // Make booth items non-draggable
+            const boothItems = document.querySelectorAll('.booth-number-item');
+            boothItems.forEach(function(item) {
+                item.draggable = false;
+                item.style.cursor = 'default';
+                item.style.opacity = '0.8';
+            });
+            return; // Exit early - no drag and drop setup
         }
         
         // Drag start from sidebar - use native event listeners
@@ -7931,6 +7961,14 @@ const FloorPlanDesigner = {
     
     // Make booth draggable, resizable, and rotatable on canvas
     makeBoothDraggable: function(element) {
+        // If user cannot edit canvas, disable dragging
+        if (!this.canEditCanvas) {
+            if (element) {
+                element.style.cursor = 'default';
+                element.draggable = false;
+            }
+            return;
+        }
         const self = this;
         let isDragging = false;
         let startX, startY, initialX, initialY;

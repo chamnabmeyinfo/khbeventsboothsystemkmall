@@ -285,6 +285,9 @@ class BoothController extends Controller
             $clients = Client::orderBy('company')->get();
         }
 
+        // Check if user has permission to edit canvas
+        $canEditCanvas = auth()->user()->hasPermission('booths.canvas.edit') || auth()->user()->isAdmin();
+        
         return view('booths.index', compact(
             'booths',
             'boothsForJS',
@@ -302,8 +305,6 @@ class BoothController extends Controller
             'clients',
             'totalBooths',
             'availableBooths',
-            'floorImageUrl',
-            'floorImageExists',
             'bookedBooths',
             'reservedBoothsCount',
             'paidBooths',
@@ -311,13 +312,13 @@ class BoothController extends Controller
             'occupancyPercentage',
             'totalRevenue',
             'paidRevenue',
-            'boothsForJS',
             'floorPlans',
             'currentFloorPlan',
             'floorPlanId',
             'canvasWidth',
             'canvasHeight',
-            'floorImage'
+            'floorImage',
+            'canEditCanvas'
         ));
     }
 
@@ -683,6 +684,14 @@ class BoothController extends Controller
      */
     public function updateExternalView(Request $request)
     {
+        // Check permission for canvas editing
+        if (!auth()->user()->hasPermission('booths.canvas.edit') && !auth()->user()->isAdmin()) {
+            return response()->json([
+                'status' => 403,
+                'message' => 'You do not have permission to edit canvas design.'
+            ], 403);
+        }
+        
         $data = $request->input('data');
         
         if (!isset($data)) {
@@ -822,6 +831,14 @@ class BoothController extends Controller
      */
     public function saveAllPositions(Request $request)
     {
+        // Check permission for canvas editing
+        if (!auth()->user()->hasPermission('booths.canvas.edit') && !auth()->user()->isAdmin()) {
+            return response()->json([
+                'status' => 403,
+                'message' => 'You do not have permission to edit canvas design.'
+            ], 403);
+        }
+        
         try {
             \Log::info('saveAllPositions called', ['request_data' => $request->all()]);
             
@@ -971,6 +988,14 @@ class BoothController extends Controller
      */
     public function uploadFloorplan(Request $request)
     {
+        // Check permission for canvas editing
+        if (!auth()->user()->hasPermission('booths.canvas.edit') && !auth()->user()->isAdmin()) {
+            return response()->json([
+                'status' => 403,
+                'message' => 'You do not have permission to edit canvas design.'
+            ], 403);
+        }
+        
         try {
             // Get upload size limit from environment or use default (100MB = 102400 KB)
             $maxSizeKB = env('UPLOAD_MAX_SIZE_KB', 102400); // Default 100MB in KB
@@ -1131,6 +1156,14 @@ class BoothController extends Controller
      */
     public function removeFloorplan(Request $request)
     {
+        // Check permission for canvas editing
+        if (!auth()->user()->hasPermission('booths.canvas.edit') && !auth()->user()->isAdmin()) {
+            return response()->json([
+                'status' => 403,
+                'message' => 'You do not have permission to edit canvas design.'
+            ], 403);
+        }
+        
         try {
             $request->validate([
                 'floor_plan_id' => 'required|exists:floor_plans,id',
@@ -1245,6 +1278,14 @@ class BoothController extends Controller
      */
     public function createBoothInZone(Request $request, $zoneName)
     {
+        // Check permission for canvas editing
+        if (!auth()->user()->hasPermission('booths.canvas.edit') && !auth()->user()->isAdmin()) {
+            return response()->json([
+                'status' => 403,
+                'message' => 'You do not have permission to edit canvas design.'
+            ], 403);
+        }
+        
         try {
             $validated = $request->validate([
                 'booth_number' => 'nullable|string|max:45',
@@ -1488,6 +1529,14 @@ class BoothController extends Controller
      */
     public function deleteBoothsInZone(Request $request, $zoneName)
     {
+        // Check permission for canvas editing
+        if (!auth()->user()->hasPermission('booths.canvas.edit') && !auth()->user()->isAdmin()) {
+            return response()->json([
+                'status' => 403,
+                'message' => 'You do not have permission to edit canvas design.'
+            ], 403);
+        }
+        
         try {
             $validated = $request->validate([
                 'mode' => 'required|in:all,specific,range',
