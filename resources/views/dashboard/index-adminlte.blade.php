@@ -35,6 +35,14 @@
         position: relative;
         overflow: hidden;
         height: 100%;
+        cursor: pointer;
+    }
+    
+    .kpi-card a {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        height: 100%;
     }
 
     .kpi-card::before {
@@ -53,6 +61,15 @@
         transform: translateY(-4px);
         box-shadow: var(--card-hover-shadow);
         border-color: rgba(102, 126, 234, 0.2);
+    }
+    
+    .kpi-card:hover .kpi-value {
+        color: #667eea;
+        transition: color 0.2s ease;
+    }
+    
+    .kpi-card a:hover {
+        text-decoration: none;
     }
 
     .kpi-card:hover::before {
@@ -482,95 +499,125 @@
     <!-- Main KPI Cards -->
     <div class="stats-grid">
         <!-- Total Revenue -->
-        <div class="kpi-card primary">
-            <div style="padding: 24px;">
-                <div class="kpi-icon">
-                    <i class="fas fa-dollar-sign"></i>
+        <div class="kpi-card primary" onclick="window.location.href='{{ route('reports.sales') }}'">
+            <a href="{{ route('reports.sales') }}">
+                <div style="padding: 24px;">
+                    <div class="kpi-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="kpi-label">Total Revenue</div>
+                    <div class="kpi-value">${{ number_format($stats['total_revenue'] ?? 0, 2) }}</div>
+                    @if(isset($stats['this_month_revenue']) && $stats['this_month_revenue'] > 0)
+                    <div class="kpi-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        ${{ number_format($stats['this_month_revenue'], 2) }} this month
+                    </div>
+                    @endif
+                    <div class="mt-2" style="font-size: 0.75rem; color: #667eea; font-weight: 600;">
+                        <i class="fas fa-external-link-alt mr-1"></i>View Details
+                    </div>
                 </div>
-                <div class="kpi-label">Total Revenue</div>
-                <div class="kpi-value">${{ number_format($stats['total_revenue'] ?? 0, 2) }}</div>
-                @if(isset($stats['this_month_revenue']) && $stats['this_month_revenue'] > 0)
-                <div class="kpi-change positive">
-                    <i class="fas fa-arrow-up"></i>
-                    ${{ number_format($stats['this_month_revenue'], 2) }} this month
-                </div>
-                @endif
-            </div>
+            </a>
         </div>
 
         <!-- Total Bookings -->
-        <div class="kpi-card success">
-            <div style="padding: 24px;">
-                <div class="kpi-icon">
-                    <i class="fas fa-calendar-check"></i>
+        <div class="kpi-card success" onclick="window.location.href='{{ route('books.index') }}'">
+            <a href="{{ route('books.index') }}">
+                <div style="padding: 24px;">
+                    <div class="kpi-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="kpi-label">Total Bookings</div>
+                    <div class="kpi-value">{{ number_format($stats['total_bookings'] ?? 0) }}</div>
+                    @if(isset($stats['booking_growth']))
+                    <div class="kpi-change {{ $stats['booking_growth'] >= 0 ? 'positive' : 'negative' }}">
+                        <i class="fas fa-arrow-{{ $stats['booking_growth'] >= 0 ? 'up' : 'down' }}"></i>
+                        {{ abs($stats['booking_growth']) }}% vs yesterday
+                    </div>
+                    @endif
+                    <div class="mt-2" style="font-size: 0.75rem; color: #1cc88a; font-weight: 600;">
+                        <i class="fas fa-external-link-alt mr-1"></i>View All Bookings
+                    </div>
                 </div>
-                <div class="kpi-label">Total Bookings</div>
-                <div class="kpi-value">{{ number_format($stats['total_bookings'] ?? 0) }}</div>
-                @if(isset($stats['booking_growth']))
-                <div class="kpi-change {{ $stats['booking_growth'] >= 0 ? 'positive' : 'negative' }}">
-                    <i class="fas fa-arrow-{{ $stats['booking_growth'] >= 0 ? 'up' : 'down' }}"></i>
-                    {{ abs($stats['booking_growth']) }}% vs yesterday
-                </div>
-                @endif
-            </div>
+            </a>
         </div>
 
         <!-- Occupancy Rate -->
-        <div class="kpi-card info">
-            <div style="padding: 24px;">
-                <div class="kpi-icon">
-                    <i class="fas fa-percentage"></i>
+        <div class="kpi-card info" onclick="window.location.href='{{ route('booths.index') }}'">
+            <a href="{{ route('booths.index') }}">
+                <div style="padding: 24px;">
+                    <div class="kpi-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="kpi-label">Occupancy Rate</div>
+                    <div class="kpi-value">{{ number_format($stats['occupancy_rate'] ?? 0, 1) }}%</div>
+                    <div class="kpi-change positive">
+                        <i class="fas fa-info-circle"></i>
+                        {{ number_format($stats['available_rate'] ?? 0, 1) }}% available
+                    </div>
+                    <div class="mt-2" style="font-size: 0.75rem; color: #36b9cc; font-weight: 600;">
+                        <i class="fas fa-external-link-alt mr-1"></i>View Booths
+                    </div>
                 </div>
-                <div class="kpi-label">Occupancy Rate</div>
-                <div class="kpi-value">{{ number_format($stats['occupancy_rate'] ?? 0, 1) }}%</div>
-                <div class="kpi-change positive">
-                    <i class="fas fa-info-circle"></i>
-                    {{ number_format($stats['available_rate'] ?? 0, 1) }}% available
-                </div>
-            </div>
+            </a>
         </div>
 
         <!-- Total Booths -->
-        <div class="kpi-card warning">
-            <div style="padding: 24px;">
-                <div class="kpi-icon">
-                    <i class="fas fa-store"></i>
+        <div class="kpi-card warning" onclick="window.location.href='{{ route('booths.index') }}'">
+            <a href="{{ route('booths.index') }}">
+                <div style="padding: 24px;">
+                    <div class="kpi-icon">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <div class="kpi-label">Total Booths</div>
+                    <div class="kpi-value">{{ number_format($stats['total_booths'] ?? 0) }}</div>
+                    <div class="kpi-change positive">
+                        <i class="fas fa-check-circle"></i>
+                        {{ number_format($stats['available_booths'] ?? 0) }} available
+                    </div>
+                    <div class="mt-2" style="font-size: 0.75rem; color: #f6c23e; font-weight: 600;">
+                        <i class="fas fa-external-link-alt mr-1"></i>View All Booths
+                    </div>
                 </div>
-                <div class="kpi-label">Total Booths</div>
-                <div class="kpi-value">{{ number_format($stats['total_booths'] ?? 0) }}</div>
-                <div class="kpi-change positive">
-                    <i class="fas fa-check-circle"></i>
-                    {{ number_format($stats['available_booths'] ?? 0) }} available
-                </div>
-            </div>
+            </a>
         </div>
 
         <!-- Total Clients -->
-        <div class="kpi-card primary">
-            <div style="padding: 24px;">
-                <div class="kpi-icon">
-                    <i class="fas fa-users"></i>
+        <div class="kpi-card primary" onclick="window.location.href='{{ route('clients.index') }}'">
+            <a href="{{ route('clients.index') }}">
+                <div style="padding: 24px;">
+                    <div class="kpi-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="kpi-label">Total Clients</div>
+                    <div class="kpi-value">{{ number_format($stats['total_clients'] ?? 0) }}</div>
+                    <div class="mt-2" style="font-size: 0.75rem; color: #667eea; font-weight: 600;">
+                        <i class="fas fa-external-link-alt mr-1"></i>View All Clients
+                    </div>
                 </div>
-                <div class="kpi-label">Total Clients</div>
-                <div class="kpi-value">{{ number_format($stats['total_clients'] ?? 0) }}</div>
-            </div>
+            </a>
         </div>
 
         <!-- Today's Activity -->
-        <div class="kpi-card danger">
-            <div style="padding: 24px;">
-                <div class="kpi-icon">
-                    <i class="fas fa-bolt"></i>
+        <div class="kpi-card danger" onclick="window.location.href='{{ route('books.index', ['date_from' => \Carbon\Carbon::today()->format('Y-m-d'), 'date_to' => \Carbon\Carbon::today()->format('Y-m-d')]) }}'">
+            <a href="{{ route('books.index', ['date_from' => \Carbon\Carbon::today()->format('Y-m-d'), 'date_to' => \Carbon\Carbon::today()->format('Y-m-d')]) }}">
+                <div style="padding: 24px;">
+                    <div class="kpi-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="kpi-label">Today's Bookings</div>
+                    <div class="kpi-value">{{ number_format($stats['today_bookings'] ?? 0) }}</div>
+                    @if(isset($stats['today_revenue']) && $stats['today_revenue'] > 0)
+                    <div class="kpi-change positive">
+                        <i class="fas fa-dollar-sign"></i>
+                        ${{ number_format($stats['today_revenue'], 2) }} revenue
+                    </div>
+                    @endif
+                    <div class="mt-2" style="font-size: 0.75rem; color: #e74a3b; font-weight: 600;">
+                        <i class="fas fa-external-link-alt mr-1"></i>View Today's Bookings
+                    </div>
                 </div>
-                <div class="kpi-label">Today's Bookings</div>
-                <div class="kpi-value">{{ number_format($stats['today_bookings'] ?? 0) }}</div>
-                @if(isset($stats['today_revenue']) && $stats['today_revenue'] > 0)
-                <div class="kpi-change positive">
-                    <i class="fas fa-dollar-sign"></i>
-                    ${{ number_format($stats['today_revenue'], 2) }} revenue
-                </div>
-                @endif
-            </div>
+            </a>
         </div>
     </div>
 
