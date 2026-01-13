@@ -12,9 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('booth', function (Blueprint $table) {
-            $table->decimal('width', 10, 2)->nullable()->after('position_y');
-            $table->decimal('height', 10, 2)->nullable()->after('width');
-            $table->decimal('rotation', 10, 2)->nullable()->default(0)->after('height');
+            if (!Schema::hasColumn('booth', 'width')) {
+                $table->decimal('width', 10, 2)->nullable()->after('position_y');
+            }
+            if (!Schema::hasColumn('booth', 'height')) {
+                $table->decimal('height', 10, 2)->nullable()->after('width');
+            }
+            if (!Schema::hasColumn('booth', 'rotation')) {
+                $table->decimal('rotation', 10, 2)->nullable()->default(0)->after('height');
+            }
         });
     }
 

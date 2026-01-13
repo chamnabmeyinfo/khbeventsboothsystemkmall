@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('booth', function (Blueprint $table) {
-            $table->decimal('position_x', 10, 2)->nullable()->after('booth_type_id');
-            $table->decimal('position_y', 10, 2)->nullable()->after('position_x');
+            if (!Schema::hasColumn('booth', 'position_x')) {
+                $table->decimal('position_x', 10, 2)->nullable()->after('booth_type_id');
+            }
+            if (!Schema::hasColumn('booth', 'position_y')) {
+                $table->decimal('position_y', 10, 2)->nullable()->after('position_x');
+            }
         });
     }
 
