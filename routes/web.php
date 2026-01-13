@@ -51,6 +51,7 @@ Route::prefix('client-portal')->name('client-portal.')->group(function () {
 
 // Public Routes (No Authentication Required)
 Route::get('/floor-plans/{id}/public', [\App\Http\Controllers\BoothController::class, 'publicView'])->name('floor-plans.public');
+Route::get('/floor-plans/{id}/affiliate', [FloorPlanController::class, 'affiliateLink'])->name('floor-plans.affiliate');
 Route::get('/floor-plans', [FloorPlanController::class, 'index'])->name('floor-plans.index');
 Route::get('/floor-plans/{floorPlan}', [FloorPlanController::class, 'show'])->name('floor-plans.show');
 
@@ -67,6 +68,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/floor-plans/{floorPlan}', [FloorPlanController::class, 'destroy'])->name('floor-plans.destroy');
     Route::post('/floor-plans/{id}/set-default', [FloorPlanController::class, 'setDefault'])->name('floor-plans.set-default');
     Route::post('/floor-plans/{id}/duplicate', [FloorPlanController::class, 'duplicate'])->name('floor-plans.duplicate');
+    Route::post('/floor-plans/{id}/affiliate-link', [FloorPlanController::class, 'generateAffiliateLink'])->name('floor-plans.generate-affiliate-link');
 
     // Booths
     Route::resource('booths', BoothController::class);

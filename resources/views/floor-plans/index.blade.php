@@ -360,6 +360,13 @@
                             <i class="fas fa-globe mr-1"></i>Public View
                         </a>
                         @auth
+                        <button type="button" class="btn btn-primary" 
+                                onclick="copyAffiliateLink({{ $floorPlan->id }})" 
+                                title="Copy My Affiliate Link (Track Your Sales)" 
+                                id="copyLinkBtn{{ $floorPlan->id }}"
+                                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                            <i class="fas fa-link mr-1"></i>Copy My Link
+                        </button>
                         <a href="{{ route('booths.index', ['floor_plan_id' => $floorPlan->id]) }}" class="btn btn-primary" title="View Floor Plan Canvas">
                             <i class="fas fa-eye mr-1"></i>View Canvas
                         </a>
@@ -598,6 +605,66 @@ $(document).on('submit', '#deleteFloorPlanForm', function(e) {
         }
     }
 });
+
+// Copy Affiliate Link Function
+function copyAffiliateLink(floorPlanId) {
+    const btn = document.getElementById('copyLinkBtn' + floorPlanId);
+    const originalText = btn.innerHTML;
+    
+    // Show loading state
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Generating...';
+    
+    // Generate affiliate link
+    fetch('{{ url("/floor-plans") }}/' + floorPlanId + '/affiliate-link', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Copy to clipboard
+            const fullUrl = window.location.origin + data.link;
+            navigator.clipboard.writeText(fullUrl).then(function() {
+                // Show success feedback
+                btn.innerHTML = '<i class="fas fa-check mr-1"></i>Copied!';
+                btn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+                
+                // Show toast notification if available
+                if (typeof toastr !== 'undefined') {
+                    toastr.success('Affiliate link copied to clipboard!', 'Success');
+                } else {
+                    alert('Affiliate link copied to clipboard!\n\n' + fullUrl);
+                }
+                
+                // Reset button after 2 seconds
+                setTimeout(function() {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                }, 2000);
+            }).catch(function(err) {
+                // Fallback: show link in alert
+                alert('Your affiliate link:\n\n' + fullUrl + '\n\nPlease copy this link manually.');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
+        } else {
+            alert('Error: ' + (data.message || 'Failed to generate affiliate link'));
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error generating affiliate link. Please try again.');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    });
+}
 </script>
 @endpush
 @endsection

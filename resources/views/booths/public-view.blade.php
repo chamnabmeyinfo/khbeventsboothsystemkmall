@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Public View - {{ $floorPlan->name }}</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
@@ -235,7 +236,7 @@
         if (canvas && typeof Panzoom !== 'undefined') {
             panzoomInstance = Panzoom(canvas, {
                 maxScale: 5,
-                minScale: 0.1,
+                minScale: 0.01, // Allow zooming out much further (1% instead of 10%)
                 contain: 'outside',
                 disablePan: false,
                 disableZoom: false,
@@ -329,13 +330,21 @@
         // Zoom controls
         document.getElementById('zoomIn').addEventListener('click', function() {
             if (panzoomInstance) {
-                panzoomInstance.zoom(1.2);
+                const currentScale = panzoomInstance.getScale ? panzoomInstance.getScale() : zoomLevel;
+                const newScale = Math.min(currentScale * 1.2, 5); // Max 500%
+                panzoomInstance.zoom(newScale);
             }
         });
         
         document.getElementById('zoomOut').addEventListener('click', function() {
             if (panzoomInstance) {
-                panzoomInstance.zoom(0.8);
+                // Zoom directly to minimum scale (0.01 = 1%)
+                const minScale = 0.01;
+                panzoomInstance.zoom(minScale, { animate: false });
+                
+                // Update zoom level display
+                zoomLevel = minScale;
+                document.getElementById('zoomLevel').textContent = Math.round(minScale * 100) + '%';
             }
         });
         
@@ -389,10 +398,16 @@
                 const containerWidth = container.clientWidth;
                 const containerHeight = container.clientHeight;
                 
+                // Ensure we have valid dimensions
+                if (containerWidth <= 0 || containerHeight <= 0) {
+                    console.warn('Invalid container dimensions');
+                    return;
+                }
+                
                 // Calculate actual content bounds
                 const bounds = calculateContentBounds();
-                const contentWidth = bounds.width || canvasWidth;
-                const contentHeight = bounds.height || canvasHeight;
+                const contentWidth = Math.max(bounds.width || canvasWidth, 100); // Minimum 100px
+                const contentHeight = Math.max(bounds.height || canvasHeight, 100); // Minimum 100px
                 
                 // Add padding (5% on each side)
                 const padding = 0.05;
@@ -402,28 +417,58 @@
                 // Calculate scale to fit content
                 const scaleX = availableWidth / contentWidth;
                 const scaleY = availableHeight / contentHeight;
-                const fitScale = Math.min(scaleX, scaleY);
+                let fitScale = Math.min(scaleX, scaleY);
                 
-                // Calculate center position
+                // Clamp scale to minScale and maxScale limits
+                const minScale = 0.01;
+                const maxScale = 5;
+                fitScale = Math.max(minScale, Math.min(maxScale, fitScale));
+                
+                // Calculate center position of content
                 const contentCenterX = bounds.minX + (contentWidth / 2);
                 const contentCenterY = bounds.minY + (contentHeight / 2);
                 
+                // Viewport center
                 const viewportCenterX = containerWidth / 2;
                 const viewportCenterY = containerHeight / 2;
                 
                 // Calculate pan to center the content
+                // panX = viewportCenterX - (contentCenterX * fitScale)
                 const panX = viewportCenterX - (contentCenterX * fitScale);
                 const panY = viewportCenterY - (contentCenterY * fitScale);
                 
-                // Apply transform
-                panzoomInstance.setTransform({ 
-                    x: panX, 
-                    y: panY, 
-                    scale: fitScale 
-                });
+                // Apply zoom first, then pan
+                if (panzoomInstance.zoom) {
+                    panzoomInstance.zoom(fitScale, { animate: false });
+                }
                 
-                zoomLevel = fitScale;
-                document.getElementById('zoomLevel').textContent = Math.round(fitScale * 100) + '%';
+                // Wait a bit for zoom to apply, then set pan position
+                setTimeout(function() {
+                    // Get current scale after zoom (might be clamped)
+                    const currentTransform = panzoomInstance.getTransform ? panzoomInstance.getTransform() : { scale: fitScale, x: 0, y: 0 };
+                    const currentScale = currentTransform.scale || fitScale;
+                    
+                    // Recalculate pan with actual scale
+                    const actualPanX = viewportCenterX - (contentCenterX * currentScale);
+                    const actualPanY = viewportCenterY - (contentCenterY * currentScale);
+                    
+                    // Apply transform with fallback methods
+                    if (panzoomInstance.setTransform) {
+                        panzoomInstance.setTransform({ 
+                            x: actualPanX, 
+                            y: actualPanY, 
+                            scale: currentScale 
+                        });
+                    } else if (panzoomInstance.pan) {
+                        panzoomInstance.pan(actualPanX, actualPanY, { animate: false });
+                    } else if (panzoomInstance.moveTo) {
+                        panzoomInstance.moveTo(contentCenterX, contentCenterY, { animate: false });
+                    }
+                    
+                    // Update zoom level display
+                    zoomLevel = currentScale;
+                    document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+                }, 100);
             }
         });
         

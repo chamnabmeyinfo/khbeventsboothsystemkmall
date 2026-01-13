@@ -1831,6 +1831,17 @@ class BoothController extends Controller
                 $eventId = $floorPlan ? $floorPlan->event_id : null;
             }
 
+            // Get affiliate user ID from session (if customer came from affiliate link)
+            $affiliateUserId = null;
+            if (session()->has('affiliate_user_id') && session('affiliate_floor_plan_id') == $floorPlanId) {
+                // Check if affiliate session is still valid (not expired)
+                if (session()->has('affiliate_expires_at') && now()->lt(session('affiliate_expires_at'))) {
+                    $affiliateUserId = session('affiliate_user_id');
+                } else {
+                    $affiliateUserId = null; // Session expired
+                }
+            }
+            
             // Create Book record to link booking with floor plan and event
             $book = Book::create([
                 'event_id' => $eventId,
@@ -1839,6 +1850,7 @@ class BoothController extends Controller
                 'boothid' => json_encode([$booth->id]),
                 'date_book' => now(),
                 'userid' => $userId,
+                'affiliate_user_id' => $affiliateUserId, // Track which sales person's link was used
                 'type' => $bookingType,
             ]);
 

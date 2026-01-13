@@ -258,6 +258,18 @@ class BookController extends Controller
             $bookingType = $validated['type'] ?? 1;
             $boothStatus = ($bookingType == 2) ? Booth::STATUS_CONFIRMED : Booth::STATUS_RESERVED;
             
+            // Get affiliate user ID from session (if customer came from affiliate link)
+            $affiliateUserId = null;
+            if (session()->has('affiliate_user_id') && session('affiliate_floor_plan_id') == $floorPlanId) {
+                $affiliateUserId = session('affiliate_user_id');
+                // Check if affiliate session is still valid (not expired)
+                if (session()->has('affiliate_expires_at') && now()->lt(session('affiliate_expires_at'))) {
+                    $affiliateUserId = session('affiliate_user_id');
+                } else {
+                    $affiliateUserId = null; // Session expired
+                }
+            }
+            
             // Create booking with project/floor plan tracking
             $book = Book::create([
                 'event_id' => $eventId,
@@ -266,6 +278,7 @@ class BookController extends Controller
                 'boothid' => json_encode($validated['booth_ids']),
                 'date_book' => $validated['date_book'],
                 'userid' => auth()->user()->id,
+                'affiliate_user_id' => $affiliateUserId, // Track which sales person's link was used
                 'type' => $bookingType,
             ]);
 
@@ -797,6 +810,17 @@ class BookController extends Controller
                 $eventId = $floorPlan ? $floorPlan->event_id : null;
             }
             
+            // Get affiliate user ID from session (if customer came from affiliate link)
+            $affiliateUserId = null;
+            if (session()->has('affiliate_user_id') && session('affiliate_floor_plan_id') == $floorPlanId) {
+                // Check if affiliate session is still valid (not expired)
+                if (session()->has('affiliate_expires_at') && now()->lt(session('affiliate_expires_at'))) {
+                    $affiliateUserId = session('affiliate_user_id');
+                } else {
+                    $affiliateUserId = null; // Session expired
+                }
+            }
+            
             // Create booking with project/floor plan tracking
             $book = Book::create([
                 'event_id' => $eventId,
@@ -806,6 +830,7 @@ class BookController extends Controller
                 'clientid' => $clientID,
                 'boothid' => json_encode($data['booth']),
                 'date_book' => now(),
+                'affiliate_user_id' => $affiliateUserId, // Track which sales person's link was used
             ]);
             
             $bookID = $book->id;

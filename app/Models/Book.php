@@ -31,6 +31,7 @@ class Book extends Model
         'boothid',
         'date_book',
         'userid',
+        'affiliate_user_id',
         'type',
     ];
 
@@ -52,6 +53,14 @@ class Book extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'userid');
+    }
+
+    /**
+     * Get the affiliate user (sales person whose link was used)
+     */
+    public function affiliateUser()
+    {
+        return $this->belongsTo(User::class, 'affiliate_user_id');
     }
 
     /**
