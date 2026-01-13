@@ -347,48 +347,106 @@
             }
         });
         
+        // Function to calculate content bounds (canvas + all booths)
+        function calculateContentBounds() {
+            let minX = 0;
+            let minY = 0;
+            let maxX = canvasWidth || 1200;
+            let maxY = canvasHeight || 800;
+            
+            // Check all booths to find the actual content bounds
+            const boothElements = canvas.querySelectorAll('.dropped-booth');
+            if (boothElements.length > 0) {
+                boothElements.forEach(function(booth) {
+                    const left = parseFloat(booth.style.left) || 0;
+                    const top = parseFloat(booth.style.top) || 0;
+                    const width = parseFloat(booth.offsetWidth) || 50;
+                    const height = parseFloat(booth.offsetHeight) || 50;
+                    
+                    minX = Math.min(minX, left);
+                    minY = Math.min(minY, top);
+                    maxX = Math.max(maxX, left + width);
+                    maxY = Math.max(maxY, top + height);
+                });
+            }
+            
+            // Ensure minimum bounds
+            const width = Math.max(maxX - minX, canvasWidth || 1200);
+            const height = Math.max(maxY - minY, canvasHeight || 800);
+            
+            return {
+                minX: minX,
+                minY: minY,
+                maxX: maxX,
+                maxY: maxY,
+                width: width,
+                height: height
+            };
+        }
+        
         document.getElementById('zoomFit').addEventListener('click', function() {
             if (panzoomInstance && canvas && container) {
                 const containerWidth = container.clientWidth;
                 const containerHeight = container.clientHeight;
-                const scaleX = containerWidth / canvasWidth;
-                const scaleY = containerHeight / canvasHeight;
-                const fitScale = Math.min(scaleX, scaleY) * 0.95;
                 
-                panzoomInstance.zoom(fitScale);
+                // Calculate actual content bounds
+                const bounds = calculateContentBounds();
+                const contentWidth = bounds.width || canvasWidth;
+                const contentHeight = bounds.height || canvasHeight;
                 
-                setTimeout(function() {
-                    const transform = panzoomInstance.getTransform();
-                    const currentScale = transform.scale || fitScale;
-                    const scaledWidth = canvasWidth * currentScale;
-                    const scaledHeight = canvasHeight * currentScale;
-                    const viewportCenterX = container.clientWidth / 2;
-                    const viewportCenterY = container.clientHeight / 2;
-                    const canvasCenterX = canvasWidth / 2;
-                    const canvasCenterY = canvasHeight / 2;
-                    const panX = viewportCenterX - (canvasCenterX * currentScale);
-                    const panY = viewportCenterY - (canvasCenterY * currentScale);
-                    
-                    panzoomInstance.setTransform({ x: panX, y: panY, scale: currentScale });
-                    zoomLevel = currentScale;
-                    document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
-                }, 100);
+                // Add padding (5% on each side)
+                const padding = 0.05;
+                const availableWidth = containerWidth * (1 - padding * 2);
+                const availableHeight = containerHeight * (1 - padding * 2);
+                
+                // Calculate scale to fit content
+                const scaleX = availableWidth / contentWidth;
+                const scaleY = availableHeight / contentHeight;
+                const fitScale = Math.min(scaleX, scaleY);
+                
+                // Calculate center position
+                const contentCenterX = bounds.minX + (contentWidth / 2);
+                const contentCenterY = bounds.minY + (contentHeight / 2);
+                
+                const viewportCenterX = containerWidth / 2;
+                const viewportCenterY = containerHeight / 2;
+                
+                // Calculate pan to center the content
+                const panX = viewportCenterX - (contentCenterX * fitScale);
+                const panY = viewportCenterY - (contentCenterY * fitScale);
+                
+                // Apply transform
+                panzoomInstance.setTransform({ 
+                    x: panX, 
+                    y: panY, 
+                    scale: fitScale 
+                });
+                
+                zoomLevel = fitScale;
+                document.getElementById('zoomLevel').textContent = Math.round(fitScale * 100) + '%';
             }
         });
         
-        // Auto-fit on load
+        // Auto-fit on load - wait for all booths to be rendered
         window.addEventListener('load', function() {
             setTimeout(function() {
-                document.getElementById('zoomFit').click();
-            }, 300);
+                // Ensure all booths are rendered before fitting
+                const zoomFitBtn = document.getElementById('zoomFit');
+                if (zoomFitBtn) {
+                    zoomFitBtn.click();
+                }
+            }, 500);
         });
         
-        // Fit on resize
+        // Fit on resize with debouncing
         let resizeTimeout;
         window.addEventListener('resize', function() {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(function() {
-                document.getElementById('zoomFit').click();
+                const zoomFitBtn = document.getElementById('zoomFit');
+                if (zoomFitBtn) {
+                    zoomFitBtn.click();
+                }
             }, 300);
         });
     </script>
