@@ -12,43 +12,30 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('booth', function (Blueprint $table) {
-            // Add unique index to booth_number if it doesn't exist
-            // First, check if there are any duplicates and handle them
-            $duplicates = DB::table('booth')
-                ->select('booth_number', DB::raw('COUNT(*) as count'))
-                ->groupBy('booth_number')
-                ->having('count', '>', 1)
-                ->get();
-            
-            // If duplicates exist, append a suffix to make them unique
-            foreach ($duplicates as $duplicate) {
-                $booths = DB::table('booth')
-                    ->where('booth_number', $duplicate->booth_number)
-                    ->orderBy('id')
-                    ->get();
+        // This migration is deprecated - booth numbers are now unique per floor plan
+        // The unique constraint was moved to a composite key (booth_number + floor_plan_id)
+        // See: 2026_01_10_210930_update_booth_number_unique_constraint_to_floor_plan_specific.php
+        
+        // Only run if the old unique index doesn't exist and floor_plan_id column doesn't exist
+        // (meaning this is a very old database)
+        if (!Schema::hasColumn('booth', 'floor_plan_id')) {
+            Schema::table('booth', function (Blueprint $table) {
+                // Check if unique index already exists
+                $connection = Schema::getConnection();
+                $database = $connection->getDatabaseName();
+                $indexExists = $connection->select(
+                    "SELECT COUNT(*) as count FROM information_schema.statistics WHERE table_schema = ? AND table_name = ? AND index_name = ?",
+                    [$database, 'booth', 'booth_booth_number_unique']
+                );
                 
-                // Keep the first one, rename the rest
-                $counter = 1;
-                foreach ($booths as $index => $booth) {
-                    if ($index > 0) {
-                        $newNumber = $duplicate->booth_number . '-dup' . $counter;
-                        // Make sure the new number is also unique
-                        while (DB::table('booth')->where('booth_number', $newNumber)->exists()) {
-                            $counter++;
-                            $newNumber = $duplicate->booth_number . '-dup' . $counter;
-                        }
-                        DB::table('booth')
-                            ->where('id', $booth->id)
-                            ->update(['booth_number' => $newNumber]);
-                        $counter++;
-                    }
+                if (empty($indexExists) || $indexExists[0]->count == 0) {
+                    // Only add if it doesn't exist - but don't add "-dup" suffixes
+                    // Booth numbers can be the same across different floor plans
+                    $table->unique('booth_number', 'booth_booth_number_unique');
                 }
-            }
-            
-            // Now add the unique index
-            $table->unique('booth_number', 'booth_booth_number_unique');
-        });
+            });
+        }
+        // If floor_plan_id exists, skip this migration - use floor-plan-specific uniqueness instead
     }
 
     /**

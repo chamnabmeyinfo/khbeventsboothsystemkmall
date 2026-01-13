@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('affiliate_clicks', function (Blueprint $table) {
+        if (!Schema::hasTable('affiliate_clicks')) {
+            Schema::create('affiliate_clicks', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('affiliate_user_id')->nullable()->index();
             $table->unsignedBigInteger('floor_plan_id')->nullable()->index();
@@ -22,7 +23,8 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['floor_plan_id', 'affiliate_user_id']);
-        });
+            });
+        }
     }
 
     /**

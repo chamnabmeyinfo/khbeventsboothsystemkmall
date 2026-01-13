@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Book;
 use App\Models\FloorPlan;
 use App\Models\AffiliateClick;
+use App\Models\AffiliateBenefit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -125,6 +126,9 @@ class AffiliateController extends Controller
                 return $activity['date'];
             })->values();
             
+            // Calculate total benefits based on benefit settings
+            $totalBenefits = $this->calculateTotalBenefits($user->id, $totalRevenue, $totalBookings, $uniqueClients, $floorPlanId);
+            
             return [
                 'user' => $user,
                 'total_bookings' => $totalBookings,
@@ -139,6 +143,7 @@ class AffiliateController extends Controller
                 'total_clicks' => $totalClicks,
                 'conversion_rate' => $conversionRate,
                 'activities' => $activities->take(20), // Last 20 activities
+                'total_benefits' => $totalBenefits,
             ];
         })->filter(function($data) use ($userId) {
             // Filter by user if specified
@@ -242,6 +247,9 @@ class AffiliateController extends Controller
             ->orderBy('name', 'asc')
             ->get();
 
+        // Calculate total benefits
+        $totalBenefits = $this->calculateTotalBenefits($user->id, $totalRevenue, $totalBookings, $uniqueClients, $floorPlanId);
+
         return view('affiliates.show', compact(
             'user',
             'bookings',
@@ -257,7 +265,8 @@ class AffiliateController extends Controller
             'floorPlans',
             'floorPlanId',
             'dateFrom',
-            'dateTo'
+            'dateTo',
+            'totalBenefits'
         ));
     }
 
@@ -387,5 +396,46 @@ class AffiliateController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Calculate total benefits for a user based on benefit settings
+     */
+    private function calculateTotalBenefits($userId, $totalRevenue, $totalBookings, $uniqueClients, $floorPlanId = null)
+    {
+        // Get all active benefits applicable to this user
+        $benefits = AffiliateBenefit::active()
+            ->forUser($userId)
+            ->when($floorPlanId, function($query) use ($floorPlanId) {
+                return $query->forFloorPlan($floorPlanId);
+            })
+            ->orderBy('priority', 'desc')
+            ->get();
+
+        $totalBenefits = 0;
+        $benefitBreakdown = [];
+
+        foreach ($benefits as $benefit) {
+            $benefitAmount = $benefit->calculateBenefit(
+                $totalRevenue,
+                $totalBookings,
+                $uniqueClients,
+                $floorPlanId,
+                $userId
+            );
+
+            if ($benefitAmount > 0) {
+                $totalBenefits += $benefitAmount;
+                $benefitBreakdown[] = [
+                    'benefit' => $benefit,
+                    'amount' => $benefitAmount,
+                ];
+            }
+        }
+
+        return [
+            'total' => round($totalBenefits, 2),
+            'breakdown' => $benefitBreakdown,
+        ];
     }
 }

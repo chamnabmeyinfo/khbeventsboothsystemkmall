@@ -244,6 +244,9 @@
             <p class="text-muted mb-0" style="font-size: 0.875rem;">Track sales performance and commission benefits</p>
         </div>
         <div>
+            <a href="{{ route('affiliates.benefits.index') }}" class="btn btn-sm btn-info btn-sm-modern me-2">
+                <i class="fas fa-gift mr-1"></i>Manage Benefits
+            </a>
             <a href="{{ route('affiliates.export', request()->all()) }}" class="btn btn-sm btn-success btn-sm-modern">
                 <i class="fas fa-file-csv mr-1"></i>Export CSV
             </a>
@@ -313,6 +316,7 @@
                     <th class="text-center">Clicks</th>
                     <th class="text-center">Conversion</th>
                     <th class="text-right">Avg/Booking</th>
+                    <th class="text-right">Total Benefits</th>
                     <th class="text-center">Last Activity</th>
                     <th class="text-center">Actions</th>
                 </tr>
@@ -365,6 +369,9 @@
                     </td>
                     <td class="text-right">
                         <strong>${{ number_format($data['avg_booking_value'], 2) }}</strong>
+                    </td>
+                    <td class="text-right">
+                        <strong class="text-success">${{ number_format($data['total_benefits']['total'] ?? 0, 2) }}</strong>
                     </td>
                     <td class="text-center">
                         @if($data['last_booking_at'])
@@ -447,8 +454,8 @@
                 </tr>
                 @endif
                 @empty
-                <tr>
-                    <td colspan="9" class="empty-state-compact">
+                        <tr>
+                            <td colspan="10" class="empty-state-compact">
                         <i class="fas fa-users"></i>
                         <h6 class="mt-2">No Affiliate Data Found</h6>
                         <p class="mb-0" style="font-size: 0.875rem;">No affiliate bookings found with the current filters.</p>

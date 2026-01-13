@@ -118,7 +118,71 @@
                 <div class="stat-label">Last Booking</div>
             </div>
         </div>
+        @if(isset($totalBenefits) && $totalBenefits['total'] > 0)
+        <div class="col-md-3 mt-3 mt-md-0">
+            <div class="stat-card" style="background: linear-gradient(135deg, #43e97b15 0%, #38f9d715 100%); border: 2px solid #43e97b;">
+                <div class="stat-value text-success">${{ number_format($totalBenefits['total'], 2) }}</div>
+                <div class="stat-label">Total Benefits</div>
+            </div>
+        </div>
+        @endif
     </div>
+
+    <!-- Benefits Breakdown -->
+    @if(isset($totalBenefits) && count($totalBenefits['breakdown']) > 0)
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-gift mr-2"></i>Benefits Breakdown</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead>
+                        <tr>
+                            <th>Benefit Name</th>
+                            <th>Type</th>
+                            <th>Calculation</th>
+                            <th class="text-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($totalBenefits['breakdown'] as $item)
+                        <tr>
+                            <td>
+                                <strong>{{ $item['benefit']->name }}</strong>
+                                @if($item['benefit']->description)
+                                    <br><small class="text-muted">{{ Str::limit($item['benefit']->description, 50) }}</small>
+                                @endif
+                            </td>
+                            <td>
+                                <span class="badge badge-primary">{{ ucfirst($item['benefit']->type) }}</span>
+                            </td>
+                            <td>
+                                @if($item['benefit']->calculation_method === 'percentage')
+                                    {{ number_format($item['benefit']->percentage, 2) }}% of Revenue
+                                @elseif($item['benefit']->calculation_method === 'fixed_amount')
+                                    Fixed Amount
+                                @else
+                                    Tiered Structure
+                                @endif
+                            </td>
+                            <td class="text-right">
+                                <strong class="text-success">${{ number_format($item['amount'], 2) }}</strong>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="3" class="text-right">Total Benefits:</th>
+                            <th class="text-right text-success">${{ number_format($totalBenefits['total'], 2) }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+    @endif
 
     <!-- Filters -->
     <div class="card mb-4">

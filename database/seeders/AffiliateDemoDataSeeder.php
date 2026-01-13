@@ -9,9 +9,11 @@ use App\Models\FloorPlan;
 use App\Models\Booth;
 use App\Models\Book;
 use App\Models\AffiliateClick;
+use App\Models\AffiliateBenefit;
 use App\Models\Role;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 
 class AffiliateDemoDataSeeder extends Seeder
@@ -215,43 +217,200 @@ class AffiliateDemoDataSeeder extends Seeder
                 $bookingsCreated++;
                 
                 // Create affiliate clicks (simulate link clicks before booking)
-                $clickDate = $bookingDate->copy()->subDays(rand(1, 14)); // Click happened 1-14 days before booking
-                AffiliateClick::create([
-                    'affiliate_user_id' => $affiliateUser->id,
-                    'floor_plan_id' => $floorPlan->id,
-                    'ref_code' => 'demo_ref_' . $booking->id,
-                    'ip_address' => '192.168.1.' . rand(100, 255),
-                    'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                    'expires_at' => $clickDate->copy()->addDays(30),
-                    'created_at' => $clickDate,
-                    'updated_at' => $clickDate,
-                ]);
+                // Only create if affiliate_clicks table exists
+                if (\Illuminate\Support\Facades\Schema::hasTable('affiliate_clicks')) {
+                    try {
+                        $clickDate = $bookingDate->copy()->subDays(rand(1, 14)); // Click happened 1-14 days before booking
+                        AffiliateClick::create([
+                            'affiliate_user_id' => $affiliateUser->id,
+                            'floor_plan_id' => $floorPlan->id,
+                            'ref_code' => 'demo_ref_' . $booking->id,
+                            'ip_address' => '192.168.1.' . rand(100, 255),
+                            'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                            'expires_at' => $clickDate->copy()->addDays(30),
+                            'created_at' => $clickDate,
+                            'updated_at' => $clickDate,
+                        ]);
+                    } catch (\Exception $e) {
+                        $this->command->warn("Failed to create affiliate click: " . $e->getMessage());
+                    }
+                }
             }
         }
 
         $this->command->info("Created {$bookingsCreated} affiliate bookings");
 
         // Create some additional affiliate clicks without bookings (browsers who didn't book)
-        $this->command->info('Creating additional affiliate clicks (non-converting)...');
-        for ($i = 0; $i < 30; $i++) {
-            $affiliateUser = $salesUsers[array_rand($salesUsers)];
-            $floorPlan = $floorPlans[array_rand($floorPlans)];
-            $clickDate = Carbon::now()->subDays(rand(1, 90));
+        // Only create if affiliate_clicks table exists
+        if (\Illuminate\Support\Facades\Schema::hasTable('affiliate_clicks')) {
+            $this->command->info('Creating additional affiliate clicks (non-converting)...');
+            $clicksCreated = 0;
+            for ($i = 0; $i < 30; $i++) {
+                try {
+                    $affiliateUser = $salesUsers[array_rand($salesUsers)];
+                    $floorPlan = $floorPlans[array_rand($floorPlans)];
+                    $clickDate = Carbon::now()->subDays(rand(1, 90));
 
-            AffiliateClick::create([
-                'affiliate_user_id' => $affiliateUser->id,
-                'floor_plan_id' => $floorPlan->id,
-                'ref_code' => 'demo_ref_browse_' . $i,
-                'ip_address' => '192.168.1.' . rand(100, 255),
-                'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'expires_at' => $clickDate->copy()->addDays(30),
-                'created_at' => $clickDate,
-                'updated_at' => $clickDate,
-            ]);
+                    AffiliateClick::create([
+                        'affiliate_user_id' => $affiliateUser->id,
+                        'floor_plan_id' => $floorPlan->id,
+                        'ref_code' => 'demo_ref_browse_' . $i,
+                        'ip_address' => '192.168.1.' . rand(100, 255),
+                        'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                        'expires_at' => $clickDate->copy()->addDays(30),
+                        'created_at' => $clickDate,
+                        'updated_at' => $clickDate,
+                    ]);
+                    $clicksCreated++;
+                } catch (\Exception $e) {
+                    $this->command->warn("Failed to create affiliate click #{$i}: " . $e->getMessage());
+                }
+            }
+            $this->command->info("Created {$clicksCreated} additional affiliate clicks");
+        } else {
+            $this->command->warn('affiliate_clicks table does not exist. Skipping click creation.');
+            $this->command->warn('Please run: php artisan migrate --force');
+        }
+
+        // Create Affiliate Benefits Demo Data
+        $this->command->info('Creating affiliate benefits configurations...');
+        $benefitsCreated = 0;
+
+        // Check if affiliate_benefits table exists
+        if (Schema::hasTable('affiliate_benefits')) {
+            // 1. Standard Commission - 5% of all revenue
+            $standardCommission = AffiliateBenefit::firstOrCreate(
+                ['name' => 'Standard Commission'],
+                [
+                    'type' => AffiliateBenefit::TYPE_COMMISSION,
+                    'calculation_method' => AffiliateBenefit::METHOD_PERCENTAGE,
+                    'percentage' => 5.00,
+                    'is_active' => true,
+                    'priority' => 10,
+                    'description' => 'Standard 5% commission on all affiliate bookings',
+                    'created_by' => $adminRole ? User::where('username', 'admin')->first()?->id : null,
+                ]
+            );
+            $benefitsCreated++;
+            $this->command->info("Created: Standard Commission (5%)");
+
+            // 2. Performance Bonus - Fixed $500 when reaching 10 bookings
+            $performanceBonus = AffiliateBenefit::firstOrCreate(
+                ['name' => 'Performance Bonus - 10 Bookings'],
+                [
+                    'type' => AffiliateBenefit::TYPE_BONUS,
+                    'calculation_method' => AffiliateBenefit::METHOD_FIXED_AMOUNT,
+                    'fixed_amount' => 500.00,
+                    'target_bookings' => 10,
+                    'is_active' => true,
+                    'priority' => 20,
+                    'description' => 'Bonus of $500 when sales person reaches 10 bookings',
+                    'created_by' => $adminRole ? User::where('username', 'admin')->first()?->id : null,
+                ]
+            );
+            $benefitsCreated++;
+            $this->command->info("Created: Performance Bonus ($500 for 10 bookings)");
+
+            // 3. Revenue Milestone Bonus - $1000 when reaching $50,000 revenue
+            $revenueBonus = AffiliateBenefit::firstOrCreate(
+                ['name' => 'Revenue Milestone Bonus'],
+                [
+                    'type' => AffiliateBenefit::TYPE_BONUS,
+                    'calculation_method' => AffiliateBenefit::METHOD_FIXED_AMOUNT,
+                    'fixed_amount' => 1000.00,
+                    'target_revenue' => 50000.00,
+                    'is_active' => true,
+                    'priority' => 25,
+                    'description' => 'Bonus of $1,000 when reaching $50,000 in revenue',
+                    'created_by' => $adminRole ? User::where('username', 'admin')->first()?->id : null,
+                ]
+            );
+            $benefitsCreated++;
+            $this->command->info("Created: Revenue Milestone Bonus ($1,000 for $50k revenue)");
+
+            // 4. Tiered Commission - Higher percentage for higher revenue
+            $tieredCommission = AffiliateBenefit::firstOrCreate(
+                ['name' => 'Tiered Commission Structure'],
+                [
+                    'type' => AffiliateBenefit::TYPE_COMMISSION,
+                    'calculation_method' => AffiliateBenefit::METHOD_TIERED_PERCENTAGE,
+                    'tier_structure' => [
+                        ['min' => 0, 'max' => 10000, 'percentage' => 5],
+                        ['min' => 10000, 'max' => 50000, 'percentage' => 7],
+                        ['min' => 50000, 'max' => 100000, 'percentage' => 10],
+                        ['min' => 100000, 'max' => 999999999, 'percentage' => 12],
+                    ],
+                    'is_active' => false, // Inactive by default, can be activated
+                    'priority' => 5,
+                    'description' => 'Tiered commission: 5% up to $10k, 7% up to $50k, 10% up to $100k, 12% above',
+                    'created_by' => $adminRole ? User::where('username', 'admin')->first()?->id : null,
+                ]
+            );
+            $benefitsCreated++;
+            $this->command->info("Created: Tiered Commission Structure");
+
+            // 5. Client Acquisition Incentive - $200 per new client
+            $clientIncentive = AffiliateBenefit::firstOrCreate(
+                ['name' => 'Client Acquisition Incentive'],
+                [
+                    'type' => AffiliateBenefit::TYPE_INCENTIVE,
+                    'calculation_method' => AffiliateBenefit::METHOD_FIXED_AMOUNT,
+                    'fixed_amount' => 200.00,
+                    'target_clients' => 1, // Per client
+                    'is_active' => true,
+                    'priority' => 15,
+                    'description' => '$200 incentive for each new unique client acquired',
+                    'created_by' => $adminRole ? User::where('username', 'admin')->first()?->id : null,
+                ]
+            );
+            $benefitsCreated++;
+            $this->command->info("Created: Client Acquisition Incentive ($200 per client)");
+
+            // 6. High-Value Booking Reward - Extra 2% for bookings over $5,000
+            $highValueReward = AffiliateBenefit::firstOrCreate(
+                ['name' => 'High-Value Booking Reward'],
+                [
+                    'type' => AffiliateBenefit::TYPE_REWARD,
+                    'calculation_method' => AffiliateBenefit::METHOD_PERCENTAGE,
+                    'percentage' => 2.00,
+                    'min_revenue' => 5000.00,
+                    'is_active' => true,
+                    'priority' => 8,
+                    'description' => 'Additional 2% reward for bookings over $5,000',
+                    'created_by' => $adminRole ? User::where('username', 'admin')->first()?->id : null,
+                ]
+            );
+            $benefitsCreated++;
+            $this->command->info("Created: High-Value Booking Reward (2% for bookings > $5k)");
+
+            // 7. Monthly Performance Bonus - $300 for 5+ bookings in a month
+            $monthlyBonus = AffiliateBenefit::firstOrCreate(
+                ['name' => 'Monthly Performance Bonus'],
+                [
+                    'type' => AffiliateBenefit::TYPE_BONUS,
+                    'calculation_method' => AffiliateBenefit::METHOD_FIXED_AMOUNT,
+                    'fixed_amount' => 300.00,
+                    'target_bookings' => 5,
+                    'is_active' => true,
+                    'priority' => 12,
+                    'description' => 'Monthly bonus of $300 for achieving 5+ bookings',
+                    'start_date' => now()->startOfMonth(),
+                    'end_date' => now()->endOfMonth(),
+                    'created_by' => $adminRole ? User::where('username', 'admin')->first()?->id : null,
+                ]
+            );
+            $benefitsCreated++;
+            $this->command->info("Created: Monthly Performance Bonus ($300 for 5+ bookings/month)");
+
+            $this->command->info("Created {$benefitsCreated} affiliate benefit configurations");
+        } else {
+            $this->command->warn('affiliate_benefits table does not exist. Skipping benefit creation.');
+            $this->command->warn('Please run: php artisan migrate --force');
         }
 
         $this->command->info('Demo data created successfully!');
         $this->command->info('You can now test the affiliate system at: /affiliates');
+        $this->command->info('Manage benefits at: /affiliates/benefits');
         $this->command->info('Sales team login credentials:');
         $this->command->info('  Username: Any sales username (e.g., sarah_manager, emily_sales)');
         $this->command->info('  Password: password123');

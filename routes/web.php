@@ -71,9 +71,23 @@ Route::middleware(['auth'])->group(function () {
     
     // Affiliate Management
     Route::get('/affiliates', [\App\Http\Controllers\AffiliateController::class, 'index'])->name('affiliates.index');
-    Route::get('/affiliates/{id}', [\App\Http\Controllers\AffiliateController::class, 'show'])->name('affiliates.show');
     Route::get('/affiliates/statistics/data', [\App\Http\Controllers\AffiliateController::class, 'statistics'])->name('affiliates.statistics');
     Route::get('/affiliates/export', [\App\Http\Controllers\AffiliateController::class, 'export'])->name('affiliates.export');
+    
+    // Affiliate Benefits Management (must come before /affiliates/{id} to avoid route conflict)
+    Route::resource('affiliates/benefits', \App\Http\Controllers\AffiliateBenefitController::class)->names([
+        'index' => 'affiliates.benefits.index',
+        'create' => 'affiliates.benefits.create',
+        'store' => 'affiliates.benefits.store',
+        'show' => 'affiliates.benefits.show',
+        'edit' => 'affiliates.benefits.edit',
+        'update' => 'affiliates.benefits.update',
+        'destroy' => 'affiliates.benefits.destroy',
+    ]);
+    Route::post('/affiliates/benefits/{id}/toggle-status', [\App\Http\Controllers\AffiliateBenefitController::class, 'toggleStatus'])->name('affiliates.benefits.toggle-status');
+    
+    // Affiliate Details (must come after benefits routes)
+    Route::get('/affiliates/{id}', [\App\Http\Controllers\AffiliateController::class, 'show'])->name('affiliates.show');
 
     // Booths
     Route::resource('booths', BoothController::class);
