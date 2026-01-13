@@ -277,28 +277,200 @@
                 $permissionsCount = 0;
             }
         @endphp
-        <div class="col-lg-4 col-md-6 mb-3">
+        <div class="col-lg-3 col-md-6 mb-3">
             <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <i class="fas fa-cube fa-2x mb-2"></i>
                 <h3 class="mb-1" style="font-weight: 700;">{{ number_format($boothCount) }}</h3>
                 <small style="opacity: 0.9;">Total Booths</small>
             </div>
         </div>
-        <div class="col-lg-4 col-md-6 mb-3">
+        <div class="col-lg-3 col-md-6 mb-3">
             <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                 <i class="fas fa-calendar-check fa-2x mb-2"></i>
                 <h3 class="mb-1" style="font-weight: 700;">{{ number_format($bookingCount) }}</h3>
                 <small style="opacity: 0.9;">Total Bookings</small>
             </div>
         </div>
-        <div class="col-lg-4 col-md-6 mb-3">
+        <div class="col-lg-3 col-md-6 mb-3">
             <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
                 <i class="fas fa-key fa-2x mb-2"></i>
                 <h3 class="mb-1" style="font-weight: 700;">{{ number_format($permissionsCount) }}</h3>
                 <small style="opacity: 0.9;">Total Permissions</small>
             </div>
         </div>
+        @if(isset($affiliateStats) && $affiliateStats['total_bookings'] > 0)
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                <i class="fas fa-dollar-sign fa-2x mb-2"></i>
+                <h3 class="mb-1" style="font-weight: 700;">${{ number_format($affiliateStats['total_revenue'], 0) }}</h3>
+                <small style="opacity: 0.9;">Affiliate Revenue</small>
+            </div>
+        </div>
+        @endif
     </div>
+
+    <!-- Affiliate Benefits & Commission Section -->
+    @if(isset($affiliateStats) && $affiliateStats['total_bookings'] > 0)
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card detail-card success" style="border-left-color: #43e97b;">
+                <div class="card-header" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; border-radius: 12px 12px 0 0;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-chart-line mr-2"></i>Affiliate Benefits & Commission Summary</h5>
+                        <a href="{{ route('affiliates.show', $user->id) }}" class="btn btn-light btn-sm">
+                            <i class="fas fa-external-link-alt mr-1"></i>View Full Report
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body" style="padding: 24px;">
+                    <!-- Key Metrics -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="text-center p-3" style="background: #f8f9fa; border-radius: 12px;">
+                                <i class="fas fa-shopping-cart fa-2x text-primary mb-2"></i>
+                                <h4 class="mb-1" style="font-weight: 700; color: #495057;">{{ number_format($affiliateStats['total_bookings']) }}</h4>
+                                <small class="text-muted">Total Affiliate Bookings</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="text-center p-3" style="background: #f8f9fa; border-radius: 12px;">
+                                <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
+                                <h4 class="mb-1" style="font-weight: 700; color: #495057;">${{ number_format($affiliateStats['total_revenue'], 2) }}</h4>
+                                <small class="text-muted">Total Revenue Generated</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="text-center p-3" style="background: #f8f9fa; border-radius: 12px;">
+                                <i class="fas fa-users fa-2x text-info mb-2"></i>
+                                <h4 class="mb-1" style="font-weight: 700; color: #495057;">{{ number_format($affiliateStats['unique_clients']) }}</h4>
+                                <small class="text-muted">Unique Clients</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="text-center p-3" style="background: #f8f9fa; border-radius: 12px;">
+                                <i class="fas fa-mouse-pointer fa-2x text-warning mb-2"></i>
+                                <h4 class="mb-1" style="font-weight: 700; color: #495057;">{{ number_format($affiliateStats['total_clicks']) }}</h4>
+                                <small class="text-muted">Total Link Clicks</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Stats -->
+                    <div class="row mb-4">
+                        <div class="col-md-4 mb-3">
+                            <div class="p-3" style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-radius: 12px; border-left: 4px solid #667eea;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <small class="text-muted d-block mb-1">Average Booking Value</small>
+                                        <h5 class="mb-0" style="font-weight: 700; color: #667eea;">${{ number_format($affiliateStats['avg_booking_value'], 2) }}</h5>
+                                    </div>
+                                    <i class="fas fa-chart-bar fa-2x text-muted"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="p-3" style="background: linear-gradient(135deg, #43e97b15 0%, #38f9d715 100%); border-radius: 12px; border-left: 4px solid #43e97b;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <small class="text-muted d-block mb-1">Conversion Rate</small>
+                                        <h5 class="mb-0" style="font-weight: 700; color: #43e97b;">{{ number_format($affiliateStats['conversion_rate'], 1) }}%</h5>
+                                    </div>
+                                    <i class="fas fa-percentage fa-2x text-muted"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="p-3" style="background: linear-gradient(135deg, #f093fb15 0%, #f5576c15 100%); border-radius: 12px; border-left: 4px solid #f093fb;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <small class="text-muted d-block mb-1">Floor Plans Worked</small>
+                                        <h5 class="mb-0" style="font-weight: 700; color: #f093fb;">{{ number_format($affiliateStats['unique_floor_plans']) }}</h5>
+                                    </div>
+                                    <i class="fas fa-map fa-2x text-muted"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timeline -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="p-3" style="background: #f8f9fa; border-radius: 12px;">
+                                <small class="text-muted d-block mb-2"><i class="fas fa-calendar-check mr-1"></i>First Booking</small>
+                                <strong>
+                                    @if($affiliateStats['first_booking_at'])
+                                        {{ \Carbon\Carbon::parse($affiliateStats['first_booking_at'])->format('M d, Y') }}
+                                    @else
+                                        <span class="text-muted">No bookings yet</span>
+                                    @endif
+                                </strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="p-3" style="background: #f8f9fa; border-radius: 12px;">
+                                <small class="text-muted d-block mb-2"><i class="fas fa-clock mr-1"></i>Last Booking</small>
+                                <strong>
+                                    @if($affiliateStats['last_booking_at'])
+                                        {{ \Carbon\Carbon::parse($affiliateStats['last_booking_at'])->format('M d, Y') }}
+                                    @else
+                                        <span class="text-muted">No bookings yet</span>
+                                    @endif
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Bookings -->
+                    @if($affiliateStats['recent_bookings']->count() > 0)
+                    <div class="mt-4">
+                        <h6 class="mb-3" style="font-weight: 600; color: #495057;">
+                            <i class="fas fa-history mr-2"></i>Recent Affiliate Bookings
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead style="background: #f8f9fa;">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Client</th>
+                                        <th>Floor Plan</th>
+                                        <th class="text-right">Revenue</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($affiliateStats['recent_bookings'] as $booking)
+                                    <tr>
+                                        <td>{{ \Carbon\Carbon::parse($booking->date_book)->format('M d, Y') }}</td>
+                                        <td>
+                                            @if($booking->client)
+                                                {{ $booking->client->company ?? $booking->client->name }}
+                                            @else
+                                                Client #{{ $booking->clientid }}
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($booking->floorPlan)
+                                                {{ $booking->floorPlan->name }}
+                                            @else
+                                                N/A
+                                            @endif
+                                        </td>
+                                        <td class="text-right">
+                                            <strong class="text-success">
+                                                ${{ number_format($booking->booths()->sum('price') ?? 0, 2) }}
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
     <div class="row">
         <!-- User Information -->

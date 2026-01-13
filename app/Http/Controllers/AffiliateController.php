@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Book;
 use App\Models\FloorPlan;
+use App\Models\AffiliateClick;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -80,6 +81,50 @@ class AffiliateController extends Controller
                 ];
             });
             
+            // Get affiliate clicks
+            $affiliateClicksQuery = AffiliateClick::where('affiliate_user_id', $user->id);
+            if ($floorPlanId) {
+                $affiliateClicksQuery->where('floor_plan_id', $floorPlanId);
+            }
+            if ($dateFrom) {
+                $affiliateClicksQuery->where('created_at', '>=', $dateFrom);
+            }
+            if ($dateTo) {
+                $affiliateClicksQuery->where('created_at', '<=', $dateTo . ' 23:59:59');
+            }
+            $totalClicks = $affiliateClicksQuery->count();
+            
+            // Calculate conversion rate
+            $conversionRate = $totalClicks > 0 ? round(($totalBookings / $totalClicks) * 100, 2) : 0;
+            
+            // Get activity timeline (bookings and clicks combined, sorted by date)
+            $activities = collect();
+            
+            // Add bookings as activities
+            foreach ($affiliateBookings as $booking) {
+                $activities->push([
+                    'type' => 'booking',
+                    'date' => $booking->date_book,
+                    'booking' => $booking,
+                    'revenue' => $booking->booths()->sum('price') ?? 0,
+                ]);
+            }
+            
+            // Add clicks as activities
+            $clicks = $affiliateClicksQuery->orderBy('created_at', 'desc')->get();
+            foreach ($clicks as $click) {
+                $activities->push([
+                    'type' => 'click',
+                    'date' => $click->created_at,
+                    'click' => $click,
+                ]);
+            }
+            
+            // Sort by date descending
+            $activities = $activities->sortByDesc(function($activity) {
+                return $activity['date'];
+            })->values();
+            
             return [
                 'user' => $user,
                 'total_bookings' => $totalBookings,
@@ -90,7 +135,10 @@ class AffiliateController extends Controller
                 'last_booking_at' => $lastBookingAt,
                 'first_booking_at' => $firstBookingAt,
                 'bookings_by_floor_plan' => $bookingsByFloorPlan,
-                'recent_bookings' => $affiliateBookings->sortByDesc('date_book')->take(5)
+                'recent_bookings' => $affiliateBookings->sortByDesc('date_book')->take(5),
+                'total_clicks' => $totalClicks,
+                'conversion_rate' => $conversionRate,
+                'activities' => $activities->take(20), // Last 20 activities
             ];
         })->filter(function($data) use ($userId) {
             // Filter by user if specified
@@ -142,7 +190,7 @@ class AffiliateController extends Controller
 
         // Get affiliate bookings
         $bookingsQuery = Book::where('affiliate_user_id', $user->id)
-            ->with(['client', 'floorPlan', 'user', 'booths']);
+            ->with(['client', 'floorPlan', 'user', 'affiliateUser']);
         
         if ($floorPlanId) {
             $bookingsQuery->where('floor_plan_id', $floorPlanId);

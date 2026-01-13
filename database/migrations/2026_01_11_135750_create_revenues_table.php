@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('revenues', function (Blueprint $table) {
+        if (!Schema::hasTable('revenues')) {
+            Schema::create('revenues', function (Blueprint $table) {
             $table->id();
             $table->string('title', 255);
             $table->text('description')->nullable();
@@ -39,7 +40,8 @@ return new class extends Migration
             $table->foreign('floor_plan_id')->references('id')->on('floor_plans')->onDelete('set null');
             $table->foreign('booking_id')->references('id')->on('book')->onDelete('set null');
             $table->foreign('created_by')->references('id')->on('user')->onDelete('set null');
-        });
+            });
+        }
     }
 
     /**

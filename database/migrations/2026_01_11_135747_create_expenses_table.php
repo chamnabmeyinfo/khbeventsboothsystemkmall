@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('expenses', function (Blueprint $table) {
+        if (!Schema::hasTable('expenses')) {
+            Schema::create('expenses', function (Blueprint $table) {
             $table->id();
             $table->string('title', 255);
             $table->text('description')->nullable();
@@ -40,7 +41,8 @@ return new class extends Migration
             $table->foreign('booking_id')->references('id')->on('book')->onDelete('set null');
             $table->foreign('created_by')->references('id')->on('user')->onDelete('set null');
             $table->foreign('approved_by')->references('id')->on('user')->onDelete('set null');
-        });
+            });
+        }
     }
 
     /**

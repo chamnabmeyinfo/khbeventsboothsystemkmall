@@ -7,6 +7,7 @@ use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -105,7 +106,56 @@ class UserController extends Controller
     public function show(User $user)
     {
         $user->load(['role', 'role.permissions']);
-        return view('users.show', compact('user'));
+        
+        // Calculate affiliate/commission statistics
+        $affiliateStats = $this->calculateAffiliateStats($user);
+        
+        return view('users.show', compact('user', 'affiliateStats'));
+    }
+
+    /**
+     * Calculate affiliate statistics for a user
+     */
+    private function calculateAffiliateStats(User $user)
+    {
+        // Get affiliate bookings (bookings where this user is the affiliate)
+        $affiliateBookings = \App\Models\Book::where('affiliate_user_id', $user->id)->get();
+        
+        // Calculate total revenue from affiliate bookings
+        $totalRevenue = $affiliateBookings->sum(function($booking) {
+            $booths = $booking->booths();
+            return $booths->sum('price') ?? 0;
+        });
+        
+        // Calculate statistics
+        $stats = [
+            'total_bookings' => $affiliateBookings->count(),
+            'total_revenue' => $totalRevenue,
+            'unique_clients' => $affiliateBookings->pluck('clientid')->unique()->count(),
+            'unique_floor_plans' => $affiliateBookings->pluck('floor_plan_id')->unique()->count(),
+            'avg_booking_value' => $affiliateBookings->count() > 0 ? round($totalRevenue / $affiliateBookings->count(), 2) : 0,
+            'last_booking_at' => $affiliateBookings->max('date_book'),
+            'first_booking_at' => $affiliateBookings->min('date_book'),
+            'total_clicks' => \App\Models\AffiliateClick::where('affiliate_user_id', $user->id)->count(),
+            'conversion_rate' => $affiliateBookings->count() > 0 && \App\Models\AffiliateClick::where('affiliate_user_id', $user->id)->count() > 0 
+                ? round(($affiliateBookings->count() / \App\Models\AffiliateClick::where('affiliate_user_id', $user->id)->count()) * 100, 2) 
+                : 0,
+        ];
+        
+        // Get bookings by month (last 6 months)
+        $bookingsByMonth = \App\Models\Book::where('affiliate_user_id', $user->id)
+            ->where('date_book', '>=', now()->subMonths(6))
+            ->select(DB::raw('DATE_FORMAT(date_book, "%Y-%m") as month'), DB::raw('count(*) as count'))
+            ->groupBy('month')
+            ->orderBy('month', 'asc')
+            ->get();
+        
+        $stats['bookings_by_month'] = $bookingsByMonth;
+        
+        // Get recent bookings (last 5)
+        $stats['recent_bookings'] = $affiliateBookings->sortByDesc('date_book')->take(5);
+        
+        return $stats;
     }
 
     /**
