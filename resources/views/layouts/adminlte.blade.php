@@ -552,6 +552,11 @@
             </li>
             @else
             <li class="nav-item d-none d-sm-inline-block">
+                <a href="{{ route('floor-plans.index') }}" class="nav-link">
+                    <i class="fas fa-map mr-2"></i>Floor Plans
+                </a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
                 <a href="{{ route('login') }}" class="nav-link">Login</a>
             </li>
             @endauth
@@ -989,6 +994,23 @@
                         </a>
                     </li>
                     @endif
+                    @else
+                    {{-- Public User Menu --}}
+                    <li class="nav-header">
+                        <i class="fas fa-map"></i>Public Access
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('floor-plans.index') }}" class="nav-link {{ request()->routeIs('floor-plans.index') || request()->routeIs('floor-plans.show') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-map"></i>
+                            <p>Browse Floor Plans</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('login') }}" class="nav-link">
+                            <i class="nav-icon fas fa-sign-in-alt"></i>
+                            <p>Login</p>
+                        </a>
+                    </li>
                     @endauth
                 </ul>
             </nav>

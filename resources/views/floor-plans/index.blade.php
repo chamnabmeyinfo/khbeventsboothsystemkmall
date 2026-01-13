@@ -1,8 +1,8 @@
 @extends('layouts.adminlte')
 
-@section('title', 'Floor Plan Management')
-@section('page-title', 'Floor Plan Management')
-@section('breadcrumb', 'Operations / Floor Plans')
+@section('title', @auth ? 'Floor Plan Management' : 'Browse Floor Plans')
+@section('page-title', @auth ? 'Floor Plan Management' : 'Browse Floor Plans')
+@section('breadcrumb', @auth ? 'Operations / Floor Plans' : 'Floor Plans')
 
 @push('styles')
 <style>
@@ -103,12 +103,21 @@
         <div class="card-body">
             <div class="row align-items-center">
                 <div class="col-md-6">
+                    @auth
                     <a href="{{ route('floor-plans.create') }}" class="btn btn-primary">
                         <i class="fas fa-plus mr-1"></i>Create Floor Plan
                     </a>
                     <a href="{{ route('booths.index') }}" class="btn btn-info">
                         <i class="fas fa-map-marked-alt mr-1"></i>View Booths
                     </a>
+                    @else
+                    <div class="d-flex align-items-center">
+                        <h5 class="mb-0 mr-3"><i class="fas fa-map mr-2"></i>Browse Floor Plans</h5>
+                        <a href="{{ route('login') }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-sign-in-alt mr-1"></i>Login to Manage
+                        </a>
+                    </div>
+                    @endauth
                 </div>
                 <div class="col-md-6">
                     <form method="GET" action="{{ route('floor-plans.index') }}" class="d-flex">
@@ -344,6 +353,7 @@
                         <a href="{{ route('floor-plans.public', $floorPlan->id) }}" class="btn btn-success" title="Public View (No Login Required)" target="_blank" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border: none;">
                             <i class="fas fa-globe mr-1"></i>Public View
                         </a>
+                        @auth
                         <a href="{{ route('booths.index', ['floor_plan_id' => $floorPlan->id]) }}" class="btn btn-primary" title="View Floor Plan Canvas">
                             <i class="fas fa-eye mr-1"></i>View Canvas
                         </a>
@@ -353,6 +363,7 @@
                         <a href="{{ route('floor-plans.show', $floorPlan) }}" class="btn btn-secondary" title="View Details">
                             <i class="fas fa-info-circle"></i>
                         </a>
+                        @if(auth()->user()->hasPermission('floor-plans.edit') || auth()->user()->isAdmin())
                         <a href="{{ route('floor-plans.edit', $floorPlan) }}" class="btn btn-warning" title="Edit Floor Plan">
                             <i class="fas fa-edit"></i>
                         </a>
@@ -370,13 +381,19 @@
                                 <i class="fas fa-copy"></i>
                             </button>
                         </form>
-                        @if(!$floorPlan->is_default)
+                        @if(!$floorPlan->is_default && (auth()->user()->hasPermission('floor-plans.delete') || auth()->user()->isAdmin()))
                             <button type="button" class="btn btn-danger" 
                                     onclick="deleteFloorPlan({{ $floorPlan->id }}, '{{ addslashes($floorPlan->name) }}', {{ $floorPlan->booths_count }})"
                                     title="Delete Floor Plan">
                                 <i class="fas fa-trash"></i>
                             </button>
                         @endif
+                        @endif
+                        @else
+                        <a href="{{ route('login') }}" class="btn btn-primary" title="Login to View Canvas">
+                            <i class="fas fa-sign-in-alt mr-1"></i>Login to View
+                        </a>
+                        @endauth
                     </div>
                 </div>
             </div>
@@ -387,10 +404,16 @@
                 <div class="card-body text-center py-5">
                     <i class="fas fa-map fa-3x text-muted mb-3"></i>
                     <h5>No Floor Plans Found</h5>
-                    <p class="text-muted">Create your first floor plan to get started.</p>
+                    <p class="text-muted">@auth Create your first floor plan to get started. @else No floor plans available at this time. @endauth</p>
+                    @auth
                     <a href="{{ route('floor-plans.create') }}" class="btn btn-primary">
                         <i class="fas fa-plus mr-1"></i>Create Floor Plan
                     </a>
+                    @else
+                    <a href="{{ route('login') }}" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt mr-1"></i>Login
+                    </a>
+                    @endauth
                 </div>
             </div>
         </div>

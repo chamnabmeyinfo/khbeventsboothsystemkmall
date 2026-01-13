@@ -51,14 +51,20 @@ Route::prefix('client-portal')->name('client-portal.')->group(function () {
 
 // Public Routes (No Authentication Required)
 Route::get('/floor-plans/{id}/public', [\App\Http\Controllers\BoothController::class, 'publicView'])->name('floor-plans.public');
+Route::get('/floor-plans', [FloorPlanController::class, 'index'])->name('floor-plans.index');
+Route::get('/floor-plans/{floorPlan}', [FloorPlanController::class, 'show'])->name('floor-plans.show');
 
 // Protected Routes
 Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Floor Plans (Floor Plan Management)
-    Route::resource('floor-plans', FloorPlanController::class);
+    // Floor Plans (Floor Plan Management - Create, Edit, Delete require auth)
+    Route::get('/floor-plans/create', [FloorPlanController::class, 'create'])->name('floor-plans.create');
+    Route::post('/floor-plans', [FloorPlanController::class, 'store'])->name('floor-plans.store');
+    Route::get('/floor-plans/{floorPlan}/edit', [FloorPlanController::class, 'edit'])->name('floor-plans.edit');
+    Route::put('/floor-plans/{floorPlan}', [FloorPlanController::class, 'update'])->name('floor-plans.update');
+    Route::delete('/floor-plans/{floorPlan}', [FloorPlanController::class, 'destroy'])->name('floor-plans.destroy');
     Route::post('/floor-plans/{id}/set-default', [FloorPlanController::class, 'setDefault'])->name('floor-plans.set-default');
     Route::post('/floor-plans/{id}/duplicate', [FloorPlanController::class, 'duplicate'])->name('floor-plans.duplicate');
 
