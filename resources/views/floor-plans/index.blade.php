@@ -1,8 +1,14 @@
 @extends('layouts.adminlte')
 
-@section('title', @auth ? 'Floor Plan Management' : 'Browse Floor Plans')
-@section('page-title', @auth ? 'Floor Plan Management' : 'Browse Floor Plans')
-@section('breadcrumb', @auth ? 'Operations / Floor Plans' : 'Floor Plans')
+@php
+    $isAuthenticated = auth()->check();
+    $pageTitle = $isAuthenticated ? 'Floor Plan Management' : 'Browse Floor Plans';
+    $breadcrumb = $isAuthenticated ? 'Operations / Floor Plans' : 'Floor Plans';
+@endphp
+
+@section('title', $pageTitle)
+@section('page-title', $pageTitle)
+@section('breadcrumb', $breadcrumb)
 
 @push('styles')
 <style>
