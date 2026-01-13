@@ -49,6 +49,9 @@ Route::prefix('client-portal')->name('client-portal.')->group(function () {
     });
 });
 
+// Public Routes (No Authentication Required)
+Route::get('/floor-plans/{id}/public', [\App\Http\Controllers\BoothController::class, 'publicView'])->name('floor-plans.public');
+
 // Protected Routes
 Route::middleware(['auth'])->group(function () {
     // Dashboard

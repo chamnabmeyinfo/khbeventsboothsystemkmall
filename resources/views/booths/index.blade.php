@@ -3724,7 +3724,9 @@ const FloorPlanDesigner = {
                                         });
                                     }
                                     // AUTOMATICALLY fit canvas to view after resize
-                                    self.fitCanvasToView(false);
+                                    setTimeout(function() {
+                                        self.fitCanvasToView(false);
+                                    }, 100);
                                 }, 100);
                             }
                         }
@@ -3809,10 +3811,10 @@ const FloorPlanDesigner = {
             }, 500); // Small delay to ensure all booths are loaded
             
             // Auto-fit canvas to show entire image after positions are loaded (early)
-        setTimeout(function() {
-            if (self.panzoomInstance) {
-                self.fitCanvasToView(false);
-            }
+            setTimeout(function() {
+                if (self.panzoomInstance) {
+                    self.fitCanvasToView(false);
+                }
             }, 300);
 
             // Bind Add Zone button (main)
@@ -3849,28 +3851,8 @@ const FloorPlanDesigner = {
                 const container = self.getElement('printContainer');
                 
                 if (canvas && container) {
-                    // Check if image is loaded
-                    const floorplanImg = self.getElement('floorplanImageElement');
-                    const bgImage = canvas.style.backgroundImage;
-                    const hasImage = (bgImage && bgImage !== 'none' && bgImage !== '') || (floorplanImg && floorplanImg.complete);
-                    
-                    if (hasImage || canvas.offsetWidth > 0) {
-                        // Image is loaded or canvas has size - fit to view
-                        self.fitCanvasToView(false);
-                    } else {
-                        // Image not loaded yet, wait for it
-                        if (floorplanImg) {
-                            floorplanImg.onload = function() {
-                                self.fitCanvasToView(false);
-                            };
-                        }
-                        // Also try after a delay in case onload already fired
-                        setTimeout(function() {
-                            if (canvas && container && self.panzoomInstance) {
-                                self.fitCanvasToView(false);
-                            }
-                        }, 500);
-                    }
+                    // Always fit canvas to view - no conditions
+                    self.fitCanvasToView(false);
                 } else {
                     // Elements not ready, wait a bit more
                     setTimeout(fitOnLoad, 200);
@@ -3881,9 +3863,41 @@ const FloorPlanDesigner = {
             }
         };
         
-        // Start fitting early - reduced delay for faster loading
-        // Start checking immediately and retry if needed
+        // Start fitting immediately and retry if needed
         setTimeout(fitOnLoad, 100);
+        
+        // Also fit after image loads (if there's an image)
+        const floorplanImg = self.getElement('floorplanImageElement');
+        if (floorplanImg) {
+            if (floorplanImg.complete) {
+                // Image already loaded, fit now
+                setTimeout(function() {
+                    if (self.panzoomInstance) {
+                        self.fitCanvasToView(false);
+                    }
+                }, 300);
+            } else {
+                // Wait for image to load
+                floorplanImg.addEventListener('load', function() {
+                    setTimeout(function() {
+                        if (self.panzoomInstance) {
+                            self.fitCanvasToView(false);
+                        }
+                    }, 300);
+                }, { once: true });
+            }
+        }
+        
+        // Fit canvas on window resize (debounced) - separate from the resize handler above
+        let fitResizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(fitResizeTimeout);
+            fitResizeTimeout = setTimeout(function() {
+                if (self.panzoomInstance) {
+                    self.fitCanvasToView(false);
+                }
+            }, 300);
+        });
     },
     
     // Setup Drag and Drop
@@ -11099,19 +11113,15 @@ const FloorPlanDesigner = {
                 // Apply saved dimensions
                 self.setCanvasSize(self.canvasWidth, self.canvasHeight);
                 
-                // Restore zoom and pan if available
-                if (settings.zoom_level && self.panzoomInstance) {
-                    self.panzoomInstance.zoom(settings.zoom_level);
-                }
-                if (settings.pan_x !== undefined && settings.pan_y !== undefined && self.panzoomInstance) {
-                    // Use panzoom's move method instead of moveTo (which doesn't exist)
-                    if (self.panzoomInstance.move) {
-                        self.panzoomInstance.move(settings.pan_x, settings.pan_y);
-                    } else if (self.panzoomInstance.setTransform) {
-                        const currentScale = self.panzoomInstance.getScale ? self.panzoomInstance.getScale() : 1;
-                        self.panzoomInstance.setTransform({ x: settings.pan_x, y: settings.pan_y, scale: currentScale });
+                // CRITICAL: Don't restore zoom/pan from settings - always fit to view for consistency
+                // This ensures all users see the same canvas layout regardless of who last saved settings
+                // Instead, always fit canvas to view after loading settings
+                setTimeout(function() {
+                    if (self.panzoomInstance) {
+                        // Always fit canvas to view to ensure consistent display for all users
+                        self.fitCanvasToView(false);
                     }
-                }
+                }, 200);
                 
                 // CRITICAL: Restore floorplan image from floor_plans.floor_image (source of truth)
                 // The settings.floorplan_image comes from floor_plans.floor_image (prioritized in backend)
@@ -11216,56 +11226,54 @@ const FloorPlanDesigner = {
             }
         })
         .catch(function(error) {
-            console.warn('Failed to load canvas settings from database, using localStorage fallback:', error);
-            // Fallback to localStorage
-            const savedWidth = localStorage.getItem('canvasWidth');
-            const savedHeight = localStorage.getItem('canvasHeight');
-            const savedResolution = localStorage.getItem('canvasResolution');
-            const savedGridSize = localStorage.getItem('gridSize');
-            const savedGridEnabled = localStorage.getItem('gridEnabled');
-            const savedSnapEnabled = localStorage.getItem('snapEnabled');
+            console.warn('Failed to load canvas settings from database, using defaults:', error);
+            // CRITICAL: Don't use localStorage for canvas settings - it causes different users to see different layouts
+            // Always use database values or floor plan defaults to ensure consistency across all users
+            // Only use localStorage for booth default settings (width, height, etc.) which are user preferences
             
-            if (savedWidth) {
-                self.canvasWidth = parseInt(savedWidth);
+            // Use floor plan dimensions from PHP if available, otherwise use defaults
+            const floorPlanWidth = @json(isset($canvasWidth) ? (int)$canvasWidth : null);
+            const floorPlanHeight = @json(isset($canvasHeight) ? (int)$canvasHeight : null);
+            
+            if (floorPlanWidth && floorPlanHeight) {
+                self.canvasWidth = floorPlanWidth;
+                self.canvasHeight = floorPlanHeight;
+            } else {
+                // Use defaults
+                self.canvasWidth = 1200;
+                self.canvasHeight = 800;
             }
-            if (savedHeight) {
-                self.canvasHeight = parseInt(savedHeight);
-            }
-            if (savedResolution) {
-                self.canvasResolution = parseInt(savedResolution);
-            }
-            if (savedGridSize) {
-                self.setGridSize(parseInt(savedGridSize));
-            }
-            if (savedGridEnabled !== null) {
-                self.gridEnabled = savedGridEnabled === 'true';
-                // Update UI
-                const gridOverlay = $('#gridOverlay');
-                const btnGrid = $('#btnGrid');
-                if (self.gridEnabled) {
-                    gridOverlay.addClass('visible');
-                    btnGrid.addClass('active');
-                } else {
-                    gridOverlay.removeClass('visible');
-                    btnGrid.removeClass('active');
-                }
-            }
-            if (savedSnapEnabled !== null) {
-                self.snapEnabled = savedSnapEnabled === 'true';
-                // Update UI
-                const btnSnap = $('#btnSnap');
-                btnSnap.toggleClass('active', self.snapEnabled);
-                if (self.snapEnabled) {
-                    btnSnap.attr('title', 'Snap to Grid: ON (Click to disable)').css('background', 'rgba(40, 167, 69, 0.3)');
-                } else {
-                    btnSnap.attr('title', 'Snap to Grid: OFF (Click to enable)').css('background', 'rgba(108, 117, 125, 0.3)');
-                }
+            
+            self.canvasResolution = 300;
+            self.setGridSize(10);
+            self.gridEnabled = true;
+            self.snapEnabled = false;
+            
+            // Update UI
+            const gridOverlay = $('#gridOverlay');
+            const btnGrid = $('#btnGrid');
+            gridOverlay.addClass('visible');
+            btnGrid.addClass('active');
+            
+            // Update UI for snap to grid
+            const btnSnap = $('#btnSnap');
+            btnSnap.toggleClass('active', self.snapEnabled);
+            if (self.snapEnabled) {
+                btnSnap.attr('title', 'Snap to Grid: ON (Click to disable)').css('background', 'rgba(40, 167, 69, 0.3)');
+            } else {
+                btnSnap.attr('title', 'Snap to Grid: OFF (Click to enable)').css('background', 'rgba(108, 117, 125, 0.3)');
             }
             
             // Apply saved dimensions
-            if (savedWidth && savedHeight) {
-                self.setCanvasSize(self.canvasWidth, self.canvasHeight);
-            }
+            self.setCanvasSize(self.canvasWidth, self.canvasHeight);
+            
+            // CRITICAL: Always fit canvas to view for consistency across all users
+            // Don't restore zoom/pan from localStorage - it causes different users to see different layouts
+            setTimeout(function() {
+                if (self.panzoomInstance) {
+                    self.fitCanvasToView(false);
+                }
+            }, 200);
         });
         
         // Load upload size limit from localStorage (not critical for persistence)
@@ -11276,6 +11284,7 @@ const FloorPlanDesigner = {
         
         // Prevent canvas from resizing when browser window resizes
         // This ensures booths stay in their fixed positions
+        // Also refit canvas to viewport on window resize
         let resizeTimeout;
         window.addEventListener('resize', function() {
             // Debounce resize events
@@ -11290,6 +11299,13 @@ const FloorPlanDesigner = {
                     canvas.style.minHeight = self.canvasHeight + 'px';
                     canvas.style.maxWidth = self.canvasWidth + 'px';
                     canvas.style.maxHeight = self.canvasHeight + 'px';
+                    
+                    // Always refit canvas to viewport after window resize
+                    if (self.panzoomInstance) {
+                        setTimeout(function() {
+                            self.fitCanvasToView(false);
+                        }, 100);
+                    }
                     // Ensure background image fills entire canvas and positioned at top-left
                     canvas.style.backgroundSize = '100% 100%';
                     canvas.style.backgroundRepeat = 'no-repeat';
@@ -11505,9 +11521,12 @@ const FloorPlanDesigner = {
             window.boothsData = @json($boothsForJS);
         }
         
-        // Use $boothsForJS which has all properties including appearance and positions
+        // CRITICAL: Always use database values from $boothsForJS - never use localStorage for positions
+        // This ensures all users see the exact same booth arrangement as defined in the database
         const booths = @json($boothsForJS);
         const self = this;
+        
+        console.log('[Load Positions] Loading booth positions from database for', booths.length, 'booths');
         
         // Clear any existing booths on canvas first to prevent duplicates
         // This ensures a clean state before loading from database

@@ -341,13 +341,16 @@
                         </div>
                     </div>
                     <div class="btn-group btn-group-sm w-100" role="group">
+                        <a href="{{ route('floor-plans.public', $floorPlan->id) }}" class="btn btn-success" title="Public View (No Login Required)" target="_blank" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border: none;">
+                            <i class="fas fa-globe mr-1"></i>Public View
+                        </a>
                         <a href="{{ route('booths.index', ['floor_plan_id' => $floorPlan->id]) }}" class="btn btn-primary" title="View Floor Plan Canvas">
                             <i class="fas fa-eye mr-1"></i>View Canvas
                         </a>
-                        <a href="{{ route('books.create', ['floor_plan_id' => $floorPlan->id]) }}" class="btn btn-success" title="Book Booths for this Floor Plan">
+                        <a href="{{ route('books.create', ['floor_plan_id' => $floorPlan->id]) }}" class="btn btn-info" title="Book Booths for this Floor Plan">
                             <i class="fas fa-calendar-plus mr-1"></i>Book
                         </a>
-                        <a href="{{ route('floor-plans.show', $floorPlan) }}" class="btn btn-info" title="View Details">
+                        <a href="{{ route('floor-plans.show', $floorPlan) }}" class="btn btn-secondary" title="View Details">
                             <i class="fas fa-info-circle"></i>
                         </a>
                         <a href="{{ route('floor-plans.edit', $floorPlan) }}" class="btn btn-warning" title="Edit Floor Plan">

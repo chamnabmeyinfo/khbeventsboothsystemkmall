@@ -1885,5 +1885,80 @@ class BoothController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Public view of floor plan (no authentication required, no editing tools)
+     */
+    public function publicView($id)
+    {
+        // Get floor plan
+        $floorPlan = FloorPlan::where('is_active', true)->findOrFail($id);
+        
+        // Get all booths for this floor plan
+        $booths = Booth::where('floor_plan_id', $id)
+            ->with(['client', 'category', 'subCategory'])
+            ->orderBy('booth_number', 'asc')
+            ->get();
+        
+        // Prepare booth data for JavaScript
+        $boothsForJS = $booths->map(function($booth) {
+            return [
+                'id' => $booth->id,
+                'booth_number' => $booth->booth_number,
+                'company' => $booth->client ? $booth->client->company : '',
+                'category' => $booth->category ? $booth->category->name : '',
+                'sub_category' => $booth->subCategory ? $booth->subCategory->name : '',
+                'status' => $booth->status,
+                'price' => $booth->price,
+                'position_x' => $booth->position_x,
+                'position_y' => $booth->position_y,
+                'width' => $booth->width,
+                'height' => $booth->height,
+                'rotation' => $booth->rotation,
+                'z_index' => $booth->z_index,
+                'font_size' => $booth->font_size,
+                'border_width' => $booth->border_width,
+                'border_radius' => $booth->border_radius,
+                'opacity' => $booth->opacity,
+                'background_color' => $booth->background_color,
+                'border_color' => $booth->border_color,
+                'text_color' => $booth->text_color,
+                'font_weight' => $booth->font_weight,
+                'font_family' => $booth->font_family,
+                'text_align' => $booth->text_align,
+                'box_shadow' => $booth->box_shadow,
+            ];
+        })->values();
+        
+        // Get canvas settings
+        $canvasWidth = $floorPlan->canvas_width ?? 1200;
+        $canvasHeight = $floorPlan->canvas_height ?? 800;
+        $floorImage = $floorPlan->floor_image;
+        
+        // Generate absolute URL for image
+        $floorImageUrl = null;
+        $floorImageExists = false;
+        if ($floorImage) {
+            $fullPath = public_path($floorImage);
+            $floorImageExists = file_exists($fullPath) && is_readable($fullPath);
+            if ($floorImageExists) {
+                $floorImageUrl = asset($floorImage);
+                if (strpos($floorImageUrl, 'http') !== 0) {
+                    $floorImageUrl = url($floorImage);
+                }
+            }
+        }
+        
+        return view('booths.public-view', compact(
+            'floorPlan',
+            'booths',
+            'boothsForJS',
+            'canvasWidth',
+            'canvasHeight',
+            'floorImage',
+            'floorImageUrl',
+            'floorImageExists'
+        ));
+    }
 }
 
