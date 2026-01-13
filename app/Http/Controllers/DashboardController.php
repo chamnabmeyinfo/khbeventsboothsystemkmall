@@ -87,139 +87,167 @@ class DashboardController extends Controller
                 $reservedBooths = (int) ($boothStats->reserved ?? 0);
                 $confirmedBooths = (int) ($boothStats->confirmed ?? 0);
                 $paidBooths = (int) ($boothStats->paid ?? 0);
-            
-            // Get all users
-            // #region agent log
-            DebugLogger::log([], 'DashboardController.php:87', 'Fetching users list');
-            // #endregion
-            
-            try {
-                $users = User::orderBy('username')->get();
+                
+                // Get all users
                 // #region agent log
-                DebugLogger::log(['count'=>count($users)], 'DashboardController.php:93', 'Users fetched');
+                DebugLogger::log([], 'DashboardController.php:87', 'Fetching users list');
                 // #endregion
-            } catch (\Exception $e) {
-                // #region agent log
-                DebugLogger::log(['error'=>$e->getMessage()], 'DashboardController.php:97', 'Failed to fetch users');
-                // #endregion
-                $users = collect([]);
-            }
-            
-            // Optimized: Get all user booth statistics in one query instead of N+1 queries
-            $userStats = [];
-            if ($users->isNotEmpty()) {
+                
                 try {
-                    // Get all booth counts grouped by user in one query
-                    $boothCountsByUser = Booth::select('userid', 'status', DB::raw('count(*) as count'))
-                        ->whereIn('status', [Booth::STATUS_RESERVED, Booth::STATUS_CONFIRMED, Booth::STATUS_PAID])
-                        ->whereIn('userid', $users->pluck('id'))
-                        ->groupBy('userid', 'status')
-                        ->get()
-                        ->groupBy('userid');
-                    
-                    // Build user stats array with optimized data
-                    foreach ($users as $usr) {
-                        try {
-                            $userBoothCounts = $boothCountsByUser->get($usr->id, collect());
-                            
-                            $reserveCount = $userBoothCounts->firstWhere('status', Booth::STATUS_RESERVED);
-                            $bookingCount = $userBoothCounts->firstWhere('status', Booth::STATUS_CONFIRMED);
-                            $paidCount = $userBoothCounts->firstWhere('status', Booth::STATUS_PAID);
-                            
-                            $userStats[] = [
-                                'id' => $usr->id,
-                                'username' => $usr->username,
-                                'type' => ($usr->type ?? '2') == '1' || ($usr->type ?? '2') == 1 ? 'Admin' : 'Sale',
-                                'status' => $usr->status ?? 'N/A',
-                                'reserve' => $reserveCount ? (int) $reserveCount->count : 0,
-                                'booking' => $bookingCount ? (int) $bookingCount->count : 0,
-                                'paid' => $paidCount ? (int) $paidCount->count : 0,
-                                'last_login' => $usr->last_login ?? null,
-                            ];
-                        } catch (\Exception $e) {
-                            // #region agent log
-                            DebugLogger::log(['user_id'=>$usr->id ?? 'N/A','error'=>$e->getMessage()], 'DashboardController.php:124', 'Error processing user stats');
-                            // #endregion
-                        }
-                    }
-                } catch (\Exception $e) {
-                    // Fallback to original method if optimized query fails
+                    $users = User::orderBy('username')->get();
                     // #region agent log
-                    DebugLogger::log(['error'=>$e->getMessage()], 'DashboardController.php:127', 'Optimized query failed, using fallback');
+                    DebugLogger::log(['count'=>count($users)], 'DashboardController.php:93', 'Users fetched');
                     // #endregion
-                    foreach ($users as $usr) {
-                        try {
-                            $userStats[] = [
-                                'id' => $usr->id,
-                                'username' => $usr->username,
-                                'type' => ($usr->type ?? '2') == '1' || ($usr->type ?? '2') == 1 ? 'Admin' : 'Sale',
-                                'status' => $usr->status ?? 'N/A',
-                                'reserve' => Booth::where('status', Booth::STATUS_RESERVED)
-                                    ->where('userid', $usr->id)
-                                    ->count(),
-                                'booking' => Booth::where('status', Booth::STATUS_CONFIRMED)
-                                    ->where('userid', $usr->id)
-                                    ->count(),
-                                'paid' => Booth::where('status', Booth::STATUS_PAID)
-                                    ->where('userid', $usr->id)
-                                    ->count(),
-                                'last_login' => $usr->last_login ?? null,
-                            ];
-                        } catch (\Exception $e) {
-                            // #region agent log
-                            DebugLogger::log(['user_id'=>$usr->id ?? 'N/A','error'=>$e->getMessage()], 'DashboardController.php:124', 'Error processing user stats');
-                            // #endregion
+                } catch (\Exception $e) {
+                    // #region agent log
+                    DebugLogger::log(['error'=>$e->getMessage()], 'DashboardController.php:97', 'Failed to fetch users');
+                    // #endregion
+                    $users = collect([]);
+                }
+                
+                // Optimized: Get all user booth statistics in one query instead of N+1 queries
+                $userStats = [];
+                if ($users->isNotEmpty()) {
+                    try {
+                        // Get all booth counts grouped by user in one query
+                        $boothCountsByUser = Booth::select('userid', 'status', DB::raw('count(*) as count'))
+                            ->whereIn('status', [Booth::STATUS_RESERVED, Booth::STATUS_CONFIRMED, Booth::STATUS_PAID])
+                            ->whereIn('userid', $users->pluck('id'))
+                            ->groupBy('userid', 'status')
+                            ->get()
+                            ->groupBy('userid');
+                        
+                        // Build user stats array with optimized data
+                        foreach ($users as $usr) {
+                            try {
+                                $userBoothCounts = $boothCountsByUser->get($usr->id, collect());
+                                
+                                $reserveCount = $userBoothCounts->firstWhere('status', Booth::STATUS_RESERVED);
+                                $bookingCount = $userBoothCounts->firstWhere('status', Booth::STATUS_CONFIRMED);
+                                $paidCount = $userBoothCounts->firstWhere('status', Booth::STATUS_PAID);
+                                
+                                $userStats[] = [
+                                    'id' => $usr->id,
+                                    'username' => $usr->username,
+                                    'type' => ($usr->type ?? '2') == '1' || ($usr->type ?? '2') == 1 ? 'Admin' : 'Sale',
+                                    'status' => $usr->status ?? 'N/A',
+                                    'reserve' => $reserveCount ? (int) $reserveCount->count : 0,
+                                    'booking' => $bookingCount ? (int) $bookingCount->count : 0,
+                                    'paid' => $paidCount ? (int) $paidCount->count : 0,
+                                    'last_login' => $usr->last_login ?? null,
+                                ];
+                            } catch (\Exception $e) {
+                                // #region agent log
+                                DebugLogger::log(['user_id'=>$usr->id ?? 'N/A','error'=>$e->getMessage()], 'DashboardController.php:124', 'Error processing user stats');
+                                // #endregion
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        // Fallback to original method if optimized query fails
+                        // #region agent log
+                        DebugLogger::log(['error'=>$e->getMessage()], 'DashboardController.php:127', 'Optimized query failed, using fallback');
+                        // #endregion
+                        foreach ($users as $usr) {
+                            try {
+                                $userStats[] = [
+                                    'id' => $usr->id,
+                                    'username' => $usr->username,
+                                    'type' => ($usr->type ?? '2') == '1' || ($usr->type ?? '2') == 1 ? 'Admin' : 'Sale',
+                                    'status' => $usr->status ?? 'N/A',
+                                    'reserve' => Booth::where('status', Booth::STATUS_RESERVED)
+                                        ->where('userid', $usr->id)
+                                        ->count(),
+                                    'booking' => Booth::where('status', Booth::STATUS_CONFIRMED)
+                                        ->where('userid', $usr->id)
+                                        ->count(),
+                                    'paid' => Booth::where('status', Booth::STATUS_PAID)
+                                        ->where('userid', $usr->id)
+                                        ->count(),
+                                    'last_login' => $usr->last_login ?? null,
+                                ];
+                            } catch (\Exception $e) {
+                                // #region agent log
+                                DebugLogger::log(['user_id'=>$usr->id ?? 'N/A','error'=>$e->getMessage()], 'DashboardController.php:124', 'Error processing user stats');
+                                // #endregion
+                            }
                         }
                     }
                 }
+            } else {
+                $reservedBooths = Booth::where('status', Booth::STATUS_RESERVED)
+                    ->where('userid', $user->id)
+                    ->count();
+                $confirmedBooths = Booth::where('status', Booth::STATUS_CONFIRMED)
+                    ->where('userid', $user->id)
+                    ->count();
+                $paidBooths = Booth::where('status', Booth::STATUS_PAID)
+                    ->where('userid', $user->id)
+                    ->count();
+                
+                $userStats = [];
             }
-        } else {
-            $reservedBooths = Booth::where('status', Booth::STATUS_RESERVED)
-                ->where('userid', $user->id)
-                ->count();
-            $confirmedBooths = Booth::where('status', Booth::STATUS_CONFIRMED)
-                ->where('userid', $user->id)
-                ->count();
-            $paidBooths = Booth::where('status', Booth::STATUS_PAID)
-                ->where('userid', $user->id)
-                ->count();
-            
-            $userStats = [];
-        }
             
             // Get booking data with client information
-            // Matches the Yii query structure
+            // Simplified query - bookings are directly linked to clients, booths are in JSON
             try {
-                $query = DB::table('client as c')
-                    ->join('booth as bth', 'bth.client_id', '=', 'c.id')
-                    ->join('book as b', 'c.id', '=', 'b.clientid')
+                $query = DB::table('book as b')
+                    ->join('client as c', 'c.id', '=', 'b.clientid')
                     ->join('user as u', 'u.id', '=', 'b.userid')
-                    ->leftJoin('category as cat', 'cat.id', '=', 'bth.category_id')
-                    ->leftJoin('category as sub', 'sub.id', '=', 'bth.sub_category_id')
                     ->select(
-                        'bth.booth_number as booth_name',
-                        'bth.status as booth_status',
+                        'b.id as book_id',
+                        'b.clientid as client_id',
+                        'b.boothid',
+                        'b.date_book',
+                        'b.type as book_type',
+                        'b.floor_plan_id',
                         'c.id as client_id',
                         'c.name as client_name',
                         'c.company as client_company',
                         'c.phone_number as client_phone',
-                        'b.id as book_id',
                         'u.id as user_id',
                         'u.username as user_name',
                         'u.type as user_type',
                         'u.status as user_status',
-                        'u.last_login',
-                        'b.date_book',
-                        'b.type as book_type',
-                        'cat.name as category_name',
-                        'sub.name as sub_category_name'
+                        'u.last_login'
                     );
                 
                 if (!$isAdmin) {
                     $query->where('u.id', $user->id);
                 }
                 
-                $bookingData = $query->orderBy('b.date_book', 'desc')->get();
+                $bookingData = $query->orderBy('b.date_book', 'desc')->limit(50)->get();
+                
+                // Process booking data to include booth information
+                foreach ($bookingData as $booking) {
+                    try {
+                        $boothIds = json_decode($booking->boothid, true) ?? [];
+                        if (!empty($boothIds)) {
+                            $booths = Booth::whereIn('id', $boothIds)
+                                ->leftJoin('category as cat', 'cat.id', '=', 'booth.category_id')
+                                ->leftJoin('category as sub', 'sub.id', '=', 'booth.sub_category_id')
+                                ->select(
+                                    'booth.id',
+                                    'booth.booth_number',
+                                    'booth.status',
+                                    'cat.name as category_name',
+                                    'sub.name as sub_category_name'
+                                )
+                                ->get();
+                            
+                            $booking->booths = $booths;
+                            $booking->booth_count = $booths->count();
+                            $booking->booth_names = $booths->pluck('booth_number')->implode(', ');
+                        } else {
+                            $booking->booths = collect([]);
+                            $booking->booth_count = 0;
+                            $booking->booth_names = 'N/A';
+                        }
+                    } catch (\Exception $e) {
+                        $booking->booths = collect([]);
+                        $booking->booth_count = 0;
+                        $booking->booth_names = 'N/A';
+                    }
+                }
             } catch (\Exception $e) {
                 $bookingData = collect([]);
             }
@@ -432,20 +460,20 @@ class DashboardController extends Controller
                 }
             }
             
-            // Prepare client data in Yii format (matching the exact structure from Yii dashboard)
+            // Prepare client data for display (simplified format)
             $clientData = [];
             try {
                 foreach ($bookingData as $data) {
                     $clientData[] = [
-                        'book_id' => $data->book_id,
-                        'client_name' => $data->client_name,
-                        'company' => $data->client_company,
-                        'phone' => $data->client_phone,
-                        'user_name' => $data->user_name,
-                        'booth_number' => $data->booth_name,
-                        'status' => $data->booth_status,
-                        'category_name' => $data->category_name,
-                        'sub_category_name' => $data->sub_category_name,
+                        'book_id' => $data->book_id ?? null,
+                        'client_id' => $data->client_id ?? null,
+                        'client_name' => $data->client_name ?? 'N/A',
+                        'company' => $data->client_company ?? 'N/A',
+                        'phone' => $data->client_phone ?? 'N/A',
+                        'user_id' => $data->user_id ?? null,
+                        'user_name' => $data->user_name ?? 'N/A',
+                        'booth_count' => $data->booth_count ?? 0,
+                        'booth_names' => $data->booth_names ?? 'N/A',
                         'date_book' => $data->date_book ? \Carbon\Carbon::parse($data->date_book)->format('Y-m-d H:i:s') : 'N/A',
                     ];
                 }

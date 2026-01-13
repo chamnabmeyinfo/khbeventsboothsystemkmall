@@ -28,7 +28,7 @@ yarn-error.log
 /.cursor
 .DS_Store
 Thumbs.db
-
+/chamnab_note/my note.txt
 # Development/Setup files (not needed on server)
 *.ps1
 *.sh

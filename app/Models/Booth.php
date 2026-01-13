@@ -55,6 +55,14 @@ class Booth extends Model
         'font_family',
         'text_align',
         'box_shadow',
+        // Booth information fields
+        'booth_image',
+        'description',
+        'features',
+        'capacity',
+        'area_sqm',
+        'electricity_power',
+        'notes',
     ];
 
     // Status constants

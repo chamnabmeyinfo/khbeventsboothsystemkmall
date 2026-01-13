@@ -283,5 +283,50 @@ class ClientController extends Controller
             return response()->json(['error' => 'Search failed: ' . $e->getMessage()], 500);
         }
     }
+
+    /**
+     * Update cover image position
+     */
+    public function updateCoverPosition(Request $request, $id)
+    {
+        try {
+            $client = Client::findOrFail($id);
+            
+            $validated = $request->validate([
+                'x' => 'required|numeric|min:0|max:100',
+                'y' => 'required|numeric|min:0|max:100',
+                'position' => 'nullable|string|max:50',
+            ]);
+            
+            // Store position as "x% y%" format
+            $position = $validated['position'] ?? ($validated['x'] . '% ' . $validated['y'] . '%');
+            
+            // Check if cover_position column exists, if not store in settings
+            if (\Illuminate\Support\Facades\Schema::hasColumn('client', 'cover_position')) {
+                $client->cover_position = $position;
+                $client->save();
+            } else {
+                // Store in settings table as fallback
+                \App\Models\Setting::setValue(
+                    'client_' . $id . '_cover_position',
+                    $position,
+                    'string',
+                    'Cover image position for client ' . $id
+                );
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Cover position updated successfully.',
+                'position' => $position
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error updating cover position: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating cover position: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
 

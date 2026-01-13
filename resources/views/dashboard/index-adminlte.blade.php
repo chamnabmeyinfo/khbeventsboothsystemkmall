@@ -801,16 +801,32 @@
                         </thead>
                         <tbody>
                             @forelse($userStats ?? [] as $stat)
-                            <tr>
-                                <td><strong>{{ $stat['username'] ?? 'N/A' }}</strong></td>
+                            <tr style="cursor: pointer;" onclick="window.location.href='{{ route('users.show', $stat['id'] ?? '#') }}'">
+                                <td>
+                                    <a href="{{ route('users.show', $stat['id'] ?? '#') }}" style="text-decoration: none; color: inherit; font-weight: 600;">
+                                        {{ $stat['username'] ?? 'N/A' }}
+                                    </a>
+                                </td>
                                 <td>
                                     <span class="badge badge-{{ ($stat['type'] ?? '') == 'Admin' ? 'danger' : 'secondary' }}">
                                         {{ $stat['type'] ?? 'N/A' }}
                                     </span>
                                 </td>
-                                <td>{{ $stat['reserve'] ?? 0 }}</td>
-                                <td>{{ $stat['booking'] ?? 0 }}</td>
-                                <td>{{ $stat['paid'] ?? 0 }}</td>
+                                <td>
+                                    <a href="{{ route('booths.index', ['status' => \App\Models\Booth::STATUS_RESERVED, 'userid' => $stat['id'] ?? null]) }}" style="text-decoration: none; color: inherit;">
+                                        {{ $stat['reserve'] ?? 0 }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="{{ route('booths.index', ['status' => \App\Models\Booth::STATUS_CONFIRMED, 'userid' => $stat['id'] ?? null]) }}" style="text-decoration: none; color: inherit;">
+                                        {{ $stat['booking'] ?? 0 }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="{{ route('booths.index', ['status' => \App\Models\Booth::STATUS_PAID, 'userid' => $stat['id'] ?? null]) }}" style="text-decoration: none; color: inherit;">
+                                        {{ $stat['paid'] ?? 0 }}
+                                    </a>
+                                </td>
                                 <td><strong>{{ ($stat['reserve'] ?? 0) + ($stat['booking'] ?? 0) + ($stat['paid'] ?? 0) }}</strong></td>
                                 <td>
                                     @php

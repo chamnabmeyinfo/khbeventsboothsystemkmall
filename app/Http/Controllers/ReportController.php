@@ -31,7 +31,7 @@ class ReportController extends Controller
 
         // Get bookings in date range
         $bookings = Book::whereBetween('date_book', [$dateFrom, $dateTo])
-            ->with(['client', 'user', 'booths'])
+            ->with(['client', 'user'])
             ->get();
 
         // Calculate revenue

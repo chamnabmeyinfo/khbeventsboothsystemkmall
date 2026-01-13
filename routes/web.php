@@ -107,11 +107,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/booths/create-in-zone/{zoneName}', [BoothController::class, 'createBoothInZone'])->name('booths.create-in-zone');
     Route::post('/booths/delete-in-zone/{zoneName}', [BoothController::class, 'deleteBoothsInZone'])->name('booths.delete-in-zone');
     Route::post('/booths/book-booth', [BoothController::class, 'bookBooth'])->name('booths.book-booth');
+    Route::post('/booths/{id}/upload-image', [BoothController::class, 'uploadBoothImage'])->name('booths.upload-image');
 
     // Clients
     // IMPORTANT: Define specific routes BEFORE resource routes to avoid route conflicts
     Route::get('/clients/search', [ClientController::class, 'search'])->name('clients.search');
     Route::resource('clients', ClientController::class);
+    Route::post('/clients/{id}/cover-position', [ClientController::class, 'updateCoverPosition'])->name('clients.cover-position.update');
     
     // Export Routes
     Route::get('/export', [ExportController::class, 'index'])->name('export.index');
@@ -300,6 +302,7 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('users', UserController::class);
         Route::post('/users/{id}/status', [UserController::class, 'status'])->name('users.status');
         Route::post('/users/{id}/password', [UserController::class, 'updatePassword'])->name('users.password.update');
+        Route::post('/users/{id}/cover-position', [UserController::class, 'updateCoverPosition'])->name('users.cover-position.update');
         
         // Settings
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');

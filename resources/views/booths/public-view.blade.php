@@ -166,9 +166,16 @@
             pointer-events: none;
             z-index: 10000;
             display: none;
-            max-width: 280px;
+            max-width: 320px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.4);
             line-height: 1.6;
+        }
+        
+        .booth-tooltip img {
+            width: 100%;
+            height: auto;
+            border-radius: 6px;
+            margin-bottom: 8px;
         }
         
         .booth-tooltip .tooltip-title {
@@ -514,6 +521,16 @@
                     
                     let tooltipHTML = '<div class="tooltip-title">Booth ' + booth.booth_number + '</div>';
                     
+                    // Show booth image if available
+                    if (booth.booth_image) {
+                        tooltipHTML += '<div style="margin-bottom: 8px; text-align: center;"><img src="' + booth.booth_image + '" alt="Booth Preview" style="max-width: 100%; max-height: 120px; border-radius: 6px; object-fit: cover;"></div>';
+                    }
+                    
+                    // Booth type
+                    if (booth.booth_type) {
+                        tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label">Type:</span><span class="tooltip-value"><strong>' + booth.booth_type + '</strong></span></div>';
+                    }
+                    
                     if (booth.company) {
                         tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label">Company:</span><span class="tooltip-value">' + booth.company + '</span></div>';
                     }
@@ -524,14 +541,38 @@
                         tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label">Price:</span><span class="tooltip-value">$' + parseFloat(booth.price).toLocaleString() + '</span></div>';
                     }
                     
+                    if (booth.area_sqm) {
+                        tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label">Area:</span><span class="tooltip-value">' + parseFloat(booth.area_sqm).toFixed(2) + ' m²</span></div>';
+                    }
+                    
+                    if (booth.capacity) {
+                        tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label">Capacity:</span><span class="tooltip-value">' + booth.capacity + ' people</span></div>';
+                    }
+                    
+                    if (booth.electricity_power) {
+                        tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label">Power:</span><span class="tooltip-value">' + booth.electricity_power + '</span></div>';
+                    }
+                    
                     if (booth.category) {
                         tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label">Category:</span><span class="tooltip-value">' + booth.category + '</span></div>';
+                    }
+                    
+                    if (booth.description) {
+                        const shortDesc = booth.description.length > 60 ? booth.description.substring(0, 60) + '...' : booth.description;
+                        tooltipHTML += '<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 0.8rem; color: rgba(255,255,255,0.9);">' + shortDesc + '</div>';
                     }
                     
                     tooltipHTML += '<div style="margin-top: 8px; font-size: 0.75rem; color: rgba(255,255,255,0.6); text-align: center;"><i class="fas fa-mouse-pointer"></i> Click for details</div>';
                     
                     tooltip.innerHTML = tooltipHTML;
                     tooltip.style.display = 'block';
+                    
+                    // Adjust max-width if image is present
+                    if (booth.booth_image) {
+                        tooltip.style.maxWidth = '320px';
+                    } else {
+                        tooltip.style.maxWidth = '280px';
+                    }
                     
                     // Position tooltip relative to viewport
                     updateTooltipPosition(e, tooltip, rect);
@@ -761,13 +802,29 @@
             const statusLabel = statusLabels[booth.status] || 'Unknown';
             const statusColor = statusColors[booth.status] || '#6c757d';
             
-            let html = '<div class="booth-detail-section">';
+            let html = '';
+            
+            // Booth Image Preview
+            if (booth.booth_image) {
+                html += '<div class="booth-detail-section" style="margin-bottom: 20px;">';
+                html += '<img src="' + booth.booth_image + '" alt="Booth Preview" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">';
+                html += '</div>';
+            }
+            
+            html += '<div class="booth-detail-section">';
             html += '<div class="booth-detail-section-title"><i class="fas fa-info-circle"></i> Basic Information</div>';
             
             html += '<div class="booth-detail-row">';
             html += '<span class="booth-detail-label">Booth Number:</span>';
             html += '<span class="booth-detail-value"><strong>' + booth.booth_number + '</strong></span>';
             html += '</div>';
+            
+            if (booth.booth_type) {
+                html += '<div class="booth-detail-row">';
+                html += '<span class="booth-detail-label">Type:</span>';
+                html += '<span class="booth-detail-value"><strong style="color: #667eea;">' + booth.booth_type + '</strong></span>';
+                html += '</div>';
+            }
             
             html += '<div class="booth-detail-row">';
             html += '<span class="booth-detail-label">Status:</span>';
@@ -781,7 +838,42 @@
                 html += '</div>';
             }
             
+            if (booth.area_sqm) {
+                html += '<div class="booth-detail-row">';
+                html += '<span class="booth-detail-label">Area:</span>';
+                html += '<span class="booth-detail-value">' + parseFloat(booth.area_sqm).toFixed(2) + ' m²</span>';
+                html += '</div>';
+            }
+            
+            if (booth.capacity) {
+                html += '<div class="booth-detail-row">';
+                html += '<span class="booth-detail-label">Capacity:</span>';
+                html += '<span class="booth-detail-value">' + booth.capacity + ' people</span>';
+                html += '</div>';
+            }
+            
+            if (booth.electricity_power) {
+                html += '<div class="booth-detail-row">';
+                html += '<span class="booth-detail-label">Electricity Power:</span>';
+                html += '<span class="booth-detail-value">' + booth.electricity_power + '</span>';
+                html += '</div>';
+            }
+            
             html += '</div>';
+            
+            if (booth.description) {
+                html += '<div class="booth-detail-section">';
+                html += '<div class="booth-detail-section-title"><i class="fas fa-align-left"></i> Description</div>';
+                html += '<div style="padding: 12px 0; color: #495057; line-height: 1.6;">' + booth.description.replace(/\n/g, '<br>') + '</div>';
+                html += '</div>';
+            }
+            
+            if (booth.features) {
+                html += '<div class="booth-detail-section">';
+                html += '<div class="booth-detail-section-title"><i class="fas fa-star"></i> Features</div>';
+                html += '<div style="padding: 12px 0; color: #495057; line-height: 1.6;">' + booth.features.replace(/\n/g, '<br>') + '</div>';
+                html += '</div>';
+            }
             
             if (booth.company || booth.category || booth.sub_category) {
                 html += '<div class="booth-detail-section">';
@@ -822,6 +914,13 @@
                     html += '</div>';
                 }
                 
+                html += '</div>';
+            }
+            
+            if (booth.notes) {
+                html += '<div class="booth-detail-section">';
+                html += '<div class="booth-detail-section-title"><i class="fas fa-sticky-note"></i> Additional Notes</div>';
+                html += '<div style="padding: 12px 0; color: #495057; line-height: 1.6; font-style: italic;">' + booth.notes.replace(/\n/g, '<br>') + '</div>';
                 html += '</div>';
             }
             

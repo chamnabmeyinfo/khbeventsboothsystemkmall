@@ -1555,8 +1555,11 @@
                     </select>
                 </div>
                 <div class="col-md-2 text-right">
+                    <a href="{{ route('booths.index', ['view' => 'table']) }}" class="btn btn-sm btn-success mr-1" title="Booth Management">
+                        <i class="fas fa-table mr-1"></i>Management
+                    </a>
                     <a href="{{ route('floor-plans.index') }}" class="btn btn-sm btn-info" title="Manage Floor Plans">
-                        <i class="fas fa-cog mr-1"></i>Manage
+                        <i class="fas fa-cog mr-1"></i>Floor Plans
                     </a>
                 </div>
             </div>

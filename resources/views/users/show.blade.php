@@ -21,12 +21,27 @@
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         position: relative;
         overflow: hidden;
+        cursor: move;
+        user-select: none;
     }
 
     .profile-cover img {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        object-position: center center;
+        cursor: move;
+        transition: transform 0.1s ease-out;
+        user-select: none;
+        -webkit-user-drag: none;
+    }
+    
+    .profile-cover.dragging img {
+        cursor: grabbing;
+    }
+    
+    .profile-cover.dragging {
+        cursor: grabbing;
     }
 
     .profile-cover-upload {
@@ -169,14 +184,26 @@
     <div class="profile-header">
         <!-- Cover Image -->
         <div class="profile-cover" id="profileCover">
+            @php
+                $coverPosition = $user->cover_position ?? null;
+                if (!$coverPosition && \Illuminate\Support\Facades\Schema::hasColumn('user', 'cover_position') === false) {
+                    $coverPosition = \App\Models\Setting::getValue('user_' . $user->id . '_cover_position', null);
+                }
+                $coverPosition = $coverPosition ?? 'center center';
+            @endphp
             @if($user->cover_image)
-                <img src="{{ asset($user->cover_image) }}" alt="Cover Image" id="coverImage">
+                <img src="{{ asset($user->cover_image) }}" alt="Cover Image" id="coverImage" 
+                     style="object-position: {{ $coverPosition }};"
+                     data-initial-position="{{ $coverPosition }}">
             @endif
             <div class="profile-cover-upload" onclick="openCoverUploadModal()">
                 <div style="text-align: center; color: white;">
                     <i class="fas fa-camera fa-2x mb-2"></i>
                     <p class="mb-0">Change Cover</p>
                 </div>
+            </div>
+            <div class="profile-cover-drag-hint" style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; display: none; pointer-events: none;">
+                <i class="fas fa-arrows-alt mr-1"></i> Drag to reposition
             </div>
         </div>
 
@@ -703,6 +730,195 @@ function openAvatarUploadModal() {
 function openCoverUploadModal() {
     $('#coverUploadModal').modal('show');
 }
+
+// Cover Image Drag to Reposition
+(function() {
+    const coverContainer = document.getElementById('profileCover');
+    const coverImage = document.getElementById('coverImage');
+    const dragHint = coverContainer.querySelector('.profile-cover-drag-hint');
+    
+    if (!coverImage || !coverContainer) return;
+    
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let currentX = 0;
+    let currentY = 0;
+    let imageElement = coverImage;
+    
+    // Get current object-position or default to center
+    function getCurrentPosition() {
+        const style = window.getComputedStyle(imageElement);
+        let objectPosition = style.objectPosition || imageElement.getAttribute('data-initial-position') || 'center center';
+        
+        // Parse position (can be "center center", "50% 50%", "50% center", etc.)
+        const parts = objectPosition.trim().split(/\s+/);
+        let x = 50;
+        let y = 50;
+        
+        if (parts.length >= 1) {
+            if (parts[0] === 'center') {
+                x = 50;
+            } else {
+                const xVal = parseFloat(parts[0]);
+                if (!isNaN(xVal)) {
+                    x = xVal;
+                }
+            }
+        }
+        
+        if (parts.length >= 2) {
+            if (parts[1] === 'center') {
+                y = 50;
+            } else {
+                const yVal = parseFloat(parts[1]);
+                if (!isNaN(yVal)) {
+                    y = yVal;
+                }
+            }
+        }
+        
+        return { x: x, y: y };
+    }
+    
+    // Set object-position
+    function setPosition(x, y) {
+        imageElement.style.objectPosition = `${x}% ${y}%`;
+    }
+    
+    // Show drag hint on hover
+    coverContainer.addEventListener('mouseenter', function() {
+        if (coverImage && coverImage.src) {
+            dragHint.style.display = 'block';
+        }
+    });
+    
+    coverContainer.addEventListener('mouseleave', function() {
+        if (!isDragging) {
+            dragHint.style.display = 'none';
+        }
+    });
+    
+    // Mouse events
+    coverContainer.addEventListener('mousedown', function(e) {
+        if (!coverImage || !coverImage.src) return;
+        if (e.target.closest('.profile-cover-upload')) return; // Don't drag when clicking upload button
+        
+        isDragging = true;
+        coverContainer.classList.add('dragging');
+        dragHint.style.display = 'none';
+        
+        const rect = coverContainer.getBoundingClientRect();
+        startX = e.clientX - rect.left;
+        startY = e.clientY - rect.top;
+        
+        const pos = getCurrentPosition();
+        currentX = pos.x;
+        currentY = pos.y;
+        
+        e.preventDefault();
+    });
+    
+    document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        
+        const rect = coverContainer.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        // Calculate percentage offset
+        const deltaX = ((mouseX - startX) / rect.width) * 100;
+        const deltaY = ((mouseY - startY) / rect.height) * 100;
+        
+        // Update position (clamp between 0-100%)
+        const newX = Math.max(0, Math.min(100, currentX + deltaX));
+        const newY = Math.max(0, Math.min(100, currentY + deltaY));
+        
+        setPosition(newX, newY);
+    });
+    
+    document.addEventListener('mouseup', function() {
+        if (isDragging) {
+            isDragging = false;
+            coverContainer.classList.remove('dragging');
+            
+            // Save position to database
+            const pos = getCurrentPosition();
+            saveCoverPosition(pos.x, pos.y);
+        }
+    });
+    
+    // Touch events for mobile
+    coverContainer.addEventListener('touchstart', function(e) {
+        if (!coverImage || !coverImage.src) return;
+        if (e.target.closest('.profile-cover-upload')) return;
+        
+        isDragging = true;
+        coverContainer.classList.add('dragging');
+        dragHint.style.display = 'none';
+        
+        const rect = coverContainer.getBoundingClientRect();
+        const touch = e.touches[0];
+        startX = touch.clientX - rect.left;
+        startY = touch.clientY - rect.top;
+        
+        const pos = getCurrentPosition();
+        currentX = pos.x;
+        currentY = pos.y;
+        
+        e.preventDefault();
+    });
+    
+    document.addEventListener('touchmove', function(e) {
+        if (!isDragging) return;
+        
+        const rect = coverContainer.getBoundingClientRect();
+        const touch = e.touches[0];
+        const mouseX = touch.clientX - rect.left;
+        const mouseY = touch.clientY - rect.top;
+        
+        const deltaX = ((mouseX - startX) / rect.width) * 100;
+        const deltaY = ((mouseY - startY) / rect.height) * 100;
+        
+        const newX = Math.max(0, Math.min(100, currentX + deltaX));
+        const newY = Math.max(0, Math.min(100, currentY + deltaY));
+        
+        setPosition(newX, newY);
+        e.preventDefault();
+    });
+    
+    document.addEventListener('touchend', function() {
+        if (isDragging) {
+            isDragging = false;
+            coverContainer.classList.remove('dragging');
+            
+            const pos = getCurrentPosition();
+            saveCoverPosition(pos.x, pos.y);
+        }
+    });
+    
+    // Save cover position to database
+    function saveCoverPosition(x, y) {
+        const userId = {{ $user->id }};
+        const position = `${x}% ${y}%`;
+        
+        fetch(`/users/${userId}/cover-position`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                position: position,
+                x: x,
+                y: y
+            })
+        }).catch(error => {
+            console.error('Failed to save cover position:', error);
+        });
+    }
+})();
 
 function togglePassword(fieldId) {
     const field = document.getElementById(fieldId);

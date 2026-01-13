@@ -18,13 +18,20 @@ use App\Helpers\DebugLogger;
 class BoothController extends Controller
 {
     /**
-     * Display a listing of booths (Floor Plan)
+     * Display a listing of booths (Floor Plan or Management Table)
      */
     public function index(Request $request)
     {
         // #region agent log
         DebugLogger::log(['request_method'=>$request->method(),'user_authenticated'=>auth()->check()], 'BoothController.php:22', 'BoothController::index() called');
         // #endregion
+        
+        // Check if user wants table view instead of canvas
+        $view = $request->input('view', 'canvas'); // 'canvas' or 'table'
+        
+        if ($view === 'table') {
+            return $this->managementTable($request);
+        }
         
         // Get floor plan filter (from query param or default)
         $floorPlanId = $request->input('floor_plan_id');
@@ -356,10 +363,19 @@ class BoothController extends Controller
             'booth_number' => 'required|string|max:45',
             'type' => 'required|integer',
             'price' => 'required|numeric|min:0',
+            'status' => 'required|integer',
             'category_id' => 'nullable|exists:category,id',
             'asset_id' => 'nullable|exists:asset,id',
             'booth_type_id' => 'nullable|exists:booth_type,id',
-            'floor_plan_id' => 'nullable|exists:floor_plans,id',
+            'floor_plan_id' => 'required|exists:floor_plans,id',
+            'client_id' => 'nullable|exists:client,id',
+            'description' => 'nullable|string|max:2000',
+            'features' => 'nullable|string|max:2000',
+            'capacity' => 'nullable|integer|min:0',
+            'area_sqm' => 'nullable|numeric|min:0',
+            'electricity_power' => 'nullable|string|max:50',
+            'notes' => 'nullable|string|max:2000',
+            'booth_image' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:5120',
         ]);
         
         // If no floor plan specified, use default
@@ -377,19 +393,56 @@ class BoothController extends Controller
         }
         $existingBooth = $existingBoothQuery->first();
         if ($existingBooth) {
+            $errorMessage = !empty($validated['floor_plan_id']) 
+                ? 'This booth number already exists in this floor plan. Please choose a different number.'
+                : 'This booth number already exists. Please choose a different number.';
+            
+            // Return JSON if requested (for AJAX)
+            if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMessage,
+                    'errors' => ['booth_number' => [$errorMessage]]
+                ], 422);
+            }
+            
             return back()
                 ->withInput()
-                ->withErrors(['booth_number' => !empty($validated['floor_plan_id']) 
-                    ? 'This booth number already exists in this floor plan. Please choose a different number.'
-                    : 'This booth number already exists. Please choose a different number.']);
+                ->withErrors(['booth_number' => $errorMessage]);
         }
 
+        // Handle image upload
+        if ($request->hasFile('booth_image')) {
+            $image = $request->file('booth_image');
+            $imageName = 'booth_' . time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $imagePath = 'images/booths';
+            
+            // Create directory if it doesn't exist
+            $fullPath = public_path($imagePath);
+            if (!file_exists($fullPath)) {
+                \Illuminate\Support\Facades\File::makeDirectory($fullPath, 0755, true);
+            }
+            
+            // Move uploaded file
+            $image->move($fullPath, $imageName);
+            $validated['booth_image'] = $imagePath . '/' . $imageName;
+        }
+        
         $booth = Booth::create($validated);
 
+        // Return JSON if requested (for AJAX)
+        if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Booth created successfully.',
+                'booth' => $booth
+            ]);
+        }
+
         // Preserve floor_plan_id in redirect if specified
-        $redirectUrl = route('booths.index');
+        $redirectUrl = route('booths.index', ['view' => 'table']);
         if (!empty($validated['floor_plan_id'])) {
-            $redirectUrl .= '?floor_plan_id=' . $validated['floor_plan_id'];
+            $redirectUrl .= '&floor_plan_id=' . $validated['floor_plan_id'];
         }
 
         return redirect($redirectUrl)
@@ -399,9 +452,34 @@ class BoothController extends Controller
     /**
      * Display the specified booth
      */
-    public function show(Booth $booth)
+    public function show(Booth $booth, Request $request)
     {
-        $booth->load(['client', 'user', 'category', 'subCategory', 'asset', 'boothType', 'book']);
+        $booth->load(['client', 'user', 'category', 'subCategory', 'asset', 'boothType', 'book', 'floorPlan']);
+        
+        // Return JSON if requested (for AJAX)
+        if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'id' => $booth->id,
+                'booth_number' => $booth->booth_number,
+                'floor_plan_id' => $booth->floor_plan_id,
+                'booth_type_id' => $booth->booth_type_id,
+                'type' => $booth->type,
+                'price' => $booth->price,
+                'status' => $booth->status,
+                'client_id' => $booth->client_id,
+                'category_id' => $booth->category_id,
+                'sub_category_id' => $booth->sub_category_id,
+                'asset_id' => $booth->asset_id,
+                'area_sqm' => $booth->area_sqm,
+                'capacity' => $booth->capacity,
+                'electricity_power' => $booth->electricity_power,
+                'description' => $booth->description,
+                'features' => $booth->features,
+                'notes' => $booth->notes,
+                'booth_image' => $booth->booth_image ? asset($booth->booth_image) : null,
+            ]);
+        }
+        
         return view('booths.show', compact('booth'));
     }
 
@@ -442,6 +520,13 @@ class BoothController extends Controller
             'asset_id' => 'nullable|exists:asset,id',
             'booth_type_id' => 'nullable|exists:booth_type,id',
             'floor_plan_id' => 'nullable|exists:floor_plans,id',
+            'description' => 'nullable|string|max:2000',
+            'features' => 'nullable|string|max:2000',
+            'capacity' => 'nullable|integer|min:0',
+            'area_sqm' => 'nullable|numeric|min:0',
+            'electricity_power' => 'nullable|string|max:50',
+            'notes' => 'nullable|string|max:2000',
+            'booth_image' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:5120', // 5MB max
         ]);
 
         // Double-check for duplicates before updating (floor-plan-specific)
@@ -455,11 +540,22 @@ class BoothController extends Controller
         
         $existingBooth = $existingBoothQuery->first();
         if ($existingBooth) {
+            $errorMessage = $floorPlanId
+                ? 'This booth number already exists in this floor plan. Please choose a different number.'
+                : 'This booth number already exists. Please choose a different number.';
+            
+            // Return JSON if requested (for AJAX)
+            if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMessage,
+                    'errors' => ['booth_number' => [$errorMessage]]
+                ], 422);
+            }
+            
             return back()
                 ->withInput()
-                ->withErrors(['booth_number' => $floorPlanId
-                    ? 'This booth number already exists in this floor plan. Please choose a different number.'
-                    : 'This booth number already exists. Please choose a different number.']);
+                ->withErrors(['booth_number' => $errorMessage]);
         }
 
         // If no floor plan specified, keep current one
@@ -473,12 +569,43 @@ class BoothController extends Controller
             }
         }
 
+        // Handle image upload
+        if ($request->hasFile('booth_image')) {
+            $image = $request->file('booth_image');
+            $imageName = 'booth_' . $booth->id . '_' . time() . '.' . $image->getClientOriginalExtension();
+            $imagePath = 'images/booths';
+            
+            // Create directory if it doesn't exist
+            $fullPath = public_path($imagePath);
+            if (!file_exists($fullPath)) {
+                \Illuminate\Support\Facades\File::makeDirectory($fullPath, 0755, true);
+            }
+            
+            // Delete old image if exists
+            if ($booth->booth_image && file_exists(public_path($booth->booth_image))) {
+                \Illuminate\Support\Facades\File::delete(public_path($booth->booth_image));
+            }
+            
+            // Move uploaded file
+            $image->move($fullPath, $imageName);
+            $validated['booth_image'] = $imagePath . '/' . $imageName;
+        }
+
         $booth->update($validated);
 
+        // Return JSON if requested (for AJAX)
+        if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Booth updated successfully.',
+                'booth' => $booth
+            ]);
+        }
+
         // Preserve floor_plan_id in redirect
-        $redirectUrl = route('booths.index');
+        $redirectUrl = route('booths.index', ['view' => 'table']);
         if (!empty($validated['floor_plan_id'])) {
-            $redirectUrl .= '?floor_plan_id=' . $validated['floor_plan_id'];
+            $redirectUrl .= '&floor_plan_id=' . $validated['floor_plan_id'];
         }
 
         return redirect($redirectUrl)
@@ -2033,7 +2160,7 @@ class BoothController extends Controller
         
         // Get all booths for this floor plan
         $booths = Booth::where('floor_plan_id', $id)
-            ->with(['client', 'category', 'subCategory'])
+            ->with(['client', 'category', 'subCategory', 'boothType'])
             ->orderBy('booth_number', 'asc')
             ->get();
         
@@ -2048,6 +2175,14 @@ class BoothController extends Controller
                 'status' => $booth->status,
                 'status_label' => $booth->getStatusLabel(),
                 'price' => $booth->price,
+                'booth_type' => $booth->boothType ? $booth->boothType->name : ($booth->type == 1 ? 'Booth' : 'Space Only'),
+                'booth_image' => $booth->booth_image ? asset($booth->booth_image) : null,
+                'description' => $booth->description ?? '',
+                'features' => $booth->features ?? '',
+                'capacity' => $booth->capacity ?? null,
+                'area_sqm' => $booth->area_sqm ?? null,
+                'electricity_power' => $booth->electricity_power ?? '',
+                'notes' => $booth->notes ?? '',
                 'position_x' => $booth->position_x,
                 'position_y' => $booth->position_y,
                 'width' => $booth->width,
@@ -2097,6 +2232,135 @@ class BoothController extends Controller
             'floorImageUrl',
             'floorImageExists'
         ));
+    }
+
+    /**
+     * Booth Management Table View
+     */
+    public function managementTable(Request $request)
+    {
+        $query = Booth::with(['client', 'category', 'subCategory', 'boothType', 'floorPlan', 'user']);
+        
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('booth_number', 'like', "%{$search}%")
+                  ->orWhereHas('client', function($clientQuery) use ($search) {
+                      $clientQuery->where('company', 'like', "%{$search}%")
+                                  ->orWhere('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('category', function($catQuery) use ($search) {
+                      $catQuery->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+        
+        // Filter by floor plan
+        if ($request->filled('floor_plan_id')) {
+            $query->where('floor_plan_id', $request->floor_plan_id);
+        }
+        
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        
+        // Filter by booth type
+        if ($request->filled('booth_type_id')) {
+            $query->where('booth_type_id', $request->booth_type_id);
+        }
+        
+        // Filter by category
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+        
+        // Sort
+        $sortBy = $request->input('sort_by', 'booth_number');
+        $sortDir = $request->input('sort_dir', 'asc');
+        $query->orderBy($sortBy, $sortDir);
+        
+        $booths = $query->paginate(50)->withQueryString();
+        
+        // Get filter options
+        $floorPlans = FloorPlan::where('is_active', true)->orderBy('name')->get();
+        $categories = Category::where('status', 1)->orderBy('name')->get();
+        $boothTypes = BoothType::where('status', 1)->orderBy('name')->get();
+        $clients = Client::orderBy('company')->get();
+        
+        // Statistics
+        $stats = [
+            'total' => Booth::count(),
+            'available' => Booth::where('status', Booth::STATUS_AVAILABLE)->count(),
+            'reserved' => Booth::where('status', Booth::STATUS_RESERVED)->count(),
+            'confirmed' => Booth::where('status', Booth::STATUS_CONFIRMED)->count(),
+            'paid' => Booth::where('status', Booth::STATUS_PAID)->count(),
+        ];
+        
+        return view('booths.management', compact(
+            'booths',
+            'floorPlans',
+            'categories',
+            'boothTypes',
+            'clients',
+            'stats',
+            'sortBy',
+            'sortDir'
+        ));
+    }
+
+    /**
+     * Upload booth image
+     */
+    public function uploadBoothImage(Request $request, $id)
+    {
+        try {
+            $booth = Booth::findOrFail($id);
+            
+            $request->validate([
+                'booth_image' => 'required|image|mimes:jpeg,jpg,png,gif|max:5120', // 5MB max
+            ]);
+            
+            if ($request->hasFile('booth_image')) {
+                $image = $request->file('booth_image');
+                $imageName = 'booth_' . $booth->id . '_' . time() . '.' . $image->getClientOriginalExtension();
+                $imagePath = 'images/booths';
+                
+                // Create directory if it doesn't exist
+                $fullPath = public_path($imagePath);
+                if (!file_exists($fullPath)) {
+                    \Illuminate\Support\Facades\File::makeDirectory($fullPath, 0755, true);
+                }
+                
+                // Delete old image if exists
+                if ($booth->booth_image && file_exists(public_path($booth->booth_image))) {
+                    \Illuminate\Support\Facades\File::delete(public_path($booth->booth_image));
+                }
+                
+                // Move uploaded file
+                $image->move($fullPath, $imageName);
+                $booth->booth_image = $imagePath . '/' . $imageName;
+                $booth->save();
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Booth image uploaded successfully.',
+                    'image_url' => asset($booth->booth_image)
+                ]);
+            }
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'No image file provided.'
+            ], 400);
+        } catch (\Exception $e) {
+            \Log::error('Error uploading booth image: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error uploading image: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
 
