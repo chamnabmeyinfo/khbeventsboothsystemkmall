@@ -7,6 +7,23 @@ use Illuminate\Support\Facades\Artisan;
 
 class DeveloperToolsController extends Controller
 {
+    // #region agent log helper
+    private function dbg(string $hypothesisId, string $location, string $message, array $data = [], string $runId = 'run1'): void
+    {
+        $payload = [
+            'sessionId' => 'debug-session',
+            'runId' => $runId,
+            'hypothesisId' => $hypothesisId,
+            'location' => $location,
+            'message' => $message,
+            'data' => $data,
+            'timestamp' => (int) (microtime(true) * 1000),
+        ];
+        $line = json_encode($payload) . PHP_EOL;
+        @file_put_contents('c:\\xampp\\htdocs\\KHB\\khbevents\\boothsystemv1\\.cursor\\debug.log', $line, FILE_APPEND);
+    }
+    // #endregion
+
     /**
      * Show the developer tools page.
      */
@@ -23,12 +40,22 @@ class DeveloperToolsController extends Controller
     {
         // Safety: ensure only admins
         if (!auth()->check() || !auth()->user()->isAdmin()) {
+            $this->dbg('H3', 'DeveloperToolsController@migrate', 'unauthorized', ['user_id' => auth()->id()]);
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
         try {
+            $this->dbg('H1', 'DeveloperToolsController@migrate', 'migrate_start', [
+                'php_version' => phpversion(),
+                'user_id' => auth()->id(),
+            ]);
+
             Artisan::call('migrate', ['--force' => true]);
             $output = (string) Artisan::output();
+
+            $this->dbg('H2', 'DeveloperToolsController@migrate', 'migrate_done', [
+                'output' => $output,
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -36,6 +63,9 @@ class DeveloperToolsController extends Controller
                 'output' => $output,
             ]);
         } catch (\Throwable $e) {
+            $this->dbg('H2', 'DeveloperToolsController@migrate', 'migrate_error', [
+                'error' => $e->getMessage(),
+            ]);
             \Log::error('DeveloperTools migrate failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
