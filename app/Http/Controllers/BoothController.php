@@ -2046,6 +2046,7 @@ class BoothController extends Controller
                 'category' => $booth->category ? $booth->category->name : '',
                 'sub_category' => $booth->subCategory ? $booth->subCategory->name : '',
                 'status' => $booth->status,
+                'status_label' => $booth->getStatusLabel(),
                 'price' => $booth->price,
                 'position_x' => $booth->position_x,
                 'position_y' => $booth->position_y,

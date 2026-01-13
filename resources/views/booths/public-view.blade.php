@@ -158,16 +158,188 @@
         
         .booth-tooltip {
             position: absolute;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.95);
             color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
+            padding: 12px 16px;
+            border-radius: 8px;
             font-size: 0.875rem;
             pointer-events: none;
             z-index: 10000;
             display: none;
-            white-space: nowrap;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            max-width: 280px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            line-height: 1.6;
+        }
+        
+        .booth-tooltip .tooltip-title {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            color: #fff;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 6px;
+        }
+        
+        .booth-tooltip .tooltip-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 4px 0;
+            gap: 12px;
+        }
+        
+        .booth-tooltip .tooltip-label {
+            color: rgba(255,255,255,0.7);
+            font-weight: 500;
+        }
+        
+        .booth-tooltip .tooltip-value {
+            color: #fff;
+            font-weight: 600;
+            text-align: right;
+        }
+        
+        .booth-tooltip .tooltip-status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .booth-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10001;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.2s ease;
+        }
+        
+        .booth-modal.active {
+            display: flex;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .booth-modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .booth-modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 24px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .booth-modal-header h3 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .booth-modal-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            font-size: 1.2rem;
+        }
+        
+        .booth-modal-close:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .booth-modal-body {
+            padding: 24px;
+        }
+        
+        .booth-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .booth-detail-row:last-child {
+            border-bottom: none;
+        }
+        
+        .booth-detail-label {
+            color: #6c757d;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .booth-detail-value {
+            color: #212529;
+            font-weight: 500;
+            text-align: right;
+            max-width: 60%;
+            word-wrap: break-word;
+        }
+        
+        .booth-detail-value.status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-1 { background: #28a745; color: white; }
+        .status-2 { background: #0dcaf0; color: white; }
+        .status-3 { background: #ffc107; color: #333; }
+        .status-4 { background: #6c757d; color: white; }
+        .status-5 { background: #212529; color: white; }
+        
+        .booth-detail-section {
+            margin-bottom: 20px;
+        }
+        
+        .booth-detail-section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e9ecef;
         }
     </style>
 </head>
@@ -225,6 +397,21 @@
     
     <!-- Booth Tooltip -->
     <div class="booth-tooltip" id="boothTooltip"></div>
+    
+    <!-- Booth Detail Modal -->
+    <div class="booth-modal" id="boothModal">
+        <div class="booth-modal-content">
+            <div class="booth-modal-header">
+                <h3 id="modalBoothNumber">Booth Details</h3>
+                <button class="booth-modal-close" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="booth-modal-body" id="modalBody">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
     
     <script>
         let panzoomInstance;
@@ -298,29 +485,97 @@
                 if (booth.border_radius) boothElement.style.borderRadius = booth.border_radius + 'px';
                 if (booth.opacity !== null) boothElement.style.opacity = booth.opacity;
                 
-                // Add tooltip on hover
-                const tooltip = document.getElementById('boothTooltip');
-                boothElement.addEventListener('mouseenter', function(e) {
-                    const rect = this.getBoundingClientRect();
-                    tooltip.textContent = 'Booth ' + booth.booth_number + 
-                        (booth.company ? ' - ' + booth.company : '') +
-                        (booth.price ? ' - $' + booth.price : '');
-                    tooltip.style.display = 'block';
-                    tooltip.style.left = (rect.left + rect.width / 2) + 'px';
-                    tooltip.style.top = (rect.top - 35) + 'px';
-                    tooltip.style.transform = 'translateX(-50%)';
-                });
+                // Status labels
+                const statusLabels = {
+                    1: 'Available',
+                    2: 'Confirmed',
+                    3: 'Reserved',
+                    4: 'Hidden',
+                    5: 'Paid'
+                };
                 
-                boothElement.addEventListener('mouseleave', function() {
-                    tooltip.style.display = 'none';
+                const statusColors = {
+                    1: '#28a745',
+                    2: '#0dcaf0',
+                    3: '#ffc107',
+                    4: '#6c757d',
+                    5: '#212529'
+                };
+                
+                // Enhanced tooltip on hover
+                const tooltip = document.getElementById('boothTooltip');
+                let tooltipTimeout;
+                
+                boothElement.addEventListener('mouseenter', function(e) {
+                    clearTimeout(tooltipTimeout);
+                    const rect = this.getBoundingClientRect();
+                    const statusLabel = statusLabels[booth.status] || 'Unknown';
+                    const statusColor = statusColors[booth.status] || '#6c757d';
+                    
+                    let tooltipHTML = '<div class="tooltip-title">Booth ' + booth.booth_number + '</div>';
+                    
+                    if (booth.company) {
+                        tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label">Company:</span><span class="tooltip-value">' + booth.company + '</span></div>';
+                    }
+                    
+                    tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label">Status:</span><span class="tooltip-value"><span class="tooltip-status" style="background: ' + statusColor + '">' + statusLabel + '</span></span></div>';
+                    
+                    if (booth.price) {
+                        tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label">Price:</span><span class="tooltip-value">$' + parseFloat(booth.price).toLocaleString() + '</span></div>';
+                    }
+                    
+                    if (booth.category) {
+                        tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label">Category:</span><span class="tooltip-value">' + booth.category + '</span></div>';
+                    }
+                    
+                    tooltipHTML += '<div style="margin-top: 8px; font-size: 0.75rem; color: rgba(255,255,255,0.6); text-align: center;"><i class="fas fa-mouse-pointer"></i> Click for details</div>';
+                    
+                    tooltip.innerHTML = tooltipHTML;
+                    tooltip.style.display = 'block';
+                    
+                    // Position tooltip relative to viewport
+                    updateTooltipPosition(e, tooltip, rect);
                 });
                 
                 boothElement.addEventListener('mousemove', function(e) {
                     if (tooltip.style.display === 'block') {
                         const rect = this.getBoundingClientRect();
-                        tooltip.style.left = (e.clientX) + 'px';
-                        tooltip.style.top = (rect.top - 35) + 'px';
+                        updateTooltipPosition(e, tooltip, rect);
                     }
+                });
+                
+                boothElement.addEventListener('mouseleave', function() {
+                    tooltipTimeout = setTimeout(function() {
+                        tooltip.style.display = 'none';
+                    }, 100);
+                });
+                
+                // Function to update tooltip position
+                function updateTooltipPosition(e, tooltip, rect) {
+                    const tooltipRect = tooltip.getBoundingClientRect();
+                    let left = e.clientX - (tooltipRect.width / 2);
+                    let top = rect.top - tooltipRect.height - 15;
+                    
+                    // Adjust if tooltip goes off screen horizontally
+                    if (left < 10) left = 10;
+                    if (left + tooltipRect.width > window.innerWidth - 10) {
+                        left = window.innerWidth - tooltipRect.width - 10;
+                    }
+                    
+                    // Adjust if tooltip goes off screen vertically
+                    if (top < 10) {
+                        top = rect.bottom + 15;
+                    }
+                    
+                    tooltip.style.left = left + 'px';
+                    tooltip.style.top = top + 'px';
+                    tooltip.style.transform = 'none';
+                }
+                
+                // Click to show detailed modal
+                boothElement.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    showBoothModal(booth, statusLabels, statusColors);
                 });
                 
                 canvas.appendChild(boothElement);
@@ -493,6 +748,108 @@
                     zoomFitBtn.click();
                 }
             }, 300);
+        });
+        
+        // Show booth detail modal
+        function showBoothModal(booth, statusLabels, statusColors) {
+            const modal = document.getElementById('boothModal');
+            const modalBody = document.getElementById('modalBody');
+            const modalBoothNumber = document.getElementById('modalBoothNumber');
+            
+            modalBoothNumber.textContent = 'Booth ' + booth.booth_number;
+            
+            const statusLabel = statusLabels[booth.status] || 'Unknown';
+            const statusColor = statusColors[booth.status] || '#6c757d';
+            
+            let html = '<div class="booth-detail-section">';
+            html += '<div class="booth-detail-section-title"><i class="fas fa-info-circle"></i> Basic Information</div>';
+            
+            html += '<div class="booth-detail-row">';
+            html += '<span class="booth-detail-label">Booth Number:</span>';
+            html += '<span class="booth-detail-value"><strong>' + booth.booth_number + '</strong></span>';
+            html += '</div>';
+            
+            html += '<div class="booth-detail-row">';
+            html += '<span class="booth-detail-label">Status:</span>';
+            html += '<span class="booth-detail-value status-badge" style="background: ' + statusColor + '">' + statusLabel + '</span>';
+            html += '</div>';
+            
+            if (booth.price) {
+                html += '<div class="booth-detail-row">';
+                html += '<span class="booth-detail-label">Price:</span>';
+                html += '<span class="booth-detail-value"><strong style="color: #28a745; font-size: 1.1rem;">$' + parseFloat(booth.price).toLocaleString() + '</strong></span>';
+                html += '</div>';
+            }
+            
+            html += '</div>';
+            
+            if (booth.company || booth.category || booth.sub_category) {
+                html += '<div class="booth-detail-section">';
+                html += '<div class="booth-detail-section-title"><i class="fas fa-building"></i> Company & Category</div>';
+                
+                if (booth.company) {
+                    html += '<div class="booth-detail-row">';
+                    html += '<span class="booth-detail-label">Company:</span>';
+                    html += '<span class="booth-detail-value">' + booth.company + '</span>';
+                    html += '</div>';
+                }
+                
+                if (booth.category) {
+                    html += '<div class="booth-detail-row">';
+                    html += '<span class="booth-detail-label">Category:</span>';
+                    html += '<span class="booth-detail-value">' + booth.category + '</span>';
+                    html += '</div>';
+                }
+                
+                if (booth.sub_category) {
+                    html += '<div class="booth-detail-row">';
+                    html += '<span class="booth-detail-label">Sub-Category:</span>';
+                    html += '<span class="booth-detail-value">' + booth.sub_category + '</span>';
+                    html += '</div>';
+                }
+                
+                html += '</div>';
+            }
+            
+            if (booth.width || booth.height) {
+                html += '<div class="booth-detail-section">';
+                html += '<div class="booth-detail-section-title"><i class="fas fa-ruler-combined"></i> Dimensions</div>';
+                
+                if (booth.width && booth.height) {
+                    html += '<div class="booth-detail-row">';
+                    html += '<span class="booth-detail-label">Size:</span>';
+                    html += '<span class="booth-detail-value">' + booth.width + ' × ' + booth.height + ' px</span>';
+                    html += '</div>';
+                }
+                
+                html += '</div>';
+            }
+            
+            modalBody.innerHTML = html;
+            modal.classList.add('active');
+            
+            // Close modal when clicking outside
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeBoothModal();
+                }
+            });
+        }
+        
+        // Close booth modal
+        function closeBoothModal() {
+            const modal = document.getElementById('boothModal');
+            modal.classList.remove('active');
+        }
+        
+        // Close button event
+        document.getElementById('closeModal').addEventListener('click', closeBoothModal);
+        
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeBoothModal();
+            }
         });
     </script>
 </body>
