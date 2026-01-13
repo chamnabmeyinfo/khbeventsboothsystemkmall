@@ -379,7 +379,7 @@
                         <i class="fas fa-times mr-1"></i>Cancel
                     </a>
                     @if($floorPlan->floor_image && $imageExists)
-                    <a href="{{ route('booths.index', ['floor_plan_id' => $floorPlan->id]) }}" class="btn btn-info" target="_blank">
+                    <a href="{{ route('booths.index', ['view' => 'canvas', 'floor_plan_id' => $floorPlan->id]) }}" class="btn btn-info" target="_blank">
                         <i class="fas fa-eye mr-1"></i>View Canvas with Image
                     </a>
                     @endif

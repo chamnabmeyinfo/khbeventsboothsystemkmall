@@ -114,6 +114,67 @@
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border-radius: 12px 12px 0 0;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    
+    #boothModal .modal-dialog {
+        max-width: 90%;
+        margin: 1.75rem auto;
+    }
+    
+    #boothModal .modal-content {
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    #boothModal .modal-body {
+        overflow-y: auto;
+        overflow-x: hidden;
+        flex: 1 1 auto;
+        padding: 20px;
+    }
+    
+    #boothModal .modal-footer {
+        position: sticky;
+        bottom: 0;
+        background: white;
+        border-top: 1px solid #dee2e6;
+        z-index: 10;
+        padding: 15px 20px;
+    }
+    
+    #boothModal .form-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    #boothModal .form-group label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    #boothModal .form-control {
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        padding: 0.625rem 0.75rem;
+        transition: all 0.2s;
+    }
+    
+    #boothModal .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    #boothModal h6 {
+        color: #667eea;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e9ecef;
     }
     
     .image-upload-area {
@@ -203,7 +264,7 @@
             </div>
         </div>
         <div class="col-md-2">
-            <a href="{{ route('booths.index', ['view' => 'canvas']) }}" class="btn btn-lg btn-primary w-100 h-100 d-flex align-items-center justify-content-center" style="border-radius: 12px; text-decoration: none;">
+            <a href="{{ url('/booths?view=canvas') }}" class="btn btn-lg btn-primary w-100 h-100 d-flex align-items-center justify-content-center" style="border-radius: 12px; text-decoration: none;">
                 <i class="fas fa-map mr-2"></i>Canvas View
             </a>
         </div>
@@ -397,15 +458,15 @@
 </div>
 
 <!-- Create/Edit Booth Modal -->
-<div class="modal fade" id="boothModal" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+<div class="modal fade" id="boothModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="modalTitle">
                     <i class="fas fa-store mr-2"></i>Create New Booth
                 </h5>
-                <button type="button" class="close text-white" data-dismiss="modal">
-                    <span>&times;</span>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <form id="boothForm" enctype="multipart/form-data">
@@ -591,6 +652,27 @@ $(document).ready(function() {
             { orderable: false, targets: [0, 1, 11] }
         ]
     });
+    
+    // Auto-scroll modal body to top when modal is shown
+    $('#boothModal').on('shown.bs.modal', function() {
+        $(this).find('.modal-body').scrollTop(0);
+    });
+    
+    // Auto-open edit modal if edit parameter is in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get('edit');
+    if (editId) {
+        // Remove edit parameter from URL to clean it up
+        urlParams.delete('edit');
+        const newSearch = urlParams.toString();
+        const newUrl = window.location.pathname + (newSearch ? '?' + newSearch : '');
+        window.history.replaceState({}, '', newUrl);
+        
+        // Open edit modal after a short delay to ensure page is fully loaded
+        setTimeout(function() {
+            editBooth(editId);
+        }, 500);
+    }
 });
 
 // Open Create Modal
@@ -608,10 +690,40 @@ function editBooth(id) {
     currentBoothId = id;
     $('#modalTitle').html('<i class="fas fa-edit mr-2"></i>Edit Booth');
     
-    // Fetch booth data
-    fetch(`/booths/${id}`)
-        .then(response => response.json())
+    // Fetch booth data with proper headers to ensure JSON response
+    // Use the JSON endpoint to ensure we always get JSON
+    fetch(`/booths/${id}?json=1`, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        }
+    })
+        .then(response => {
+            // Check if response is actually JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                return response.text().then(text => {
+                    console.error('Expected JSON but got:', text.substring(0, 200));
+                    throw new Error('Server returned HTML instead of JSON. Check console for details.');
+                });
+            }
+            
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(err.message || `HTTP error! status: ${response.status}`);
+                });
+            }
+            return response.json();
+        })
         .then(data => {
+            // Check if we got an error response
+            if (data.error) {
+                throw new Error(data.message || data.error);
+            }
+            
             $('#boothId').val(data.id);
             $('#booth_number').val(data.booth_number);
             $('#floor_plan_id').val(data.floor_plan_id);
@@ -624,9 +736,9 @@ function editBooth(id) {
             $('#area_sqm').val(data.area_sqm);
             $('#capacity').val(data.capacity);
             $('#electricity_power').val(data.electricity_power);
-            $('#description').val(data.description);
-            $('#features').val(data.features);
-            $('#notes').val(data.notes);
+            $('#description').val(data.description || '');
+            $('#features').val(data.features || '');
+            $('#notes').val(data.notes || '');
             
             // Show image if exists
             if (data.booth_image) {
@@ -639,8 +751,13 @@ function editBooth(id) {
             $('#boothModal').modal('show');
         })
         .catch(error => {
-            console.error('Error:', error);
-            Swal.fire('Error', 'Failed to load booth data', 'error');
+            console.error('Error loading booth:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Failed to load booth data',
+                text: error.message || 'An unexpected error occurred. Please try again.',
+                confirmButtonText: 'OK'
+            });
         });
 }
 

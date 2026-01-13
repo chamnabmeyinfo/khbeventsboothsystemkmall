@@ -667,7 +667,7 @@
             <h3 class="m-0"><i class="fas fa-calendar-plus mr-2"></i>Create New Booking</h3>
             <div>
                 @if(isset($currentFloorPlan) && $currentFloorPlan)
-                <a href="{{ route('booths.index', ['floor_plan_id' => $currentFloorPlan->id]) }}" class="btn btn-modern btn-modern-info btn-sm mr-2">
+                <a href="{{ route('booths.index', ['view' => 'canvas', 'floor_plan_id' => $currentFloorPlan->id]) }}" class="btn btn-modern btn-modern-info btn-sm mr-2">
                     <i class="fas fa-map-marked-alt mr-1"></i>View Floor Plan Canvas
                 </a>
                 @endif

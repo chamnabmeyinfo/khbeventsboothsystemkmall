@@ -26,12 +26,16 @@ class BoothController extends Controller
         DebugLogger::log(['request_method'=>$request->method(),'user_authenticated'=>auth()->check()], 'BoothController.php:22', 'BoothController::index() called');
         // #endregion
         
-        // Check if user wants table view instead of canvas
-        $view = $request->input('view', 'canvas'); // 'canvas' or 'table'
+        // Check if user wants canvas view instead of table (default is now table)
+        $view = $request->input('view', 'table'); // 'table' (default) or 'canvas'
         
+        // If view is 'table', show management table interface
         if ($view === 'table') {
             return $this->managementTable($request);
         }
+        
+        // If view is 'canvas' (or anything else), render the canvas/floor plan designer view
+        // This is the original floor plan designer where users can design and edit booths visually
         
         // Get floor plan filter (from query param or default)
         $floorPlanId = $request->input('floor_plan_id');
@@ -454,55 +458,77 @@ class BoothController extends Controller
      */
     public function show(Booth $booth, Request $request)
     {
-        $booth->load(['client', 'user', 'category', 'subCategory', 'asset', 'boothType', 'book', 'floorPlan']);
-        
-        // Return JSON if requested (for AJAX)
-        if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
-            return response()->json([
-                'id' => $booth->id,
-                'booth_number' => $booth->booth_number,
-                'floor_plan_id' => $booth->floor_plan_id,
-                'booth_type_id' => $booth->booth_type_id,
-                'type' => $booth->type,
-                'price' => $booth->price,
-                'status' => $booth->status,
-                'client_id' => $booth->client_id,
-                'category_id' => $booth->category_id,
-                'sub_category_id' => $booth->sub_category_id,
-                'asset_id' => $booth->asset_id,
-                'area_sqm' => $booth->area_sqm,
-                'capacity' => $booth->capacity,
-                'electricity_power' => $booth->electricity_power,
-                'description' => $booth->description,
-                'features' => $booth->features,
-                'notes' => $booth->notes,
-                'booth_image' => $booth->booth_image ? asset($booth->booth_image) : null,
-            ]);
+        try {
+            $booth->load(['client', 'user', 'category', 'subCategory', 'asset', 'boothType', 'book', 'floorPlan']);
+            
+            // Check if request wants JSON (multiple ways to detect)
+            $wantsJson = $request->expectsJson() || 
+                        $request->wantsJson() || 
+                        $request->ajax() || 
+                        $request->header('Accept') === 'application/json' ||
+                        str_contains($request->header('Accept', ''), 'application/json') ||
+                        $request->header('X-Requested-With') === 'XMLHttpRequest' ||
+                        $request->has('json') || // Check for ?json=1 parameter
+                        $request->input('json') == '1';
+            
+            // Return JSON if requested (for AJAX)
+            if ($wantsJson) {
+                return response()->json([
+                    'id' => $booth->id,
+                    'booth_number' => $booth->booth_number,
+                    'floor_plan_id' => $booth->floor_plan_id,
+                    'booth_type_id' => $booth->booth_type_id,
+                    'type' => $booth->type,
+                    'price' => $booth->price,
+                    'status' => $booth->status,
+                    'client_id' => $booth->client_id,
+                    'category_id' => $booth->category_id,
+                    'sub_category_id' => $booth->sub_category_id,
+                    'asset_id' => $booth->asset_id,
+                    'area_sqm' => $booth->area_sqm,
+                    'capacity' => $booth->capacity,
+                    'electricity_power' => $booth->electricity_power,
+                    'description' => $booth->description,
+                    'features' => $booth->features,
+                    'notes' => $booth->notes,
+                    'booth_image' => $booth->booth_image ? asset($booth->booth_image) : null,
+                ]);
+            }
+            
+            return view('booths.show', compact('booth'));
+        } catch (\Exception $e) {
+            \Log::error('Error in BoothController@show: ' . $e->getMessage());
+            
+            // If JSON was requested, return JSON error
+            if ($request->expectsJson() || 
+                $request->wantsJson() || 
+                $request->ajax() || 
+                str_contains($request->header('Accept', ''), 'application/json')) {
+                return response()->json([
+                    'error' => 'Failed to load booth data',
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+            
+            throw $e;
         }
-        
-        return view('booths.show', compact('booth'));
     }
 
     /**
      * Show the form for editing the specified booth
+     * Redirects to management table with edit parameter to auto-open modal
      */
     public function edit(Booth $booth, Request $request)
     {
-        $categories = Category::where('status', 1)->get();
-        $assets = Asset::where('status', 1)->get();
-        $boothTypes = BoothType::where('status', 1)->get();
-        $clients = Client::orderBy('company')->get();
+        // Redirect to management table with edit parameter
+        // The JavaScript in management.blade.php will auto-open the edit modal
+        $queryParams = ['view' => 'table', 'edit' => $booth->id];
         
-        // Get all floor plans for selector
-        $floorPlans = FloorPlan::where('is_active', true)
-            ->orderBy('is_default', 'desc')
-            ->orderBy('name', 'asc')
-            ->get();
+        if ($booth->floor_plan_id) {
+            $queryParams['floor_plan_id'] = $booth->floor_plan_id;
+        }
         
-        // Get current floor plan (from booth or query param)
-        $currentFloorPlanId = $request->input('floor_plan_id', $booth->floor_plan_id);
-
-        return view('booths.edit', compact('booth', 'categories', 'assets', 'boothTypes', 'clients', 'floorPlans', 'currentFloorPlanId'));
+        return redirect()->route('booths.index', $queryParams);
     }
 
     /**

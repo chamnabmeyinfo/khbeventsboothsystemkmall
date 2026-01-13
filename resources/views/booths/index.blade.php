@@ -5112,7 +5112,7 @@ const FloorPlanDesigner = {
                     setTimeout(function() {
                         const currentFloorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
                         if (currentFloorPlanId) {
-                            window.location.href = '{{ route("booths.index") }}?floor_plan_id=' + currentFloorPlanId;
+                            window.location.href = '{{ route("booths.index") }}?view=canvas&floor_plan_id=' + currentFloorPlanId;
                         } else {
                             window.location.reload();
                         }
@@ -14481,9 +14481,9 @@ function switchFloorPlan(floorPlanId) {
             console.log('Cleared zone settings cache for floor plan switch');
         }
         
-        window.location.href = '{{ route("booths.index") }}?floor_plan_id=' + floorPlanId;
+        window.location.href = '{{ route("booths.index") }}?view=canvas&floor_plan_id=' + floorPlanId;
     } else {
-        window.location.href = '{{ route("booths.index") }}';
+        window.location.href = '{{ route("booths.index") }}?view=canvas';
     }
 }
 </script>

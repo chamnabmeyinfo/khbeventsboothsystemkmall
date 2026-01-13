@@ -532,7 +532,7 @@
                         </div>
                         @endif
                         
-                        <a href="{{ route('booths.index', ['floor_plan_id' => $floorPlan->id]) }}" 
+                        <a href="{{ route('booths.index', ['view' => 'canvas', 'floor_plan_id' => $floorPlan->id]) }}" 
                            class="btn btn-primary" 
                            title="Open Floor Plan Designer">
                             <i class="fas fa-paint-brush mr-2"></i>Design Canvas

@@ -17,8 +17,8 @@
                         @endif
                     </h3>
                     <div class="card-tools">
-                        <a href="{{ route('booths.index', ['floor_plan_id' => $floorPlan->id]) }}" class="btn btn-primary btn-sm">
-                            <i class="fas fa-eye mr-1"></i>View Booths
+                        <a href="{{ route('booths.index', ['view' => 'canvas', 'floor_plan_id' => $floorPlan->id]) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-paint-brush mr-1"></i>Design Canvas
                         </a>
                         <a href="{{ route('floor-plans.edit', $floorPlan) }}" class="btn btn-warning btn-sm">
                             <i class="fas fa-edit mr-1"></i>Edit

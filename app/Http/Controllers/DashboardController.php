@@ -266,6 +266,9 @@ class DashboardController extends Controller
                     'total_clients' => \App\Models\Client::count(),
                     'total_users' => \App\Models\User::count(),
                     'total_bookings' => \App\Models\Book::count(),
+                    'total_revenue' => 0, // Will be set later
+                    'today_revenue' => 0, // Will be set later
+                    'this_month_revenue' => 0, // Will be set later
                 ];
                 // #region agent log
                 DebugLogger::log($stats, 'DashboardController.php:195', 'Stats calculated');
@@ -283,6 +286,9 @@ class DashboardController extends Controller
                     'total_clients' => 0,
                     'total_users' => 0,
                     'total_bookings' => 0,
+                    'total_revenue' => 0,
+                    'today_revenue' => 0,
+                    'this_month_revenue' => 0,
                 ];
             }
             
@@ -366,42 +372,74 @@ class DashboardController extends Controller
             $thisMonthRevenue = 0;
             
             try {
-                // Total revenue from paid booths
-                $totalRevenue = (float) Booth::where('status', Booth::STATUS_PAID)->sum('price');
+                // Total revenue calculation - sum of all booths with status = PAID
+                // Price is stored as DOUBLE in database, so direct sum should work
+                $totalRevenue = (float) Booth::where('status', Booth::STATUS_PAID)
+                    ->sum('price');
                 
-                // Today's revenue
+                // If result is 0 or null, try alternative calculation
+                if ($totalRevenue == 0 || $totalRevenue === null) {
+                    // Get all paid booths and sum manually to ensure accuracy
+                    $paidBooths = Booth::where('status', Booth::STATUS_PAID)->get();
+                    $totalRevenue = 0;
+                    foreach ($paidBooths as $booth) {
+                        $price = (float) ($booth->price ?? 0);
+                        if ($price > 0) {
+                            $totalRevenue += $price;
+                        }
+                    }
+                }
+                
+                // Today's revenue - sum of all booths that are paid AND were booked today
                 $todayBookingsList = Book::whereDate('date_book', today())->get();
+                $todayBoothIds = [];
+                
                 foreach ($todayBookingsList as $booking) {
                     try {
                         $boothIds = json_decode($booking->boothid, true) ?? [];
                         if (!empty($boothIds)) {
-                            $todayRevenue += (float) Booth::whereIn('id', $boothIds)
-                                ->where('status', Booth::STATUS_PAID)
-                                ->sum('price');
+                            $todayBoothIds = array_merge($todayBoothIds, $boothIds);
                         }
                     } catch (\Exception $e) {
                         // Skip if error
                     }
                 }
                 
-                // This month revenue
+                if (!empty($todayBoothIds)) {
+                    $todayBoothIds = array_unique($todayBoothIds);
+                    $todayRevenue = (float) Booth::whereIn('id', $todayBoothIds)
+                        ->where('status', Booth::STATUS_PAID)
+                        ->sum('price');
+                }
+                
+                // This month revenue - sum of all booths that are paid AND were booked this month
                 $monthBookings = Book::whereMonth('date_book', now()->month)
                     ->whereYear('date_book', now()->year)
                     ->get();
+                $monthBoothIds = [];
+                
                 foreach ($monthBookings as $booking) {
                     try {
                         $boothIds = json_decode($booking->boothid, true) ?? [];
                         if (!empty($boothIds)) {
-                            $thisMonthRevenue += (float) Booth::whereIn('id', $boothIds)
-                                ->where('status', Booth::STATUS_PAID)
-                                ->sum('price');
+                            $monthBoothIds = array_merge($monthBoothIds, $boothIds);
                         }
                     } catch (\Exception $e) {
                         // Skip if error
                     }
                 }
+                
+                if (!empty($monthBoothIds)) {
+                    $monthBoothIds = array_unique($monthBoothIds);
+                    $thisMonthRevenue = (float) Booth::whereIn('id', $monthBoothIds)
+                        ->where('status', Booth::STATUS_PAID)
+                        ->sum('price');
+                }
             } catch (\Exception $e) {
-                // Revenue calculation failed
+                \Log::error('Revenue calculation error: ' . $e->getMessage(), [
+                    'trace' => $e->getTraceAsString()
+                ]);
+                // Revenue calculation failed - keep defaults
             }
             
             // Calculate growth percentages
@@ -486,9 +524,11 @@ class DashboardController extends Controller
             $stats['this_month_bookings'] = $thisMonthBookings ?? 0;
             $stats['booking_growth'] = round($bookingGrowth, 1);
             $stats['month_booking_growth'] = round($monthBookingGrowth, 1);
-            $stats['total_revenue'] = $totalRevenue;
-            $stats['today_revenue'] = $todayRevenue;
-            $stats['this_month_revenue'] = $thisMonthRevenue;
+            
+            // Ensure revenue values are properly formatted as floats
+            $stats['total_revenue'] = (float) ($totalRevenue ?? 0);
+            $stats['today_revenue'] = (float) ($todayRevenue ?? 0);
+            $stats['this_month_revenue'] = (float) ($thisMonthRevenue ?? 0);
             $stats['occupancy_rate'] = round($occupancyRate, 1);
             $stats['available_rate'] = round(100 - $occupancyRate, 1);
             
@@ -526,6 +566,9 @@ class DashboardController extends Controller
                 'total_clients' => 0,
                 'total_users' => 0,
                 'total_bookings' => 0,
+                'total_revenue' => 0,
+                'today_revenue' => 0,
+                'this_month_revenue' => 0,
             ];
             $userStats = [];
             $clientData = [];

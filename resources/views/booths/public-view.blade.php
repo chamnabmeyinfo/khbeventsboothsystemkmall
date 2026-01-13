@@ -160,15 +160,16 @@
             position: absolute;
             background: rgba(0, 0, 0, 0.95);
             color: white;
-            padding: 12px 16px;
-            border-radius: 8px;
+            padding: 14px 18px;
+            border-radius: 10px;
             font-size: 0.875rem;
             pointer-events: none;
             z-index: 10000;
             display: none;
-            max-width: 320px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            max-width: 360px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.5);
             line-height: 1.6;
+            backdrop-filter: blur(10px);
         }
         
         .booth-tooltip img {
@@ -519,59 +520,81 @@
                     const statusLabel = statusLabels[booth.status] || 'Unknown';
                     const statusColor = statusColors[booth.status] || '#6c757d';
                     
-                    let tooltipHTML = '<div class="tooltip-title">Booth ' + booth.booth_number + '</div>';
+                    let tooltipHTML = '<div class="tooltip-title"><i class="fas fa-store mr-1"></i>Booth ' + booth.booth_number + '</div>';
                     
                     // Show booth image if available
                     if (booth.booth_image) {
-                        tooltipHTML += '<div style="margin-bottom: 8px; text-align: center;"><img src="' + booth.booth_image + '" alt="Booth Preview" style="max-width: 100%; max-height: 120px; border-radius: 6px; object-fit: cover;"></div>';
+                        tooltipHTML += '<div style="margin-bottom: 10px; text-align: center;"><img src="' + booth.booth_image + '" alt="Booth Preview" style="max-width: 100%; max-height: 140px; border-radius: 6px; object-fit: cover; box-shadow: 0 2px 6px rgba(0,0,0,0.2);"></div>';
                     }
+                    
+                    // Key information in organized sections
+                    tooltipHTML += '<div style="margin-bottom: 8px;">';
                     
                     // Booth type
                     if (booth.booth_type) {
-                        tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label">Type:</span><span class="tooltip-value"><strong>' + booth.booth_type + '</strong></span></div>';
+                        tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label"><i class="fas fa-tag mr-1"></i>Type:</span><span class="tooltip-value"><strong>' + booth.booth_type + '</strong></span></div>';
                     }
                     
-                    if (booth.company) {
-                        tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label">Company:</span><span class="tooltip-value">' + booth.company + '</span></div>';
-                    }
+                    // Status
+                    tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label"><i class="fas fa-info-circle mr-1"></i>Status:</span><span class="tooltip-value"><span class="tooltip-status" style="background: ' + statusColor + '">' + statusLabel + '</span></span></div>';
                     
-                    tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label">Status:</span><span class="tooltip-value"><span class="tooltip-status" style="background: ' + statusColor + '">' + statusLabel + '</span></span></div>';
-                    
+                    // Price (highlighted)
                     if (booth.price) {
-                        tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label">Price:</span><span class="tooltip-value">$' + parseFloat(booth.price).toLocaleString() + '</span></div>';
+                        tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label"><i class="fas fa-dollar-sign mr-1"></i>Price:</span><span class="tooltip-value" style="color: #4ade80; font-weight: 700; font-size: 1.05rem;">$' + parseFloat(booth.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</span></div>';
                     }
                     
-                    if (booth.area_sqm) {
-                        tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label">Area:</span><span class="tooltip-value">' + parseFloat(booth.area_sqm).toFixed(2) + ' m²</span></div>';
+                    tooltipHTML += '</div>';
+                    
+                    // Specifications section
+                    if (booth.area_sqm || booth.capacity || booth.electricity_power) {
+                        tooltipHTML += '<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.15);">';
+                        
+                        if (booth.area_sqm) {
+                            tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label"><i class="fas fa-ruler-combined mr-1"></i>Area:</span><span class="tooltip-value">' + parseFloat(booth.area_sqm).toFixed(2) + ' m²</span></div>';
+                        }
+                        
+                        if (booth.capacity) {
+                            tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label"><i class="fas fa-users mr-1"></i>Capacity:</span><span class="tooltip-value">' + booth.capacity + ' people</span></div>';
+                        }
+                        
+                        if (booth.electricity_power) {
+                            tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label"><i class="fas fa-plug mr-1"></i>Power:</span><span class="tooltip-value">' + booth.electricity_power + '</span></div>';
+                        }
+                        
+                        tooltipHTML += '</div>';
                     }
                     
-                    if (booth.capacity) {
-                        tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label">Capacity:</span><span class="tooltip-value">' + booth.capacity + ' people</span></div>';
+                    // Company & Category section
+                    if (booth.company || booth.category) {
+                        tooltipHTML += '<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.15);">';
+                        
+                        if (booth.company) {
+                            tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label"><i class="fas fa-building mr-1"></i>Company:</span><span class="tooltip-value">' + booth.company + '</span></div>';
+                        }
+                        
+                        if (booth.category) {
+                            tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label"><i class="fas fa-folder mr-1"></i>Category:</span><span class="tooltip-value">' + booth.category + '</span></div>';
+                        }
+                        
+                        tooltipHTML += '</div>';
                     }
                     
-                    if (booth.electricity_power) {
-                        tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label">Power:</span><span class="tooltip-value">' + booth.electricity_power + '</span></div>';
-                    }
-                    
-                    if (booth.category) {
-                        tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label">Category:</span><span class="tooltip-value">' + booth.category + '</span></div>';
-                    }
-                    
+                    // Description preview
                     if (booth.description) {
-                        const shortDesc = booth.description.length > 60 ? booth.description.substring(0, 60) + '...' : booth.description;
-                        tooltipHTML += '<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 0.8rem; color: rgba(255,255,255,0.9);">' + shortDesc + '</div>';
+                        const shortDesc = booth.description.length > 80 ? booth.description.substring(0, 80) + '...' : booth.description;
+                        tooltipHTML += '<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 0.85rem; color: rgba(255,255,255,0.9); line-height: 1.4;">' + shortDesc + '</div>';
                     }
                     
-                    tooltipHTML += '<div style="margin-top: 8px; font-size: 0.75rem; color: rgba(255,255,255,0.6); text-align: center;"><i class="fas fa-mouse-pointer"></i> Click for details</div>';
+                    tooltipHTML += '<div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 0.75rem; color: rgba(255,255,255,0.7); text-align: center;"><i class="fas fa-mouse-pointer mr-1"></i>Click for full details</div>';
                     
                     tooltip.innerHTML = tooltipHTML;
                     tooltip.style.display = 'block';
                     
-                    // Adjust max-width if image is present
+                    // Adjust max-width based on content
                     if (booth.booth_image) {
-                        tooltip.style.maxWidth = '320px';
+                        tooltip.style.maxWidth = '360px';
                     } else {
-                        tooltip.style.maxWidth = '280px';
+                        tooltip.style.maxWidth = '320px';
                     }
                     
                     // Position tooltip relative to viewport
@@ -811,17 +834,18 @@
                 html += '</div>';
             }
             
+            // Basic Information Section
             html += '<div class="booth-detail-section">';
             html += '<div class="booth-detail-section-title"><i class="fas fa-info-circle"></i> Basic Information</div>';
             
             html += '<div class="booth-detail-row">';
             html += '<span class="booth-detail-label">Booth Number:</span>';
-            html += '<span class="booth-detail-value"><strong>' + booth.booth_number + '</strong></span>';
+            html += '<span class="booth-detail-value"><strong style="font-size: 1.2rem; color: #667eea;">' + booth.booth_number + '</strong></span>';
             html += '</div>';
             
             if (booth.booth_type) {
                 html += '<div class="booth-detail-row">';
-                html += '<span class="booth-detail-label">Type:</span>';
+                html += '<span class="booth-detail-label">Booth Type:</span>';
                 html += '<span class="booth-detail-value"><strong style="color: #667eea;">' + booth.booth_type + '</strong></span>';
                 html += '</div>';
             }
@@ -831,31 +855,37 @@
             html += '<span class="booth-detail-value status-badge" style="background: ' + statusColor + '">' + statusLabel + '</span>';
             html += '</div>';
             
+            html += '</div>';
+            
+            // Pricing & Specifications Section
+            html += '<div class="booth-detail-section">';
+            html += '<div class="booth-detail-section-title"><i class="fas fa-dollar-sign"></i> Pricing & Specifications</div>';
+            
             if (booth.price) {
                 html += '<div class="booth-detail-row">';
                 html += '<span class="booth-detail-label">Price:</span>';
-                html += '<span class="booth-detail-value"><strong style="color: #28a745; font-size: 1.1rem;">$' + parseFloat(booth.price).toLocaleString() + '</strong></span>';
+                html += '<span class="booth-detail-value"><strong style="color: #28a745; font-size: 1.3rem;">$' + parseFloat(booth.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</strong></span>';
                 html += '</div>';
             }
             
             if (booth.area_sqm) {
                 html += '<div class="booth-detail-row">';
                 html += '<span class="booth-detail-label">Area:</span>';
-                html += '<span class="booth-detail-value">' + parseFloat(booth.area_sqm).toFixed(2) + ' m²</span>';
+                html += '<span class="booth-detail-value"><i class="fas fa-ruler-combined mr-1"></i>' + parseFloat(booth.area_sqm).toFixed(2) + ' m²</span>';
                 html += '</div>';
             }
             
             if (booth.capacity) {
                 html += '<div class="booth-detail-row">';
                 html += '<span class="booth-detail-label">Capacity:</span>';
-                html += '<span class="booth-detail-value">' + booth.capacity + ' people</span>';
+                html += '<span class="booth-detail-value"><i class="fas fa-users mr-1"></i>' + booth.capacity + ' people</span>';
                 html += '</div>';
             }
             
             if (booth.electricity_power) {
                 html += '<div class="booth-detail-row">';
                 html += '<span class="booth-detail-label">Electricity Power:</span>';
-                html += '<span class="booth-detail-value">' + booth.electricity_power + '</span>';
+                html += '<span class="booth-detail-value"><i class="fas fa-plug mr-1"></i>' + booth.electricity_power + '</span>';
                 html += '</div>';
             }
             
@@ -903,13 +933,14 @@
                 html += '</div>';
             }
             
+            // Dimensions & Technical Details Section
             if (booth.width || booth.height) {
                 html += '<div class="booth-detail-section">';
-                html += '<div class="booth-detail-section-title"><i class="fas fa-ruler-combined"></i> Dimensions</div>';
+                html += '<div class="booth-detail-section-title"><i class="fas fa-ruler-combined"></i> Dimensions & Technical Details</div>';
                 
                 if (booth.width && booth.height) {
                     html += '<div class="booth-detail-row">';
-                    html += '<span class="booth-detail-label">Size:</span>';
+                    html += '<span class="booth-detail-label">Canvas Size:</span>';
                     html += '<span class="booth-detail-value">' + booth.width + ' × ' + booth.height + ' px</span>';
                     html += '</div>';
                 }

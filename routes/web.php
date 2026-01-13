@@ -91,6 +91,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Booths
     Route::resource('booths', BoothController::class);
+    // Specific route for JSON booth data (for AJAX requests)
+    Route::get('/booths/{booth}/json', [BoothController::class, 'show'])->name('booths.show.json');
     Route::get('/my-booths', [BoothController::class, 'myBooths'])->name('booths.my-booths');
     Route::post('/booths/{id}/confirm', [BoothController::class, 'confirmReservation'])->name('booths.confirm');
     Route::post('/booths/{id}/clear', [BoothController::class, 'clearReservation'])->name('booths.clear');
