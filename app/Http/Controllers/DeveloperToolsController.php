@@ -28,14 +28,18 @@ class DeveloperToolsController extends Controller
 
         try {
             Artisan::call('migrate', ['--force' => true]);
-            $output = Artisan::output();
+            $output = (string) Artisan::output();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Migrations executed.',
                 'output' => $output,
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            \Log::error('DeveloperTools migrate failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
