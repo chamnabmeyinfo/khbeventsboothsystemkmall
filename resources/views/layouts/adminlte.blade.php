@@ -603,13 +603,14 @@
                 <a href="{{ route('users.index') }}" class="nav-link">User</a>
             </li>
             @endif
-            @if(auth()->user()->hasPermission('booths.floor-plans') || auth()->user()->isAdmin())
+            {{-- Floor Plans - Accessible to all authenticated users --}}
+            @auth
             <li class="nav-item d-none d-sm-inline-block">
                 <a href="{{ route('floor-plans.index') }}" class="nav-link">
-                    <i class="fas fa-map mr-2"></i>Floor Plan Management
+                    <i class="fas fa-map mr-2"></i>Floor Plans
                 </a>
             </li>
-            @endif
+            @endauth
             @if(auth()->user()->hasPermission('clients.view') || auth()->user()->isAdmin())
             <li class="nav-item d-none d-sm-inline-block">
                 <a href="{{ route('clients.index') }}" class="nav-link">Clients</a>
@@ -758,14 +759,15 @@
                     <li class="nav-header">
                         <i class="fas fa-cube"></i>Core Features
                     </li>
-                    @if(auth()->user()->hasPermission('booths.floor-plans') || auth()->user()->isAdmin())
+                    {{-- Floor Plans - Accessible to all authenticated users (admins, sales, etc.) --}}
+                    @auth
                     <li class="nav-item">
                         <a href="{{ route('floor-plans.index') }}" class="nav-link {{ request()->routeIs('floor-plans.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-map"></i>
                             <p>Floor Plans</p>
                         </a>
                     </li>
-                    @endif
+                    @endauth
                     @if(auth()->user()->hasPermission('booths.view') || auth()->user()->isAdmin())
                     <li class="nav-item">
                         <a href="{{ route('booths.index') }}" class="nav-link {{ request()->routeIs('booths.*') ? 'active' : '' }}">
