@@ -10,6 +10,7 @@ use App\Models\BoothType;
 use App\Models\Book;
 use App\Models\ZoneSetting;
 use App\Models\FloorPlan;
+use App\Models\AffiliateClick;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\DebugLogger;
@@ -1831,14 +1832,24 @@ class BoothController extends Controller
                 $eventId = $floorPlan ? $floorPlan->event_id : null;
             }
 
-            // Get affiliate user ID from session (if customer came from affiliate link)
+            // Get affiliate user ID from cookie or session (first-touch wins)
             $affiliateUserId = null;
-            if (session()->has('affiliate_user_id') && session('affiliate_floor_plan_id') == $floorPlanId) {
-                // Check if affiliate session is still valid (not expired)
+            $cookieName = 'affiliate_fp_' . $floorPlanId;
+
+            $cookieData = $request->cookie($cookieName);
+            if ($cookieData) {
+                $decoded = json_decode($cookieData, true);
+                $cookieFloorPlanId = $decoded['floor_plan_id'] ?? null;
+                $cookieExpiresAt = $decoded['expires_at'] ?? null;
+                if ($cookieFloorPlanId == $floorPlanId && $cookieExpiresAt && time() < (int) $cookieExpiresAt) {
+                    $affiliateUserId = (int) ($decoded['affiliate_user_id'] ?? 0);
+                }
+            }
+
+            // Fallback to existing session if cookie missing but still valid
+            if (!$affiliateUserId && session()->has('affiliate_user_id') && session('affiliate_floor_plan_id') == $floorPlanId) {
                 if (session()->has('affiliate_expires_at') && now()->lt(session('affiliate_expires_at'))) {
-                    $affiliateUserId = session('affiliate_user_id');
-                } else {
-                    $affiliateUserId = null; // Session expired
+                    $affiliateUserId = (int) session('affiliate_user_id');
                 }
             }
             
@@ -1907,28 +1918,117 @@ class BoothController extends Controller
         // Get floor plan
         $floorPlan = FloorPlan::where('is_active', true)->findOrFail($id);
         
-        // Handle affiliate tracking from referral parameter
+        // Handle affiliate tracking from referral parameter (first-touch wins)
         $ref = $request->query('ref');
+        $cookieName = 'affiliate_fp_' . $id;
+        $trackingApplied = false;
+
+        // Respect existing valid cookie (first sender wins)
+        $existingCookie = $request->cookie($cookieName);
+        $hasValidCookie = false;
+        if ($existingCookie) {
+            $decodedCookie = json_decode($existingCookie, true);
+            $cookieExpires = $decodedCookie['expires_at'] ?? null;
+            if (($decodedCookie['floor_plan_id'] ?? null) == $id && $cookieExpires && time() < (int) $cookieExpires) {
+                $hasValidCookie = true;
+                // Refresh session for downstream flows
+                session([
+                    'affiliate_user_id' => (int) ($decodedCookie['affiliate_user_id'] ?? 0),
+                    'affiliate_floor_plan_id' => $id,
+                    'affiliate_expires_at' => now()->setTimestamp((int) $cookieExpires),
+                ]);
+            }
+        }
+
+        // Process ref token if present (log every valid click; only set cookie if no valid cookie exists)
         if ($ref) {
             try {
                 $decoded = base64_decode($ref);
                 $parts = explode('|', $decoded);
-                if (count($parts) >= 2) {
-                    $affiliateUserId = (int) $parts[0];
-                    $affiliateFloorPlanId = (int) $parts[1];
-                    // Verify the floor plan ID matches
-                    if ($affiliateFloorPlanId == $id) {
-                        // Store in session for 30 days
-                        session([
-                            'affiliate_user_id' => $affiliateUserId,
-                            'affiliate_floor_plan_id' => $id,
-                            'affiliate_expires_at' => now()->addDays(30)
-                        ]);
+                if (count($parts) >= 5) {
+                    [$affiliateUserId, $affiliateFloorPlanId, $expiryDays, $issuedAt, $signature] = $parts;
+                    $affiliateUserId = (int) $affiliateUserId;
+                    $affiliateFloorPlanId = (int) $affiliateFloorPlanId;
+                    $expiryDays = (int) $expiryDays;
+                    $issuedAt = (int) $issuedAt;
+
+                    $payload = implode('|', array_slice($parts, 0, 4));
+                    $expectedSignature = hash_hmac('sha256', $payload, config('app.key'));
+
+                    // Validate signature and bounds
+                    $allowedDurations = [7, 14, 21, 28, 60, 90];
+                    $isValidRef = $signature && hash_equals($expectedSignature, $signature)
+                        && $affiliateFloorPlanId === (int) $id
+                        && in_array($expiryDays, $allowedDurations, true)
+                        && $issuedAt > 0
+                        && time() <= ($issuedAt + ($expiryDays * 24 * 60 * 60));
+
+                    if ($isValidRef) {
+
+                        $expiresAt = time() + ($expiryDays * 24 * 60 * 60);
+
+                        // Set tracking only if not already held by valid cookie (first-touch wins)
+                        if (!$hasValidCookie) {
+                            $cookiePayload = [
+                                'affiliate_user_id' => $affiliateUserId,
+                                'floor_plan_id' => $id,
+                                'expires_at' => $expiresAt,
+                                'issued_at' => $issuedAt,
+                            ];
+
+                            // Queue cookie (minutes)
+                            cookie()->queue(cookie(
+                                $cookieName,
+                                json_encode($cookiePayload),
+                                $expiryDays * 24 * 60,
+                                '/',
+                                null,
+                                false,
+                                false,
+                                false,
+                                'Lax'
+                            ));
+
+                            // Mirror to session for server-side flows
+                            session([
+                                'affiliate_user_id' => $affiliateUserId,
+                                'affiliate_floor_plan_id' => $id,
+                                'affiliate_expires_at' => now()->addDays($expiryDays),
+                            ]);
+
+                            $trackingApplied = true;
+                        }
+
+                        // Log click for reporting
+                        try {
+                            AffiliateClick::create([
+                                'affiliate_user_id' => $affiliateUserId,
+                                'floor_plan_id' => $id,
+                                'ref_code' => $ref,
+                                'ip_address' => $request->ip(),
+                                'user_agent' => $request->userAgent(),
+                                'expires_at' => now()->addSeconds($expiryDays * 24 * 60 * 60),
+                            ]);
+                        } catch (\Exception $e) {
+                            \Log::warning('Failed to log affiliate click', [
+                                'error' => $e->getMessage(),
+                                'ref' => $ref,
+                                'affiliate_user_id' => $affiliateUserId,
+                                'floor_plan_id' => $id,
+                            ]);
+                        }
                     }
                 }
             } catch (\Exception $e) {
-                \Log::warning('Invalid affiliate link reference: ' . $e->getMessage());
+                \Log::warning('Invalid affiliate link reference: ' . $e->getMessage(), [
+                    'ref' => $ref,
+                ]);
             }
+        }
+
+        // Prevent re-processing on refresh by redirecting without the ref param
+        if ($ref && $trackingApplied) {
+            return redirect()->route('floor-plans.public', ['id' => $id, 'tracked' => 1]);
         }
         
         // Get all booths for this floor plan

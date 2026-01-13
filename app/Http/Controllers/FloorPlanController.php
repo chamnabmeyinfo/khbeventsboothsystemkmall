@@ -798,21 +798,47 @@ class FloorPlanController extends Controller
             ], 401);
         }
 
-        $floorPlan = FloorPlan::findOrFail($id);
-        $userId = Auth::user()->id;
+        $user = Auth::user();
 
-        // Generate unique affiliate link - direct to public view with tracking
-        // Format: /floor-plans/{id}/public?ref={encoded_user_id}
-        $refCode = base64_encode($userId . '|' . $floorPlan->id . '|' . time());
-        $affiliateLink = route('floor-plans.public', [
-            'id' => $floorPlan->id,
-            'ref' => $refCode
+        // Only Owner/Admin/Sales Manager can generate links (not regular sales)
+        $roleSlug = optional($user->role)->slug;
+        $allowedRoleSlugs = ['owner', 'administrator', 'sales-manager'];
+        $canGenerate = $user->isAdmin() || in_array($roleSlug, $allowedRoleSlugs);
+
+        if (!$canGenerate) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only owners, admins, or sales managers can generate tracking links.'
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'expiry_days' => 'nullable|integer|min:7|max:90', // 1-12 weeks (max 3 months)
         ]);
+
+        // Allowed durations: 1,2,3,4 weeks or 3 months (~90 days)
+        $allowedDurations = [7, 14, 21, 28, 60, 90];
+        $expiryDays = $validated['expiry_days'] ?? 28;
+        if (!in_array($expiryDays, $allowedDurations, true)) {
+            $expiryDays = 28;
+        }
+
+        $floorPlan = FloorPlan::findOrFail($id);
+        $userId = (int) $user->id;
+
+        // Build signed payload to prevent tampering
+        $issuedAt = time();
+        $payload = implode('|', [$userId, $floorPlan->id, $expiryDays, $issuedAt]);
+        $signature = hash_hmac('sha256', $payload, config('app.key'));
+        $refCode = base64_encode($payload . '|' . $signature);
+
+        $affiliateLink = url('/floor-plans/' . $floorPlan->id . '/public?ref=' . urlencode($refCode));
 
         return response()->json([
             'success' => true,
             'link' => $affiliateLink,
-            'message' => 'Affiliate link generated successfully'
+            'message' => 'Affiliate link generated successfully',
+            'expires_in_days' => $expiryDays,
         ]);
     }
 }

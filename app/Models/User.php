@@ -152,6 +152,46 @@ class User extends Authenticatable
     }
 
     /**
+     * Get affiliate bookings (bookings where this user's link was used)
+     */
+    public function affiliateBookings()
+    {
+        return $this->hasMany(Book::class, 'affiliate_user_id');
+    }
+
+    /**
+     * Get affiliate statistics
+     */
+    public function getAffiliateStats($floorPlanId = null, $dateFrom = null, $dateTo = null)
+    {
+        $query = $this->affiliateBookings();
+        
+        if ($floorPlanId) {
+            $query->where('floor_plan_id', $floorPlanId);
+        }
+        
+        if ($dateFrom) {
+            $query->where('date_book', '>=', $dateFrom);
+        }
+        
+        if ($dateTo) {
+            $query->where('date_book', '<=', $dateTo . ' 23:59:59');
+        }
+        
+        $bookings = $query->get();
+        
+        return [
+            'total_bookings' => $bookings->count(),
+            'total_revenue' => $bookings->sum(function($booking) {
+                $booths = $booking->booths();
+                return $booths->sum('price') ?? 0;
+            }),
+            'unique_clients' => $bookings->pluck('clientid')->unique()->count(),
+            'unique_floor_plans' => $bookings->pluck('floor_plan_id')->unique()->count(),
+        ];
+    }
+
+    /**
      * Get the role for this user
      */
     public function role()

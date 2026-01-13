@@ -700,6 +700,14 @@
                         </a>
                     </li>
                     @endif
+                    @if(auth()->user()->isAdmin() || auth()->user()->hasPermission('affiliates.view'))
+                    <li class="nav-item">
+                        <a href="{{ route('affiliates.index') }}" class="nav-link {{ request()->routeIs('affiliates.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-handshake"></i>
+                            <p>Affiliates</p>
+                        </a>
+                    </li>
+                    @endif
                     @if(auth()->user()->hasPermission('reports.view') || auth()->user()->isAdmin())
                     <li class="nav-item">
                         <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">

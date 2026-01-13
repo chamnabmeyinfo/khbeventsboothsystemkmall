@@ -354,6 +354,10 @@
                     
                     // Get canvas settings (already loaded in controller)
                     $canvasSettings = $floorPlan->canvas_settings ?? null;
+
+                    $currentUser = auth()->user();
+                    $roleSlug = $currentUser?->role->slug ?? null;
+                    $canGenerateAffiliate = $currentUser && ($currentUser->isAdmin() || in_array($roleSlug, ['administrator', 'sales-manager', 'owner']));
                 @endphp
                 
                 <!-- Feature Image Preview (if available, otherwise floor_image) -->
@@ -503,13 +507,30 @@
                         </a>
                         
                         @auth
-                        <button type="button" 
-                                class="btn btn-primary" 
-                                onclick="copyAffiliateLink({{ $floorPlan->id }})" 
-                                id="copyLinkBtn{{ $floorPlan->id }}"
-                                title="Copy Your Unique Affiliate Link">
-                            <i class="fas fa-link mr-2"></i>Copy My Link
-                        </button>
+                        @if($canGenerateAffiliate)
+                        <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+                            <select id="affiliateExpiry{{ $floorPlan->id }}" class="form-control form-control-sm" style="max-width: 170px;">
+                                <option value="7">Expire in 1 week</option>
+                                <option value="14">Expire in 2 weeks</option>
+                                <option value="21">Expire in 3 weeks</option>
+                                <option value="28" selected>Expire in 4 weeks</option>
+                                <option value="60">Expire in 2 months</option>
+                                <option value="90">Expire in 3 months</option>
+                            </select>
+                            <button type="button" 
+                                    class="btn btn-primary" 
+                                    onclick="copyAffiliateLink({{ $floorPlan->id }})" 
+                                    id="copyLinkBtn{{ $floorPlan->id }}"
+                                    title="Copy Your Unique Affiliate Link">
+                                <i class="fas fa-link mr-2"></i>Copy My Link
+                            </button>
+                        </div>
+                        @else
+                        <div class="alert alert-light border" role="alert" style="padding: 10px 12px; margin-bottom: 8px;">
+                            <i class="fas fa-info-circle mr-2 text-muted"></i>
+                            Link sharing is limited to Owners, Admins, or Sales Managers.
+                        </div>
+                        @endif
                         
                         <a href="{{ route('booths.index', ['floor_plan_id' => $floorPlan->id]) }}" 
                            class="btn btn-primary" 
@@ -758,11 +779,15 @@ function toggleActionMenu(floorPlanId) {
 // Copy Affiliate Link Function
 function copyAffiliateLink(floorPlanId) {
     const btn = document.getElementById('copyLinkBtn' + floorPlanId);
-    const originalText = btn.innerHTML;
+    const originalText = btn ? btn.innerHTML : '';
+    const expiryField = document.getElementById('affiliateExpiry' + floorPlanId);
+    const expiryDays = expiryField ? parseInt(expiryField.value, 10) || 28 : 28;
     
     // Show loading state
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating...';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating...';
+    }
     
     // Generate affiliate link
     fetch('{{ url("/floor-plans") }}/' + floorPlanId + '/affiliate-link', {
@@ -770,48 +795,62 @@ function copyAffiliateLink(floorPlanId) {
         headers: {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        }
+        },
+        body: JSON.stringify({ expiry_days: expiryDays })
     })
-    .then(response => response.json())
+    .then(async response => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.success) {
+            const message = data.message || 'Failed to generate affiliate link';
+            throw new Error(message);
+        }
+        return data;
+    })
     .then(data => {
-        if (data.success) {
-            // Copy to clipboard
-            const fullUrl = window.location.origin + data.link;
-            navigator.clipboard.writeText(fullUrl).then(function() {
-                // Show success feedback
+        // Copy to clipboard - data.link should already be a full URL or path
+        let fullUrl = data.link;
+        // If link doesn't start with http, prepend origin
+        if (!fullUrl.startsWith('http://') && !fullUrl.startsWith('https://')) {
+            fullUrl = window.location.origin + (fullUrl.startsWith('/') ? fullUrl : '/' + fullUrl);
+        }
+        navigator.clipboard.writeText(fullUrl).then(function() {
+            // Show success feedback
+            if (btn) {
                 btn.innerHTML = '<i class="fas fa-check mr-2"></i>Copied!';
                 btn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
-                
-                // Show toast notification if available
-                if (typeof toastr !== 'undefined') {
-                    toastr.success('Your unique affiliate link copied! Share it to track your sales.', 'Link Copied!');
-                } else {
-                    alert('Affiliate link copied to clipboard!\n\n' + fullUrl);
-                }
-                
-                // Reset button after 2 seconds
-                setTimeout(function() {
+            }
+            
+            // Show toast notification if available
+            if (typeof toastr !== 'undefined') {
+                toastr.success('Tracking link copied. The first click wins attribution.', 'Link Copied!');
+            } else {
+                alert('Affiliate link copied to clipboard!\n\n' + fullUrl);
+            }
+            
+            // Reset button after 2 seconds
+            setTimeout(function() {
+                if (btn) {
                     btn.disabled = false;
                     btn.innerHTML = originalText;
                     btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                }, 2000);
-            }).catch(function(err) {
-                // Fallback: show link in alert
-                alert('Your affiliate link:\n\n' + fullUrl + '\n\nPlease copy this link manually.');
+                }
+            }, 2000);
+        }).catch(function(err) {
+            // Fallback: show link in alert
+            alert('Your affiliate link:\n\n' + fullUrl + '\n\nPlease copy this link manually.');
+            if (btn) {
                 btn.disabled = false;
                 btn.innerHTML = originalText;
-            });
-        } else {
-            alert('Error: ' + (data.message || 'Failed to generate affiliate link'));
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-        }
+            }
+        });
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error generating affiliate link. Please try again.');
-        btn.disabled = false;
-        btn.innerHTML = originalText;
+        alert(error.message || 'Error generating affiliate link. Please try again.');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
     });
 }
 </script>

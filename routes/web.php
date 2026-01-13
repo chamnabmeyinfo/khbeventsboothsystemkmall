@@ -68,6 +68,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/floor-plans/{id}/set-default', [FloorPlanController::class, 'setDefault'])->name('floor-plans.set-default');
     Route::post('/floor-plans/{id}/duplicate', [FloorPlanController::class, 'duplicate'])->name('floor-plans.duplicate');
     Route::post('/floor-plans/{id}/affiliate-link', [FloorPlanController::class, 'generateAffiliateLink'])->name('floor-plans.generate-affiliate-link');
+    
+    // Affiliate Management
+    Route::get('/affiliates', [\App\Http\Controllers\AffiliateController::class, 'index'])->name('affiliates.index');
+    Route::get('/affiliates/{id}', [\App\Http\Controllers\AffiliateController::class, 'show'])->name('affiliates.show');
+    Route::get('/affiliates/statistics/data', [\App\Http\Controllers\AffiliateController::class, 'statistics'])->name('affiliates.statistics');
+    Route::get('/affiliates/export', [\App\Http\Controllers\AffiliateController::class, 'export'])->name('affiliates.export');
 
     // Booths
     Route::resource('booths', BoothController::class);
