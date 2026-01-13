@@ -1900,11 +1900,36 @@ class BoothController extends Controller
 
     /**
      * Public view of floor plan (no authentication required, no editing tools)
+     * Also handles affiliate tracking via ref parameter
      */
-    public function publicView($id)
+    public function publicView($id, Request $request)
     {
         // Get floor plan
         $floorPlan = FloorPlan::where('is_active', true)->findOrFail($id);
+        
+        // Handle affiliate tracking from referral parameter
+        $ref = $request->query('ref');
+        if ($ref) {
+            try {
+                $decoded = base64_decode($ref);
+                $parts = explode('|', $decoded);
+                if (count($parts) >= 2) {
+                    $affiliateUserId = (int) $parts[0];
+                    $affiliateFloorPlanId = (int) $parts[1];
+                    // Verify the floor plan ID matches
+                    if ($affiliateFloorPlanId == $id) {
+                        // Store in session for 30 days
+                        session([
+                            'affiliate_user_id' => $affiliateUserId,
+                            'affiliate_floor_plan_id' => $id,
+                            'affiliate_expires_at' => now()->addDays(30)
+                        ]);
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Invalid affiliate link reference: ' . $e->getMessage());
+            }
+        }
         
         // Get all booths for this floor plan
         $booths = Booth::where('floor_plan_id', $id)

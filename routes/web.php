@@ -51,7 +51,6 @@ Route::prefix('client-portal')->name('client-portal.')->group(function () {
 
 // Public Routes (No Authentication Required)
 Route::get('/floor-plans/{id}/public', [\App\Http\Controllers\BoothController::class, 'publicView'])->name('floor-plans.public');
-Route::get('/floor-plans/{id}/affiliate', [FloorPlanController::class, 'affiliateLink'])->name('floor-plans.affiliate');
 Route::get('/floor-plans', [FloorPlanController::class, 'index'])->name('floor-plans.index');
 Route::get('/floor-plans/{floorPlan}', [FloorPlanController::class, 'show'])->name('floor-plans.show');
 

@@ -787,7 +787,7 @@ class FloorPlanController extends Controller
 
     /**
      * Generate affiliate link for a floor plan
-     * This creates a unique link that tracks which sales person shared it
+     * This creates a unique public view link that tracks which sales person shared it
      */
     public function generateAffiliateLink(Request $request, $id)
     {
@@ -801,10 +801,10 @@ class FloorPlanController extends Controller
         $floorPlan = FloorPlan::findOrFail($id);
         $userId = Auth::user()->id;
 
-        // Generate unique affiliate link
-        // Format: /floor-plans/{id}/affiliate?ref={encoded_user_id}
+        // Generate unique affiliate link - direct to public view with tracking
+        // Format: /floor-plans/{id}/public?ref={encoded_user_id}
         $refCode = base64_encode($userId . '|' . $floorPlan->id . '|' . time());
-        $affiliateLink = route('floor-plans.affiliate', [
+        $affiliateLink = route('floor-plans.public', [
             'id' => $floorPlan->id,
             'ref' => $refCode
         ]);
@@ -814,42 +814,6 @@ class FloorPlanController extends Controller
             'link' => $affiliateLink,
             'message' => 'Affiliate link generated successfully'
         ]);
-    }
-
-    /**
-     * Handle affiliate link access
-     * Stores the affiliate_user_id in session so it can be tracked when booking is made
-     */
-    public function affiliateLink(Request $request, $id)
-    {
-        $floorPlan = FloorPlan::where('is_active', true)->findOrFail($id);
-        
-        // Decode the referral parameter
-        $ref = $request->query('ref');
-        $affiliateUserId = null;
-        
-        if ($ref) {
-            try {
-                $decoded = base64_decode($ref);
-                $parts = explode('|', $decoded);
-                if (count($parts) >= 1) {
-                    $affiliateUserId = (int) $parts[0];
-                    // Store in session for 30 days
-                    session([
-                        'affiliate_user_id' => $affiliateUserId,
-                        'affiliate_floor_plan_id' => $id,
-                        'affiliate_expires_at' => now()->addDays(30)
-                    ]);
-                }
-            } catch (\Exception $e) {
-                \Log::warning('Invalid affiliate link reference: ' . $e->getMessage());
-            }
-        }
-
-        // Redirect to public view or floor plans index
-        // If affiliate link is valid, the session will track it
-        return redirect()->route('floor-plans.public', $id)
-            ->with('affiliate_tracked', $affiliateUserId ? true : false);
     }
 }
 
