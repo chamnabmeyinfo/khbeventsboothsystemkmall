@@ -281,6 +281,8 @@ Route::middleware(['auth'])->group(function () {
         // Staff Management
         Route::resource('roles', \App\Http\Controllers\RoleController::class);
         Route::resource('permissions', \App\Http\Controllers\PermissionController::class);
+        Route::get('/developer-tools', [\App\Http\Controllers\DeveloperToolsController::class, 'index'])->name('developer.tools');
+        Route::post('/developer-tools/migrate', [\App\Http\Controllers\DeveloperToolsController::class, 'migrate'])->name('developer.tools.migrate');
         
         // Users
         Route::resource('users', UserController::class);
