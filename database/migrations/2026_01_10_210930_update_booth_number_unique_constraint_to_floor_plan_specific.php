@@ -7,6 +7,17 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    private function hasIndex(string $table, string $indexName): bool
+    {
+        $connection = Schema::getConnection();
+        $database = $connection->getDatabaseName();
+        $result = $connection->select(
+            "SELECT COUNT(*) as count FROM information_schema.statistics WHERE table_schema = ? AND table_name = ? AND index_name = ?",
+            [$database, $table, $indexName]
+        );
+        return !empty($result) && $result[0]->count > 0;
+    }
+
     /**
      * Run the migrations.
      */
@@ -38,9 +49,10 @@ return new class extends Migration
                 $table->unsignedBigInteger('floor_plan_id')->nullable()->after('id')->index('idx_floor_plan_id');
             }
             
-            // Add composite unique index: booth_number + floor_plan_id
-            // This allows same booth number (e.g., A01) in different floor plans
-            $table->unique(['booth_number', 'floor_plan_id'], 'booth_number_floor_plan_unique');
+            // Add composite unique index only if not present
+            if (!$this->hasIndex('booth', 'booth_number_floor_plan_unique')) {
+                $table->unique(['booth_number', 'floor_plan_id'], 'booth_number_floor_plan_unique');
+            }
         });
     }
 
