@@ -310,6 +310,10 @@
             flex-direction: column;
             align-items: stretch;
         }
+        
+        .chart-card {
+            padding: 16px;
+        }
     }
 
     /* Loading Animation */
@@ -320,6 +324,43 @@
 
     .loading {
         animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    /* Content Area Spacing */
+    .content-wrapper .content {
+        padding: 24px;
+    }
+    
+    /* Page Header */
+    .content-header {
+        background: transparent;
+        padding: 0 0 24px 0;
+        margin-bottom: 24px;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .content-header h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin: 0;
+    }
+    
+    /* Breadcrumb */
+    .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin: 0;
+        font-size: 0.875rem;
+    }
+    
+    .breadcrumb-item a {
+        color: #667eea;
+        text-decoration: none;
+    }
+    
+    .breadcrumb-item.active {
+        color: #718096;
     }
 
     /* Empty State */

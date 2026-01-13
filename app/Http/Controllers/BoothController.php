@@ -93,13 +93,29 @@ class BoothController extends Controller
         $canvasHeight = $currentFloorPlan ? $currentFloorPlan->canvas_height : 800;
         $floorImage = $currentFloorPlan ? $currentFloorPlan->floor_image : null;
         
-        // Verify floor image file exists (if path is set)
-        if ($floorImage && !file_exists(public_path($floorImage))) {
-            \Log::warning('Floor plan image file not found', [
-                'floor_plan_id' => $floorPlanId,
-                'floor_image_path' => $floorImage,
-                'full_path' => public_path($floorImage)
-            ]);
+        // Verify floor image file exists and is accessible (if path is set)
+        $floorImageExists = false;
+        $floorImageUrl = null;
+        if ($floorImage) {
+            $fullPath = public_path($floorImage);
+            $floorImageExists = file_exists($fullPath) && is_readable($fullPath);
+            
+            if (!$floorImageExists) {
+                \Log::warning('Floor plan image file not found or not readable', [
+                    'floor_plan_id' => $floorPlanId,
+                    'floor_image_path' => $floorImage,
+                    'full_path' => $fullPath,
+                    'file_exists' => file_exists($fullPath),
+                    'is_readable' => file_exists($fullPath) ? is_readable($fullPath) : false
+                ]);
+            } else {
+                // Generate absolute URL for the image
+                $floorImageUrl = asset($floorImage);
+                // Ensure it's absolute (handle cases where APP_URL might not be set correctly)
+                if (strpos($floorImageUrl, 'http') !== 0) {
+                    $floorImageUrl = url($floorImage);
+                }
+            }
         }
 
         // #region agent log
@@ -281,9 +297,13 @@ class BoothController extends Controller
             'subCategoryMap',
             'assetMap',
             'boothTypeMap',
+            'floorImageUrl',
+            'floorImageExists',
             'clients',
             'totalBooths',
             'availableBooths',
+            'floorImageUrl',
+            'floorImageExists',
             'bookedBooths',
             'reservedBoothsCount',
             'paidBooths',

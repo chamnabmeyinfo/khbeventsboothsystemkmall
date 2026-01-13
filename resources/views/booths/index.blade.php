@@ -1978,22 +1978,44 @@
                 <!-- Canvas Area -->
                 <div id="print" class="floorplan-canvas" 
                      style="@if(isset($currentFloorPlan) && $currentFloorPlan && $currentFloorPlan->floor_image)
-                     background-image: url('{{ asset($currentFloorPlan->floor_image) }}'); background-size: 100% 100%; background-repeat: no-repeat; background-position: top left; background-attachment: local;
+                     @php
+                         // Ensure absolute URL for inline style
+                         $inlineImageUrl = $currentFloorPlan->floor_image;
+                         if (strpos($inlineImageUrl, 'http') !== 0) {
+                             $inlineImageUrl = asset($inlineImageUrl);
+                             if (strpos($inlineImageUrl, 'http') !== 0) {
+                                 $inlineImageUrl = url($currentFloorPlan->floor_image);
+                             }
+                         }
+                     @endphp
+                     background-image: url('{{ $inlineImageUrl }}'); background-size: 100% 100%; background-repeat: no-repeat; background-position: top left; background-attachment: local;
                      @elseif(file_exists(public_path('images/map.jpg')))
                      background-image: url('{{ asset('images/map.jpg') }}'); background-size: 100% 100%; background-repeat: no-repeat; background-position: top left; background-attachment: local;
                      @else
                      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
                      @endif">
                     @if(isset($currentFloorPlan) && $currentFloorPlan && $currentFloorPlan->floor_image)
-                        <img src="{{ asset($currentFloorPlan->floor_image) }}" 
+                        @php
+                            // Ensure absolute URL for img src
+                            $imgSrcUrl = $currentFloorPlan->floor_image;
+                            if (strpos($imgSrcUrl, 'http') !== 0) {
+                                $imgSrcUrl = asset($imgSrcUrl);
+                                if (strpos($imgSrcUrl, 'http') !== 0) {
+                                    $imgSrcUrl = url($currentFloorPlan->floor_image);
+                                }
+                            }
+                        @endphp
+                        <img src="{{ $imgSrcUrl }}" 
                              id="floorplanImageElement"
                              alt="Floor Plan Map"
-                             style="display: none;"/>
+                             style="display: none;"
+                             onerror="console.error('Failed to load floor plan image:', this.src);"/>
                     @elseif(file_exists(public_path('images/map.jpg')))
                         <img src="{{ asset('images/map.jpg') }}" 
                              id="floorplanImageElement"
                              alt="Floor Plan Map"
-                             style="display: none;"/>
+                             style="display: none;"
+                             onerror="console.error('Failed to load default map image');"/>
                     @endif
                     <!-- Canvas Center Marker -->
                     <div id="canvasCenterMarker" class="center-marker" aria-hidden="true"></div>
@@ -3550,10 +3572,25 @@ const FloorPlanDesigner = {
             
             @if($currentFloorPlan->floor_image)
                 // CRITICAL: Always use floor_plans.floor_image as source of truth
-                // Store floor plan image URL for immediate use
+                // Store floor plan image URL for immediate use - ensure absolute URL
                 @php
-                    $floorPlanImageUrl = asset($currentFloorPlan->floor_image);
                     $floorPlanImagePath = $currentFloorPlan->floor_image;
+                    // Use the pre-validated URL from controller if available, otherwise generate it
+                    if (isset($floorImageUrl) && $floorImageUrl) {
+                        $floorPlanImageUrl = $floorImageUrl;
+                    } else {
+                        // Ensure absolute URL - handle both relative and absolute paths
+                        if (strpos($floorPlanImagePath, 'http') === 0) {
+                            $floorPlanImageUrl = $floorPlanImagePath;
+                        } else {
+                            // Use asset() helper and ensure it's absolute
+                            $floorPlanImageUrl = asset($floorPlanImagePath);
+                            // If asset() returns relative, make it absolute
+                            if (strpos($floorPlanImageUrl, 'http') !== 0) {
+                                $floorPlanImageUrl = url($floorPlanImagePath);
+                            }
+                        }
+                    }
                 @endphp
                 self.floorPlanImageUrl = '{{ $floorPlanImageUrl }}';
                 self.floorplanImage = '{{ $floorPlanImagePath }}'; // Relative path
@@ -3567,7 +3604,12 @@ const FloorPlanDesigner = {
                     console.log('[Floor Plan] Image URL:', self.floorPlanImageUrl);
                     
                     // Always set the background image from current floor plan (automatic load)
-                    canvas.style.backgroundImage = 'url(\'' + self.floorPlanImageUrl + '?t=' + Date.now() + '\')';
+                    // Use absolute URL to ensure it works for all users
+                    const imageUrl = self.floorPlanImageUrl.startsWith('http') 
+                        ? self.floorPlanImageUrl 
+                        : window.location.origin + (self.floorPlanImageUrl.startsWith('/') ? '' : '/') + self.floorPlanImageUrl;
+                    
+                    canvas.style.backgroundImage = 'url(\'' + imageUrl + '?t=' + Date.now() + '\')';
                     canvas.style.backgroundSize = '100% 100%';
                     canvas.style.backgroundRepeat = 'no-repeat';
                     canvas.style.backgroundPosition = 'top left';
@@ -3577,6 +3619,20 @@ const FloorPlanDesigner = {
                     canvas.style.float = 'left';
                     
                     console.log('[Floor Plan] Canvas background image set:', canvas.style.backgroundImage);
+                    
+                    // Verify image loads successfully
+                    const testImg = new Image();
+                    testImg.onload = function() {
+                        console.log('[Floor Plan] ✅ Image verified and loaded successfully');
+                    };
+                    testImg.onerror = function() {
+                        console.error('[Floor Plan] ❌ Image failed to load, trying alternative URL');
+                        // Try alternative URL construction
+                        const altUrl = window.location.origin + '/' + self.floorplanImage.replace(/^\//, '');
+                        canvas.style.backgroundImage = 'url(\'' + altUrl + '?t=' + Date.now() + '\')';
+                        console.log('[Floor Plan] Retry with alternative URL:', altUrl);
+                    };
+                    testImg.src = imageUrl;
                 }
             @else
                 console.log('[Floor Plan] No image for floor plan {{ $currentFloorPlan->id }}: {{ $currentFloorPlan->name }}');
@@ -3610,7 +3666,13 @@ const FloorPlanDesigner = {
                     
                     // Load image to get dimensions and AUTOMATICALLY resize canvas to match
                     const img = new Image();
-                    img.crossOrigin = 'anonymous'; // Handle CORS if needed
+                    // Remove crossOrigin if it causes issues - let browser handle it naturally
+                    // img.crossOrigin = 'anonymous'; // Only use if CORS is actually needed
+                    
+                    // Ensure absolute URL
+                    const imageUrlToLoad = self.floorPlanImageUrl.startsWith('http') 
+                        ? self.floorPlanImageUrl 
+                        : window.location.origin + (self.floorPlanImageUrl.startsWith('/') ? '' : '/') + self.floorPlanImageUrl;
                     
                     img.onload = function() {
                         const imageWidth = img.naturalWidth || img.width;
@@ -3655,17 +3717,43 @@ const FloorPlanDesigner = {
                         console.error('[Floor Plan Auto-Load] Failed to load floor plan image:', {
                             floor_plan_id: {{ $currentFloorPlan->id }},
                             floor_plan_name: '{{ $currentFloorPlan->name }}',
-                            image_url: self.floorPlanImageUrl,
-                            image_path: self.floorplanImage
+                            image_url: imageUrlToLoad,
+                            image_path: self.floorplanImage,
+                            original_url: self.floorPlanImageUrl
                         });
-                        // Fallback to floor plan canvas dimensions if image fails to load
-                        if (!localStorage.getItem('canvasWidth') || !localStorage.getItem('canvasHeight')) {
-                            self.setCanvasSize(self.canvasWidth, self.canvasHeight);
-                        }
+                        
+                        // Try alternative URL formats
+                        const alternatives = [
+                            window.location.origin + '/' + self.floorplanImage.replace(/^\//, ''),
+                            '/' + self.floorplanImage.replace(/^\//, ''),
+                            self.floorplanImage.startsWith('/') ? self.floorplanImage : '/' + self.floorplanImage
+                        ];
+                        
+                        let retryCount = 0;
+                        const tryNextAlternative = function() {
+                            if (retryCount < alternatives.length) {
+                                const altUrl = alternatives[retryCount];
+                                console.log('[Floor Plan Auto-Load] Retrying with alternative URL:', altUrl);
+                                img.src = altUrl + '?t=' + Date.now();
+                                retryCount++;
+                            } else {
+                                console.error('[Floor Plan Auto-Load] All image URL attempts failed');
+                                // Fallback to floor plan canvas dimensions if image fails to load
+                                if (!localStorage.getItem('canvasWidth') || !localStorage.getItem('canvasHeight')) {
+                                    self.setCanvasSize(self.canvasWidth, self.canvasHeight);
+                                }
+                                // Show user-friendly error
+                                customAlert('Floor plan image could not be loaded. Please check if the image file exists.', 'warning');
+                            }
+                        };
+                        
+                        // Retry with alternatives
+                        img.onerror = tryNextAlternative;
+                        tryNextAlternative();
                     };
                     
                     // AUTOMATICALLY load the image immediately
-                    img.src = self.floorPlanImageUrl;
+                    img.src = imageUrlToLoad;
                     
                     // Load canvas settings AFTER image is loaded (zoom/pan/grid - but don't override image)
                     // The image is already set from floor_plans.floor_image, so loadCanvasSettings won't clear it
@@ -11005,13 +11093,13 @@ const FloorPlanDesigner = {
                     // This ensures the canvas always shows the correct image after upload
                     
                     if (settings.floorplan_image && settings.floor_plan_id === floorPlanId) {
-                        // Convert relative path to full URL
+                        // Convert relative path to full URL - ensure absolute URL
                         let imageUrl = settings.floorplan_image;
-                        if (!imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
-                            imageUrl = '/' + imageUrl;
-                        }
                         if (!imageUrl.startsWith('http')) {
-                            imageUrl = window.location.origin + (imageUrl.startsWith('/') ? '' : '/') + imageUrl;
+                            if (!imageUrl.startsWith('/')) {
+                                imageUrl = '/' + imageUrl;
+                            }
+                            imageUrl = window.location.origin + imageUrl;
                         }
                         
                         // ALWAYS set the image from settings (don't check if already loaded - force refresh)
@@ -11028,6 +11116,34 @@ const FloorPlanDesigner = {
                         // Store relative path and full URL
                         self.floorplanImage = settings.floorplan_image;
                         self.floorPlanImageUrl = imageUrl;
+                        
+                        // Verify image loads
+                        const verifyImg = new Image();
+                        verifyImg.onload = function() {
+                            console.log('[Canvas Settings] ✅ Image verified and loaded successfully');
+                        };
+                        verifyImg.onerror = function() {
+                            console.error('[Canvas Settings] ❌ Image failed to load, trying alternatives');
+                            // Try alternative URL formats
+                            const alternatives = [
+                                window.location.origin + '/' + settings.floorplan_image.replace(/^\//, ''),
+                                '/' + settings.floorplan_image.replace(/^\//, ''),
+                                settings.floorplan_image.startsWith('/') ? settings.floorplan_image : '/' + settings.floorplan_image
+                            ];
+                            let retryIdx = 0;
+                            const tryAlt = function() {
+                                if (retryIdx < alternatives.length) {
+                                    const altUrl = alternatives[retryIdx];
+                                    console.log('[Canvas Settings] Retrying with alternative URL:', altUrl);
+                                    canvas.style.backgroundImage = 'url(\'' + altUrl + '?t=' + Date.now() + '\')';
+                                    verifyImg.src = altUrl;
+                                    retryIdx++;
+                                }
+                            };
+                            verifyImg.onerror = tryAlt;
+                            tryAlt();
+                        };
+                        verifyImg.src = imageUrl;
                         
                         console.log('[Canvas Settings] ✅ Canvas background image SET SUCCESSFULLY from settings');
                     } else if (settings.floorplan_image && settings.floor_plan_id !== floorPlanId) {
@@ -14124,19 +14240,34 @@ window.addEventListener('error', function(e) {
 // This ensures the canvas automatically shows the correct floor plan image when user clicks "View Booths"
 $(document).ready(function() {
     // AUTOMATICALLY load floor plan image if available (highest priority - before anything else)
-    @if(isset($currentFloorPlan) && $currentFloorPlan && $currentFloorPlan->floor_image)
+        @if(isset($currentFloorPlan) && $currentFloorPlan && $currentFloorPlan->floor_image)
         console.log('[Auto-Load Floor Plan] Setting canvas background IMMEDIATELY for floor plan {{ $currentFloorPlan->id }}: {{ $currentFloorPlan->name }}');
         const canvas = document.getElementById('print');
         if (canvas) {
             @php
-                $floorPlanImageUrlReady = asset($currentFloorPlan->floor_image);
                 $floorPlanImagePathReady = $currentFloorPlan->floor_image;
+                // Ensure absolute URL - handle both relative and absolute paths
+                if (strpos($floorPlanImagePathReady, 'http') === 0) {
+                    $floorPlanImageUrlReady = $floorPlanImagePathReady;
+                } else {
+                    // Use asset() helper and ensure it's absolute
+                    $floorPlanImageUrlReady = asset($floorPlanImagePathReady);
+                    // If asset() returns relative, make it absolute
+                    if (strpos($floorPlanImageUrlReady, 'http') !== 0) {
+                        $floorPlanImageUrlReady = url($floorPlanImagePathReady);
+                    }
+                }
             @endphp
-            const floorPlanImageUrl = '{{ $floorPlanImageUrlReady }}';
             const floorPlanImagePath = '{{ $floorPlanImagePathReady }}';
+            let floorPlanImageUrl = '{{ $floorPlanImageUrlReady }}';
+            
+            // Ensure absolute URL in JavaScript too
+            if (!floorPlanImageUrl.startsWith('http')) {
+                floorPlanImageUrl = window.location.origin + (floorPlanImageUrl.startsWith('/') ? '' : '/') + floorPlanImageUrl;
+            }
             
             console.log('[Auto-Load Floor Plan] Image path:', floorPlanImagePath);
-            console.log('[Auto-Load Floor Plan] Image URL:', floorPlanImageUrl);
+            console.log('[Auto-Load Floor Plan] Image URL (absolute):', floorPlanImageUrl);
             
             // IMMEDIATELY set canvas background image (automatic load - no delays)
             canvas.style.backgroundImage = 'url(\'' + floorPlanImageUrl + '?t=' + Date.now() + '\')';
@@ -14162,12 +14293,35 @@ $(document).ready(function() {
                 });
             };
             img.onerror = function() {
-                console.error('[Auto-Load Floor Plan] ❌ Failed to load image:', {
+                console.error('[Auto-Load Floor Plan] ❌ Failed to load image, trying alternatives:', {
                     floor_plan_id: {{ $currentFloorPlan->id }},
                     floor_plan_name: '{{ $currentFloorPlan->name }}',
                     image_url: floorPlanImageUrl,
                     image_path: floorPlanImagePath
                 });
+                
+                // Try alternative URL formats
+                const alternatives = [
+                    window.location.origin + '/' + floorPlanImagePath.replace(/^\//, ''),
+                    '/' + floorPlanImagePath.replace(/^\//, ''),
+                    floorPlanImagePath.startsWith('/') ? floorPlanImagePath : '/' + floorPlanImagePath
+                ];
+                
+                let retryIndex = 0;
+                const tryAlternative = function() {
+                    if (retryIndex < alternatives.length) {
+                        const altUrl = alternatives[retryIndex];
+                        console.log('[Auto-Load Floor Plan] Retrying with alternative URL:', altUrl);
+                        canvas.style.backgroundImage = 'url(\'' + altUrl + '?t=' + Date.now() + '\')';
+                        img.src = altUrl;
+                        retryIndex++;
+                    } else {
+                        console.error('[Auto-Load Floor Plan] ❌ All image URL attempts failed');
+                    }
+                };
+                
+                img.onerror = tryAlternative;
+                tryAlternative();
             };
             img.src = floorPlanImageUrl;
         } else {

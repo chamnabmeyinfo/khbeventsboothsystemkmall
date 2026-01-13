@@ -66,33 +66,90 @@
             100% { transform: rotate(360deg); }
         }
         
+        /* Navbar - Clean Modern Design */
+        .main-header {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            padding: 0.75rem 1.5rem;
+        }
+        
+        .navbar-nav .nav-link {
+            color: #4a5568;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            margin: 0 0.25rem;
+        }
+        
+        .navbar-nav .nav-link:hover {
+            background: #f8f9fc;
+            color: #667eea;
+        }
+        
+        .navbar-nav .nav-link i {
+            margin-right: 0.5rem;
+        }
+        
+        /* Search Form */
+        .form-inline {
+            position: relative;
+        }
+        
+        .form-control-navbar {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            transition: all 0.2s ease;
+        }
+        
+        .form-control-navbar:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn-navbar {
+            border: 1px solid #e2e8f0;
+            border-left: none;
+            border-radius: 0 8px 8px 0;
+            color: #4a5568;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-navbar:hover {
+            background: #f8f9fc;
+            color: #667eea;
+        }
+        
         /* Card Enhancements */
         .card {
-            border: none;
-            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
             transition: all 0.3s ease;
         }
         
         .card:hover {
-            box-shadow: 0 0.25rem 2rem 0 rgba(58, 59, 69, 0.25);
-            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
         }
         
         /* Button Enhancements */
         .btn {
-            transition: all 0.3s ease;
-            border-radius: 0.35rem;
+            transition: all 0.2s ease;
+            border-radius: 8px;
+            font-weight: 500;
         }
         
         .btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
         /* Form Enhancements */
         .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
         
         /* ============================================
