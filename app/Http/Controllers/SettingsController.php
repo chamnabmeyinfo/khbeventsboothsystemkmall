@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\File;
 use App\Models\Setting;
 use App\Models\CanvasSetting;
 
@@ -497,6 +498,224 @@ class SettingsController extends Controller
             return response()->json([
                 'status' => 500,
                 'message' => 'Error saving canvas settings: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get company information settings
+     */
+    public function getCompanySettings(Request $request)
+    {
+        try {
+            $settings = Setting::getCompanySettings();
+
+            return response()->json([
+                'status' => 200,
+                'data' => $settings
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error fetching company settings: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Save company information settings
+     */
+    public function saveCompanySettings(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'company_name' => 'nullable|string|max:255',
+                'company_logo' => 'nullable|string|max:500',
+                'company_favicon' => 'nullable|string|max:500',
+                'company_email' => 'nullable|email|max:255',
+                'company_phone' => 'nullable|string|max:50',
+                'company_address' => 'nullable|string|max:500',
+                'company_website' => 'nullable|url|max:255',
+            ]);
+
+            $settings = Setting::saveCompanySettings($validated);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Company settings saved successfully.',
+                'data' => $settings
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error saving company settings: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get system appearance/color settings
+     */
+    public function getAppearanceSettings(Request $request)
+    {
+        try {
+            $settings = Setting::getAppearanceSettings();
+
+            return response()->json([
+                'status' => 200,
+                'data' => $settings
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error fetching appearance settings: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Save system appearance/color settings
+     */
+    public function saveAppearanceSettings(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'primary_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'secondary_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'success_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'info_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'warning_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'danger_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'sidebar_bg' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'navbar_bg' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'footer_bg' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
+            ]);
+
+            $settings = Setting::saveAppearanceSettings($validated);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Appearance settings saved successfully.',
+                'data' => $settings
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error saving appearance settings: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Upload company logo
+     */
+    public function uploadLogo(Request $request)
+    {
+        try {
+            $request->validate([
+                'logo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ]);
+
+            $file = $request->file('logo');
+            
+            // Create directory if it doesn't exist
+            $directory = public_path('images/company');
+            if (!File::exists($directory)) {
+                File::makeDirectory($directory, 0755, true);
+            }
+
+            // Generate unique filename
+            $filename = 'company_logo_' . time() . '.' . $file->getClientOriginalExtension();
+            $path = $directory . '/' . $filename;
+
+            // Move uploaded file
+            $file->move($directory, $filename);
+
+            // Save the path relative to public directory
+            $relativePath = 'images/company/' . $filename;
+            
+            // Delete old logo if exists
+            $oldLogo = Setting::getValue('company_logo', '');
+            if ($oldLogo && File::exists(public_path($oldLogo))) {
+                File::delete(public_path($oldLogo));
+            }
+            
+            Setting::setValue('company_logo', $relativePath, 'string', 'Company logo file path');
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Logo uploaded successfully.',
+                'path' => $relativePath,
+                'url' => asset($relativePath)
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error uploading logo: ' . $e->getMessage());
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error uploading logo: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Upload company favicon
+     */
+    public function uploadFavicon(Request $request)
+    {
+        try {
+            $request->validate([
+                'favicon' => 'required|image|mimes:ico,png,jpg|max:512',
+            ]);
+
+            $file = $request->file('favicon');
+            
+            // Create directory if it doesn't exist
+            $directory = public_path('images/company');
+            if (!File::exists($directory)) {
+                File::makeDirectory($directory, 0755, true);
+            }
+
+            // Generate unique filename
+            $filename = 'company_favicon_' . time() . '.' . $file->getClientOriginalExtension();
+            $path = $directory . '/' . $filename;
+
+            // Move uploaded file
+            $file->move($directory, $filename);
+
+            // Save the path relative to public directory
+            $relativePath = 'images/company/' . $filename;
+            
+            // Delete old favicon if exists
+            $oldFavicon = Setting::getValue('company_favicon', '');
+            if ($oldFavicon && File::exists(public_path($oldFavicon))) {
+                File::delete(public_path($oldFavicon));
+            }
+            
+            Setting::setValue('company_favicon', $relativePath, 'string', 'Company favicon file path');
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Favicon uploaded successfully.',
+                'path' => $relativePath,
+                'url' => asset($relativePath)
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error uploading favicon: ' . $e->getMessage());
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error uploading favicon: ' . $e->getMessage()
             ], 500);
         }
     }

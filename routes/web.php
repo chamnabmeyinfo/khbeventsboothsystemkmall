@@ -318,6 +318,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/settings/canvas', [SettingsController::class, 'getCanvasSettings'])->name('settings.canvas');
         Route::post('/settings/canvas', [SettingsController::class, 'saveCanvasSettings'])->name('settings.canvas.save');
         
+        // Company & Appearance Settings API
+        Route::get('/settings/company', [SettingsController::class, 'getCompanySettings'])->name('settings.company');
+        Route::post('/settings/company', [SettingsController::class, 'saveCompanySettings'])->name('settings.company.save');
+        Route::post('/settings/company/upload-logo', [SettingsController::class, 'uploadLogo'])->name('settings.company.upload-logo');
+        Route::post('/settings/company/upload-favicon', [SettingsController::class, 'uploadFavicon'])->name('settings.company.upload-favicon');
+        Route::get('/settings/appearance', [SettingsController::class, 'getAppearanceSettings'])->name('settings.appearance');
+        Route::post('/settings/appearance', [SettingsController::class, 'saveAppearanceSettings'])->name('settings.appearance.save');
+        
         // Image Upload Routes
         Route::prefix('images')->name('images.')->group(function () {
             Route::post('/avatar/upload', [\App\Http\Controllers\ImageController::class, 'uploadAvatar'])->name('avatar.upload');

@@ -5,7 +5,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'KHB Booth System')</title>
+    @php
+        $companySettings = \App\Models\Setting::getCompanySettings();
+        $appearanceSettings = \App\Models\Setting::getAppearanceSettings();
+    @endphp
+    <title>@yield('title', $companySettings['company_name'] ?? 'KHB Booth System')</title>
+    @if(!empty($companySettings['company_favicon']))
+        <link rel="icon" type="image/x-icon" href="{{ asset($companySettings['company_favicon']) }}">
+    @endif
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -26,11 +33,15 @@
     <style>
         /* Modern UX/UI Enhancements */
         :root {
-            --primary-color: #4e73df;
-            --success-color: #1cc88a;
-            --info-color: #36b9cc;
-            --warning-color: #f6c23e;
-            --danger-color: #e74a3b;
+            --primary-color: {{ $appearanceSettings['primary_color'] ?? '#4e73df' }};
+            --secondary-color: {{ $appearanceSettings['secondary_color'] ?? '#667eea' }};
+            --success-color: {{ $appearanceSettings['success_color'] ?? '#1cc88a' }};
+            --info-color: {{ $appearanceSettings['info_color'] ?? '#36b9cc' }};
+            --warning-color: {{ $appearanceSettings['warning_color'] ?? '#f6c23e' }};
+            --danger-color: {{ $appearanceSettings['danger_color'] ?? '#e74a3b' }};
+            --sidebar-bg: {{ $appearanceSettings['sidebar_bg'] ?? '#224abe' }};
+            --navbar-bg: {{ $appearanceSettings['navbar_bg'] ?? '#ffffff' }};
+            --footer-bg: {{ $appearanceSettings['footer_bg'] ?? '#f8f9fc' }};
             --sidebar-width: 250px;
         }
         
@@ -68,7 +79,7 @@
         
         /* Navbar - Clean Modern Design */
         .main-header {
-            background: #ffffff;
+            background: var(--navbar-bg);
             border-bottom: 1px solid #e2e8f0;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
             padding: 0.75rem 1.5rem;
@@ -160,9 +171,9 @@
         /* Sidebar Container - Clean Modern Design */
         .main-sidebar {
             background: linear-gradient(180deg, 
-                #1a1f3a 0%, 
-                #15182e 50%,
-                #0f1222 100%);
+                var(--sidebar-bg) 0%, 
+                color-mix(in srgb, var(--sidebar-bg) 90%, black) 50%,
+                color-mix(in srgb, var(--sidebar-bg) 80%, black) 100%);
             box-shadow: 
                 2px 0 24px rgba(0, 0, 0, 0.15),
                 inset -1px 0 0 rgba(255, 255, 255, 0.03);
@@ -183,16 +194,58 @@
             padding: 1.25rem 1.5rem;
             transition: all 0.3s ease;
             position: relative;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
         }
         
         .brand-link:hover {
             background: rgba(255, 255, 255, 0.04);
+            text-decoration: none;
+        }
+        
+        .brand-link > .d-flex {
+            width: 100%;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .brand-image-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 50px;
+            height: 50px;
+            /* Square container - maintains square shape */
+            aspect-ratio: 1 / 1;
+            min-width: 50px;
+            min-height: 50px;
         }
         
         .brand-image {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
             box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px !important;
+            height: 50px !important;
+            min-width: 50px !important;
+            min-height: 50px !important;
+            border-radius: 50% !important;
+            overflow: hidden;
+            /* Perfect circle inside square wrapper */
+            aspect-ratio: 1 / 1;
+        }
+        
+        .brand-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
         }
         
         .brand-link:hover .brand-image {
@@ -200,11 +253,20 @@
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
         
+        .brand-text-wrapper {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
         .brand-text {
             font-weight: 700;
             font-size: 1.1rem;
             letter-spacing: 0.5px;
             color: #ffffff;
+            line-height: 1.3;
         }
         
         /* User Panel - Clean Card */
@@ -582,14 +644,24 @@
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
         <!-- Brand Logo - Modern Glass Card -->
         <a href="{{ route('dashboard') }}" class="brand-link">
-            <div class="d-flex align-items-center">
-                <span class="brand-image img-circle elevation-3 d-inline-flex align-items-center justify-content-center" 
-                      style="width: 48px; height: 48px; color: white; font-weight: 800; font-size: 16px; letter-spacing: 1px;">
-                    KHB
-                </span>
-                <div class="ml-3">
-                    <span class="brand-text font-weight-bold d-block" style="font-size: 1.2rem; line-height: 1.3;">KHB Booth</span>
-                    <span class="brand-text font-weight-light d-block" style="font-size: 0.7rem; opacity: 0.7; line-height: 1.2; letter-spacing: 0.5px;">Management System</span>
+            <div class="d-flex align-items-center w-100">
+                @if(!empty($companySettings['company_logo']))
+                    <div class="brand-image-wrapper">
+                        <div class="brand-image elevation-3">
+                            <img src="{{ asset($companySettings['company_logo']) }}" alt="{{ $companySettings['company_name'] ?? 'Logo' }}">
+                        </div>
+                    </div>
+                @else
+                    <div class="brand-image-wrapper">
+                        <span class="brand-image elevation-3 d-flex align-items-center justify-content-center" 
+                              style="color: white; font-weight: 800; font-size: 20px; letter-spacing: 0.5px;">
+                            {{ strtoupper(substr($companySettings['company_name'] ?? 'KHB', 0, 3)) }}
+                        </span>
+                    </div>
+                @endif
+                <div class="brand-text-wrapper flex-grow-1 ms-3">
+                    <div class="brand-text font-weight-bold" style="font-size: 1.15rem; line-height: 1.3; color: rgba(255, 255, 255, 0.95); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $companySettings['company_name'] ?? 'KHB Booth' }}</div>
+                    <div class="brand-text font-weight-light" style="font-size: 0.7rem; line-height: 1.2; color: rgba(255, 255, 255, 0.7); letter-spacing: 0.5px; margin-top: 2px;">Management System</div>
                 </div>
             </div>
         </a>

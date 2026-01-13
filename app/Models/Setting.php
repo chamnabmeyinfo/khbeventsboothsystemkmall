@@ -124,4 +124,89 @@ class Setting extends Model
 
         return self::getBoothDefaults();
     }
+
+    /**
+     * Get all company information settings
+     */
+    public static function getCompanySettings()
+    {
+        return [
+            'company_name' => self::getValue('company_name', 'KHB Events'),
+            'company_logo' => self::getValue('company_logo', ''),
+            'company_favicon' => self::getValue('company_favicon', ''),
+            'company_email' => self::getValue('company_email', ''),
+            'company_phone' => self::getValue('company_phone', ''),
+            'company_address' => self::getValue('company_address', ''),
+            'company_website' => self::getValue('company_website', ''),
+        ];
+    }
+
+    /**
+     * Get all system appearance/color settings
+     */
+    public static function getAppearanceSettings()
+    {
+        return [
+            'primary_color' => self::getValue('system_primary_color', '#4e73df'),
+            'secondary_color' => self::getValue('system_secondary_color', '#667eea'),
+            'success_color' => self::getValue('system_success_color', '#1cc88a'),
+            'info_color' => self::getValue('system_info_color', '#36b9cc'),
+            'warning_color' => self::getValue('system_warning_color', '#f6c23e'),
+            'danger_color' => self::getValue('system_danger_color', '#e74a3b'),
+            'sidebar_bg' => self::getValue('system_sidebar_bg', '#224abe'),
+            'navbar_bg' => self::getValue('system_navbar_bg', '#ffffff'),
+            'footer_bg' => self::getValue('system_footer_bg', '#f8f9fc'),
+        ];
+    }
+
+    /**
+     * Save company information settings
+     */
+    public static function saveCompanySettings($settings)
+    {
+        $defaults = [
+            'company_name' => ['type' => 'string', 'description' => 'Company name displayed throughout the system'],
+            'company_logo' => ['type' => 'string', 'description' => 'Company logo file path'],
+            'company_favicon' => ['type' => 'string', 'description' => 'Company favicon file path'],
+            'company_email' => ['type' => 'string', 'description' => 'Company contact email'],
+            'company_phone' => ['type' => 'string', 'description' => 'Company contact phone'],
+            'company_address' => ['type' => 'string', 'description' => 'Company physical address'],
+            'company_website' => ['type' => 'string', 'description' => 'Company website URL'],
+        ];
+
+        foreach ($defaults as $key => $config) {
+            if (isset($settings[$key])) {
+                self::setValue($key, $settings[$key], $config['type'], $config['description']);
+            }
+        }
+
+        return self::getCompanySettings();
+    }
+
+    /**
+     * Save system appearance/color settings
+     */
+    public static function saveAppearanceSettings($settings)
+    {
+        $defaults = [
+            'system_primary_color' => ['type' => 'string', 'description' => 'Primary brand color'],
+            'system_secondary_color' => ['type' => 'string', 'description' => 'Secondary brand color'],
+            'system_success_color' => ['type' => 'string', 'description' => 'Success/positive action color'],
+            'system_info_color' => ['type' => 'string', 'description' => 'Information/notification color'],
+            'system_warning_color' => ['type' => 'string', 'description' => 'Warning/alert color'],
+            'system_danger_color' => ['type' => 'string', 'description' => 'Error/danger action color'],
+            'system_sidebar_bg' => ['type' => 'string', 'description' => 'Sidebar background color'],
+            'system_navbar_bg' => ['type' => 'string', 'description' => 'Navbar background color'],
+            'system_footer_bg' => ['type' => 'string', 'description' => 'Footer background color'],
+        ];
+
+        foreach ($defaults as $key => $config) {
+            $settingKey = str_replace('system_', '', $key);
+            if (isset($settings[$settingKey])) {
+                self::setValue($key, $settings[$settingKey], $config['type'], $config['description']);
+            }
+        }
+
+        return self::getAppearanceSettings();
+    }
 }
