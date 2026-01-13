@@ -286,42 +286,29 @@
         
         .user-panel .image {
             flex-shrink: 0;
-            width: 50px;
-            height: 50px;
-        }
-        
-        .user-panel .image span,
-        .user-panel .image img {
-            width: 50px !important;
-            height: 50px !important;
-            min-width: 50px !important;
-            min-height: 50px !important;
-            border-radius: 50% !important;
-            overflow: hidden;
-            aspect-ratio: 1 / 1;
-        }
-        
-        .user-panel .image span {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
         }
         
-        .user-panel .image img {
-            object-fit: cover;
-            display: block;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        .user-panel .image .avatar-wrapper {
+            width: 50px !important;
+            height: 50px !important;
+        }
+        
+        .user-panel .image .avatar-image,
+        .user-panel .image .avatar-placeholder {
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
             transition: all 0.3s ease;
         }
         
-        .user-panel:hover .image span,
-        .user-panel:hover .image img {
+        .user-panel:hover .image .avatar-wrapper {
             transform: scale(1.05);
-            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        }
+        
+        .user-panel:hover .image .avatar-image,
+        .user-panel:hover .image .avatar-placeholder {
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4) !important;
         }
         
         .user-panel .info a {
@@ -701,29 +688,17 @@
             @auth
             @php
                 $user = auth()->user();
-                $avatarUrl = $user->avatar ?? null;
-                $userInitials = strtoupper(substr($user->username, 0, 1));
-                if ($avatarUrl && !filter_var($avatarUrl, FILTER_VALIDATE_URL)) {
-                    $avatarUrl = asset($avatarUrl);
-                }
             @endphp
             <div class="user-panel d-flex align-items-center">
                 <div class="image">
-                    @if($avatarUrl)
-                        <img src="{{ $avatarUrl }}" 
-                             alt="{{ $user->username }}"
-                             class="elevation-2"
-                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                        <span class="img-circle elevation-2 d-flex align-items-center justify-content-center" 
-                              style="display: none; color: white; font-weight: 800; font-size: 20px; letter-spacing: 0.5px;">
-                            {{ $userInitials }}
-                        </span>
-                    @else
-                        <span class="img-circle elevation-2 d-flex align-items-center justify-content-center" 
-                              style="color: white; font-weight: 800; font-size: 20px; letter-spacing: 0.5px;">
-                            {{ $userInitials }}
-                        </span>
-                    @endif
+                    <x-avatar 
+                        :avatar="$user->avatar" 
+                        :name="$user->username" 
+                        :size="'50px'"
+                        :type="$user->isAdmin() ? 'admin' : 'user'"
+                        :shape="'circle'"
+                        class="elevation-2"
+                    />
                 </div>
                 <div class="info flex-grow-1 ml-2">
                     <a href="{{ route('users.show', $user->id) }}" class="d-block text-white font-weight-bold" style="font-size: 1rem; text-decoration: none; letter-spacing: 0.3px;">

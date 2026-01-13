@@ -9,8 +9,14 @@
     ];
     
     $size = $size ?? 'md';
-    $sizePx = $sizeMap[$size] ?? $sizeMap['md'];
-    $sizeNum = intval($sizePx);
+    // If size contains 'px', use it directly; otherwise use sizeMap
+    if (strpos($size, 'px') !== false) {
+        $sizePx = $size;
+        $sizeNum = intval(str_replace('px', '', $size));
+    } else {
+        $sizePx = $sizeMap[$size] ?? $sizeMap['md'];
+        $sizeNum = intval($sizePx);
+    }
     
     // Get initials or icon
     $initials = $initials ?? '';
