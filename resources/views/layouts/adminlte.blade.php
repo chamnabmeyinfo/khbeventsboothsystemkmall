@@ -284,13 +284,42 @@
             border-color: rgba(102, 126, 234, 0.2);
         }
         
+        .user-panel .image {
+            flex-shrink: 0;
+            width: 50px;
+            height: 50px;
+        }
+        
+        .user-panel .image span,
+        .user-panel .image img {
+            width: 50px !important;
+            height: 50px !important;
+            min-width: 50px !important;
+            min-height: 50px !important;
+            border-radius: 50% !important;
+            overflow: hidden;
+            aspect-ratio: 1 / 1;
+        }
+        
         .user-panel .image span {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        .user-panel:hover .image span {
+        .user-panel .image img {
+            object-fit: cover;
+            display: block;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .user-panel:hover .image span,
+        .user-panel:hover .image img {
             transform: scale(1.05);
             box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
         }
@@ -670,24 +699,43 @@
         <div class="sidebar">
             <!-- User Panel - Modern Glass Card -->
             @auth
+            @php
+                $user = auth()->user();
+                $avatarUrl = $user->avatar ?? null;
+                $userInitials = strtoupper(substr($user->username, 0, 1));
+                if ($avatarUrl && !filter_var($avatarUrl, FILTER_VALIDATE_URL)) {
+                    $avatarUrl = asset($avatarUrl);
+                }
+            @endphp
             <div class="user-panel d-flex align-items-center">
                 <div class="image">
-                    <span class="img-circle elevation-2 d-inline-flex align-items-center justify-content-center" 
-                          style="width: 50px; height: 50px; color: white; font-weight: 800; font-size: 20px; letter-spacing: 0.5px;">
-                        {{ strtoupper(substr(auth()->user()->username, 0, 1)) }}
-                    </span>
+                    @if($avatarUrl)
+                        <img src="{{ $avatarUrl }}" 
+                             alt="{{ $user->username }}"
+                             class="elevation-2"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <span class="img-circle elevation-2 d-flex align-items-center justify-content-center" 
+                              style="display: none; color: white; font-weight: 800; font-size: 20px; letter-spacing: 0.5px;">
+                            {{ $userInitials }}
+                        </span>
+                    @else
+                        <span class="img-circle elevation-2 d-flex align-items-center justify-content-center" 
+                              style="color: white; font-weight: 800; font-size: 20px; letter-spacing: 0.5px;">
+                            {{ $userInitials }}
+                        </span>
+                    @endif
                 </div>
                 <div class="info flex-grow-1 ml-2">
-                    <a href="javascript:void(0);" class="d-block text-white font-weight-bold" style="font-size: 1rem; text-decoration: none; letter-spacing: 0.3px;">
-                        {{ auth()->user()->username }}
+                    <a href="{{ route('users.show', $user->id) }}" class="d-block text-white font-weight-bold" style="font-size: 1rem; text-decoration: none; letter-spacing: 0.3px;">
+                        {{ $user->username }}
                     </a>
-                    @if(auth()->user()->employee)
+                    @if($user->employee)
                     <small class="d-block" style="font-size: 0.8rem; font-weight: 500;">
-                        {{ auth()->user()->employee->position->name ?? (auth()->user()->employee->department->name ?? 'Employee') }}
+                        {{ $user->employee->position->name ?? ($user->employee->department->name ?? 'Employee') }}
                     </small>
                     @else
                     <small class="d-block" style="font-size: 0.8rem; font-weight: 500;">
-                        {{ auth()->user()->isAdmin() ? 'Administrator' : 'User' }}
+                        {{ $user->isAdmin() ? 'Administrator' : 'User' }}
                     </small>
                     @endif
                 </div>
