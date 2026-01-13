@@ -20,7 +20,10 @@ class DeveloperToolsController extends Controller
             'timestamp' => (int) (microtime(true) * 1000),
         ];
         $line = json_encode($payload) . PHP_EOL;
+        // primary (workspace path from instructions)
         @file_put_contents('c:\\xampp\\htdocs\\KHB\\khbevents\\boothsystemv1\\.cursor\\debug.log', $line, FILE_APPEND);
+        // fallback for server path
+        @file_put_contents(storage_path('logs/debug.log'), $line, FILE_APPEND);
     }
     // #endregion
 
@@ -50,8 +53,13 @@ class DeveloperToolsController extends Controller
                 'user_id' => auth()->id(),
             ]);
 
-            Artisan::call('migrate', ['--force' => true]);
-            $output = (string) Artisan::output();
+            $result = Artisan::call('migrate', ['--force' => true]);
+            $output = Artisan::output();
+            $this->dbg('H1', 'DeveloperToolsController@migrate', 'migrate_artisan_result', [
+                'result' => $result,
+                'output_type' => gettype($output),
+                'output' => $output,
+            ]);
 
             $this->dbg('H2', 'DeveloperToolsController@migrate', 'migrate_done', [
                 'output' => $output,
@@ -60,11 +68,12 @@ class DeveloperToolsController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Migrations executed.',
-                'output' => $output,
+                'output' => (string) $output,
             ]);
         } catch (\Throwable $e) {
             $this->dbg('H2', 'DeveloperToolsController@migrate', 'migrate_error', [
                 'error' => $e->getMessage(),
+                'type' => get_class($e),
             ]);
             \Log::error('DeveloperTools migrate failed', [
                 'error' => $e->getMessage(),
