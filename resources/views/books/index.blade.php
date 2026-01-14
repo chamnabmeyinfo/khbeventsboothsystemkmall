@@ -2015,14 +2015,39 @@ $(document).ready(function() {
             },
             error: function(xhr) {
                 let errorMessage = 'An error occurred while creating the client.';
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMessage = xhr.responseJSON.message;
-                } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                if (xhr.responseJSON && xhr.responseJSON.errors) {
                     const errors = xhr.responseJSON.errors;
-                    const firstError = Object.values(errors)[0];
-                    errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+                    // Collect all error messages
+                    const errorMessages = [];
+                    Object.keys(errors).forEach(function(key) {
+                        const fieldErrors = errors[key];
+                        if (Array.isArray(fieldErrors)) {
+                            fieldErrors.forEach(function(err) {
+                                errorMessages.push('<div>' + err + '</div>');
+                            });
+                        } else {
+                            errorMessages.push('<div>' + fieldErrors + '</div>');
+                        }
+                    });
+                    if (errorMessages.length > 0) {
+                        errorMessage = errorMessages.join('');
+                    }
+                } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
                 }
-                errorDiv.html('<i class="fas fa-exclamation-triangle mr-1"></i>' + errorMessage).show();
+                errorDiv.html('<i class="fas fa-exclamation-triangle mr-1"></i><strong>Validation Error:</strong><br>' + errorMessage).show();
+                // Safely scroll to error div if it exists
+                if (errorDiv.length > 0 && errorDiv[0]) {
+                    try {
+                        errorDiv[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    } catch (e) {
+                        // Fallback if scrollIntoView fails
+                        const modalBody = errorDiv.closest('.modal-body');
+                        if (modalBody.length > 0 && modalBody[0]) {
+                            modalBody[0].scrollTop = 0;
+                        }
+                    }
+                }
             },
             complete: function() {
                 submitBtn.prop('disabled', false);

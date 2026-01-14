@@ -64,6 +64,11 @@ class ClientController extends Controller
 
     public function store(Request $request)
     {
+        // Helper function to check if value is truly empty
+        $isEmpty = function($value) {
+            return $value === null || $value === '' || (is_string($value) && trim($value) === '');
+        };
+        
         // Filter out empty string values and convert to null
         $data = $request->all();
         foreach ($data as $key => $value) {
@@ -89,23 +94,23 @@ class ClientController extends Controller
             'notes' => 'nullable|string',
         ];
         
-        // Email validation - only validate email format and uniqueness if value is provided
+        // Email validation - only validate email format and uniqueness if value is provided and not empty
         $email = $request->input('email');
-        if ($email !== null && $email !== '') {
+        if (!$isEmpty($email)) {
             $rules['email'] = 'nullable|email|max:191|unique:client,email';
         } else {
             $rules['email'] = 'nullable|string|max:191';
         }
         
-        // Email 1 and 2 - only validate email format if value is provided
+        // Email 1 and 2 - only validate email format if value is provided and not empty
         $email1 = $request->input('email_1');
         $email2 = $request->input('email_2');
-        $rules['email_1'] = ($email1 !== null && $email1 !== '') ? 'nullable|email|max:191' : 'nullable|string|max:191';
-        $rules['email_2'] = ($email2 !== null && $email2 !== '') ? 'nullable|email|max:191' : 'nullable|string|max:191';
+        $rules['email_1'] = !$isEmpty($email1) ? 'nullable|email|max:191' : 'nullable|string|max:191';
+        $rules['email_2'] = !$isEmpty($email2) ? 'nullable|email|max:191' : 'nullable|string|max:191';
         
-        // Website - only validate URL format if value is provided
+        // Website - only validate URL format if value is provided and not empty
         $website = $request->input('website');
-        $rules['website'] = ($website !== null && $website !== '') ? 'nullable|url|max:255' : 'nullable|string|max:255';
+        $rules['website'] = !$isEmpty($website) ? 'nullable|url|max:255' : 'nullable|string|max:255';
         
         try {
             $validated = $request->validate($rules);
@@ -219,6 +224,11 @@ class ClientController extends Controller
 
     public function update(Request $request, Client $client)
     {
+        // Helper function to check if value is truly empty
+        $isEmpty = function($value) {
+            return $value === null || $value === '' || (is_string($value) && trim($value) === '');
+        };
+        
         // Filter out empty string values and convert to null
         $data = $request->all();
         foreach ($data as $key => $value) {
@@ -244,23 +254,23 @@ class ClientController extends Controller
             'notes' => 'nullable|string',
         ];
         
-        // Email validation - only validate email format and uniqueness if value is provided
+        // Email validation - only validate email format and uniqueness if value is provided and not empty
         $email = $request->input('email');
-        if ($email !== null && $email !== '') {
+        if (!$isEmpty($email)) {
             $rules['email'] = 'nullable|email|max:191|unique:client,email,' . $client->id;
         } else {
             $rules['email'] = 'nullable|string|max:191';
         }
         
-        // Email 1 and 2 - only validate email format if value is provided
+        // Email 1 and 2 - only validate email format if value is provided and not empty
         $email1 = $request->input('email_1');
         $email2 = $request->input('email_2');
-        $rules['email_1'] = ($email1 !== null && $email1 !== '') ? 'nullable|email|max:191' : 'nullable|string|max:191';
-        $rules['email_2'] = ($email2 !== null && $email2 !== '') ? 'nullable|email|max:191' : 'nullable|string|max:191';
+        $rules['email_1'] = !$isEmpty($email1) ? 'nullable|email|max:191' : 'nullable|string|max:191';
+        $rules['email_2'] = !$isEmpty($email2) ? 'nullable|email|max:191' : 'nullable|string|max:191';
         
-        // Website - only validate URL format if value is provided
+        // Website - only validate URL format if value is provided and not empty
         $website = $request->input('website');
-        $rules['website'] = ($website !== null && $website !== '') ? 'nullable|url|max:255' : 'nullable|string|max:255';
+        $rules['website'] = !$isEmpty($website) ? 'nullable|url|max:255' : 'nullable|string|max:255';
         
         try {
             $validated = $request->validate($rules);
