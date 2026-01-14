@@ -41,6 +41,7 @@
             align-items: center;
             gap: 25px;
             flex: 1;
+            flex-wrap: wrap;
         }
         
         .header-title-section h1 {
@@ -80,86 +81,104 @@
             flex-wrap: wrap;
         }
         
-        /* Status Legend - Always Visible */
-        .status-legend-visible {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            z-index: 1001;
-            min-width: 220px;
-            overflow: hidden;
-        }
-        
-        .legend-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 12px 18px;
+        /* Status Legend - Inside Header Left, Horizontal Layout */
+        .status-legend-inline {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 18px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            flex-wrap: wrap;
+        }
+        
+        .legend-label {
+            color: white;
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
         }
         
-        .legend-header i {
-            font-size: 1.1rem;
+        .legend-label i {
+            font-size: 1rem;
         }
         
-        .legend-content-visible {
-            padding: 15px 20px;
-        }
-        
-        .legend-item {
+        .legend-items-horizontal {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 10px 0;
-            border-bottom: 1px solid #f0f0f0;
+            flex-wrap: wrap;
         }
         
-        .legend-item:last-child {
-            border-bottom: none;
+        .legend-item-horizontal {
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         
         .legend-color {
-            width: 24px;
-            height: 24px;
-            border-radius: 6px;
-            border: 2px solid rgba(0,0,0,0.1);
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
             flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         
         .legend-text {
-            color: #495057;
+            color: white;
             font-weight: 500;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            white-space: nowrap;
         }
         
         @media (max-width: 768px) {
-            .status-legend-visible {
-                top: 10px;
-                right: 10px;
-                min-width: 180px;
+            .status-legend-inline {
+                padding: 8px 14px;
+                gap: 10px;
             }
             
-            .legend-header {
-                padding: 10px 15px;
+            .legend-label {
                 font-size: 0.85rem;
             }
             
-            .legend-content-visible {
-                padding: 12px 15px;
+            .legend-items-horizontal {
+                gap: 8px;
             }
             
-            .legend-item {
-                padding: 8px 0;
+            .legend-item-horizontal {
+                gap: 4px;
+            }
+            
+            .legend-color {
+                width: 18px;
+                height: 18px;
             }
             
             .legend-text {
-                font-size: 0.85rem;
+                font-size: 0.8rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .status-legend-inline {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .legend-label {
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 5px;
+            }
+            
+            .legend-items-horizontal {
+                justify-content: center;
+                width: 100%;
             }
         }
         
@@ -375,6 +394,10 @@
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 15px;
+            }
+            
+            .status-legend-inline {
+                width: 100%;
             }
             
             .header-title-section h1 {
@@ -757,6 +780,36 @@
                     <span><strong>{{ $booths->count() }}</strong> Booths Available</span>
                 </div>
             </div>
+            
+            <!-- Status Legend - Horizontal Inside Header -->
+            <div class="status-legend-inline">
+                <div class="legend-label">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Status:</span>
+                </div>
+                <div class="legend-items-horizontal">
+                    <div class="legend-item-horizontal">
+                        <span class="legend-color" style="background: #28a745;"></span>
+                        <span class="legend-text">Available</span>
+                    </div>
+                    <div class="legend-item-horizontal">
+                        <span class="legend-color" style="background: #0dcaf0;"></span>
+                        <span class="legend-text">Confirmed</span>
+                    </div>
+                    <div class="legend-item-horizontal">
+                        <span class="legend-color" style="background: #ffc107;"></span>
+                        <span class="legend-text">Reserved</span>
+                    </div>
+                    <div class="legend-item-horizontal">
+                        <span class="legend-color" style="background: #6c757d;"></span>
+                        <span class="legend-text">Hidden</span>
+                    </div>
+                    <div class="legend-item-horizontal">
+                        <span class="legend-color" style="background: #212529;"></span>
+                        <span class="legend-text">Paid</span>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="header-right">
             <!-- Simple Zoom Controls -->
@@ -778,36 +831,6 @@
             <button class="help-btn" onclick="showHelp()" title="How to use this map">
                 <i class="fas fa-question-circle"></i> Help
             </button>
-        </div>
-    </div>
-    
-    <!-- Status Legend - Always Visible -->
-    <div class="status-legend-visible" id="statusLegend">
-        <div class="legend-header">
-            <i class="fas fa-info-circle"></i>
-            <span>Booth Status</span>
-        </div>
-        <div class="legend-content-visible">
-            <div class="legend-item">
-                <span class="legend-color" style="background: #28a745;"></span>
-                <span class="legend-text">Available</span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-color" style="background: #0dcaf0;"></span>
-                <span class="legend-text">Confirmed</span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-color" style="background: #ffc107;"></span>
-                <span class="legend-text">Reserved</span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-color" style="background: #6c757d;"></span>
-                <span class="legend-text">Hidden</span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-color" style="background: #212529;"></span>
-                <span class="legend-text">Paid</span>
-            </div>
         </div>
     </div>
     
