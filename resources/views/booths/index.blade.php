@@ -1136,10 +1136,12 @@
     flex-shrink: 0;
 }
 
-.dropped-booth.status-1 { background: #fff; border-color: #28a745; }
-.dropped-booth.status-2 { background: #ef7070; border-color: #dc3545; }
-.dropped-booth.status-3 { background: #28a745; border-color: #20c997; }
-.dropped-booth.status-5 { background: #dc3545; border-color: #c82333; }
+/* Status colors matching legend - these override custom background colors */
+.dropped-booth.status-1 { background: #28a745 !important; border-color: #28a745 !important; color: #ffffff !important; }
+.dropped-booth.status-2 { background: #0dcaf0 !important; border-color: #0dcaf0 !important; color: #ffffff !important; }
+.dropped-booth.status-3 { background: #ffc107 !important; border-color: #ffc107 !important; color: #333333 !important; }
+.dropped-booth.status-4 { background: #6c757d !important; border-color: #6c757d !important; color: #ffffff !important; }
+.dropped-booth.status-5 { background: #212529 !important; border-color: #212529 !important; color: #ffffff !important; }
 
 /* Context menu for booths (right-click) */
 .booth-context-menu {
@@ -8365,10 +8367,24 @@ const FloorPlanDesigner = {
         const calculatedFontSize = Math.min(fontSize, Math.max(8, width * 0.45));
         div.style.fontSize = calculatedFontSize + 'px';
         
+        // Status colors mapping (matching legend colors)
+        const statusColors = {
+            1: { bg: '#28a745', border: '#28a745', text: '#ffffff' }, // Available - Green
+            2: { bg: '#0dcaf0', border: '#0dcaf0', text: '#ffffff' }, // Confirmed - Cyan
+            3: { bg: '#ffc107', border: '#ffc107', text: '#333333' }, // Reserved - Yellow
+            4: { bg: '#6c757d', border: '#6c757d', text: '#ffffff' }, // Hidden - Gray
+            5: { bg: '#212529', border: '#212529', text: '#ffffff' }  // Paid - Black
+        };
+        
+        // Get status-based colors (these will override custom colors)
+        const boothStatus = boothData.status || 1;
+        const statusColor = statusColors[boothStatus] || statusColors[1];
+        
         // Apply appearance settings (use zone settings if available, otherwise booth data, then defaults)
-        const backgroundColor = boothData.background_color || effectiveSettings.background_color || this.defaultBackgroundColor || '#ffffff';
-        const borderColor = boothData.border_color || effectiveSettings.border_color || this.defaultBorderColor || '#007bff';
-        const textColor = boothData.text_color || effectiveSettings.text_color || this.defaultTextColor || '#000000';
+        // BUT: Status colors will override background and border colors
+        const backgroundColor = statusColor.bg; // Status color takes priority
+        const borderColor = statusColor.border; // Status color takes priority
+        const textColor = statusColor.text; // Status color takes priority for text too
         const fontWeight = boothData.font_weight || effectiveSettings.font_weight || this.defaultFontWeight || 'bold';
         const fontFamily = boothData.font_family || effectiveSettings.font_family || this.defaultFontFamily || 'Arial, sans-serif';
         const textAlign = boothData.text_align || effectiveSettings.text_align || this.defaultTextAlign || 'center';
@@ -12208,19 +12224,36 @@ const FloorPlanDesigner = {
                         existingBooth.setAttribute('data-opacity', booth.opacity);
                     }
                     
-                    // Update appearance properties if they exist
-                    if (booth.background_color) {
-                        existingBooth.style.backgroundColor = booth.background_color;
-                        existingBooth.setAttribute('data-background-color', booth.background_color);
+                    // Status colors mapping (matching legend colors)
+                    const statusColors = {
+                        1: { bg: '#28a745', border: '#28a745', text: '#ffffff' }, // Available - Green
+                        2: { bg: '#0dcaf0', border: '#0dcaf0', text: '#ffffff' }, // Confirmed - Cyan
+                        3: { bg: '#ffc107', border: '#ffc107', text: '#333333' }, // Reserved - Yellow
+                        4: { bg: '#6c757d', border: '#6c757d', text: '#ffffff' }, // Hidden - Gray
+                        5: { bg: '#212529', border: '#212529', text: '#ffffff' }  // Paid - Black
+                    };
+                    
+                    // Apply status-based colors (these override custom background/border colors)
+                    const boothStatus = booth.status || 1;
+                    const statusColor = statusColors[boothStatus] || statusColors[1];
+                    
+                    // Status colors take priority over custom colors
+                    existingBooth.style.backgroundColor = statusColor.bg;
+                    existingBooth.style.borderColor = statusColor.border;
+                    existingBooth.style.color = statusColor.text;
+                    
+                    // Store status colors in data attributes
+                    existingBooth.setAttribute('data-background-color', statusColor.bg);
+                    existingBooth.setAttribute('data-border-color', statusColor.border);
+                    existingBooth.setAttribute('data-text-color', statusColor.text);
+                    
+                    // Update status class
+                    existingBooth.className = existingBooth.className.replace(/status-\d+/, 'status-' + boothStatus);
+                    if (!existingBooth.className.includes('status-' + boothStatus)) {
+                        existingBooth.className += ' status-' + boothStatus;
                     }
-                    if (booth.border_color) {
-                        existingBooth.style.borderColor = booth.border_color;
-                        existingBooth.setAttribute('data-border-color', booth.border_color);
-                    }
-                    if (booth.text_color) {
-                        existingBooth.style.color = booth.text_color;
-                        existingBooth.setAttribute('data-text-color', booth.text_color);
-                    }
+                    
+                    // Still apply other appearance properties if they exist (font-weight, font-family, etc.)
                     if (booth.font_weight) {
                         existingBooth.style.fontWeight = booth.font_weight;
                         existingBooth.setAttribute('data-font-weight', booth.font_weight);
@@ -12320,18 +12353,33 @@ const FloorPlanDesigner = {
                     boothElement.setAttribute('data-opacity', booth.opacity);
                 }
                 
-                // Apply saved appearance properties if they exist
-                if (booth.background_color) {
-                    boothElement.style.backgroundColor = booth.background_color;
-                    boothElement.setAttribute('data-background-color', booth.background_color);
-                }
-                if (booth.border_color) {
-                    boothElement.style.borderColor = booth.border_color;
-                    boothElement.setAttribute('data-border-color', booth.border_color);
-                }
-                if (booth.text_color) {
-                    boothElement.style.color = booth.text_color;
-                    boothElement.setAttribute('data-text-color', booth.text_color);
+                // Status colors mapping (matching legend colors)
+                const statusColors = {
+                    1: { bg: '#28a745', border: '#28a745', text: '#ffffff' }, // Available - Green
+                    2: { bg: '#0dcaf0', border: '#0dcaf0', text: '#ffffff' }, // Confirmed - Cyan
+                    3: { bg: '#ffc107', border: '#ffc107', text: '#333333' }, // Reserved - Yellow
+                    4: { bg: '#6c757d', border: '#6c757d', text: '#ffffff' }, // Hidden - Gray
+                    5: { bg: '#212529', border: '#212529', text: '#ffffff' }  // Paid - Black
+                };
+                
+                // Apply status-based colors (these override custom background/border colors)
+                const boothStatus = booth.status || 1;
+                const statusColor = statusColors[boothStatus] || statusColors[1];
+                
+                // Status colors take priority over custom colors
+                boothElement.style.backgroundColor = statusColor.bg;
+                boothElement.style.borderColor = statusColor.border;
+                boothElement.style.color = statusColor.text;
+                
+                // Store status colors in data attributes
+                boothElement.setAttribute('data-background-color', statusColor.bg);
+                boothElement.setAttribute('data-border-color', statusColor.border);
+                boothElement.setAttribute('data-text-color', statusColor.text);
+                
+                // Still apply other appearance properties if they exist (font-weight, font-family, etc.)
+                if (booth.font_weight) {
+                    boothElement.style.fontWeight = booth.font_weight;
+                    boothElement.setAttribute('data-font-weight', booth.font_weight);
                 }
                 if (booth.font_weight) {
                     boothElement.style.fontWeight = booth.font_weight;

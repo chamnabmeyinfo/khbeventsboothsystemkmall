@@ -25,68 +25,422 @@
         .public-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 16px 24px;
+            padding: 20px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             z-index: 1000;
             position: relative;
+            flex-wrap: wrap;
+            gap: 15px;
         }
         
-        .public-header h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0;
-        }
-        
-        .public-header .header-info {
+        .header-left {
             display: flex;
             align-items: center;
-            gap: 20px;
-            font-size: 0.9rem;
+            gap: 25px;
+            flex: 1;
         }
         
-        .zoom-controls {
+        .header-title-section h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin: 0;
+            line-height: 1.2;
+        }
+        
+        .project-name {
+            font-size: 0.95rem;
+            opacity: 0.95;
+            margin-top: 5px;
+            font-weight: 400;
+        }
+        
+        .header-stats {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .stat-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
             display: flex;
             align-items: center;
             gap: 8px;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 8px 12px;
-            border-radius: 8px;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
         }
         
-        .zoom-btn {
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        /* Status Legend */
+        .status-legend {
+            position: relative;
+        }
+        
+        .legend-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        
+        .legend-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .legend-content {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            min-width: 200px;
+            z-index: 1001;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .legend-item:last-child {
+            border-bottom: none;
+        }
+        
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: 2px solid rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .legend-text {
+            color: #495057;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        /* Simplified Zoom Controls */
+        .zoom-controls-simple {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .zoom-label {
+            color: white;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-right: 5px;
+        }
+        
+        .zoom-btn-simple {
             background: rgba(255, 255, 255, 0.3);
             border: none;
             color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.2s;
+            transition: all 0.2s;
+            font-size: 0.9rem;
         }
         
-        .zoom-btn:hover {
-            background: rgba(255, 255, 255, 0.4);
+        .zoom-btn-simple:hover {
+            background: rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
         }
         
-        .zoom-level {
+        .zoom-level-display {
             color: white;
-            font-weight: 600;
-            min-width: 50px;
+            font-weight: 700;
+            min-width: 55px;
             text-align: center;
+            font-size: 0.95rem;
+        }
+        
+        /* Help Button */
+        .help-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        
+        .help-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        /* Help Modal */
+        .help-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 10002;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .help-modal.active {
+            display: flex;
+        }
+        
+        .help-modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s ease;
+        }
+        
+        .help-modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 25px;
+            border-radius: 16px 16px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .help-modal-header h3 {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+        
+        .help-modal-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 1.2rem;
+        }
+        
+        .help-modal-close:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+        
+        .help-modal-body {
+            padding: 25px;
+        }
+        
+        .help-section {
+            margin-bottom: 25px;
+        }
+        
+        .help-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .help-section h4 {
+            color: #667eea;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .help-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .help-section ul li {
+            padding: 10px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #495057;
+            line-height: 1.6;
+        }
+        
+        .help-section ul li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .help-legend {
+            margin-top: 15px;
+        }
+        
+        .help-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .help-legend-item:last-child {
+            border-bottom: none;
+        }
+        
+        .help-legend-color {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: 2px solid rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .public-header {
+                padding: 15px 20px;
+            }
+            
+            .header-left {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .header-title-section h1 {
+                font-size: 1.4rem;
+            }
+            
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .zoom-controls-simple {
+                flex: 1;
+                justify-content: center;
+            }
+            
+            .legend-content {
+                right: auto;
+                left: 0;
+            }
         }
         
         .canvas-container {
             width: 100%;
-            height: calc(100vh - 70px);
+            height: calc(100vh - 80px);
             overflow: hidden;
             position: relative;
             background: #e9ecef;
+        }
+        
+        /* Welcome Message */
+        .welcome-message {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 25px;
+            border-radius: 30px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+            color: #495057;
+            animation: slideDown 0.5s ease;
+            max-width: 90%;
+        }
+        
+        .welcome-message.hidden {
+            display: none;
+        }
+        
+        .welcome-close {
+            background: transparent;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        
+        .welcome-close:hover {
+            background: #f0f0f0;
+            color: #495057;
         }
         
         .floorplan-canvas {
@@ -109,21 +463,31 @@
         .dropped-booth {
             position: absolute;
             border: 2px solid;
-            border-radius: 6px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s ease;
             user-select: none;
             pointer-events: auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
         
         .dropped-booth:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transform: scale(1.08);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
             z-index: 1000 !important;
+            border-width: 3px;
+        }
+        
+        /* Mobile touch improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .dropped-booth:active {
+                transform: scale(1.05);
+                box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            }
         }
         
         .dropped-booth.status-1 {
@@ -160,16 +524,17 @@
             position: absolute;
             background: rgba(0, 0, 0, 0.95);
             color: white;
-            padding: 14px 18px;
-            border-radius: 10px;
-            font-size: 0.875rem;
+            padding: 16px 20px;
+            border-radius: 12px;
+            font-size: 0.9rem;
             pointer-events: none;
             z-index: 10000;
             display: none;
-            max-width: 360px;
-            box-shadow: 0 6px 24px rgba(0,0,0,0.5);
-            line-height: 1.6;
+            max-width: 380px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+            line-height: 1.7;
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
         }
         
         .booth-tooltip img {
@@ -181,11 +546,14 @@
         
         .booth-tooltip .tooltip-title {
             font-weight: 700;
-            font-size: 1rem;
-            margin-bottom: 8px;
+            font-size: 1.1rem;
+            margin-bottom: 12px;
             color: #fff;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            padding-bottom: 6px;
+            border-bottom: 2px solid rgba(255,255,255,0.25);
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .booth-tooltip .tooltip-row {
@@ -239,12 +607,12 @@
         
         .booth-modal-content {
             background: white;
-            border-radius: 12px;
-            max-width: 500px;
+            border-radius: 16px;
+            max-width: 600px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 12px 48px rgba(0,0,0,0.3);
             animation: slideUp 0.3s ease;
         }
         
@@ -262,8 +630,8 @@
         .booth-modal-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px 24px;
-            border-radius: 12px 12px 0 0;
+            padding: 25px 30px;
+            border-radius: 16px 16px 0 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -271,7 +639,7 @@
         
         .booth-modal-header h3 {
             margin: 0;
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             font-weight: 700;
         }
         
@@ -279,30 +647,32 @@
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
-            width: 32px;
-            height: 32px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.2s;
-            font-size: 1.2rem;
+            transition: all 0.2s;
+            font-size: 1.3rem;
         }
         
         .booth-modal-close:hover {
             background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
         }
         
         .booth-modal-body {
-            padding: 24px;
+            padding: 30px;
         }
         
         .booth-detail-row {
             display: flex;
             justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #e9ecef;
+            align-items: flex-start;
+            padding: 14px 0;
+            border-bottom: 1px solid #f0f0f0;
         }
         
         .booth-detail-row:last-child {
@@ -312,7 +682,10 @@
         .booth-detail-label {
             color: #6c757d;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .booth-detail-value {
@@ -321,68 +694,191 @@
             text-align: right;
             max-width: 60%;
             word-wrap: break-word;
+            font-size: 0.95rem;
         }
         
         .booth-detail-value.status-badge {
             display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
+            padding: 6px 16px;
+            border-radius: 25px;
+            font-size: 0.9rem;
             font-weight: 600;
+            color: white;
         }
         
-        .status-1 { background: #28a745; color: white; }
-        .status-2 { background: #0dcaf0; color: white; }
-        .status-3 { background: #ffc107; color: #333; }
-        .status-4 { background: #6c757d; color: white; }
-        .status-5 { background: #212529; color: white; }
+        .status-1 { background: #28a745; }
+        .status-2 { background: #0dcaf0; }
+        .status-3 { background: #ffc107; color: #333 !important; }
+        .status-4 { background: #6c757d; }
+        .status-5 { background: #212529; }
         
         .booth-detail-section {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .booth-detail-section:last-child {
+            margin-bottom: 0;
         }
         
         .booth-detail-section-title {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: 700;
             color: #667eea;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
             border-bottom: 2px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .booth-detail-section-content {
+            color: #495057;
+            line-height: 1.7;
+            font-size: 0.95rem;
         }
     </style>
 </head>
 <body>
     <!-- Public Header -->
     <div class="public-header">
-        <div>
-            <h1><i class="fas fa-map mr-2"></i>{{ $floorPlan->name }}</h1>
-            @if($floorPlan->project_name)
-                <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 4px;">
-                    {{ $floorPlan->project_name }}
-                </div>
-            @endif
-        </div>
-        <div class="header-info">
-            <div>
-                <i class="fas fa-store mr-1"></i>
-                <strong>{{ $booths->count() }}</strong> Booths
+        <div class="header-left">
+            <div class="header-title-section">
+                <h1><i class="fas fa-map mr-2"></i>{{ $floorPlan->name }}</h1>
+                @if($floorPlan->project_name)
+                    <div class="project-name">{{ $floorPlan->project_name }}</div>
+                @endif
             </div>
-            <div class="zoom-controls">
-                <button class="zoom-btn" id="zoomOut" title="Zoom Out">
+            <div class="header-stats">
+                <div class="stat-badge">
+                    <i class="fas fa-store"></i>
+                    <span><strong>{{ $booths->count() }}</strong> Booths Available</span>
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <!-- Status Legend -->
+            <div class="status-legend" id="statusLegend">
+                <button class="legend-toggle" onclick="toggleLegend()" title="Show/Hide Legend">
+                    <i class="fas fa-info-circle"></i> What do colors mean?
+                </button>
+                <div class="legend-content" id="legendContent" style="display: none;">
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #28a745;"></span>
+                        <span class="legend-text">Available</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #0dcaf0;"></span>
+                        <span class="legend-text">Confirmed</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #ffc107;"></span>
+                        <span class="legend-text">Reserved</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #6c757d;"></span>
+                        <span class="legend-text">Hidden</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #212529;"></span>
+                        <span class="legend-text">Paid</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Simple Zoom Controls -->
+            <div class="zoom-controls-simple">
+                <div class="zoom-label">Zoom:</div>
+                <button class="zoom-btn-simple" id="zoomOut" title="Zoom Out">
                     <i class="fas fa-minus"></i>
                 </button>
-                <span class="zoom-level" id="zoomLevel">100%</span>
-                <button class="zoom-btn" id="zoomIn" title="Zoom In">
+                <span class="zoom-level-display" id="zoomLevel">100%</span>
+                <button class="zoom-btn-simple" id="zoomIn" title="Zoom In">
                     <i class="fas fa-plus"></i>
                 </button>
-                <button class="zoom-btn" id="zoomFit" title="Fit to View">
-                    <i class="fas fa-expand-arrows-alt"></i>
-                </button>
-                <button class="zoom-btn" id="zoomReset" title="Reset Zoom">
-                    <i class="fas fa-home"></i>
+                <button class="zoom-btn-simple" id="zoomFit" title="Fit to Screen">
+                    <i class="fas fa-expand"></i>
                 </button>
             </div>
+            
+            <!-- Help Button -->
+            <button class="help-btn" onclick="showHelp()" title="How to use this map">
+                <i class="fas fa-question-circle"></i> Help
+            </button>
         </div>
+    </div>
+    
+    <!-- Help Modal -->
+    <div class="help-modal" id="helpModal" onclick="closeHelp(event)">
+        <div class="help-modal-content" onclick="event.stopPropagation()">
+            <div class="help-modal-header">
+                <h3><i class="fas fa-question-circle mr-2"></i>How to Use This Floor Plan</h3>
+                <button class="help-modal-close" onclick="closeHelp()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="help-modal-body">
+                <div class="help-section">
+                    <h4><i class="fas fa-mouse-pointer text-primary"></i> Viewing Booths</h4>
+                    <ul>
+                        <li><strong>Hover</strong> over any booth to see quick information</li>
+                        <li><strong>Click</strong> on a booth to see full details</li>
+                        <li>Each booth is color-coded by its status (see legend above)</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h4><i class="fas fa-hand-paper text-primary"></i> Moving Around</h4>
+                    <ul>
+                        <li><strong>Click and drag</strong> the map to move around</li>
+                        <li>Use your <strong>mouse wheel</strong> to zoom in and out</li>
+                        <li>On mobile, <strong>pinch to zoom</strong> and <strong>drag</strong> to move</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h4><i class="fas fa-search-plus text-primary"></i> Zoom Controls</h4>
+                    <ul>
+                        <li><strong>+</strong> button: Zoom in for closer view</li>
+                        <li><strong>-</strong> button: Zoom out to see more</li>
+                        <li><strong>Fit</strong> button: Automatically fit the entire map to your screen</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h4><i class="fas fa-palette text-primary"></i> Understanding Colors</h4>
+                    <p>Each booth has a color that shows its availability:</p>
+                    <div class="help-legend">
+                        <div class="help-legend-item">
+                            <span class="help-legend-color" style="background: #28a745;"></span>
+                            <span>Green = Available for booking</span>
+                        </div>
+                        <div class="help-legend-item">
+                            <span class="help-legend-color" style="background: #0dcaf0;"></span>
+                            <span>Blue = Confirmed booking</span>
+                        </div>
+                        <div class="help-legend-item">
+                            <span class="help-legend-color" style="background: #ffc107;"></span>
+                            <span>Yellow = Reserved</span>
+                        </div>
+                        <div class="help-legend-item">
+                            <span class="help-legend-color" style="background: #6c757d;"></span>
+                            <span>Gray = Hidden</span>
+                        </div>
+                        <div class="help-legend-item">
+                            <span class="help-legend-color" style="background: #212529;"></span>
+                            <span>Black = Paid</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Welcome Message -->
+    <div class="welcome-message" id="welcomeMessage">
+        <i class="fas fa-info-circle text-primary"></i>
+        <span><strong>Tip:</strong> Hover over booths to see details, or click for full information. Drag the map to explore!</span>
+        <button class="welcome-close" onclick="closeWelcome()" title="Close">
+            <i class="fas fa-times"></i>
+        </button>
     </div>
     
     <!-- Canvas Container -->
@@ -427,15 +923,20 @@
         const canvas = document.getElementById('print');
         const container = document.getElementById('printContainer');
         
-        // Initialize Panzoom
+        // Initialize Panzoom with touch support
         if (canvas && typeof Panzoom !== 'undefined') {
             panzoomInstance = Panzoom(canvas, {
                 maxScale: 5,
-                minScale: 0.01, // Allow zooming out much further (1% instead of 10%)
+                minScale: 0.01,
                 contain: 'outside',
                 disablePan: false,
                 disableZoom: false,
+                // Enable touch gestures for mobile
+                touchAction: 'none',
             });
+            
+            // Enable pinch zoom on mobile
+            container.addEventListener('wheel', panzoomInstance.zoomWithWheel);
             
             // Update zoom level display
             canvas.addEventListener('panzoomzoom', function(e) {
@@ -582,7 +1083,7 @@
                         tooltipHTML += '<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 0.85rem; color: rgba(255,255,255,0.9); line-height: 1.4;">' + shortDesc + '</div>';
                     }
                     
-                    tooltipHTML += '<div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 0.75rem; color: rgba(255,255,255,0.7); text-align: center;"><i class="fas fa-mouse-pointer mr-1"></i>Click for full details</div>';
+                    tooltipHTML += '<div style="margin-top: 12px; padding-top: 10px; border-top: 2px solid rgba(255,255,255,0.3); font-size: 0.8rem; color: rgba(255,255,255,0.9); text-align: center; font-weight: 600;"><i class="fas fa-hand-pointer mr-1"></i>Click to see full details</div>';
                     
                     tooltip.innerHTML = tooltipHTML;
                     tooltip.style.display = 'block';
@@ -664,13 +1165,65 @@
             }
         });
         
-        document.getElementById('zoomReset').addEventListener('click', function() {
-            if (panzoomInstance) {
-                panzoomInstance.reset();
-                zoomLevel = 1;
-                document.getElementById('zoomLevel').textContent = '100%';
+        // Legend toggle function
+        function toggleLegend() {
+            const legendContent = document.getElementById('legendContent');
+            if (legendContent.style.display === 'none' || !legendContent.style.display) {
+                legendContent.style.display = 'block';
+            } else {
+                legendContent.style.display = 'none';
+            }
+        }
+        
+        // Close legend when clicking outside
+        document.addEventListener('click', function(event) {
+            const legend = document.getElementById('statusLegend');
+            if (legend && !legend.contains(event.target)) {
+                const legendContent = document.getElementById('legendContent');
+                if (legendContent) {
+                    legendContent.style.display = 'none';
+                }
             }
         });
+        
+        // Help modal functions
+        function showHelp() {
+            document.getElementById('helpModal').classList.add('active');
+        }
+        
+        function closeHelp(event) {
+            if (!event || event.target.id === 'helpModal') {
+                document.getElementById('helpModal').classList.remove('active');
+            }
+        }
+        
+        // Welcome message functions
+        function closeWelcome() {
+            const welcomeMsg = document.getElementById('welcomeMessage');
+            if (welcomeMsg) {
+                welcomeMsg.classList.add('hidden');
+                // Hide after 5 seconds automatically
+                setTimeout(function() {
+                    if (welcomeMsg) {
+                        welcomeMsg.style.display = 'none';
+                    }
+                }, 500);
+            }
+        }
+        
+        // Auto-hide welcome message after 8 seconds
+        setTimeout(function() {
+            const welcomeMsg = document.getElementById('welcomeMessage');
+            if (welcomeMsg && !welcomeMsg.classList.contains('hidden')) {
+                welcomeMsg.style.opacity = '0';
+                welcomeMsg.style.transition = 'opacity 0.5s ease';
+                setTimeout(function() {
+                    if (welcomeMsg) {
+                        welcomeMsg.style.display = 'none';
+                    }
+                }, 500);
+            }
+        }, 8000);
         
         // Function to calculate content bounds (canvas + all booths)
         function calculateContentBounds() {
@@ -826,8 +1379,8 @@
             
             // Booth Image Preview
             if (booth.booth_image) {
-                html += '<div class="booth-detail-section" style="margin-bottom: 20px;">';
-                html += '<img src="' + booth.booth_image + '" alt="Booth Preview" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">';
+                html += '<div class="booth-detail-section" style="margin-bottom: 25px;">';
+                html += '<img src="' + booth.booth_image + '" alt="Booth Preview" style="width: 100%; max-height: 350px; object-fit: cover; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);">';
                 html += '</div>';
             }
             
@@ -836,62 +1389,69 @@
             html += '<div class="booth-detail-section-title"><i class="fas fa-info-circle"></i> Basic Information</div>';
             
             html += '<div class="booth-detail-row">';
-            html += '<span class="booth-detail-label">Booth Number:</span>';
-            html += '<span class="booth-detail-value"><strong style="font-size: 1.2rem; color: #667eea;">' + booth.booth_number + '</strong></span>';
+            html += '<span class="booth-detail-label"><i class="fas fa-hashtag"></i> Booth Number:</span>';
+            html += '<span class="booth-detail-value"><strong style="font-size: 1.3rem; color: #667eea;">' + booth.booth_number + '</strong></span>';
             html += '</div>';
             
             if (booth.booth_type) {
                 html += '<div class="booth-detail-row">';
-                html += '<span class="booth-detail-label">Booth Type:</span>';
+                html += '<span class="booth-detail-label"><i class="fas fa-tag"></i> Booth Type:</span>';
                 html += '<span class="booth-detail-value"><strong style="color: #667eea;">' + booth.booth_type + '</strong></span>';
                 html += '</div>';
             }
             
             html += '<div class="booth-detail-row">';
-            html += '<span class="booth-detail-label">Status:</span>';
+            html += '<span class="booth-detail-label"><i class="fas fa-info-circle"></i> Status:</span>';
             html += '<span class="booth-detail-value status-badge" style="background: ' + statusColor + '">' + statusLabel + '</span>';
             html += '</div>';
             
             html += '</div>';
             
-            // Specifications Section (Price removed from public view)
-            html += '<div class="booth-detail-section">';
-            html += '<div class="booth-detail-section-title"><i class="fas fa-info-circle"></i> Specifications</div>';
+            // Specifications Section
+            let hasSpecs = false;
+            let specsHTML = '<div class="booth-detail-section">';
+            specsHTML += '<div class="booth-detail-section-title"><i class="fas fa-clipboard-list"></i> Specifications</div>';
             
             if (booth.area_sqm) {
-                html += '<div class="booth-detail-row">';
-                html += '<span class="booth-detail-label">Area:</span>';
-                html += '<span class="booth-detail-value"><i class="fas fa-ruler-combined mr-1"></i>' + parseFloat(booth.area_sqm).toFixed(2) + ' m²</span>';
-                html += '</div>';
+                specsHTML += '<div class="booth-detail-row">';
+                specsHTML += '<span class="booth-detail-label"><i class="fas fa-ruler-combined"></i> Area:</span>';
+                specsHTML += '<span class="booth-detail-value">' + parseFloat(booth.area_sqm).toFixed(2) + ' m²</span>';
+                specsHTML += '</div>';
+                hasSpecs = true;
             }
             
             if (booth.capacity) {
-                html += '<div class="booth-detail-row">';
-                html += '<span class="booth-detail-label">Capacity:</span>';
-                html += '<span class="booth-detail-value"><i class="fas fa-users mr-1"></i>' + booth.capacity + ' people</span>';
-                html += '</div>';
+                specsHTML += '<div class="booth-detail-row">';
+                specsHTML += '<span class="booth-detail-label"><i class="fas fa-users"></i> Capacity:</span>';
+                specsHTML += '<span class="booth-detail-value">' + booth.capacity + ' people</span>';
+                specsHTML += '</div>';
+                hasSpecs = true;
             }
             
             if (booth.electricity_power) {
-                html += '<div class="booth-detail-row">';
-                html += '<span class="booth-detail-label">Electricity Power:</span>';
-                html += '<span class="booth-detail-value"><i class="fas fa-plug mr-1"></i>' + booth.electricity_power + '</span>';
-                html += '</div>';
+                specsHTML += '<div class="booth-detail-row">';
+                specsHTML += '<span class="booth-detail-label"><i class="fas fa-bolt"></i> Electricity Power:</span>';
+                specsHTML += '<span class="booth-detail-value">' + booth.electricity_power + '</span>';
+                specsHTML += '</div>';
+                hasSpecs = true;
             }
             
-            html += '</div>';
+            specsHTML += '</div>';
+            if (hasSpecs) {
+                html += specsHTML;
+            }
             
             if (booth.description) {
                 html += '<div class="booth-detail-section">';
                 html += '<div class="booth-detail-section-title"><i class="fas fa-align-left"></i> Description</div>';
-                html += '<div style="padding: 12px 0; color: #495057; line-height: 1.6;">' + booth.description.replace(/\n/g, '<br>') + '</div>';
+                html += '<div class="booth-detail-section-content">' + booth.description.replace(/\n/g, '<br>') + '</div>';
                 html += '</div>';
             }
             
             if (booth.features) {
                 html += '<div class="booth-detail-section">';
                 html += '<div class="booth-detail-section-title"><i class="fas fa-star"></i> Features</div>';
-                html += '<div style="padding: 12px 0; color: #495057; line-height: 1.6;">' + booth.features.replace(/\n/g, '<br>') + '</div>';
+                html += '<div class="booth-detail-section-content">' + booth.features.replace(/\n/g, '<br>') + '</div>';
                 html += '</div>';
             }
             
@@ -901,21 +1461,21 @@
                 
                 if (booth.company) {
                     html += '<div class="booth-detail-row">';
-                    html += '<span class="booth-detail-label">Company:</span>';
+                    html += '<span class="booth-detail-label"><i class="fas fa-building"></i> Company:</span>';
                     html += '<span class="booth-detail-value">' + booth.company + '</span>';
                     html += '</div>';
                 }
                 
                 if (booth.category) {
                     html += '<div class="booth-detail-row">';
-                    html += '<span class="booth-detail-label">Category:</span>';
+                    html += '<span class="booth-detail-label"><i class="fas fa-folder"></i> Category:</span>';
                     html += '<span class="booth-detail-value">' + booth.category + '</span>';
                     html += '</div>';
                 }
                 
                 if (booth.sub_category) {
                     html += '<div class="booth-detail-row">';
-                    html += '<span class="booth-detail-label">Sub-Category:</span>';
+                    html += '<span class="booth-detail-label"><i class="fas fa-tag"></i> Sub-Category:</span>';
                     html += '<span class="booth-detail-value">' + booth.sub_category + '</span>';
                     html += '</div>';
                 }
@@ -941,7 +1501,7 @@
             if (booth.notes) {
                 html += '<div class="booth-detail-section">';
                 html += '<div class="booth-detail-section-title"><i class="fas fa-sticky-note"></i> Additional Notes</div>';
-                html += '<div style="padding: 12px 0; color: #495057; line-height: 1.6; font-style: italic;">' + booth.notes.replace(/\n/g, '<br>') + '</div>';
+                html += '<div class="booth-detail-section-content" style="font-style: italic; color: #6c757d;">' + booth.notes.replace(/\n/g, '<br>') + '</div>';
                 html += '</div>';
             }
             

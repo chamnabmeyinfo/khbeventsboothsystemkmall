@@ -104,6 +104,190 @@
         width: 36px;
         height: 36px;
         padding: 0;
+    }
+    
+    /* Modal Form Styles */
+    #boothModal .nav-pills .nav-link {
+        border-radius: 8px 8px 0 0;
+        padding: 12px 20px;
+        font-weight: 600;
+        color: #6c757d;
+        transition: all 0.3s;
+        border: none;
+        background: transparent;
+    }
+    
+    #boothModal .nav-pills .nav-link:hover {
+        color: #667eea;
+        background: rgba(102, 126, 234, 0.1);
+    }
+    
+    #boothModal .nav-pills .nav-link.active {
+        color: #667eea;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border-bottom: 3px solid #667eea;
+    }
+    
+    #boothModal .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    #boothModal .form-label {
+        display: flex;
+        align-items: center;
+    }
+    
+    #boothModal .tab-content {
+        padding-top: 20px;
+    }
+    
+    #boothModal .image-upload-area:hover {
+        background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    }
+    
+    @media (max-width: 768px) {
+        #boothModal .nav-pills {
+            flex-direction: column;
+        }
+        
+        #boothModal .nav-pills .nav-link {
+            border-radius: 8px;
+            margin-bottom: 5px;
+        }
+    }
+    
+    /* Modern Pagination Footer */
+    .card-footer-modern {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-top: 2px solid #e9ecef;
+        padding: 20px 30px;
+        border-radius: 0 0 12px 12px;
+    }
+    
+    .pagination-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    
+    .pagination-info {
+        display: flex;
+        align-items: center;
+    }
+    
+    .pagination-text {
+        color: #495057;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .pagination-text strong {
+        color: #667eea;
+        font-weight: 700;
+        margin: 0 4px;
+    }
+    
+    .pagination-controls {
+        display: flex;
+        align-items: center;
+    }
+    
+    /* Custom Pagination Styles */
+    .pagination {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .pagination .page-item {
+        margin: 0;
+    }
+    
+    .pagination .page-link {
+        color: #667eea;
+        background: white;
+        border: 2px solid #e9ecef;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        min-width: 44px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .pagination .page-link:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    .pagination .page-item.active .page-link {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: #667eea;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    .pagination .page-item.disabled .page-link {
+        color: #adb5bd;
+        background: #f8f9fa;
+        border-color: #e9ecef;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+    
+    .pagination .page-item.disabled .page-link:hover {
+        transform: none;
+        box-shadow: none;
+        background: #f8f9fa;
+        color: #adb5bd;
+    }
+    
+    .pagination .page-link i {
+        font-size: 0.85rem;
+    }
+    
+    @media (max-width: 768px) {
+        .pagination-wrapper {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .pagination-info {
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .pagination-controls {
+            justify-content: center;
+        }
+        
+        .pagination {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .pagination .page-link {
+            padding: 8px 12px;
+            min-width: 40px;
+            font-size: 0.9rem;
+        }
+    }
+    
+    .btn-action {
+        width: 36px;
+        height: 36px;
+        padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -450,168 +634,299 @@
             </table>
         </div>
         @if($booths->hasPages())
-        <div class="card-footer">
-            {{ $booths->links() }}
+        <div class="card-footer-modern">
+            <div class="pagination-wrapper">
+                <div class="pagination-info">
+                    <span class="pagination-text">
+                        <i class="fas fa-list mr-2"></i>
+                        Showing <strong>{{ $booths->firstItem() }}</strong> to <strong>{{ $booths->lastItem() }}</strong> of <strong>{{ $booths->total() }}</strong> booths
+                    </span>
+                </div>
+                <div class="pagination-controls">
+                    {{ $booths->links() }}
+                </div>
+            </div>
         </div>
         @endif
     </div>
 </div>
 
 <!-- Create/Edit Booth Modal -->
-<div class="modal fade" id="boothModal" tabindex="-1" role="dialog">
+<div class="modal fade" id="boothModal" tabindex="-1" role="dialog" aria-labelledby="boothModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="modalTitle">
-                    <i class="fas fa-store mr-2"></i>Create New Booth
+        <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px 12px 0 0; padding: 20px 30px; border-bottom: none;">
+                <h5 class="modal-title text-white" id="modalTitle" style="font-size: 1.5rem; font-weight: 700;">
+                    <i class="fas fa-store mr-2"></i><span id="modalTitleText">Create New Booth</span>
                 </h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.9; font-size: 1.5rem;">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <form id="boothForm" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" id="boothId" name="id">
-                <div class="modal-body">
-                    <div class="row">
-                        <!-- Basic Information -->
-                        <div class="col-md-6">
-                            <h6 class="mb-3"><i class="fas fa-info-circle mr-2"></i>Basic Information</h6>
-                            
-                            <div class="form-group">
-                                <label>Booth Number *</label>
-                                <input type="text" name="booth_number" id="booth_number" class="form-control" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Floor Plan *</label>
-                                <select name="floor_plan_id" id="floor_plan_id" class="form-control" required>
-                                    <option value="">Select Floor Plan</option>
-                                    @foreach($floorPlans as $fp)
-                                        <option value="{{ $fp->id }}">{{ $fp->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Booth Type</label>
-                                <select name="booth_type_id" id="booth_type_id" class="form-control">
-                                    <option value="">Select Type</option>
-                                    @foreach($boothTypes as $type)
-                                        <option value="{{ $type->id }}">{{ $type->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Type</label>
-                                <select name="type" id="type" class="form-control" required>
-                                    <option value="1">Booth</option>
-                                    <option value="2">Space Only</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Price *</label>
-                                <input type="number" name="price" id="price" class="form-control" step="0.01" min="0" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Status *</label>
-                                <select name="status" id="status" class="form-control" required>
-                                    <option value="1">Available</option>
-                                    <option value="2">Confirmed</option>
-                                    <option value="3">Reserved</option>
-                                    <option value="4">Hidden</option>
-                                    <option value="5">Paid</option>
-                                </select>
+                <div class="modal-body" style="padding: 30px;">
+                    <!-- Tab Navigation -->
+                    <ul class="nav nav-pills nav-fill mb-4" id="boothFormTabs" role="tablist" style="border-bottom: 2px solid #e9ecef; padding-bottom: 15px;">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="basic-tab" data-toggle="tab" href="#basic-info" role="tab" aria-controls="basic-info" aria-selected="true">
+                                <i class="fas fa-info-circle mr-2"></i>Basic Information
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="details-tab" data-toggle="tab" href="#details-info" role="tab" aria-controls="details-info" aria-selected="false">
+                                <i class="fas fa-clipboard-list mr-2"></i>Details & Specifications
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="content-tab" data-toggle="tab" href="#content-info" role="tab" aria-controls="content-info" aria-selected="false">
+                                <i class="fas fa-align-left mr-2"></i>Content & Description
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="media-tab" data-toggle="tab" href="#media-info" role="tab" aria-controls="media-info" aria-selected="false">
+                                <i class="fas fa-image mr-2"></i>Media
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="boothFormTabContent">
+                        <!-- Basic Information Tab -->
+                        <div class="tab-pane fade show active" id="basic-info" role="tabpanel" aria-labelledby="basic-tab">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="booth_number" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
+                                            <i class="fas fa-hashtag text-primary mr-2"></i>Booth Number <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" name="booth_number" id="booth_number" class="form-control" required 
+                                               style="border-radius: 8px; border: 1px solid #dee2e6; padding: 10px 15px; transition: all 0.3s;"
+                                               onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)'"
+                                               onblur="this.style.borderColor='#dee2e6'; this.style.boxShadow='none'">
+                                        <small class="form-text text-muted">Unique identifier for this booth</small>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="floor_plan_id" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
+                                            <i class="fas fa-map text-primary mr-2"></i>Floor Plan <span class="text-danger">*</span>
+                                        </label>
+                                        <select name="floor_plan_id" id="floor_plan_id" class="form-control" required
+                                                style="border-radius: 8px; border: 1px solid #dee2e6; padding: 10px 15px; transition: all 0.3s;"
+                                                onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)'"
+                                                onblur="this.style.borderColor='#dee2e6'; this.style.boxShadow='none'">
+                                            <option value="">Select Floor Plan</option>
+                                            @foreach($floorPlans as $fp)
+                                                <option value="{{ $fp->id }}">{{ $fp->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="booth_type_id" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
+                                            <i class="fas fa-tags text-primary mr-2"></i>Booth Type
+                                        </label>
+                                        <select name="booth_type_id" id="booth_type_id" class="form-control"
+                                                style="border-radius: 8px; border: 1px solid #dee2e6; padding: 10px 15px;">
+                                            <option value="">Select Type</option>
+                                            @foreach($boothTypes as $type)
+                                                <option value="{{ $type->id }}">{{ $type->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="type" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
+                                            <i class="fas fa-cube text-primary mr-2"></i>Type <span class="text-danger">*</span>
+                                        </label>
+                                        <select name="type" id="type" class="form-control" required
+                                                style="border-radius: 8px; border: 1px solid #dee2e6; padding: 10px 15px;">
+                                            <option value="1">Booth</option>
+                                            <option value="2">Space Only</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="price" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
+                                            <i class="fas fa-dollar-sign text-success mr-2"></i>Price <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text" style="border-radius: 8px 0 0 8px; background: #f8f9fa; border: 1px solid #dee2e6;">$</span>
+                                            </div>
+                                            <input type="number" name="price" id="price" class="form-control" step="0.01" min="0" required
+                                                   style="border-radius: 0 8px 8px 0; border: 1px solid #dee2e6; padding: 10px 15px;"
+                                                   onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)'"
+                                                   onblur="this.style.borderColor='#dee2e6'; this.style.boxShadow='none'">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="status" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
+                                            <i class="fas fa-toggle-on text-primary mr-2"></i>Status <span class="text-danger">*</span>
+                                        </label>
+                                        <select name="status" id="status" class="form-control" required
+                                                style="border-radius: 8px; border: 1px solid #dee2e6; padding: 10px 15px;">
+                                            <option value="1">Available</option>
+                                            <option value="2">Confirmed</option>
+                                            <option value="3">Reserved</option>
+                                            <option value="4">Hidden</option>
+                                            <option value="5">Paid</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="client_id" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
+                                            <i class="fas fa-user-tie text-primary mr-2"></i>Client
+                                        </label>
+                                        <select name="client_id" id="client_id" class="form-control"
+                                                style="border-radius: 8px; border: 1px solid #dee2e6; padding: 10px 15px;">
+                                            <option value="">Select Client</option>
+                                            @foreach($clients as $client)
+                                                <option value="{{ $client->id }}">{{ $client->company ?? $client->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="category_id" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
+                                            <i class="fas fa-folder text-primary mr-2"></i>Category
+                                        </label>
+                                        <select name="category_id" id="category_id" class="form-control"
+                                                style="border-radius: 8px; border: 1px solid #dee2e6; padding: 10px 15px;">
+                                            <option value="">Select Category</option>
+                                            @foreach($categories as $cat)
+                                                <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        
-                        <!-- Additional Information -->
-                        <div class="col-md-6">
-                            <h6 class="mb-3"><i class="fas fa-info-circle mr-2"></i>Additional Information</h6>
-                            
-                            <div class="form-group">
-                                <label>Client</label>
-                                <select name="client_id" id="client_id" class="form-control">
-                                    <option value="">Select Client</option>
-                                    @foreach($clients as $client)
-                                        <option value="{{ $client->id }}">{{ $client->company ?? $client->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Category</label>
-                                <select name="category_id" id="category_id" class="form-control">
-                                    <option value="">Select Category</option>
-                                    @foreach($categories as $cat)
-                                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Area (m²)</label>
-                                <input type="number" name="area_sqm" id="area_sqm" class="form-control" step="0.01" min="0">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Capacity (people)</label>
-                                <input type="number" name="capacity" id="capacity" class="form-control" min="0">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Electricity Power</label>
-                                <input type="text" name="electricity_power" id="electricity_power" class="form-control" placeholder="e.g., 10A, 20A, 30A">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Description & Features -->
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Description</label>
-                                <textarea name="description" id="description" class="form-control" rows="4" placeholder="Booth description..."></textarea>
+
+                        <!-- Details & Specifications Tab -->
+                        <div class="tab-pane fade" id="details-info" role="tabpanel" aria-labelledby="details-tab">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="area_sqm" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
+                                            <i class="fas fa-ruler-combined text-primary mr-2"></i>Area (m²)
+                                        </label>
+                                        <div class="input-group">
+                                            <input type="number" name="area_sqm" id="area_sqm" class="form-control" step="0.01" min="0"
+                                                   style="border-radius: 8px; border: 1px solid #dee2e6; padding: 10px 15px;">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text" style="border-radius: 0 8px 8px 0; background: #f8f9fa; border: 1px solid #dee2e6;">m²</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="capacity" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
+                                            <i class="fas fa-users text-primary mr-2"></i>Capacity (people)
+                                        </label>
+                                        <div class="input-group">
+                                            <input type="number" name="capacity" id="capacity" class="form-control" min="0"
+                                                   style="border-radius: 8px; border: 1px solid #dee2e6; padding: 10px 15px;">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text" style="border-radius: 0 8px 8px 0; background: #f8f9fa; border: 1px solid #dee2e6;">
+                                                    <i class="fas fa-user"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="electricity_power" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
+                                            <i class="fas fa-bolt text-warning mr-2"></i>Electricity Power
+                                        </label>
+                                        <input type="text" name="electricity_power" id="electricity_power" class="form-control" 
+                                               placeholder="e.g., 10A, 20A, 30A"
+                                               style="border-radius: 8px; border: 1px solid #dee2e6; padding: 10px 15px;">
+                                        <small class="form-text text-muted">Specify the electrical power requirements</small>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
+
+                        <!-- Content & Description Tab -->
+                        <div class="tab-pane fade" id="content-info" role="tabpanel" aria-labelledby="content-tab">
                             <div class="form-group">
-                                <label>Features</label>
-                                <textarea name="features" id="features" class="form-control" rows="4" placeholder="Booth features (one per line)..."></textarea>
+                                <label for="description" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
+                                    <i class="fas fa-align-left text-primary mr-2"></i>Description
+                                </label>
+                                <textarea name="description" id="description" class="form-control" rows="5" 
+                                          placeholder="Enter a detailed description of the booth..."
+                                          style="border-radius: 8px; border: 1px solid #dee2e6; padding: 12px 15px; resize: vertical;"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="features" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
+                                    <i class="fas fa-list-check text-primary mr-2"></i>Features
+                                </label>
+                                <textarea name="features" id="features" class="form-control" rows="5" 
+                                          placeholder="List booth features (one per line)..."
+                                          style="border-radius: 8px; border: 1px solid #dee2e6; padding: 12px 15px; resize: vertical;"></textarea>
+                                <small class="form-text text-muted">Enter each feature on a new line</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="notes" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
+                                    <i class="fas fa-sticky-note text-primary mr-2"></i>Additional Notes
+                                </label>
+                                <textarea name="notes" id="notes" class="form-control" rows="4" 
+                                          placeholder="Enter any additional notes or special instructions..."
+                                          style="border-radius: 8px; border: 1px solid #dee2e6; padding: 12px 15px; resize: vertical;"></textarea>
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- Notes -->
-                    <div class="form-group">
-                        <label>Notes</label>
-                        <textarea name="notes" id="notes" class="form-control" rows="3" placeholder="Additional notes..."></textarea>
-                    </div>
-                    
-                    <!-- Image Upload -->
-                    <div class="form-group">
-                        <label>Booth Image</label>
-                        <div class="image-upload-area" id="imageUploadArea" onclick="document.getElementById('booth_image').click()">
-                            <i class="fas fa-cloud-upload-alt fa-3x mb-3" style="color: #667eea;"></i>
-                            <p class="mb-0">Click to upload or drag and drop</p>
-                            <small class="text-muted">PNG, JPG, GIF up to 5MB</small>
-                        </div>
-                        <input type="file" name="booth_image" id="booth_image" class="d-none" accept="image/*" onchange="previewImage(this)">
-                        <div id="imagePreviewContainer" class="image-preview-container" style="display: none;">
-                            <img id="imagePreview" src="" alt="Preview">
-                            <button type="button" class="remove-image-btn" onclick="removeImage()">
-                                <i class="fas fa-times"></i>
-                            </button>
+
+                        <!-- Media Tab -->
+                        <div class="tab-pane fade" id="media-info" role="tabpanel" aria-labelledby="media-tab">
+                            <div class="form-group">
+                                <label class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 15px;">
+                                    <i class="fas fa-image text-primary mr-2"></i>Booth Image
+                                </label>
+                                <div class="image-upload-wrapper" style="position: relative;">
+                                    <div class="image-upload-area" id="imageUploadArea" 
+                                         onclick="document.getElementById('booth_image').click()"
+                                         style="border: 2px dashed #667eea; border-radius: 12px; padding: 40px; text-align: center; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); cursor: pointer; transition: all 0.3s;"
+                                         onmouseover="this.style.borderColor='#764ba2'; this.style.transform='scale(1.02)'"
+                                         onmouseout="this.style.borderColor='#667eea'; this.style.transform='scale(1)'">
+                                        <i class="fas fa-cloud-upload-alt fa-4x mb-3" style="color: #667eea;"></i>
+                                        <p class="mb-2" style="font-size: 1.1rem; font-weight: 600; color: #495057;">Click to upload or drag and drop</p>
+                                        <small class="text-muted">PNG, JPG, GIF up to 5MB</small>
+                                    </div>
+                                    <input type="file" name="booth_image" id="booth_image" class="d-none" accept="image/*" onchange="previewImage(this)">
+                                    <div id="imagePreviewContainer" class="image-preview-container" style="display: none; margin-top: 20px; position: relative; text-align: center;">
+                                        <div style="position: relative; display: inline-block;">
+                                            <img id="imagePreview" src="" alt="Preview" 
+                                                 style="max-width: 100%; max-height: 400px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                                            <button type="button" class="remove-image-btn" onclick="removeImage()"
+                                                    style="position: absolute; top: 10px; right: 10px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: all 0.3s;"
+                                                    onmouseover="this.style.transform='scale(1.1)'; this.style.background='#c82333'"
+                                                    onmouseout="this.style.transform='scale(1)'; this.style.background='#dc3545'">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save mr-1"></i>Save Booth
+                <div class="modal-footer" style="border-top: 1px solid #e9ecef; padding: 20px 30px; background: #f8f9fa; border-radius: 0 0 12px 12px;">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" 
+                            style="border-radius: 8px; padding: 10px 25px; font-weight: 600;">
+                        <i class="fas fa-times mr-2"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary"
+                            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 8px; padding: 10px 30px; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
+                        <i class="fas fa-save mr-2"></i>Save Booth
                     </button>
                 </div>
             </form>
@@ -653,9 +968,11 @@ $(document).ready(function() {
         ]
     });
     
-    // Auto-scroll modal body to top when modal is shown
+    // Auto-scroll modal body to top and reset to first tab when modal is shown
     $('#boothModal').on('shown.bs.modal', function() {
         $(this).find('.modal-body').scrollTop(0);
+        // Reset to first tab
+        $('#basic-tab').tab('show');
     });
     
     // Auto-open edit modal if edit parameter is in URL
@@ -678,17 +995,19 @@ $(document).ready(function() {
 // Open Create Modal
 function openCreateModal() {
     currentBoothId = null;
-    $('#modalTitle').html('<i class="fas fa-store mr-2"></i>Create New Booth');
+    $('#modalTitleText').text('Create New Booth');
     $('#boothForm')[0].reset();
     $('#boothId').val('');
     $('#imagePreviewContainer').hide();
+    // Reset to first tab
+    $('#basic-tab').tab('show');
     $('#boothModal').modal('show');
 }
 
 // Edit Booth
 function editBooth(id) {
     currentBoothId = id;
-    $('#modalTitle').html('<i class="fas fa-edit mr-2"></i>Edit Booth');
+    $('#modalTitleText').text('Edit Booth');
     
     // Fetch booth data with proper headers to ensure JSON response
     // Use the JSON endpoint to ensure we always get JSON
@@ -748,6 +1067,8 @@ function editBooth(id) {
                 $('#imagePreviewContainer').hide();
             }
             
+            // Reset to first tab
+            $('#basic-tab').tab('show');
             $('#boothModal').modal('show');
         })
         .catch(error => {
