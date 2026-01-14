@@ -66,7 +66,10 @@ class ClientController extends Controller
     {
         // Helper function to check if value is truly empty
         $isEmpty = function($value) {
-            return $value === null || $value === '' || (is_string($value) && trim($value) === '');
+            if ($value === null) return true;
+            if ($value === '') return true;
+            if (is_string($value) && trim($value) === '') return true;
+            return false;
         };
         
         // Filter out empty string values and convert to null
@@ -79,7 +82,7 @@ class ClientController extends Controller
         // Replace request data with cleaned data
         $request->replace($data);
         
-        // Build validation rules - all fields optional
+        // Build validation rules - all fields optional, use present() to conditionally validate
         $rules = [
             'name' => 'nullable|string|max:45',
             'sex' => 'nullable|integer|in:1,2,3',
@@ -94,32 +97,29 @@ class ClientController extends Controller
             'notes' => 'nullable|string',
         ];
         
-        // Email validation - only validate email format and uniqueness if value is provided and not empty
-        $email = $request->input('email');
-        if (!$isEmpty($email)) {
-            $rules['email'] = 'nullable|email|max:191|unique:client,email';
-        } else {
-            $rules['email'] = 'nullable|string|max:191';
-        }
-        
-        // Email 1 and 2 - only validate email format if value is provided and not empty
-        $email1 = $request->input('email_1');
-        $email2 = $request->input('email_2');
-        $rules['email_1'] = !$isEmpty($email1) ? 'nullable|email|max:191' : 'nullable|string|max:191';
-        $rules['email_2'] = !$isEmpty($email2) ? 'nullable|email|max:191' : 'nullable|string|max:191';
-        
-        // Website - only validate URL format if value is provided and not empty
-        $website = $request->input('website');
-        $rules['website'] = !$isEmpty($website) ? 'nullable|url|max:255' : 'nullable|string|max:255';
+        // Add email and website fields - nullable means skip validation if null
+        // Since we've already converted empty strings to null, these will only validate if values exist
+        $rules['email'] = 'nullable|email|max:191|unique:client,email';
+        $rules['email_1'] = 'nullable|email|max:191';
+        $rules['email_2'] = 'nullable|email|max:191';
+        $rules['website'] = 'nullable|url|max:255';
         
         try {
             $validated = $request->validate($rules);
+            
+            // Clean validated data - ensure null values are properly set
+            foreach ($validated as $key => $value) {
+                if ($isEmpty($value)) {
+                    $validated[$key] = null;
+                }
+            }
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Log validation errors for debugging
             \Log::error('Client creation validation failed', [
                 'errors' => $e->errors(),
                 'request_data' => $request->all(),
-                'rules' => $rules
+                'rules' => $rules,
+                'cleaned_data' => $data
             ]);
             
             // Return JSON error response for AJAX requests
@@ -254,23 +254,12 @@ class ClientController extends Controller
             'notes' => 'nullable|string',
         ];
         
-        // Email validation - only validate email format and uniqueness if value is provided and not empty
-        $email = $request->input('email');
-        if (!$isEmpty($email)) {
-            $rules['email'] = 'nullable|email|max:191|unique:client,email,' . $client->id;
-        } else {
-            $rules['email'] = 'nullable|string|max:191';
-        }
-        
-        // Email 1 and 2 - only validate email format if value is provided and not empty
-        $email1 = $request->input('email_1');
-        $email2 = $request->input('email_2');
-        $rules['email_1'] = !$isEmpty($email1) ? 'nullable|email|max:191' : 'nullable|string|max:191';
-        $rules['email_2'] = !$isEmpty($email2) ? 'nullable|email|max:191' : 'nullable|string|max:191';
-        
-        // Website - only validate URL format if value is provided and not empty
-        $website = $request->input('website');
-        $rules['website'] = !$isEmpty($website) ? 'nullable|url|max:255' : 'nullable|string|max:255';
+        // Add email and website fields - nullable means skip validation if null
+        // Since we've already converted empty strings to null, these will only validate if values exist
+        $rules['email'] = 'nullable|email|max:191|unique:client,email,' . $client->id;
+        $rules['email_1'] = 'nullable|email|max:191';
+        $rules['email_2'] = 'nullable|email|max:191';
+        $rules['website'] = 'nullable|url|max:255';
         
         try {
             $validated = $request->validate($rules);
