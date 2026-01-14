@@ -80,61 +80,43 @@
             flex-wrap: wrap;
         }
         
-        /* Status Legend */
-        .status-legend {
-            position: relative;
-        }
-        
-        .legend-toggle {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            padding: 10px 18px;
-            border-radius: 25px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: all 0.3s;
-            backdrop-filter: blur(10px);
-        }
-        
-        .legend-toggle:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-        
-        .legend-content {
-            position: absolute;
-            top: calc(100% + 10px);
-            right: 0;
+        /* Status Legend - Always Visible */
+        .status-legend-visible {
+            position: fixed;
+            top: 20px;
+            right: 20px;
             background: white;
             border-radius: 12px;
-            padding: 15px 20px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            min-width: 200px;
             z-index: 1001;
-            animation: slideDown 0.3s ease;
+            min-width: 220px;
+            overflow: hidden;
         }
         
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .legend-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .legend-header i {
+            font-size: 1.1rem;
+        }
+        
+        .legend-content-visible {
+            padding: 15px 20px;
         }
         
         .legend-item {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 8px 0;
+            padding: 10px 0;
             border-bottom: 1px solid #f0f0f0;
         }
         
@@ -154,6 +136,31 @@
             color: #495057;
             font-weight: 500;
             font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .status-legend-visible {
+                top: 10px;
+                right: 10px;
+                min-width: 180px;
+            }
+            
+            .legend-header {
+                padding: 10px 15px;
+                font-size: 0.85rem;
+            }
+            
+            .legend-content-visible {
+                padding: 12px 15px;
+            }
+            
+            .legend-item {
+                padding: 8px 0;
+            }
+            
+            .legend-text {
+                font-size: 0.85rem;
+            }
         }
         
         /* Simplified Zoom Controls */
@@ -382,11 +389,6 @@
             .zoom-controls-simple {
                 flex: 1;
                 justify-content: center;
-            }
-            
-            .legend-content {
-                right: auto;
-                left: 0;
             }
         }
         
@@ -757,35 +759,6 @@
             </div>
         </div>
         <div class="header-right">
-            <!-- Status Legend -->
-            <div class="status-legend" id="statusLegend">
-                <button class="legend-toggle" onclick="toggleLegend()" title="Show/Hide Legend">
-                    <i class="fas fa-info-circle"></i> What do colors mean?
-                </button>
-                <div class="legend-content" id="legendContent" style="display: none;">
-                    <div class="legend-item">
-                        <span class="legend-color" style="background: #28a745;"></span>
-                        <span class="legend-text">Available</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color" style="background: #0dcaf0;"></span>
-                        <span class="legend-text">Confirmed</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color" style="background: #ffc107;"></span>
-                        <span class="legend-text">Reserved</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color" style="background: #6c757d;"></span>
-                        <span class="legend-text">Hidden</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color" style="background: #212529;"></span>
-                        <span class="legend-text">Paid</span>
-                    </div>
-                </div>
-            </div>
-            
             <!-- Simple Zoom Controls -->
             <div class="zoom-controls-simple">
                 <div class="zoom-label">Zoom:</div>
@@ -805,6 +778,36 @@
             <button class="help-btn" onclick="showHelp()" title="How to use this map">
                 <i class="fas fa-question-circle"></i> Help
             </button>
+        </div>
+    </div>
+    
+    <!-- Status Legend - Always Visible -->
+    <div class="status-legend-visible" id="statusLegend">
+        <div class="legend-header">
+            <i class="fas fa-info-circle"></i>
+            <span>Booth Status</span>
+        </div>
+        <div class="legend-content-visible">
+            <div class="legend-item">
+                <span class="legend-color" style="background: #28a745;"></span>
+                <span class="legend-text">Available</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #0dcaf0;"></span>
+                <span class="legend-text">Confirmed</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #ffc107;"></span>
+                <span class="legend-text">Reserved</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #6c757d;"></span>
+                <span class="legend-text">Hidden</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #212529;"></span>
+                <span class="legend-text">Paid</span>
+            </div>
         </div>
     </div>
     
@@ -1165,26 +1168,7 @@
             }
         });
         
-        // Legend toggle function
-        function toggleLegend() {
-            const legendContent = document.getElementById('legendContent');
-            if (legendContent.style.display === 'none' || !legendContent.style.display) {
-                legendContent.style.display = 'block';
-            } else {
-                legendContent.style.display = 'none';
-            }
-        }
-        
-        // Close legend when clicking outside
-        document.addEventListener('click', function(event) {
-            const legend = document.getElementById('statusLegend');
-            if (legend && !legend.contains(event.target)) {
-                const legendContent = document.getElementById('legendContent');
-                if (legendContent) {
-                    legendContent.style.display = 'none';
-                }
-            }
-        });
+        // Legend is now always visible, no toggle needed
         
         // Help modal functions
         function showHelp() {
