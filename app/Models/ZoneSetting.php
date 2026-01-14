@@ -20,6 +20,14 @@ class ZoneSetting extends Model
         'border_width',
         'opacity',
         'price',
+        // Appearance/Color fields (zone-specific customization)
+        'background_color',
+        'border_color',
+        'text_color',
+        'font_weight',
+        'font_family',
+        'text_align',
+        'box_shadow',
     ];
 
     protected $casts = [
@@ -86,6 +94,14 @@ class ZoneSetting extends Model
                 'border_width' => $settings['borderWidth'] ?? $settings['border_width'] ?? 2,
                 'opacity' => $settings['opacity'] ?? 1.0,
                 'price' => $settings['price'] ?? 500,
+                // Appearance/Color fields (zone-specific customization)
+                'background_color' => $settings['background_color'] ?? $settings['backgroundColor'] ?? null,
+                'border_color' => $settings['border_color'] ?? $settings['borderColor'] ?? null,
+                'text_color' => $settings['text_color'] ?? $settings['textColor'] ?? null,
+                'font_weight' => $settings['font_weight'] ?? $settings['fontWeight'] ?? null,
+                'font_family' => $settings['font_family'] ?? $settings['fontFamily'] ?? null,
+                'text_align' => $settings['text_align'] ?? $settings['textAlign'] ?? null,
+                'box_shadow' => $settings['box_shadow'] ?? $settings['boxShadow'] ?? null,
             ]
         );
     }
@@ -107,6 +123,14 @@ class ZoneSetting extends Model
                 'borderWidth' => $zoneSetting->border_width,
                 'opacity' => $zoneSetting->opacity,
                 'price' => $zoneSetting->price ?? 500,
+                // Appearance/Color fields (zone-specific customization)
+                'background_color' => $zoneSetting->background_color,
+                'border_color' => $zoneSetting->border_color,
+                'text_color' => $zoneSetting->text_color,
+                'font_weight' => $zoneSetting->font_weight,
+                'font_family' => $zoneSetting->font_family,
+                'text_align' => $zoneSetting->text_align,
+                'box_shadow' => $zoneSetting->box_shadow,
             ];
         }
 
@@ -120,6 +144,14 @@ class ZoneSetting extends Model
             'borderWidth' => 2,
             'opacity' => 1.0,
             'price' => 500,
+            // Default appearance (null means use booth defaults)
+            'background_color' => null,
+            'border_color' => null,
+            'text_color' => null,
+            'font_weight' => null,
+            'font_family' => null,
+            'text_align' => null,
+            'box_shadow' => null,
         ];
     }
 }

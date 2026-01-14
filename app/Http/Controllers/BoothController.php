@@ -1496,12 +1496,31 @@ class BoothController extends Controller
                             continue;
                         }
 
+                        // Get zone appearance settings (floor-plan-specific)
+                        $zoneAppearance = [
+                            'background_color' => $zoneSettings['background_color'] ?? null,
+                            'border_color' => $zoneSettings['border_color'] ?? null,
+                            'text_color' => $zoneSettings['text_color'] ?? null,
+                            'font_weight' => $zoneSettings['font_weight'] ?? null,
+                            'font_family' => $zoneSettings['font_family'] ?? null,
+                            'text_align' => $zoneSettings['text_align'] ?? null,
+                            'box_shadow' => $zoneSettings['box_shadow'] ?? null,
+                        ];
+                        
                         $booth = Booth::create([
                             'booth_number' => $boothNumber,
                             'type' => 2, // Default type
                             'price' => $zonePrice, // Use zone price
                             'status' => Booth::STATUS_AVAILABLE,
                             'floor_plan_id' => $floorPlanId, // Assign to current floor plan
+                            // Apply zone appearance settings (overwrite defaults)
+                            'background_color' => $zoneAppearance['background_color'],
+                            'border_color' => $zoneAppearance['border_color'],
+                            'text_color' => $zoneAppearance['text_color'],
+                            'font_weight' => $zoneAppearance['font_weight'],
+                            'font_family' => $zoneAppearance['font_family'],
+                            'text_align' => $zoneAppearance['text_align'],
+                            'box_shadow' => $zoneAppearance['box_shadow'],
                         ]);
 
                         $createdBooths[] = [
@@ -1548,12 +1567,31 @@ class BoothController extends Controller
                             }
                         }
 
+                        // Get zone appearance settings (floor-plan-specific)
+                        $zoneAppearance = [
+                            'background_color' => $zoneSettings['background_color'] ?? null,
+                            'border_color' => $zoneSettings['border_color'] ?? null,
+                            'text_color' => $zoneSettings['text_color'] ?? null,
+                            'font_weight' => $zoneSettings['font_weight'] ?? null,
+                            'font_family' => $zoneSettings['font_family'] ?? null,
+                            'text_align' => $zoneSettings['text_align'] ?? null,
+                            'box_shadow' => $zoneSettings['box_shadow'] ?? null,
+                        ];
+                        
                         $booth = Booth::create([
                             'booth_number' => $boothNumber,
                             'type' => 2, // Default type
                             'price' => $zonePrice, // Use zone price
                             'status' => Booth::STATUS_AVAILABLE,
                             'floor_plan_id' => $floorPlanId, // Assign to current floor plan
+                            // Apply zone appearance settings (overwrite defaults)
+                            'background_color' => $zoneAppearance['background_color'],
+                            'border_color' => $zoneAppearance['border_color'],
+                            'text_color' => $zoneAppearance['text_color'],
+                            'font_weight' => $zoneAppearance['font_weight'],
+                            'font_family' => $zoneAppearance['font_family'],
+                            'text_align' => $zoneAppearance['text_align'],
+                            'box_shadow' => $zoneAppearance['box_shadow'],
                         ]);
 
                         $createdBooths[] = [
@@ -1817,6 +1855,14 @@ class BoothController extends Controller
                 'opacity' => 'required|numeric|min:0|max:1',
                 'price' => 'nullable|numeric|min:0',
                 'floor_plan_id' => 'required|exists:floor_plans,id',
+                // Appearance/Color fields (optional - zone-specific customization)
+                'background_color' => 'nullable|string|max:50',
+                'border_color' => 'nullable|string|max:50',
+                'text_color' => 'nullable|string|max:50',
+                'font_weight' => 'nullable|string|max:20',
+                'font_family' => 'nullable|string|max:255',
+                'text_align' => 'nullable|string|max:20',
+                'box_shadow' => 'nullable|string|max:255',
             ]);
 
             $floorPlanId = $validated['floor_plan_id'];
