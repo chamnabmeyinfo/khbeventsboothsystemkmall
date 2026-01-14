@@ -1136,11 +1136,12 @@ $(document).ready(function() {
         // Hide error message
         errorDiv.hide();
         
+        // Remove HTML5 validation since all fields are optional
         // Validate form
-        if (!form[0].checkValidity()) {
-            form[0].reportValidity();
-            return;
-        }
+        // if (!form[0].checkValidity()) {
+        //     form[0].reportValidity();
+        //     return;
+        // }
         
         // Disable submit button and show loading
         submitBtn.prop('disabled', true);

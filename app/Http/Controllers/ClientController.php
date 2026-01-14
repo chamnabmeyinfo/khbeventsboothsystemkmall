@@ -64,7 +64,17 @@ class ClientController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        // Filter out empty string values and convert to null
+        $data = $request->all();
+        foreach ($data as $key => $value) {
+            if (is_string($value) && trim($value) === '') {
+                $data[$key] = null;
+            }
+        }
+        $request->merge($data);
+        
+        // Build validation rules
+        $rules = [
             'name' => 'nullable|string|max:45',
             'sex' => 'nullable|integer|in:1,2,3',
             'position' => 'nullable|string|max:191',
@@ -73,14 +83,22 @@ class ClientController extends Controller
             'phone_number' => 'nullable|string|max:20',
             'phone_1' => 'nullable|string|max:20',
             'phone_2' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:191|unique:client,email,' . ($request->input('id') ?? 'NULL'),
             'email_1' => 'nullable|email|max:191',
             'email_2' => 'nullable|email|max:191',
             'address' => 'nullable|string',
             'tax_id' => 'nullable|string|max:50',
             'website' => 'nullable|url|max:255',
             'notes' => 'nullable|string',
-        ]);
+        ];
+        
+        // Only validate email uniqueness if email is provided and not empty
+        if ($request->filled('email')) {
+            $rules['email'] = 'nullable|email|max:191|unique:client,email';
+        } else {
+            $rules['email'] = 'nullable|email|max:191';
+        }
+        
+        $validated = $request->validate($rules);
 
         $client = Client::create($validated);
 
@@ -173,7 +191,17 @@ class ClientController extends Controller
 
     public function update(Request $request, Client $client)
     {
-        $validated = $request->validate([
+        // Filter out empty string values and convert to null
+        $data = $request->all();
+        foreach ($data as $key => $value) {
+            if (is_string($value) && trim($value) === '') {
+                $data[$key] = null;
+            }
+        }
+        $request->merge($data);
+        
+        // Build validation rules
+        $rules = [
             'name' => 'nullable|string|max:45',
             'sex' => 'nullable|integer|in:1,2,3',
             'position' => 'nullable|string|max:191',
@@ -182,14 +210,22 @@ class ClientController extends Controller
             'phone_number' => 'nullable|string|max:20',
             'phone_1' => 'nullable|string|max:20',
             'phone_2' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:191|unique:client,email,' . $client->id,
             'email_1' => 'nullable|email|max:191',
             'email_2' => 'nullable|email|max:191',
             'address' => 'nullable|string',
             'tax_id' => 'nullable|string|max:50',
             'website' => 'nullable|url|max:255',
             'notes' => 'nullable|string',
-        ]);
+        ];
+        
+        // Only validate email uniqueness if email is provided and different from current
+        if ($request->filled('email')) {
+            $rules['email'] = 'nullable|email|max:191|unique:client,email,' . $client->id;
+        } else {
+            $rules['email'] = 'nullable|email|max:191';
+        }
+        
+        $validated = $request->validate($rules);
 
         $client->update($validated);
 

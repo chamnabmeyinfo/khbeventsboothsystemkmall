@@ -764,10 +764,11 @@ $(document).ready(function() {
         
         errorDiv.hide();
         
-        if (!form[0].checkValidity()) {
-            form[0].reportValidity();
-            return;
-        }
+        // Remove HTML5 validation since all fields are optional
+        // if (!form[0].checkValidity()) {
+        //     form[0].reportValidity();
+        //     return;
+        // }
         
         submitBtn.prop('disabled', true);
         submitBtn.html('<i class="fas fa-spinner fa-spin mr-1"></i>Creating...');
@@ -815,7 +816,18 @@ $(document).ready(function() {
                     errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
                 }
                 errorDiv.html('<i class="fas fa-exclamation-triangle mr-1"></i>' + errorMessage).show();
-                errorDiv[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                // Safely scroll to error div if it exists
+                if (errorDiv.length > 0 && errorDiv[0]) {
+                    try {
+                        errorDiv[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    } catch (e) {
+                        // Fallback: scroll to top of modal body
+                        const modalBody = errorDiv.closest('.modal-body');
+                        if (modalBody.length > 0 && modalBody[0]) {
+                            modalBody[0].scrollTop = 0;
+                        }
+                    }
+                }
             },
             complete: function() {
                 submitBtn.prop('disabled', false);

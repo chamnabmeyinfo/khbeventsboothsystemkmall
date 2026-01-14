@@ -1956,10 +1956,11 @@ $(document).ready(function() {
         
         errorDiv.hide();
         
-        if (!form[0].checkValidity()) {
-            form[0].reportValidity();
-            return;
-        }
+        // Remove HTML5 validation since all fields are optional
+        // if (!form[0].checkValidity()) {
+        //     form[0].reportValidity();
+        //     return;
+        // }
         
         submitBtn.prop('disabled', true);
         submitBtn.html('<i class="fas fa-spinner fa-spin mr-1"></i>Creating...');
