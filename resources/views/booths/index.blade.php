@@ -624,6 +624,62 @@
     font-size: 10px;
 }
 
+.btn-zone-settings {
+    background: rgba(255, 152, 0, 0.8);
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    cursor: pointer;
+    margin-left: 4px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-zone-settings:hover {
+    background: rgba(255, 152, 0, 1);
+    transform: scale(1.05);
+}
+
+.btn-zone-settings:active {
+    transform: scale(0.95);
+}
+
+.btn-zone-settings i {
+    font-size: 10px;
+}
+
+.btn-zone-appearance {
+    background: rgba(102, 126, 234, 0.8);
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    cursor: pointer;
+    margin-left: 4px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-zone-appearance:hover {
+    background: rgba(102, 126, 234, 1);
+    transform: scale(1.05);
+}
+
+.btn-zone-appearance:active {
+    transform: scale(0.95);
+}
+
+.btn-zone-appearance i {
+    font-size: 10px;
+}
+
 .btn-zone-delete {
     background: rgba(220, 53, 69, 0.8);
     color: white;
@@ -1937,9 +1993,15 @@
                                         </button>
                                         <button class="btn-zone-settings" 
                                                 data-zone="{{ $zoneName }}" 
-                                                title="Zone Settings - Adjust All Booths in Zone {{ $zoneName }}"
+                                                title="Zone Settings - Adjust Size, Rotation & Dimensions for All Booths in Zone {{ $zoneName }}"
                                                 onclick="event.stopPropagation(); FloorPlanDesigner.openZoneSettings('{{ $zoneName }}');">
                                             <i class="fas fa-cog"></i>
+                                        </button>
+                                        <button class="btn-zone-appearance" 
+                                                data-zone="{{ $zoneName }}" 
+                                                title="Zone Appearance - Customize Colors & Appearance Only for Zone {{ $zoneName }}"
+                                                onclick="event.stopPropagation(); FloorPlanDesigner.openZoneAppearanceSettings('{{ $zoneName }}');">
+                                            <i class="fas fa-palette"></i>
                                         </button>
                                         <button class="btn-zone-clear" 
                                                 data-zone="{{ $zoneName }}" 
@@ -6141,89 +6203,9 @@ const FloorPlanDesigner = {
         modalHtml += '</label>';
         modalHtml += '<input type="number" id="zonePrice" class="swal2-input" value="' + (settings.price || 500) + '" min="0" step="0.01" style="width: 100%;">';
         modalHtml += '</div>';
-        
-        // Appearance/Color Customization Section
-        modalHtml += '<div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e0e0e0;">';
-        modalHtml += '<h4 style="margin-bottom: 15px; color: #667eea; font-size: 1rem;"><i class="fas fa-palette mr-2"></i>Appearance & Colors (Zone-Specific)</h4>';
-        modalHtml += '<p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">Customize colors and appearance for all booths in this zone. Leave empty to use booth defaults.</p>';
-        
-        modalHtml += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">';
-        modalHtml += '<div>';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-fill-drip"></i> Background Color';
-        modalHtml += '</label>';
-        modalHtml += '<div style="display: flex; gap: 8px; align-items: center;">';
-        modalHtml += '<input type="color" id="zoneBackgroundColor" value="' + (settings.background_color || '#ffffff') + '" style="width: 60px; height: 38px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">';
-        modalHtml += '<input type="text" id="zoneBackgroundColorText" class="swal2-input" value="' + (settings.background_color || '') + '" placeholder="#ffffff or rgb()" style="flex: 1;">';
-        modalHtml += '</div>';
-        modalHtml += '</div>';
-        modalHtml += '<div>';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-border-all"></i> Border Color';
-        modalHtml += '</label>';
-        modalHtml += '<div style="display: flex; gap: 8px; align-items: center;">';
-        modalHtml += '<input type="color" id="zoneBorderColor" value="' + (settings.border_color || '#007bff') + '" style="width: 60px; height: 38px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">';
-        modalHtml += '<input type="text" id="zoneBorderColorText" class="swal2-input" value="' + (settings.border_color || '') + '" placeholder="#007bff or rgb()" style="flex: 1;">';
-        modalHtml += '</div>';
-        modalHtml += '</div>';
-        modalHtml += '</div>';
-        
-        modalHtml += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">';
-        modalHtml += '<div>';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-font"></i> Text Color';
-        modalHtml += '</label>';
-        modalHtml += '<div style="display: flex; gap: 8px; align-items: center;">';
-        modalHtml += '<input type="color" id="zoneTextColor" value="' + (settings.text_color || '#000000') + '" style="width: 60px; height: 38px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">';
-        modalHtml += '<input type="text" id="zoneTextColorText" class="swal2-input" value="' + (settings.text_color || '') + '" placeholder="#000000 or rgb()" style="flex: 1;">';
-        modalHtml += '</div>';
-        modalHtml += '</div>';
-        modalHtml += '<div>';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-bold"></i> Font Weight';
-        modalHtml += '</label>';
-        modalHtml += '<select id="zoneFontWeight" class="swal2-input" style="width: 100%;">';
-        modalHtml += '<option value="">Use Default</option>';
-        modalHtml += '<option value="300"' + (settings.font_weight === '300' ? ' selected' : '') + '>Light (300)</option>';
-        modalHtml += '<option value="400"' + (settings.font_weight === '400' ? ' selected' : '') + '>Normal (400)</option>';
-        modalHtml += '<option value="600"' + (settings.font_weight === '600' ? ' selected' : '') + '>Semi-Bold (600)</option>';
-        modalHtml += '<option value="700"' + (settings.font_weight === '700' ? ' selected' : '') + '>Bold (700)</option>';
-        modalHtml += '<option value="800"' + (settings.font_weight === '800' ? ' selected' : '') + '>Extra Bold (800)</option>';
-        modalHtml += '</select>';
-        modalHtml += '</div>';
-        modalHtml += '</div>';
-        
-        modalHtml += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">';
-        modalHtml += '<div>';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-align-center"></i> Text Align';
-        modalHtml += '</label>';
-        modalHtml += '<select id="zoneTextAlign" class="swal2-input" style="width: 100%;">';
-        modalHtml += '<option value="">Use Default</option>';
-        modalHtml += '<option value="left"' + (settings.text_align === 'left' ? ' selected' : '') + '>Left</option>';
-        modalHtml += '<option value="center"' + (settings.text_align === 'center' ? ' selected' : '') + '>Center</option>';
-        modalHtml += '<option value="right"' + (settings.text_align === 'right' ? ' selected' : '') + '>Right</option>';
-        modalHtml += '</select>';
-        modalHtml += '</div>';
-        modalHtml += '<div>';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-font"></i> Font Family';
-        modalHtml += '</label>';
-        modalHtml += '<input type="text" id="zoneFontFamily" class="swal2-input" value="' + (settings.font_family || '') + '" placeholder="Arial, sans-serif" style="width: 100%;">';
-        modalHtml += '</div>';
-        modalHtml += '</div>';
-        
-        modalHtml += '<div style="margin-bottom: 15px;">';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-shadow"></i> Box Shadow';
-        modalHtml += '</label>';
-        modalHtml += '<input type="text" id="zoneBoxShadow" class="swal2-input" value="' + (settings.box_shadow || '') + '" placeholder="0 2px 8px rgba(0,0,0,0.2)" style="width: 100%;">';
-        modalHtml += '</div>';
-        
-        modalHtml += '</div>'; // End appearance section
-        
         modalHtml += '<p style="font-size: 11px; color: #999; margin-top: 10px;">';
-        modalHtml += '<i class="fas fa-info-circle"></i> All size/position fields are required. Color/appearance fields are optional - leave empty to use booth defaults. Settings are saved per floor plan and zone.';
+        modalHtml += '<i class="fas fa-info-circle"></i> All fields are required. Values will be applied to all booths in this zone and saved for future use. Price will be used when creating new booths in this zone.';
+        modalHtml += '<br><i class="fas fa-palette"></i> <strong>Tip:</strong> Use the "Zone Appearance" button (palette icon) to customize colors and appearance separately without affecting size/rotation.';
         modalHtml += '</p>';
         modalHtml += '</div>';
         
@@ -6235,48 +6217,7 @@ const FloorPlanDesigner = {
             confirmButtonText: 'Apply to All Booths',
             cancelButtonText: 'Cancel',
             confirmButtonColor: '#ff9800',
-            width: '750px',
-            didOpen: () => {
-                // Sync color pickers with text inputs
-                const bgColorPicker = document.getElementById('zoneBackgroundColor');
-                const bgColorText = document.getElementById('zoneBackgroundColorText');
-                const borderColorPicker = document.getElementById('zoneBorderColor');
-                const borderColorText = document.getElementById('zoneBorderColorText');
-                const textColorPicker = document.getElementById('zoneTextColor');
-                const textColorText = document.getElementById('zoneTextColorText');
-                
-                // Update text when color picker changes
-                if (bgColorPicker && bgColorText) {
-                    bgColorPicker.addEventListener('input', function() {
-                        bgColorText.value = this.value;
-                    });
-                    bgColorText.addEventListener('input', function() {
-                        if (this.value.match(/^#[0-9A-Fa-f]{6}$/)) {
-                            bgColorPicker.value = this.value;
-                        }
-                    });
-                }
-                if (borderColorPicker && borderColorText) {
-                    borderColorPicker.addEventListener('input', function() {
-                        borderColorText.value = this.value;
-                    });
-                    borderColorText.addEventListener('input', function() {
-                        if (this.value.match(/^#[0-9A-Fa-f]{6}$/)) {
-                            borderColorPicker.value = this.value;
-                        }
-                    });
-                }
-                if (textColorPicker && textColorText) {
-                    textColorPicker.addEventListener('input', function() {
-                        textColorText.value = this.value;
-                    });
-                    textColorText.addEventListener('input', function() {
-                        if (this.value.match(/^#[0-9A-Fa-f]{6}$/)) {
-                            textColorPicker.value = this.value;
-                        }
-                    });
-                }
-            },
+            width: '600px',
             preConfirm: () => {
                 const width = document.getElementById('zoneWidth').value;
                 const height = document.getElementById('zoneHeight').value;
@@ -6286,15 +6227,6 @@ const FloorPlanDesigner = {
                 const borderWidth = document.getElementById('zoneBorderWidth').value;
                 const opacity = document.getElementById('zoneOpacity').value;
                 const price = document.getElementById('zonePrice').value;
-                
-                // Get color/appearance values (optional)
-                const backgroundColor = document.getElementById('zoneBackgroundColorText').value.trim() || null;
-                const borderColor = document.getElementById('zoneBorderColorText').value.trim() || null;
-                const textColor = document.getElementById('zoneTextColorText').value.trim() || null;
-                const fontWeight = document.getElementById('zoneFontWeight').value.trim() || null;
-                const fontFamily = document.getElementById('zoneFontFamily').value.trim() || null;
-                const textAlign = document.getElementById('zoneTextAlign').value.trim() || null;
-                const boxShadow = document.getElementById('zoneBoxShadow').value.trim() || null;
                 
                 // Validate required fields
                 if (!width || !height || rotation === '' || !zIndex || borderRadius === '' || borderWidth === '' || opacity === '' || !price) {
@@ -6310,14 +6242,7 @@ const FloorPlanDesigner = {
                     borderRadius: parseFloat(borderRadius),
                     borderWidth: parseFloat(borderWidth),
                     opacity: parseFloat(opacity),
-                    price: parseFloat(price),
-                    background_color: backgroundColor,
-                    border_color: borderColor,
-                    text_color: textColor,
-                    font_weight: fontWeight,
-                    font_family: fontFamily,
-                    text_align: textAlign,
-                    box_shadow: boxShadow
+                    price: parseFloat(price)
                 };
             }
         }).then((result) => {
@@ -6369,36 +6294,6 @@ const FloorPlanDesigner = {
             boothElement.style.borderWidth = borderWidth + 'px';
             boothElement.style.opacity = opacity;
             
-            // Apply appearance/color settings if provided (zone-specific customization)
-            if (settings.background_color) {
-                boothElement.style.backgroundColor = settings.background_color;
-                boothElement.setAttribute('data-background-color', settings.background_color);
-            }
-            if (settings.border_color) {
-                boothElement.style.borderColor = settings.border_color;
-                boothElement.setAttribute('data-border-color', settings.border_color);
-            }
-            if (settings.text_color) {
-                boothElement.style.color = settings.text_color;
-                boothElement.setAttribute('data-text-color', settings.text_color);
-            }
-            if (settings.font_weight) {
-                boothElement.style.fontWeight = settings.font_weight;
-                boothElement.setAttribute('data-font-weight', settings.font_weight);
-            }
-            if (settings.font_family) {
-                boothElement.style.fontFamily = settings.font_family;
-                boothElement.setAttribute('data-font-family', settings.font_family);
-            }
-            if (settings.text_align) {
-                boothElement.style.textAlign = settings.text_align;
-                boothElement.setAttribute('data-text-align', settings.text_align);
-            }
-            if (settings.box_shadow) {
-                boothElement.style.boxShadow = settings.box_shadow;
-                boothElement.setAttribute('data-box-shadow', settings.box_shadow);
-            }
-            
             // Update attributes
             boothElement.setAttribute('data-width', width);
             boothElement.setAttribute('data-height', height);
@@ -6424,14 +6319,14 @@ const FloorPlanDesigner = {
             const y = parseFloat(boothElement.style.top) || 0;
             const fontSize = calculatedFontSize;
             
-            // Get current appearance values from element or use zone settings
-            const backgroundColor = settings.background_color || boothElement.style.backgroundColor || boothElement.getAttribute('data-background-color') || null;
-            const borderColor = settings.border_color || boothElement.style.borderColor || boothElement.getAttribute('data-border-color') || null;
-            const textColor = settings.text_color || boothElement.style.color || boothElement.getAttribute('data-text-color') || null;
-            const fontWeight = settings.font_weight || boothElement.style.fontWeight || boothElement.getAttribute('data-font-weight') || null;
-            const fontFamily = settings.font_family || boothElement.style.fontFamily || boothElement.getAttribute('data-font-family') || null;
-            const textAlign = settings.text_align || boothElement.style.textAlign || boothElement.getAttribute('data-text-align') || null;
-            const boxShadow = settings.box_shadow || boothElement.style.boxShadow || boothElement.getAttribute('data-box-shadow') || null;
+            // Get current appearance values from element (preserve existing appearance, don't overwrite)
+            const backgroundColor = boothElement.style.backgroundColor || boothElement.getAttribute('data-background-color') || null;
+            const borderColor = boothElement.style.borderColor || boothElement.getAttribute('data-border-color') || null;
+            const textColor = boothElement.style.color || boothElement.getAttribute('data-text-color') || null;
+            const fontWeight = boothElement.style.fontWeight || boothElement.getAttribute('data-font-weight') || null;
+            const fontFamily = boothElement.style.fontFamily || boothElement.getAttribute('data-font-family') || null;
+            const textAlign = boothElement.style.textAlign || boothElement.getAttribute('data-text-align') || null;
+            const boxShadow = boothElement.style.boxShadow || boothElement.getAttribute('data-box-shadow') || null;
             
             boothsToSave.push({
                 id: parseInt(boothId),
@@ -6445,7 +6340,7 @@ const FloorPlanDesigner = {
                 border_width: borderWidth,
                 border_radius: borderRadius,
                 opacity: opacity,
-                // Appearance/Color fields (zone-specific customization)
+                // Preserve existing appearance (don't overwrite)
                 background_color: backgroundColor,
                 border_color: borderColor,
                 text_color: textColor,
@@ -6481,15 +6376,7 @@ const FloorPlanDesigner = {
                 borderWidth: settings.borderWidth,
                 opacity: settings.opacity,
                 price: settings.price,
-                floor_plan_id: floorPlanId,
-                // Appearance/Color fields (zone-specific customization)
-                background_color: settings.background_color || null,
-                border_color: settings.border_color || null,
-                text_color: settings.text_color || null,
-                font_weight: settings.font_weight || null,
-                font_family: settings.font_family || null,
-                text_align: settings.text_align || null,
-                box_shadow: settings.box_shadow || null
+                floor_plan_id: floorPlanId
             })
         })
         .then(function(response) {
@@ -6527,6 +6414,477 @@ const FloorPlanDesigner = {
             }).catch(function(error) {
                 console.error('Error saving booth positions:', error);
                 showNotification('Settings applied to booths but failed to save positions to database', 'warning');
+            });
+        }
+        
+        // Update info toolbar if any of these booths are selected
+        if (self.selectedBooths && self.selectedBooths.length > 0) {
+            const selectedBooth = self.selectedBooths[0];
+            if (selectedBooth && selectedBooth.getAttribute('data-booth-zone') === zoneName) {
+                self.updateInfoToolbar(selectedBooth);
+            }
+        }
+        
+        // Save state for undo/redo
+        self.saveState();
+    },
+    
+    // Open zone appearance settings (colors/appearance only, doesn't affect size/rotation)
+    openZoneAppearanceSettings: function(zoneName) {
+        const self = this;
+        const canvas = document.getElementById('print');
+        if (!canvas) return;
+        
+        // Find all booths on canvas that belong to this zone
+        const zoneBooths = canvas.querySelectorAll('.dropped-booth[data-booth-zone="' + zoneName + '"]');
+        
+        if (zoneBooths.length === 0) {
+            showNotification('No booths from Zone ' + zoneName + ' found on canvas', 'warning');
+            return;
+        }
+        
+        // Get current floor plan ID
+        const floorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
+        
+        // Load zone appearance settings from database first (floor-plan-specific)
+        const zoneSettingsUrl = '/booths/zone-settings/' + encodeURIComponent(zoneName) + 
+            (floorPlanId ? '?floor_plan_id=' + floorPlanId : '');
+        fetch(zoneSettingsUrl, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            let currentBackgroundColor, currentBorderColor, currentTextColor, currentFontWeight, currentFontFamily, currentTextAlign, currentBoxShadow;
+            
+            // Use saved zone appearance settings if available, otherwise use current booth values
+            if (data.status === 200 && data.settings) {
+                currentBackgroundColor = data.settings.background_color || data.settings.backgroundColor || '';
+                currentBorderColor = data.settings.border_color || data.settings.borderColor || '';
+                currentTextColor = data.settings.text_color || data.settings.textColor || '';
+                currentFontWeight = data.settings.font_weight || data.settings.fontWeight || '';
+                currentFontFamily = data.settings.font_family || data.settings.fontFamily || '';
+                currentTextAlign = data.settings.text_align || data.settings.textAlign || '';
+                currentBoxShadow = data.settings.box_shadow || data.settings.boxShadow || '';
+            } else {
+                // Fallback: Get values from first booth
+                const firstBooth = zoneBooths[0];
+                currentBackgroundColor = firstBooth.style.backgroundColor || '';
+                currentBorderColor = firstBooth.style.borderColor || '';
+                currentTextColor = firstBooth.style.color || '';
+                currentFontWeight = firstBooth.style.fontWeight || '';
+                currentFontFamily = firstBooth.style.fontFamily || '';
+                currentTextAlign = firstBooth.style.textAlign || '';
+                currentBoxShadow = firstBooth.style.boxShadow || '';
+            }
+            
+            self.showZoneAppearanceModal(zoneName, zoneBooths.length, {
+                background_color: currentBackgroundColor,
+                border_color: currentBorderColor,
+                text_color: currentTextColor,
+                font_weight: currentFontWeight,
+                font_family: currentFontFamily,
+                text_align: currentTextAlign,
+                box_shadow: currentBoxShadow
+            });
+        })
+        .catch(function(error) {
+            console.error('Error loading zone appearance settings:', error);
+            // Fallback: Use current booth values if database load fails
+            const firstBooth = zoneBooths[0];
+            const currentBackgroundColor = firstBooth.style.backgroundColor || '';
+            const currentBorderColor = firstBooth.style.borderColor || '';
+            const currentTextColor = firstBooth.style.color || '';
+            const currentFontWeight = firstBooth.style.fontWeight || '';
+            const currentFontFamily = firstBooth.style.fontFamily || '';
+            const currentTextAlign = firstBooth.style.textAlign || '';
+            const currentBoxShadow = firstBooth.style.boxShadow || '';
+            
+            self.showZoneAppearanceModal(zoneName, zoneBooths.length, {
+                background_color: currentBackgroundColor,
+                border_color: currentBorderColor,
+                text_color: currentTextColor,
+                font_weight: currentFontWeight,
+                font_family: currentFontFamily,
+                text_align: currentTextAlign,
+                box_shadow: currentBoxShadow
+            });
+        });
+    },
+    
+    // Show zone appearance settings modal (colors/appearance only)
+    showZoneAppearanceModal: function(zoneName, boothCount, settings) {
+        const self = this;
+        
+        // Create appearance-only settings modal
+        var modalHtml = '<div style="text-align: left; max-width: 500px; margin: 0 auto;">';
+        modalHtml += '<p style="margin-bottom: 15px; color: #666;">';
+        modalHtml += 'Found <strong>' + boothCount + '</strong> booth(s) in Zone ' + zoneName + ' on canvas.';
+        modalHtml += '<br><small><i class="fas fa-info-circle"></i> This will <strong>only</strong> change colors and appearance. Size, rotation, and dimensions will remain unchanged.</small>';
+        modalHtml += '</p>';
+        
+        // Appearance/Color Customization Section
+        modalHtml += '<div style="margin-top: 10px; padding-top: 15px; border-top: 2px solid #e0e0e0;">';
+        modalHtml += '<h4 style="margin-bottom: 15px; color: #667eea; font-size: 1rem;"><i class="fas fa-palette mr-2"></i>Appearance & Colors (Zone-Specific)</h4>';
+        modalHtml += '<p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">Customize colors and appearance for all booths in this zone. Leave empty to use booth defaults.</p>';
+        
+        modalHtml += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">';
+        modalHtml += '<div>';
+        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
+        modalHtml += '<i class="fas fa-fill-drip"></i> Background Color';
+        modalHtml += '</label>';
+        modalHtml += '<div style="display: flex; gap: 8px; align-items: center;">';
+        modalHtml += '<input type="color" id="zoneAppearanceBackgroundColor" value="' + (settings.background_color || '#ffffff') + '" style="width: 60px; height: 38px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">';
+        modalHtml += '<input type="text" id="zoneAppearanceBackgroundColorText" class="swal2-input" value="' + (settings.background_color || '') + '" placeholder="#ffffff or rgb()" style="flex: 1;">';
+        modalHtml += '</div>';
+        modalHtml += '</div>';
+        modalHtml += '<div>';
+        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
+        modalHtml += '<i class="fas fa-border-all"></i> Border Color';
+        modalHtml += '</label>';
+        modalHtml += '<div style="display: flex; gap: 8px; align-items: center;">';
+        modalHtml += '<input type="color" id="zoneAppearanceBorderColor" value="' + (settings.border_color || '#007bff') + '" style="width: 60px; height: 38px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">';
+        modalHtml += '<input type="text" id="zoneAppearanceBorderColorText" class="swal2-input" value="' + (settings.border_color || '') + '" placeholder="#007bff or rgb()" style="flex: 1;">';
+        modalHtml += '</div>';
+        modalHtml += '</div>';
+        modalHtml += '</div>';
+        
+        modalHtml += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">';
+        modalHtml += '<div>';
+        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
+        modalHtml += '<i class="fas fa-font"></i> Text Color';
+        modalHtml += '</label>';
+        modalHtml += '<div style="display: flex; gap: 8px; align-items: center;">';
+        modalHtml += '<input type="color" id="zoneAppearanceTextColor" value="' + (settings.text_color || '#000000') + '" style="width: 60px; height: 38px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">';
+        modalHtml += '<input type="text" id="zoneAppearanceTextColorText" class="swal2-input" value="' + (settings.text_color || '') + '" placeholder="#000000 or rgb()" style="flex: 1;">';
+        modalHtml += '</div>';
+        modalHtml += '</div>';
+        modalHtml += '<div>';
+        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
+        modalHtml += '<i class="fas fa-bold"></i> Font Weight';
+        modalHtml += '</label>';
+        modalHtml += '<select id="zoneAppearanceFontWeight" class="swal2-input" style="width: 100%;">';
+        modalHtml += '<option value="">Use Default</option>';
+        modalHtml += '<option value="300"' + (settings.font_weight === '300' ? ' selected' : '') + '>Light (300)</option>';
+        modalHtml += '<option value="400"' + (settings.font_weight === '400' ? ' selected' : '') + '>Normal (400)</option>';
+        modalHtml += '<option value="600"' + (settings.font_weight === '600' ? ' selected' : '') + '>Semi-Bold (600)</option>';
+        modalHtml += '<option value="700"' + (settings.font_weight === '700' ? ' selected' : '') + '>Bold (700)</option>';
+        modalHtml += '<option value="800"' + (settings.font_weight === '800' ? ' selected' : '') + '>Extra Bold (800)</option>';
+        modalHtml += '</select>';
+        modalHtml += '</div>';
+        modalHtml += '</div>';
+        
+        modalHtml += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">';
+        modalHtml += '<div>';
+        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
+        modalHtml += '<i class="fas fa-align-center"></i> Text Align';
+        modalHtml += '</label>';
+        modalHtml += '<select id="zoneAppearanceTextAlign" class="swal2-input" style="width: 100%;">';
+        modalHtml += '<option value="">Use Default</option>';
+        modalHtml += '<option value="left"' + (settings.text_align === 'left' ? ' selected' : '') + '>Left</option>';
+        modalHtml += '<option value="center"' + (settings.text_align === 'center' ? ' selected' : '') + '>Center</option>';
+        modalHtml += '<option value="right"' + (settings.text_align === 'right' ? ' selected' : '') + '>Right</option>';
+        modalHtml += '</select>';
+        modalHtml += '</div>';
+        modalHtml += '<div>';
+        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
+        modalHtml += '<i class="fas fa-font"></i> Font Family';
+        modalHtml += '</label>';
+        modalHtml += '<input type="text" id="zoneAppearanceFontFamily" class="swal2-input" value="' + (settings.font_family || '') + '" placeholder="Arial, sans-serif" style="width: 100%;">';
+        modalHtml += '</div>';
+        modalHtml += '</div>';
+        
+        modalHtml += '<div style="margin-bottom: 15px;">';
+        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
+        modalHtml += '<i class="fas fa-shadow"></i> Box Shadow';
+        modalHtml += '</label>';
+        modalHtml += '<input type="text" id="zoneAppearanceBoxShadow" class="swal2-input" value="' + (settings.box_shadow || '') + '" placeholder="0 2px 8px rgba(0,0,0,0.2)" style="width: 100%;">';
+        modalHtml += '</div>';
+        
+        modalHtml += '</div>'; // End appearance section
+        
+        modalHtml += '<p style="font-size: 11px; color: #999; margin-top: 10px;">';
+        modalHtml += '<i class="fas fa-info-circle"></i> All fields are optional - leave empty to use booth defaults. Settings are saved per floor plan and zone. Size and rotation will NOT be changed.';
+        modalHtml += '</p>';
+        modalHtml += '</div>';
+        
+        Swal.fire({
+            title: 'Zone ' + zoneName + ' Appearance',
+            html: modalHtml,
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: 'Apply Appearance Only',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#667eea',
+            width: '700px',
+            didOpen: () => {
+                // Sync color pickers with text inputs
+                const bgColorPicker = document.getElementById('zoneAppearanceBackgroundColor');
+                const bgColorText = document.getElementById('zoneAppearanceBackgroundColorText');
+                const borderColorPicker = document.getElementById('zoneAppearanceBorderColor');
+                const borderColorText = document.getElementById('zoneAppearanceBorderColorText');
+                const textColorPicker = document.getElementById('zoneAppearanceTextColor');
+                const textColorText = document.getElementById('zoneAppearanceTextColorText');
+                
+                // Update text when color picker changes
+                if (bgColorPicker && bgColorText) {
+                    bgColorPicker.addEventListener('input', function() {
+                        bgColorText.value = this.value;
+                    });
+                    bgColorText.addEventListener('input', function() {
+                        if (this.value.match(/^#[0-9A-Fa-f]{6}$/)) {
+                            bgColorPicker.value = this.value;
+                        }
+                    });
+                }
+                if (borderColorPicker && borderColorText) {
+                    borderColorPicker.addEventListener('input', function() {
+                        borderColorText.value = this.value;
+                    });
+                    borderColorText.addEventListener('input', function() {
+                        if (this.value.match(/^#[0-9A-Fa-f]{6}$/)) {
+                            borderColorPicker.value = this.value;
+                        }
+                    });
+                }
+                if (textColorPicker && textColorText) {
+                    textColorPicker.addEventListener('input', function() {
+                        textColorText.value = this.value;
+                    });
+                    textColorText.addEventListener('input', function() {
+                        if (this.value.match(/^#[0-9A-Fa-f]{6}$/)) {
+                            textColorPicker.value = this.value;
+                        }
+                    });
+                }
+            },
+            preConfirm: () => {
+                // Get color/appearance values (all optional)
+                const backgroundColor = document.getElementById('zoneAppearanceBackgroundColorText').value.trim() || null;
+                const borderColor = document.getElementById('zoneAppearanceBorderColorText').value.trim() || null;
+                const textColor = document.getElementById('zoneAppearanceTextColorText').value.trim() || null;
+                const fontWeight = document.getElementById('zoneAppearanceFontWeight').value.trim() || null;
+                const fontFamily = document.getElementById('zoneAppearanceFontFamily').value.trim() || null;
+                const textAlign = document.getElementById('zoneAppearanceTextAlign').value.trim() || null;
+                const boxShadow = document.getElementById('zoneAppearanceBoxShadow').value.trim() || null;
+                
+                return {
+                    background_color: backgroundColor,
+                    border_color: borderColor,
+                    text_color: textColor,
+                    font_weight: fontWeight,
+                    font_family: fontFamily,
+                    text_align: textAlign,
+                    box_shadow: boxShadow
+                };
+            }
+        }).then((result) => {
+            if (result.isConfirmed && result.value) {
+                self.applyZoneAppearanceSettings(zoneName, result.value);
+            }
+        });
+    },
+    
+    // Apply appearance settings only (doesn't affect size/rotation)
+    applyZoneAppearanceSettings: function(zoneName, appearanceSettings) {
+        const self = this;
+        const canvas = document.getElementById('print');
+        if (!canvas) return;
+        
+        // Find all booths on canvas that belong to this zone
+        const zoneBooths = canvas.querySelectorAll('.dropped-booth[data-booth-zone="' + zoneName + '"]');
+        
+        if (zoneBooths.length === 0) {
+            showNotification('No booths from Zone ' + zoneName + ' found on canvas', 'warning');
+            return;
+        }
+        
+        const boothsToSave = [];
+        let updatedCount = 0;
+        
+        // Apply appearance settings to each booth (preserve size/rotation)
+        zoneBooths.forEach(function(boothElement) {
+            // Get current size/rotation values (preserve them)
+            const width = parseFloat(boothElement.style.width) || parseFloat(boothElement.getAttribute('data-width')) || self.defaultBoothWidth;
+            const height = parseFloat(boothElement.style.height) || parseFloat(boothElement.getAttribute('data-height')) || self.defaultBoothHeight;
+            const rotation = parseFloat(boothElement.getAttribute('data-rotation')) || 0;
+            const zIndex = parseFloat(boothElement.style.zIndex) || 10;
+            const borderRadius = parseFloat(boothElement.style.borderRadius) || 6;
+            const borderWidth = parseFloat(boothElement.style.borderWidth) || 2;
+            const opacity = parseFloat(boothElement.style.opacity) || 1.0;
+            const fontSize = parseFloat(boothElement.style.fontSize) || self.defaultBoothFontSize;
+            
+            // Apply appearance/color settings if provided
+            if (appearanceSettings.background_color) {
+                boothElement.style.backgroundColor = appearanceSettings.background_color;
+                boothElement.setAttribute('data-background-color', appearanceSettings.background_color);
+            }
+            if (appearanceSettings.border_color) {
+                boothElement.style.borderColor = appearanceSettings.border_color;
+                boothElement.setAttribute('data-border-color', appearanceSettings.border_color);
+            }
+            if (appearanceSettings.text_color) {
+                boothElement.style.color = appearanceSettings.text_color;
+                boothElement.setAttribute('data-text-color', appearanceSettings.text_color);
+            }
+            if (appearanceSettings.font_weight) {
+                boothElement.style.fontWeight = appearanceSettings.font_weight;
+                boothElement.setAttribute('data-font-weight', appearanceSettings.font_weight);
+            }
+            if (appearanceSettings.font_family) {
+                boothElement.style.fontFamily = appearanceSettings.font_family;
+                boothElement.setAttribute('data-font-family', appearanceSettings.font_family);
+            }
+            if (appearanceSettings.text_align) {
+                boothElement.style.textAlign = appearanceSettings.text_align;
+                boothElement.setAttribute('data-text-align', appearanceSettings.text_align);
+            }
+            if (appearanceSettings.box_shadow) {
+                boothElement.style.boxShadow = appearanceSettings.box_shadow;
+                boothElement.setAttribute('data-box-shadow', appearanceSettings.box_shadow);
+            }
+            
+            // Collect booth data for batch save (preserve all existing values)
+            const boothId = boothElement.getAttribute('data-booth-id');
+            const x = parseFloat(boothElement.style.left) || 0;
+            const y = parseFloat(boothElement.style.top) || 0;
+            
+            boothsToSave.push({
+                id: parseInt(boothId),
+                position_x: x,
+                position_y: y,
+                width: width,
+                height: height,
+                rotation: rotation,
+                z_index: zIndex,
+                font_size: fontSize,
+                border_width: borderWidth,
+                border_radius: borderRadius,
+                opacity: opacity,
+                // Apply new appearance settings
+                background_color: appearanceSettings.background_color || boothElement.style.backgroundColor || boothElement.getAttribute('data-background-color') || null,
+                border_color: appearanceSettings.border_color || boothElement.style.borderColor || boothElement.getAttribute('data-border-color') || null,
+                text_color: appearanceSettings.text_color || boothElement.style.color || boothElement.getAttribute('data-text-color') || null,
+                font_weight: appearanceSettings.font_weight || boothElement.style.fontWeight || boothElement.getAttribute('data-font-weight') || null,
+                font_family: appearanceSettings.font_family || boothElement.style.fontFamily || boothElement.getAttribute('data-font-family') || null,
+                text_align: appearanceSettings.text_align || boothElement.style.textAlign || boothElement.getAttribute('data-text-align') || null,
+                box_shadow: appearanceSettings.box_shadow || boothElement.style.boxShadow || boothElement.getAttribute('data-box-shadow') || null
+            });
+            
+            updatedCount++;
+        });
+        
+        // Get current floor plan ID
+        const floorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
+        if (!floorPlanId) {
+            customAlert('Please select a floor plan first before saving zone appearance settings.', 'warning');
+            return;
+        }
+        
+        // Load existing zone settings to preserve size/rotation values
+        const zoneSettingsUrl = '/booths/zone-settings/' + encodeURIComponent(zoneName) + 
+            (floorPlanId ? '?floor_plan_id=' + floorPlanId : '');
+        fetch(zoneSettingsUrl, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            // Get existing zone settings to preserve size/rotation
+            const existingSettings = (data.status === 200 && data.settings) ? data.settings : {};
+            
+            // Save zone appearance settings to database (preserve size/rotation, only update appearance)
+            fetch('/booths/zone-settings/' + encodeURIComponent(zoneName), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    // Preserve existing size/rotation settings
+                    width: existingSettings.width || 80,
+                    height: existingSettings.height || 50,
+                    rotation: existingSettings.rotation || 0,
+                    zIndex: existingSettings.zIndex || existingSettings.z_index || 10,
+                    borderRadius: existingSettings.borderRadius || existingSettings.border_radius || 6,
+                    borderWidth: existingSettings.borderWidth || existingSettings.border_width || 2,
+                    opacity: existingSettings.opacity || 1.0,
+                    price: existingSettings.price || 500,
+                    floor_plan_id: floorPlanId,
+                    // Update appearance settings only
+                    background_color: appearanceSettings.background_color || null,
+                    border_color: appearanceSettings.border_color || null,
+                    text_color: appearanceSettings.text_color || null,
+                    font_weight: appearanceSettings.font_weight || null,
+                    font_family: appearanceSettings.font_family || null,
+                    text_align: appearanceSettings.text_align || null,
+                    box_shadow: appearanceSettings.box_shadow || null
+                })
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.status === 200) {
+                    // Get current floor plan ID for cache key
+                    const floorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
+                    const cacheKey = floorPlanId ? floorPlanId + '_' + zoneName : 'global_' + zoneName;
+                    
+                    // Update cache with new appearance settings (preserve size/rotation)
+                    if (self.zoneSettingsCache[cacheKey]) {
+                        self.zoneSettingsCache[cacheKey].background_color = appearanceSettings.background_color;
+                        self.zoneSettingsCache[cacheKey].border_color = appearanceSettings.border_color;
+                        self.zoneSettingsCache[cacheKey].text_color = appearanceSettings.text_color;
+                        self.zoneSettingsCache[cacheKey].font_weight = appearanceSettings.font_weight;
+                        self.zoneSettingsCache[cacheKey].font_family = appearanceSettings.font_family;
+                        self.zoneSettingsCache[cacheKey].text_align = appearanceSettings.text_align;
+                        self.zoneSettingsCache[cacheKey].box_shadow = appearanceSettings.box_shadow;
+                    } else {
+                        self.zoneSettingsCache[cacheKey] = {
+                            width: existingSettings.width || 80,
+                            height: existingSettings.height || 50,
+                            rotation: existingSettings.rotation || 0,
+                            zIndex: existingSettings.zIndex || 10,
+                            borderRadius: existingSettings.borderRadius || 6,
+                            borderWidth: existingSettings.borderWidth || 2,
+                            opacity: existingSettings.opacity || 1.0,
+                            price: existingSettings.price || 500,
+                            background_color: appearanceSettings.background_color,
+                            border_color: appearanceSettings.border_color,
+                            text_color: appearanceSettings.text_color,
+                            font_weight: appearanceSettings.font_weight,
+                            font_family: appearanceSettings.font_family,
+                            text_align: appearanceSettings.text_align,
+                            box_shadow: appearanceSettings.box_shadow
+                        };
+                    }
+                }
+            })
+            .catch(function(error) {
+                console.error('Error saving zone appearance settings to database:', error);
+            });
+        })
+        .catch(function(error) {
+            console.error('Error loading existing zone settings:', error);
+        });
+        
+        // Batch save all booth changes
+        if (boothsToSave.length > 0) {
+            self.saveBoothsBatch(boothsToSave).then(function(result) {
+                showNotification('Successfully updated appearance for ' + updatedCount + ' booth(s) in Zone ' + zoneName + '. Size and rotation unchanged.', 'success');
+            }).catch(function(error) {
+                console.error('Error saving booth appearance:', error);
+                showNotification('Appearance applied to booths but failed to save to database', 'warning');
             });
         }
         
