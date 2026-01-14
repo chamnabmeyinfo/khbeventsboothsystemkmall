@@ -71,9 +71,10 @@ class ClientController extends Controller
                 $data[$key] = null;
             }
         }
-        $request->merge($data);
+        // Replace request data with cleaned data
+        $request->replace($data);
         
-        // Build validation rules
+        // Build validation rules - all fields optional
         $rules = [
             'name' => 'nullable|string|max:45',
             'sex' => 'nullable|integer|in:1,2,3',
@@ -83,22 +84,49 @@ class ClientController extends Controller
             'phone_number' => 'nullable|string|max:20',
             'phone_1' => 'nullable|string|max:20',
             'phone_2' => 'nullable|string|max:20',
-            'email_1' => 'nullable|email|max:191',
-            'email_2' => 'nullable|email|max:191',
             'address' => 'nullable|string',
             'tax_id' => 'nullable|string|max:50',
-            'website' => 'nullable|url|max:255',
             'notes' => 'nullable|string',
         ];
         
-        // Only validate email uniqueness if email is provided and not empty
-        if ($request->filled('email')) {
+        // Email validation - only validate email format and uniqueness if value is provided
+        $email = $request->input('email');
+        if ($email !== null && $email !== '') {
             $rules['email'] = 'nullable|email|max:191|unique:client,email';
         } else {
-            $rules['email'] = 'nullable|email|max:191';
+            $rules['email'] = 'nullable|string|max:191';
         }
         
-        $validated = $request->validate($rules);
+        // Email 1 and 2 - only validate email format if value is provided
+        $email1 = $request->input('email_1');
+        $email2 = $request->input('email_2');
+        $rules['email_1'] = ($email1 !== null && $email1 !== '') ? 'nullable|email|max:191' : 'nullable|string|max:191';
+        $rules['email_2'] = ($email2 !== null && $email2 !== '') ? 'nullable|email|max:191' : 'nullable|string|max:191';
+        
+        // Website - only validate URL format if value is provided
+        $website = $request->input('website');
+        $rules['website'] = ($website !== null && $website !== '') ? 'nullable|url|max:255' : 'nullable|string|max:255';
+        
+        try {
+            $validated = $request->validate($rules);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Log validation errors for debugging
+            \Log::error('Client creation validation failed', [
+                'errors' => $e->errors(),
+                'request_data' => $request->all(),
+                'rules' => $rules
+            ]);
+            
+            // Return JSON error response for AJAX requests
+            if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation failed',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
+        }
 
         $client = Client::create($validated);
 
@@ -198,9 +226,10 @@ class ClientController extends Controller
                 $data[$key] = null;
             }
         }
-        $request->merge($data);
+        // Replace request data with cleaned data
+        $request->replace($data);
         
-        // Build validation rules
+        // Build validation rules - all fields optional
         $rules = [
             'name' => 'nullable|string|max:45',
             'sex' => 'nullable|integer|in:1,2,3',
@@ -210,22 +239,42 @@ class ClientController extends Controller
             'phone_number' => 'nullable|string|max:20',
             'phone_1' => 'nullable|string|max:20',
             'phone_2' => 'nullable|string|max:20',
-            'email_1' => 'nullable|email|max:191',
-            'email_2' => 'nullable|email|max:191',
             'address' => 'nullable|string',
             'tax_id' => 'nullable|string|max:50',
-            'website' => 'nullable|url|max:255',
             'notes' => 'nullable|string',
         ];
         
-        // Only validate email uniqueness if email is provided and different from current
-        if ($request->filled('email')) {
+        // Email validation - only validate email format and uniqueness if value is provided
+        $email = $request->input('email');
+        if ($email !== null && $email !== '') {
             $rules['email'] = 'nullable|email|max:191|unique:client,email,' . $client->id;
         } else {
-            $rules['email'] = 'nullable|email|max:191';
+            $rules['email'] = 'nullable|string|max:191';
         }
         
-        $validated = $request->validate($rules);
+        // Email 1 and 2 - only validate email format if value is provided
+        $email1 = $request->input('email_1');
+        $email2 = $request->input('email_2');
+        $rules['email_1'] = ($email1 !== null && $email1 !== '') ? 'nullable|email|max:191' : 'nullable|string|max:191';
+        $rules['email_2'] = ($email2 !== null && $email2 !== '') ? 'nullable|email|max:191' : 'nullable|string|max:191';
+        
+        // Website - only validate URL format if value is provided
+        $website = $request->input('website');
+        $rules['website'] = ($website !== null && $website !== '') ? 'nullable|url|max:255' : 'nullable|string|max:255';
+        
+        try {
+            $validated = $request->validate($rules);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Return JSON error response for AJAX requests
+            if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation failed',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
+        }
 
         $client->update($validated);
 
