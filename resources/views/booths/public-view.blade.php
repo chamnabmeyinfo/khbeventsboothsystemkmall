@@ -538,10 +538,7 @@
                     // Status
                     tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label"><i class="fas fa-info-circle mr-1"></i>Status:</span><span class="tooltip-value"><span class="tooltip-status" style="background: ' + statusColor + '">' + statusLabel + '</span></span></div>';
                     
-                    // Price (highlighted)
-                    if (booth.price) {
-                        tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label"><i class="fas fa-dollar-sign mr-1"></i>Price:</span><span class="tooltip-value" style="color: #4ade80; font-weight: 700; font-size: 1.05rem;">$' + parseFloat(booth.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</span></div>';
-                    }
+                    // Price removed from public view
                     
                     tooltipHTML += '</div>';
                     
@@ -857,16 +854,9 @@
             
             html += '</div>';
             
-            // Pricing & Specifications Section
+            // Specifications Section (Price removed from public view)
             html += '<div class="booth-detail-section">';
-            html += '<div class="booth-detail-section-title"><i class="fas fa-dollar-sign"></i> Pricing & Specifications</div>';
-            
-            if (booth.price) {
-                html += '<div class="booth-detail-row">';
-                html += '<span class="booth-detail-label">Price:</span>';
-                html += '<span class="booth-detail-value"><strong style="color: #28a745; font-size: 1.3rem;">$' + parseFloat(booth.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</strong></span>';
-                html += '</div>';
-            }
+            html += '<div class="booth-detail-section-title"><i class="fas fa-info-circle"></i> Specifications</div>';
             
             if (booth.area_sqm) {
                 html += '<div class="booth-detail-row">';
