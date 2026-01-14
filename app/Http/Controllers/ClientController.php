@@ -97,12 +97,12 @@ class ClientController extends Controller
             'notes' => 'nullable|string',
         ];
         
-        // Add email and website fields - nullable means skip validation if null
-        // Since we've already converted empty strings to null, these will only validate if values exist
-        $rules['email'] = 'nullable|email|max:191|unique:client,email';
-        $rules['email_1'] = 'nullable|email|max:191';
-        $rules['email_2'] = 'nullable|email|max:191';
-        $rules['website'] = 'nullable|url|max:255';
+        // Add email and website fields - make them all nullable with no format validation initially
+        // We'll validate format manually after basic validation passes
+        $rules['email'] = 'nullable|string|max:191';
+        $rules['email_1'] = 'nullable|string|max:191';
+        $rules['email_2'] = 'nullable|string|max:191';
+        $rules['website'] = 'nullable|string|max:255';
         
         try {
             $validated = $request->validate($rules);
@@ -112,6 +112,31 @@ class ClientController extends Controller
                 if ($isEmpty($value)) {
                     $validated[$key] = null;
                 }
+            }
+            
+            // Manual format validation for non-empty emails and URLs
+            if (!empty($validated['email']) && !filter_var($validated['email'], FILTER_VALIDATE_EMAIL)) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email' => ['The email must be a valid email address.']
+                ]);
+            }
+            
+            if (!empty($validated['email_1']) && !filter_var($validated['email_1'], FILTER_VALIDATE_EMAIL)) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email_1' => ['The email 1 must be a valid email address.']
+                ]);
+            }
+            
+            if (!empty($validated['email_2']) && !filter_var($validated['email_2'], FILTER_VALIDATE_EMAIL)) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email_2' => ['The email 2 must be a valid email address.']
+                ]);
+            }
+            
+            if (!empty($validated['website']) && !filter_var($validated['website'], FILTER_VALIDATE_URL)) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'website' => ['The website must be a valid URL.']
+                ]);
             }
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Log validation errors for debugging
@@ -133,13 +158,30 @@ class ClientController extends Controller
             throw $e;
         }
 
-        $client = Client::create($validated);
+        // Check if client with same email exists - if so, update it instead of creating new one
+        $client = null;
+        $isUpdate = false;
+        
+        if (!empty($validated['email']) && $validated['email'] !== null) {
+            $existing = Client::where('email', $validated['email'])->first();
+            if ($existing) {
+                // Update existing client - overwrite with new data
+                $existing->update($validated);
+                $client = $existing;
+                $isUpdate = true;
+            }
+        }
+        
+        // If no existing client found, create new one
+        if (!$client) {
+            $client = Client::create($validated);
+        }
 
         // Return JSON if request expects JSON (for AJAX/modal requests)
         if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'status' => 'success',
-                'message' => 'Client created successfully.',
+                'message' => $isUpdate ? 'Client updated successfully (existing email found).' : 'Client created successfully.',
                 'client' => [
                     'id' => $client->id,
                     'name' => $client->name,
@@ -153,7 +195,7 @@ class ClientController extends Controller
         }
 
         return redirect()->route('clients.index')
-            ->with('success', 'Client created successfully.');
+            ->with('success', $isUpdate ? 'Client updated successfully (existing email found).' : 'Client created successfully.');
     }
 
     public function show(Client $client)
@@ -254,15 +296,64 @@ class ClientController extends Controller
             'notes' => 'nullable|string',
         ];
         
-        // Add email and website fields - nullable means skip validation if null
-        // Since we've already converted empty strings to null, these will only validate if values exist
-        $rules['email'] = 'nullable|email|max:191|unique:client,email,' . $client->id;
-        $rules['email_1'] = 'nullable|email|max:191';
-        $rules['email_2'] = 'nullable|email|max:191';
-        $rules['website'] = 'nullable|url|max:255';
+        // Add email and website fields with conditional validation
+        // Check if values exist before adding format validation
+        $email = $request->input('email');
+        $email1 = $request->input('email_1');
+        $email2 = $request->input('email_2');
+        $website = $request->input('website');
+        
+        // Add email and website fields - make them all nullable with no format validation initially
+        // We'll validate format manually after basic validation passes
+        $rules['email'] = 'nullable|string|max:191';
+        $rules['email_1'] = 'nullable|string|max:191';
+        $rules['email_2'] = 'nullable|string|max:191';
+        $rules['website'] = 'nullable|string|max:255';
         
         try {
             $validated = $request->validate($rules);
+            
+            // Clean validated data - ensure null values are properly set
+            foreach ($validated as $key => $value) {
+                if ($isEmpty($value)) {
+                    $validated[$key] = null;
+                }
+            }
+            
+            // Manual format validation for non-empty emails and URLs
+            if (!empty($validated['email']) && !filter_var($validated['email'], FILTER_VALIDATE_EMAIL)) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email' => ['The email must be a valid email address.']
+                ]);
+            }
+            
+            // Check email uniqueness if email is provided (excluding current client, only check if email is not null)
+            if (!empty($validated['email']) && $validated['email'] !== null) {
+                $existing = Client::where('email', $validated['email'])->where('id', '!=', $client->id)->first();
+                if ($existing) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'email' => ['The email "' . $validated['email'] . '" has already been taken. Please use a different email or update the existing client.']
+                    ]);
+                }
+            }
+            
+            if (!empty($validated['email_1']) && !filter_var($validated['email_1'], FILTER_VALIDATE_EMAIL)) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email_1' => ['The email 1 must be a valid email address.']
+                ]);
+            }
+            
+            if (!empty($validated['email_2']) && !filter_var($validated['email_2'], FILTER_VALIDATE_EMAIL)) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email_2' => ['The email 2 must be a valid email address.']
+                ]);
+            }
+            
+            if (!empty($validated['website']) && !filter_var($validated['website'], FILTER_VALIDATE_URL)) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'website' => ['The website must be a valid URL.']
+                ]);
+            }
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Return JSON error response for AJAX requests
             if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
@@ -420,6 +511,142 @@ class ClientController extends Controller
                 'success' => false,
                 'message' => 'Error updating cover position: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Remove duplicate clients based on phone_2, email_1, or email_2
+     */
+    public function removeDuplicates(Request $request)
+    {
+        try {
+            $field = $request->input('field', 'all'); // all, phone_2, email_1, email_2
+            $dryRun = $request->input('dry_run', false);
+            $keepOldest = $request->input('keep_oldest', false);
+
+            $fieldsToCheck = [];
+            if ($field === 'all') {
+                $fieldsToCheck = ['phone_2', 'email_1', 'email_2'];
+            } else {
+                $fieldsToCheck = [$field];
+            }
+
+            $totalDeleted = 0;
+            $totalMerged = 0;
+            $details = [];
+
+            foreach ($fieldsToCheck as $checkField) {
+                // Find duplicates
+                $duplicates = \DB::table('client')
+                    ->select($checkField, \DB::raw('COUNT(*) as count'))
+                    ->whereNotNull($checkField)
+                    ->where($checkField, '!=', '')
+                    ->groupBy($checkField)
+                    ->having('count', '>', 1)
+                    ->get();
+
+                if ($duplicates->isEmpty()) {
+                    continue;
+                }
+
+                foreach ($duplicates as $duplicate) {
+                    $value = $duplicate->$checkField;
+                    $count = $duplicate->count;
+
+                    // Get all clients with this duplicate value
+                    $clients = Client::where($checkField, $value)
+                        ->orderBy('id', $keepOldest ? 'asc' : 'desc')
+                        ->get();
+
+                    // Keep the first one
+                    $keepClient = $clients->first();
+                    $clientsToDelete = $clients->skip(1);
+
+                    $groupDetails = [
+                        'field' => $checkField,
+                        'value' => $value,
+                        'keep_client_id' => $keepClient->id,
+                        'keep_client_name' => $keepClient->name,
+                        'duplicates' => []
+                    ];
+
+                    foreach ($clientsToDelete as $clientToDelete) {
+                        if (!$dryRun) {
+                            // Merge data before deleting
+                            $this->mergeClientData($keepClient, $clientToDelete);
+                            $clientToDelete->delete();
+                            $totalDeleted++;
+                        }
+                        
+                        $groupDetails['duplicates'][] = [
+                            'id' => $clientToDelete->id,
+                            'name' => $clientToDelete->name
+                        ];
+                    }
+
+                    if (!$dryRun) {
+                        $totalMerged++;
+                    }
+                    
+                    $details[] = $groupDetails;
+                }
+            }
+
+            if ($dryRun) {
+                return response()->json([
+                    'success' => true,
+                    'dry_run' => true,
+                    'message' => 'Preview mode - No changes made',
+                    'details' => $details,
+                    'summary' => [
+                        'duplicate_groups' => count($details),
+                        'would_delete' => $totalDeleted
+                    ]
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Removed {$totalDeleted} duplicate clients across {$totalMerged} groups",
+                'summary' => [
+                    'duplicate_groups_merged' => $totalMerged,
+                    'clients_deleted' => $totalDeleted
+                ],
+                'details' => $details
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error removing duplicate clients: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error removing duplicates: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Merge data from duplicate client into the kept client
+     */
+    private function mergeClientData(Client $keepClient, Client $duplicateClient)
+    {
+        $fieldsToMerge = [
+            'name', 'sex', 'position', 'company', 'company_name_khmer',
+            'phone_number', 'phone_1', 'phone_2',
+            'email', 'email_1', 'email_2',
+            'address', 'tax_id', 'website', 'notes'
+        ];
+
+        $updated = false;
+        foreach ($fieldsToMerge as $field) {
+            // If kept client field is empty/null and duplicate has a value, use duplicate's value
+            if (empty($keepClient->$field) && !empty($duplicateClient->$field)) {
+                $keepClient->$field = $duplicateClient->$field;
+                $updated = true;
+            }
+        }
+
+        if ($updated) {
+            $keepClient->save();
         }
     }
 }

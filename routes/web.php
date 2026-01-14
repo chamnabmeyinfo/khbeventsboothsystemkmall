@@ -114,6 +114,7 @@ Route::middleware(['auth'])->group(function () {
     // Clients
     // IMPORTANT: Define specific routes BEFORE resource routes to avoid route conflicts
     Route::get('/clients/search', [ClientController::class, 'search'])->name('clients.search');
+    Route::post('/clients/remove-duplicates', [ClientController::class, 'removeDuplicates'])->name('clients.remove-duplicates');
     Route::resource('clients', ClientController::class);
     Route::post('/clients/{id}/cover-position', [ClientController::class, 'updateCoverPosition'])->name('clients.cover-position.update');
     
