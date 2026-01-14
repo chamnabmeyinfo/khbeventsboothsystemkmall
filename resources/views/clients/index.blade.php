@@ -543,8 +543,8 @@
                         <h6 style="font-weight: 600; margin-bottom: 16px; color: #495057;"><i class="fas fa-user mr-2 text-primary"></i>Basic Information</h6>
                         <div class="row">
                             <div class="col-md-6">
-                                <label for="modal_client_name" class="form-label">Full Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="modal_client_name" name="name" required placeholder="Enter client full name" style="border-radius: 8px;">
+                                <label for="modal_client_name" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="modal_client_name" name="name" placeholder="Enter client full name" style="border-radius: 8px;">
                             </div>
                             <div class="col-md-6">
                                 <label for="modal_client_sex" class="form-label">Gender</label>
@@ -563,9 +563,15 @@
                         <h6 style="font-weight: 600; margin-bottom: 16px; color: #495057;"><i class="fas fa-building mr-2 text-primary"></i>Company Information</h6>
                         <div class="row">
                             <div class="col-md-6">
-                                <label for="modal_client_company" class="form-label">Company Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="modal_client_company" name="company" required placeholder="Enter company name" style="border-radius: 8px;">
+                                <label for="modal_client_company" class="form-label">Company Name</label>
+                                <input type="text" class="form-control" id="modal_client_company" name="company" placeholder="Enter company name" style="border-radius: 8px;">
                             </div>
+                            <div class="col-md-6">
+                                <label for="modal_client_company_name_khmer" class="form-label">Company Name (Khmer)</label>
+                                <input type="text" class="form-control" id="modal_client_company_name_khmer" name="company_name_khmer" placeholder="Enter company name in Khmer" style="border-radius: 8px;">
+                            </div>
+                        </div>
+                        <div class="row mt-2">
                             <div class="col-md-6">
                                 <label for="modal_client_position" class="form-label">Position/Title</label>
                                 <input type="text" class="form-control" id="modal_client_position" name="position" placeholder="Enter position or title" style="border-radius: 8px;">
@@ -578,18 +584,38 @@
                         <h6 style="font-weight: 600; margin-bottom: 16px; color: #495057;"><i class="fas fa-phone mr-2 text-primary"></i>Contact Information</h6>
                         <div class="row">
                             <div class="col-md-6">
-                                <label for="modal_client_phone" class="form-label">Phone Number <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="modal_client_phone" name="phone_number" required placeholder="Enter phone number" style="border-radius: 8px;">
+                                <label for="modal_client_phone" class="form-label">Phone Number</label>
+                                <input type="text" class="form-control" id="modal_client_phone" name="phone_number" placeholder="Enter phone number" style="border-radius: 8px;">
                             </div>
                             <div class="col-md-6">
-                                <label for="modal_client_email" class="form-label">Email Address <span class="text-danger">*</span></label>
-                                <input type="email" class="form-control" id="modal_client_email" name="email" required placeholder="Enter email address" style="border-radius: 8px;">
+                                <label for="modal_client_phone_1" class="form-label">Phone 1</label>
+                                <input type="text" class="form-control" id="modal_client_phone_1" name="phone_1" placeholder="Enter primary phone number" style="border-radius: 8px;">
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <label for="modal_client_phone_2" class="form-label">Phone 2</label>
+                                <input type="text" class="form-control" id="modal_client_phone_2" name="phone_2" placeholder="Enter secondary phone number" style="border-radius: 8px;">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="modal_client_email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="modal_client_email" name="email" placeholder="Enter email address" style="border-radius: 8px;">
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <label for="modal_client_email_1" class="form-label">Email 1</label>
+                                <input type="email" class="form-control" id="modal_client_email_1" name="email_1" placeholder="Enter primary email address" style="border-radius: 8px;">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="modal_client_email_2" class="form-label">Email 2</label>
+                                <input type="email" class="form-control" id="modal_client_email_2" name="email_2" placeholder="Enter secondary email address" style="border-radius: 8px;">
                             </div>
                         </div>
                         <div class="row mt-2">
                             <div class="col-md-12">
-                                <label for="modal_client_address" class="form-label">Address <span class="text-danger">*</span></label>
-                                <textarea class="form-control" id="modal_client_address" name="address" rows="2" required placeholder="Enter complete address" style="border-radius: 8px;"></textarea>
+                                <label for="modal_client_address" class="form-label">Address</label>
+                                <textarea class="form-control" id="modal_client_address" name="address" rows="2" placeholder="Enter complete address" style="border-radius: 8px;"></textarea>
                             </div>
                         </div>
                     </div>

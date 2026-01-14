@@ -1001,8 +1001,8 @@
                         <h6><i class="fas fa-user mr-2"></i>Basic Information</h6>
                         <div class="row">
                             <div class="col-md-6">
-                                <label for="modal_name" class="form-label">Full Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="modal_name" name="name" required placeholder="Enter client full name">
+                                <label for="modal_name" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="modal_name" name="name" placeholder="Enter client full name">
                             </div>
                             <div class="col-md-6">
                                 <label for="modal_sex" class="form-label">Gender</label>
@@ -1021,9 +1021,15 @@
                         <h6><i class="fas fa-building mr-2"></i>Company Information</h6>
                         <div class="row">
                             <div class="col-md-6">
-                                <label for="modal_company" class="form-label">Company Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="modal_company" name="company" required placeholder="Enter company name">
+                                <label for="modal_company" class="form-label">Company Name</label>
+                                <input type="text" class="form-control" id="modal_company" name="company" placeholder="Enter company name">
                             </div>
+                            <div class="col-md-6">
+                                <label for="modal_company_name_khmer" class="form-label">Company Name (Khmer)</label>
+                                <input type="text" class="form-control" id="modal_company_name_khmer" name="company_name_khmer" placeholder="Enter company name in Khmer">
+                            </div>
+                        </div>
+                        <div class="row mt-2">
                             <div class="col-md-6">
                                 <label for="modal_position" class="form-label">Position/Title</label>
                                 <input type="text" class="form-control" id="modal_position" name="position" placeholder="Enter position or title">
@@ -1036,18 +1042,38 @@
                         <h6><i class="fas fa-phone mr-2"></i>Contact Information</h6>
                         <div class="row">
                             <div class="col-md-6">
-                                <label for="modal_phone_number" class="form-label">Phone Number <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="modal_phone_number" name="phone_number" required placeholder="Enter phone number">
+                                <label for="modal_phone_number" class="form-label">Phone Number</label>
+                                <input type="text" class="form-control" id="modal_phone_number" name="phone_number" placeholder="Enter phone number">
                             </div>
                             <div class="col-md-6">
-                                <label for="modal_email" class="form-label">Email Address <span class="text-danger">*</span></label>
-                                <input type="email" class="form-control" id="modal_email" name="email" required placeholder="Enter email address">
+                                <label for="modal_phone_1" class="form-label">Phone 1</label>
+                                <input type="text" class="form-control" id="modal_phone_1" name="phone_1" placeholder="Enter primary phone number">
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <label for="modal_phone_2" class="form-label">Phone 2</label>
+                                <input type="text" class="form-control" id="modal_phone_2" name="phone_2" placeholder="Enter secondary phone number">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="modal_email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="modal_email" name="email" placeholder="Enter email address">
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <label for="modal_email_1" class="form-label">Email 1</label>
+                                <input type="email" class="form-control" id="modal_email_1" name="email_1" placeholder="Enter primary email address">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="modal_email_2" class="form-label">Email 2</label>
+                                <input type="email" class="form-control" id="modal_email_2" name="email_2" placeholder="Enter secondary email address">
                             </div>
                         </div>
                         <div class="row mt-2">
                             <div class="col-md-12">
-                                <label for="modal_address" class="form-label">Address <span class="text-danger">*</span></label>
-                                <textarea class="form-control" id="modal_address" name="address" rows="2" required placeholder="Enter complete address (street, city, country)"></textarea>
+                                <label for="modal_address" class="form-label">Address</label>
+                                <textarea class="form-control" id="modal_address" name="address" rows="2" placeholder="Enter complete address (street, city, country)"></textarea>
                             </div>
                         </div>
                     </div>
