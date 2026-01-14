@@ -172,6 +172,13 @@ class DashboardController extends Controller
                             }
                         }
                     }
+                    
+                    // Sort userStats by total performance (reserve + booking + paid) descending
+                    usort($userStats, function($a, $b) {
+                        $totalA = ($a['reserve'] ?? 0) + ($a['booking'] ?? 0) + ($a['paid'] ?? 0);
+                        $totalB = ($b['reserve'] ?? 0) + ($b['booking'] ?? 0) + ($b['paid'] ?? 0);
+                        return $totalB <=> $totalA;
+                    });
                 }
             } else {
                 $reservedBooths = Booth::where('status', Booth::STATUS_RESERVED)

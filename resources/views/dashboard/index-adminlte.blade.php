@@ -800,6 +800,22 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @php
+                                // Calculate maxTotal once before the loop for better performance
+                                $maxTotal = 0;
+                                if (!empty($userStats)) {
+                                    foreach ($userStats as $s) {
+                                        $sTotal = ($s['reserve'] ?? 0) + ($s['booking'] ?? 0) + ($s['paid'] ?? 0);
+                                        if ($sTotal > $maxTotal) {
+                                            $maxTotal = $sTotal;
+                                        }
+                                    }
+                                }
+                                // If maxTotal is 0, use total_booths as fallback
+                                if ($maxTotal == 0) {
+                                    $maxTotal = $stats['total_booths'] ?? 1;
+                                }
+                            @endphp
                             @forelse($userStats ?? [] as $stat)
                             <tr style="cursor: pointer;" onclick="window.location.href='{{ route('users.show', $stat['id'] ?? '#') }}'">
                                 <td>
@@ -830,14 +846,43 @@
                                 <td><strong>{{ ($stat['reserve'] ?? 0) + ($stat['booking'] ?? 0) + ($stat['paid'] ?? 0) }}</strong></td>
                                 <td>
                                     @php
-                                        $total = ($stat['reserve'] ?? 0) + ($stat['booking'] ?? 0) + ($stat['paid'] ?? 0);
-                                        $percentage = ($stats['total_booths'] ?? 1) > 0 ? ($total / ($stats['total_booths'] ?? 1)) * 100 : 0;
+                                        $userTotal = ($stat['reserve'] ?? 0) + ($stat['booking'] ?? 0) + ($stat['paid'] ?? 0);
+                                        
+                                        // Calculate percentage relative to the top performer
+                                        $percentage = $maxTotal > 0 ? ($userTotal / $maxTotal) * 100 : 0;
+                                        
+                                        // Ensure percentage doesn't exceed 100%
+                                        $percentage = min($percentage, 100);
+                                        
+                                        // Determine progress bar color based on performance
+                                        $progressColor = 'bg-gradient-primary';
+                                        if ($percentage >= 80) {
+                                            $progressColor = 'bg-gradient-success';
+                                        } elseif ($percentage >= 50) {
+                                            $progressColor = 'bg-gradient-info';
+                                        } elseif ($percentage >= 25) {
+                                            $progressColor = 'bg-gradient-warning';
+                                        } else {
+                                            $progressColor = 'bg-gradient-secondary';
+                                        }
                                     @endphp
-                                    <div class="progress" style="height: 24px; border-radius: 12px;">
-                                        <div class="progress-bar bg-gradient-primary" role="progressbar" style="width: {{ min($percentage, 100) }}%; border-radius: 12px;">
-                                            {{ number_format($percentage, 1) }}%
+                                    <div class="progress" style="height: 28px; border-radius: 14px; background-color: #e9ecef; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
+                                        <div class="progress-bar {{ $progressColor }}" 
+                                             role="progressbar" 
+                                             style="width: {{ $percentage }}%; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.85rem; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"
+                                             aria-valuenow="{{ $percentage }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                            @if($percentage >= 10)
+                                                {{ number_format($percentage, 1) }}%
+                                            @else
+                                                <span style="color: #495057; margin-left: 8px;">{{ number_format($percentage, 1) }}%</span>
+                                            @endif
                                         </div>
                                     </div>
+                                    <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">
+                                        {{ $userTotal }} / {{ $maxTotal }} booths
+                                    </small>
                                 </td>
                             </tr>
                             @empty
