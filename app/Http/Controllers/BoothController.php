@@ -1834,12 +1834,15 @@ class BoothController extends Controller
                 'from' => 'required_if:mode,range|nullable|integer|min:1|max:9999',
                 'to' => 'required_if:mode,range|nullable|integer|min:1|max:9999',
                 'floor_plan_id' => 'required|exists:floor_plans,id',
+                'force_delete_booked' => 'nullable|boolean', // Allow deletion of booked booths if true
             ]);
 
             $deletedBooths = [];
+            $bookedBooths = [];
             $errors = [];
             $mode = $validated['mode'];
             $floorPlanId = $validated['floor_plan_id'];
+            $forceDelete = $validated['force_delete_booked'] ?? false;
 
             if ($mode === 'all') {
                 // Delete all booths in zone (ONLY in the specified floor plan)
@@ -1850,6 +1853,39 @@ class BoothController extends Controller
                 foreach ($zoneBooths as $booth) {
                     try {
                         $boothNumber = $booth->booth_number;
+                        
+                        // CRITICAL: Check if booth has an active booking
+                        if ($booth->bookid && !$forceDelete) {
+                            // Booth is booked - skip deletion unless forced
+                            $bookedBooths[] = [
+                                'booth_number' => $boothNumber,
+                                'status' => $booth->getStatusLabel(),
+                                'client' => $booth->client ? $booth->client->company : 'Unknown',
+                            ];
+                            continue; // Skip this booth
+                        }
+                        
+                        // CRITICAL: Handle bookings before deleting booth
+                        // If booth has a booking (bookid), update the booking's booth list
+                        if ($booth->bookid) {
+                            $book = Book::find($booth->bookid);
+                            if ($book) {
+                                $boothIds = json_decode($book->boothid, true) ?? [];
+                                $boothIds = array_filter($boothIds, function($id) use ($booth) {
+                                    return $id != $booth->id;
+                                });
+                                
+                                if (count($boothIds) > 0) {
+                                    // Update booking with remaining booths
+                                    $book->boothid = json_encode(array_values($boothIds));
+                                    $book->save();
+                                } else {
+                                    // No booths left in booking, delete the booking
+                                    $book->delete();
+                                }
+                            }
+                        }
+                        
                         $booth->delete();
                         $deletedBooths[] = $boothNumber;
                     } catch (\Exception $e) {
@@ -1869,6 +1905,35 @@ class BoothController extends Controller
                             ->where('floor_plan_id', $floorPlanId)
                             ->firstOrFail();
                         $boothNumber = $booth->booth_number;
+                        
+                        // CRITICAL: Check if booth has an active booking
+                        if ($booth->bookid && !$forceDelete) {
+                            $bookedBooths[] = [
+                                'booth_number' => $boothNumber,
+                                'status' => $booth->getStatusLabel(),
+                                'client' => $booth->client ? $booth->client->company : 'Unknown',
+                            ];
+                            continue; // Skip this booth
+                        }
+                        
+                        // CRITICAL: Handle bookings before deleting booth
+                        if ($booth->bookid) {
+                            $book = Book::find($booth->bookid);
+                            if ($book) {
+                                $bookBoothIds = json_decode($book->boothid, true) ?? [];
+                                $bookBoothIds = array_filter($bookBoothIds, function($id) use ($booth) {
+                                    return $id != $booth->id;
+                                });
+                                
+                                if (count($bookBoothIds) > 0) {
+                                    $book->boothid = json_encode(array_values($bookBoothIds));
+                                    $book->save();
+                                } else {
+                                    $book->delete();
+                                }
+                            }
+                        }
+                        
                         $booth->delete();
                         $deletedBooths[] = $boothNumber;
                     } catch (\Exception $e) {
@@ -1900,6 +1965,34 @@ class BoothController extends Controller
                         
                         if ($booth) {
                             try {
+                                // CRITICAL: Check if booth has an active booking
+                                if ($booth->bookid && !$forceDelete) {
+                                    $bookedBooths[] = [
+                                        'booth_number' => $boothNumber,
+                                        'status' => $booth->getStatusLabel(),
+                                        'client' => $booth->client ? $booth->client->company : 'Unknown',
+                                    ];
+                                    break; // Skip this booth
+                                }
+                                
+                                // CRITICAL: Handle bookings before deleting booth
+                                if ($booth->bookid) {
+                                    $book = Book::find($booth->bookid);
+                                    if ($book) {
+                                        $bookBoothIds = json_decode($book->boothid, true) ?? [];
+                                        $bookBoothIds = array_filter($bookBoothIds, function($id) use ($booth) {
+                                            return $id != $booth->id;
+                                        });
+                                        
+                                        if (count($bookBoothIds) > 0) {
+                                            $book->boothid = json_encode(array_values($bookBoothIds));
+                                            $book->save();
+                                        } else {
+                                            $book->delete();
+                                        }
+                                    }
+                                }
+                                
                                 $booth->delete();
                                 $deletedBooths[] = $boothNumber;
                                 break; // Found and deleted, move to next number
@@ -1918,17 +2011,24 @@ class BoothController extends Controller
             $floorPlanName = $floorPlan ? $floorPlan->name : 'Floor Plan #' . $floorPlanId;
             
             $message = count($deletedBooths) . ' booth(s) deleted successfully from Zone ' . $zoneName . ' in ' . $floorPlanName;
+            
+            if (count($bookedBooths) > 0) {
+                $message .= '. WARNING: ' . count($bookedBooths) . ' booth(s) with active bookings were SKIPPED to prevent data loss.';
+            }
+            
             if (count($errors) > 0) {
                 $message .= '. ' . count($errors) . ' booth(s) failed to delete.';
             }
 
             return response()->json([
-                'status' => 200,
+                'status' => count($bookedBooths) > 0 ? 206 : 200, // 206 = Partial Content (some skipped)
                 'message' => $message,
                 'deleted' => $deletedBooths,
+                'booked_booths_skipped' => $bookedBooths,
                 'errors' => $errors,
                 'floor_plan_id' => $floorPlanId,
-                'floor_plan_name' => $floorPlanName
+                'floor_plan_name' => $floorPlanName,
+                'warning' => count($bookedBooths) > 0 ? 'Some booths with active bookings were not deleted to protect booking data.' : null
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
