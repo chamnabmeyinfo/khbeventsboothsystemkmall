@@ -540,10 +540,68 @@
             pointer-events: auto;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
             transform-origin: center center;
+            overflow: visible;
             /* Rotation will be stored in CSS variable and preserved during shake */
             --booth-rotation: 0deg;
             --dock-scale: 1;
             --dock-lift: 0px;
+        }
+        
+        /* Booked booth glow effect and icon */
+        .dropped-booth.booked {
+            box-shadow: 
+                0 2px 8px rgba(0,0,0,0.15),
+                0 0 12px rgba(40, 167, 69, 0.4),
+                0 0 20px rgba(40, 167, 69, 0.2) !important;
+            animation: bookedGlow 2s ease-in-out infinite;
+        }
+        
+        .dropped-booth.booked::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.5);
+            z-index: 100;
+            border: 2px solid white;
+            animation: bookedIconPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes bookedGlow {
+            0%, 100% {
+                box-shadow: 
+                    0 2px 8px rgba(0,0,0,0.15),
+                    0 0 12px rgba(40, 167, 69, 0.4),
+                    0 0 20px rgba(40, 167, 69, 0.2);
+            }
+            50% {
+                box-shadow: 
+                    0 2px 8px rgba(0,0,0,0.15),
+                    0 0 16px rgba(40, 167, 69, 0.6),
+                    0 0 28px rgba(40, 167, 69, 0.3);
+            }
+        }
+        
+        @keyframes bookedIconPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 2px 8px rgba(40, 167, 69, 0.5);
+            }
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 3px 12px rgba(40, 167, 69, 0.7);
+            }
         }
         
         .dropped-booth:hover {
@@ -1075,7 +1133,9 @@
         booths.forEach(function(booth) {
             if (booth.position_x !== null && booth.position_y !== null) {
                 const boothElement = document.createElement('div');
-                boothElement.className = 'dropped-booth status-' + booth.status;
+                // Check if booth is booked (has client_id or status != 1)
+                const isBooked = (booth.client_id && booth.client_id !== null) || (booth.status != 1);
+                boothElement.className = 'dropped-booth status-' + booth.status + (isBooked ? ' booked' : '');
                 boothElement.setAttribute('data-booth-id', booth.id);
                 boothElement.setAttribute('data-booth-number', booth.booth_number);
                 boothElement.textContent = booth.booth_number;

@@ -713,7 +713,69 @@
     cursor: grab !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
+}
+
+/* Booked booth glow effect and icon */
+.booth-number-item.booked,
+.dropped-booth.booked {
+    box-shadow: 
+        0 2px 6px rgba(0, 0, 0, 0.1), 
+        0 1px 2px rgba(0, 0, 0, 0.06),
+        0 0 12px rgba(40, 167, 69, 0.4),
+        0 0 20px rgba(40, 167, 69, 0.2) !important;
+    animation: bookedGlow 2s ease-in-out infinite;
+}
+
+.booth-number-item.booked::after,
+.dropped-booth.booked::after {
+    content: '\f00c';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 18px;
+    height: 18px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.5);
+    z-index: 100;
+    border: 2px solid white;
+    animation: bookedIconPulse 2s ease-in-out infinite;
+}
+
+@keyframes bookedGlow {
+    0%, 100% {
+        box-shadow: 
+            0 2px 6px rgba(0, 0, 0, 0.1), 
+            0 1px 2px rgba(0, 0, 0, 0.06),
+            0 0 12px rgba(40, 167, 69, 0.4),
+            0 0 20px rgba(40, 167, 69, 0.2);
+    }
+    50% {
+        box-shadow: 
+            0 2px 6px rgba(0, 0, 0, 0.1), 
+            0 1px 2px rgba(0, 0, 0, 0.06),
+            0 0 16px rgba(40, 167, 69, 0.6),
+            0 0 28px rgba(40, 167, 69, 0.3);
+    }
+}
+
+@keyframes bookedIconPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.5);
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 3px 12px rgba(40, 167, 69, 0.7);
+    }
 }
 
 .booth-number-item::before {
@@ -1424,7 +1486,7 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    overflow: hidden;
+    overflow: visible;
     word-wrap: break-word;
     line-height: 1.2;
 }
@@ -2323,7 +2385,7 @@
                     </div>
                     
                     <!-- Zone Header Button Controls -->
-                    <div class="zone-controls-panel mb-3">
+                    <div class="zone-controls-panel collapsed mb-3">
                         <div class="zone-controls-header" id="zoneControlsToggle">
                             <i class="fas fa-cog"></i>
                             <span>Button Controls</span>
@@ -2482,7 +2544,7 @@
                                     </div>
                                     <div class="zone-content" id="zoneContent{{ $zoneName }}">
                                         @foreach($zoneBooths as $booth)
-                            <div class="booth-number-item" 
+                            <div class="booth-number-item {{ ($booth->client_id || $booth->status != 1) ? 'booked' : '' }}" 
                                  draggable="true"
                 data-booth-id="{{ $booth->id }}"
                 data-booth-number="{{ $booth->booth_number }}"
@@ -6206,7 +6268,8 @@ const FloorPlanDesigner = {
                     // Update booth element on canvas
                     if (boothElement) {
                         // Update status class
-                        boothElement.className = 'dropped-booth status-' + formData.status;
+                        const isBooked = (data.client_id && data.client_id !== null) || (formData.status != 1);
+                        boothElement.className = 'dropped-booth status-' + formData.status + (isBooked ? ' booked' : '');
                         boothElement.setAttribute('data-booth-status', formData.status);
                         if (data.client_id) {
                             boothElement.setAttribute('data-client-id', data.client_id);
@@ -9081,6 +9144,12 @@ const FloorPlanDesigner = {
         boothItem.setAttribute('data-booth-zone', zoneName);
         boothItem.setAttribute('data-client-id', boothData.clientId || '');
         boothItem.setAttribute('data-user-id', boothData.userId || '');
+        
+        // Add booked class if booth has client_id or status != 1
+        const isBooked = (boothData.clientId && boothData.clientId !== '') || (boothData.status != '1' && boothData.status != 1);
+        if (isBooked) {
+            boothItem.classList.add('booked');
+        }
         boothItem.setAttribute('data-category-id', boothData.categoryId || '');
         boothItem.setAttribute('data-sub-category-id', boothData.subCategoryId || '');
         boothItem.setAttribute('data-asset-id', boothData.assetId || '');
@@ -9232,10 +9301,12 @@ const FloorPlanDesigner = {
     createBoothElement: function(boothData) {
         const self = this;
         const div = document.createElement('div');
-        div.className = 'dropped-booth status-' + boothData.status;
+        const boothStatus = boothData.status || '1';
+        const isBooked = (boothData.clientId && boothData.clientId !== '') || (boothStatus != '1' && boothStatus != 1);
+        div.className = 'dropped-booth status-' + boothStatus + (isBooked ? ' booked' : '');
         div.setAttribute('data-booth-id', boothData.id);
         div.setAttribute('data-booth-number', boothData.number || '');
-        div.setAttribute('data-booth-status', boothData.status || '1');
+        div.setAttribute('data-booth-status', boothStatus);
         const zoneName = boothData.zone || self.getZoneFromBoothNumber(boothData.number || '');
         div.setAttribute('data-booth-zone', zoneName);
         div.setAttribute('data-client-id', boothData.clientId || '');
@@ -9292,7 +9363,7 @@ const FloorPlanDesigner = {
         const statusColors = self.getStatusColors();
         
         // Get status-based colors (these will override custom colors)
-        const boothStatus = boothData.status || 1;
+        // boothStatus already declared at the top of createBoothElement function
         const statusColor = statusColors[boothStatus] || statusColors[1] || { bg: '#28a745', border: '#28a745', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 };
         
         // Apply appearance settings (use zone settings if available, otherwise booth data, then defaults)
@@ -13214,6 +13285,9 @@ const FloorPlanDesigner = {
         
         booths.forEach(function(booth) {
             if (booth.position_x !== null && booth.position_y !== null) {
+                // Declare boothStatus once for this iteration
+                const boothStatus = booth.status || 1;
+                
                 // Check if booth already exists on canvas to prevent duplicates
                 const existingBooth = canvas.querySelector('[data-booth-id="' + booth.id + '"]');
                 if (existingBooth) {
@@ -13263,7 +13337,6 @@ const FloorPlanDesigner = {
                     const statusColors = self.getStatusColors();
                     
                     // Apply status-based colors (these override custom background/border colors)
-                    const boothStatus = booth.status || 1;
                     const statusColor = statusColors[boothStatus] || statusColors[1] || { background: '#28a745', border: '#28a745', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 };
                     
                     // Status colors take priority over custom colors
@@ -13283,6 +13356,14 @@ const FloorPlanDesigner = {
                     existingBooth.className = existingBooth.className.replace(/status-\d+/, 'status-' + boothStatus);
                     if (!existingBooth.className.includes('status-' + boothStatus)) {
                         existingBooth.className += ' status-' + boothStatus;
+                    }
+                    
+                    // Add/remove booked class based on client_id or status
+                    const isBooked = (booth.client_id && booth.client_id !== null) || (boothStatus != 1);
+                    if (isBooked) {
+                        existingBooth.classList.add('booked');
+                    } else {
+                        existingBooth.classList.remove('booked');
                     }
                     
                     // Still apply other appearance properties if they exist (font-weight, font-family, etc.)
@@ -13350,6 +13431,15 @@ const FloorPlanDesigner = {
                     y: booth.position_y
                 };
                 const boothElement = self.createBoothElement(extendedBoothData);
+                
+                // Declare isBooked once for this iteration (createBoothElement already handles booked class, but we'll ensure it's correct)
+                const isBooked = (booth.client_id && booth.client_id !== null) || (booth.status != 1);
+                if (isBooked) {
+                    boothElement.classList.add('booked');
+                } else {
+                    boothElement.classList.remove('booked');
+                }
+                
                 boothElement.style.left = booth.position_x + 'px';
                 boothElement.style.top = booth.position_y + 'px';
                 // Apply saved width and height if they exist
@@ -13389,7 +13479,7 @@ const FloorPlanDesigner = {
                 const statusColors = self.getStatusColors();
                 
                 // Apply status-based colors (these override custom background/border colors)
-                const boothStatus = booth.status || 1;
+                // boothStatus already declared at the top of the forEach loop
                 const statusColor = statusColors[boothStatus] || statusColors[1] || { background: '#28a745', border: '#28a745', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 };
                 
                 // Status colors take priority over custom colors
@@ -13400,9 +13490,16 @@ const FloorPlanDesigner = {
                 boothElement.style.borderRadius = (statusColor.border_radius || 4) + 'px';
                 boothElement.style.color = statusColor.text;
                 
-                // Store status colors in data attributes
-                boothElement.setAttribute('data-background-color', statusColor.bg);
-                boothElement.setAttribute('data-border-color', statusColor.border);
+                    // Store status colors in data attributes
+                    boothElement.setAttribute('data-background-color', statusColor.bg);
+                    boothElement.setAttribute('data-border-color', statusColor.border);
+                    
+                    // isBooked already declared earlier in this block, just ensure booked class is applied
+                    if (isBooked) {
+                        boothElement.classList.add('booked');
+                    } else {
+                        boothElement.classList.remove('booked');
+                    }
                 boothElement.setAttribute('data-text-color', statusColor.text);
                 
                 // Still apply other appearance properties if they exist (font-weight, font-family, etc.)
