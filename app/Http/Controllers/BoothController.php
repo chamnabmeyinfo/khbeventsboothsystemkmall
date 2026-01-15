@@ -434,6 +434,13 @@ class BoothController extends Controller
         
         $booth = Booth::create($validated);
 
+        // Send notification about booth creation
+        try {
+            \App\Services\NotificationService::notifyBoothAction('created', $booth, $booth->userid);
+        } catch (\Exception $e) {
+            \Log::error('Failed to send booth creation notification: ' . $e->getMessage());
+        }
+
         // Return JSON if requested (for AJAX)
         if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
             return response()->json([
@@ -617,7 +624,25 @@ class BoothController extends Controller
             $validated['booth_image'] = $imagePath . '/' . $imageName;
         }
 
+        // Check if status changed
+        $oldStatus = $booth->status;
+        $newStatus = $validated['status'] ?? $booth->status;
+        
         $booth->update($validated);
+        
+        // Refresh to get updated data
+        $booth->refresh();
+
+        // Send notification about booth update
+        try {
+            if ($oldStatus != $newStatus) {
+                \App\Services\NotificationService::notifyBoothStatusChange($booth, $oldStatus, $newStatus);
+            } else {
+                \App\Services\NotificationService::notifyBoothAction('updated', $booth, $booth->userid);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to send booth update notification: ' . $e->getMessage());
+        }
 
         // Return JSON if requested (for AJAX)
         if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
@@ -647,7 +672,22 @@ class BoothController extends Controller
             return back()->with('error', 'Cannot delete a booth that is not available.');
         }
 
+        // Store booth info before deletion for notification
+        $boothNumber = $booth->booth_number;
+        $boothUserId = $booth->userid;
+        
         $booth->delete();
+
+        // Send notification about booth deletion
+        try {
+            // Create a temporary booth object for notification
+            $tempBooth = new Booth();
+            $tempBooth->booth_number = $boothNumber;
+            $tempBooth->userid = $boothUserId;
+            \App\Services\NotificationService::notifyBoothAction('deleted', $tempBooth, $boothUserId);
+        } catch (\Exception $e) {
+            \Log::error('Failed to send booth deletion notification: ' . $e->getMessage());
+        }
 
         return redirect()->route('booths.index')
             ->with('success', 'Booth deleted successfully.');
@@ -666,7 +706,15 @@ class BoothController extends Controller
         if ($booth->userid === auth()->id() || $user->isAdmin()) {
             // Only confirm if status is 3 (reserved) or user is admin
             if ($booth->status === Booth::STATUS_RESERVED || $user->isAdmin()) {
+                $oldStatus = $booth->status;
                 $booth->update(['status' => Booth::STATUS_CONFIRMED]);
+                
+                // Send notification about status change
+                try {
+                    \App\Services\NotificationService::notifyBoothStatusChange($booth, $oldStatus, Booth::STATUS_CONFIRMED);
+                } catch (\Exception $e) {
+                    \Log::error('Failed to send status change notification: ' . $e->getMessage());
+                }
                 
                 return response()->json([
                     'status' => 200,
@@ -749,7 +797,16 @@ class BoothController extends Controller
         if ($booth->userid === auth()->id() || $user->isAdmin()) {
             // Only mark as paid if status is 2 (confirmed) or user is admin
             if ($booth->status === Booth::STATUS_CONFIRMED || $user->isAdmin()) {
+                $oldStatus = $booth->status;
                 $booth->update(['status' => Booth::STATUS_PAID]);
+                
+                // Send notification about payment and status change
+                try {
+                    \App\Services\NotificationService::notifyPaymentReceived($booth, $booth->price ?? 0);
+                    \App\Services\NotificationService::notifyBoothStatusChange($booth, $oldStatus, Booth::STATUS_PAID);
+                } catch (\Exception $e) {
+                    \Log::error('Failed to send payment notification: ' . $e->getMessage());
+                }
                 
                 return response()->json([
                     'status' => 200,
@@ -1845,17 +1902,35 @@ class BoothController extends Controller
     public function saveZoneSettings(Request $request, $zoneName)
     {
         try {
-            $validated = $request->validate([
-                'width' => 'required|integer|min:5',
-                'height' => 'required|integer|min:5',
-                'rotation' => 'required|numeric',
-                'zIndex' => 'required|integer|min:1|max:1000',
-                'borderRadius' => 'required|numeric|min:0|max:50',
-                'borderWidth' => 'required|numeric|min:0|max:10',
-                'opacity' => 'required|numeric|min:0|max:1',
-                'price' => 'nullable|numeric|min:0',
+            // Get existing zone settings to merge with new ones
+            $floorPlanId = $request->input('floor_plan_id');
+            if (!$floorPlanId) {
+                $defaultFloorPlan = FloorPlan::where('is_default', true)->first();
+                $floorPlanId = $defaultFloorPlan ? $defaultFloorPlan->id : null;
+            }
+            
+            if (!$floorPlanId) {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Floor plan ID is required'
+                ], 400);
+            }
+            
+            $existingSettings = ZoneSetting::getZoneDefaults($zoneName, $floorPlanId);
+            
+            // Build validation rules - make fields optional to allow partial updates
+            $rules = [
                 'floor_plan_id' => 'required|exists:floor_plans,id',
-                // Appearance/Color fields (optional - zone-specific customization)
+                // Shape/Layout fields (optional - can be saved separately)
+                'width' => 'nullable|integer|min:5',
+                'height' => 'nullable|integer|min:5',
+                'rotation' => 'nullable|numeric',
+                'zIndex' => 'nullable|integer|min:1|max:1000',
+                // Appearance/Style fields (optional - can be saved separately)
+                'borderRadius' => 'nullable|numeric|min:0|max:50',
+                'borderWidth' => 'nullable|numeric|min:0|max:10',
+                'opacity' => 'nullable|numeric|min:0|max:1',
+                'price' => 'nullable|numeric|min:0',
                 'background_color' => 'nullable|string|max:50',
                 'border_color' => 'nullable|string|max:50',
                 'text_color' => 'nullable|string|max:50',
@@ -1863,17 +1938,40 @@ class BoothController extends Controller
                 'font_family' => 'nullable|string|max:255',
                 'text_align' => 'nullable|string|max:20',
                 'box_shadow' => 'nullable|string|max:255',
-            ]);
-
-            $floorPlanId = $validated['floor_plan_id'];
-            ZoneSetting::saveZoneSettings($zoneName, $validated, $floorPlanId);
+            ];
+            
+            $validated = $request->validate($rules);
+            
+            // Merge with existing settings to preserve values not being updated
+            $settingsToSave = array_merge($existingSettings, $validated);
+            
+            // Convert camelCase to snake_case for database
+            $dbSettings = [
+                'width' => $settingsToSave['width'] ?? $existingSettings['width'] ?? 80,
+                'height' => $settingsToSave['height'] ?? $existingSettings['height'] ?? 50,
+                'rotation' => $settingsToSave['rotation'] ?? $existingSettings['rotation'] ?? 0,
+                'zIndex' => $settingsToSave['zIndex'] ?? $existingSettings['zIndex'] ?? 10,
+                'borderRadius' => $settingsToSave['borderRadius'] ?? $existingSettings['borderRadius'] ?? 6,
+                'borderWidth' => $settingsToSave['borderWidth'] ?? $existingSettings['borderWidth'] ?? 2,
+                'opacity' => $settingsToSave['opacity'] ?? $existingSettings['opacity'] ?? 1.0,
+                'price' => $settingsToSave['price'] ?? $existingSettings['price'] ?? 500,
+                'background_color' => $settingsToSave['background_color'] ?? $existingSettings['background_color'] ?? null,
+                'border_color' => $settingsToSave['border_color'] ?? $existingSettings['border_color'] ?? null,
+                'text_color' => $settingsToSave['text_color'] ?? $existingSettings['text_color'] ?? null,
+                'font_weight' => $settingsToSave['font_weight'] ?? $existingSettings['font_weight'] ?? null,
+                'font_family' => $settingsToSave['font_family'] ?? $existingSettings['font_family'] ?? null,
+                'text_align' => $settingsToSave['text_align'] ?? $existingSettings['text_align'] ?? null,
+                'box_shadow' => $settingsToSave['box_shadow'] ?? $existingSettings['box_shadow'] ?? null,
+            ];
+            
+            ZoneSetting::saveZoneSettings($zoneName, $dbSettings, $floorPlanId);
             
             return response()->json([
                 'status' => 200,
                 'message' => 'Zone settings saved successfully.',
                 'zone_name' => $zoneName,
                 'floor_plan_id' => $floorPlanId,
-                'settings' => $validated
+                'settings' => $dbSettings
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([

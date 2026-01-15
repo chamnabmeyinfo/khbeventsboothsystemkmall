@@ -303,6 +303,13 @@ class BookController extends Controller
 
             DB::commit();
 
+            // Send notification about booking creation
+            try {
+                \App\Services\NotificationService::notifyBookingAction('created', $book, $book->userid);
+            } catch (\Exception $e) {
+                \Log::error('Failed to send booking creation notification: ' . $e->getMessage());
+            }
+
             // Return JSON response for AJAX requests
             if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
                 return response()->json([
@@ -478,6 +485,13 @@ class BookController extends Controller
 
             DB::commit();
 
+            // Send notification about booking update
+            try {
+                \App\Services\NotificationService::notifyBookingAction('updated', $book, $book->userid);
+            } catch (\Exception $e) {
+                \Log::error('Failed to send booking update notification: ' . $e->getMessage());
+            }
+
             return redirect()->route('books.show', $book)
                 ->with('success', 'Booking updated successfully.');
         } catch (\Exception $e) {
@@ -543,8 +557,25 @@ class BookController extends Controller
                 }
             }
 
+            // Store booking info before deletion for notification
+            $bookingId = $book->id;
+            $bookingUserId = $book->userid;
+            $bookingClientId = $book->clientid;
+            
             // Delete the booking
             $book->delete();
+
+            // Send notification about booking deletion
+            try {
+                // Create a temporary booking object for notification
+                $tempBook = new Book();
+                $tempBook->id = $bookingId;
+                $tempBook->userid = $bookingUserId;
+                $tempBook->clientid = $bookingClientId;
+                \App\Services\NotificationService::notifyBookingAction('deleted', $tempBook, $bookingUserId);
+            } catch (\Exception $e) {
+                \Log::error('Failed to send booking deletion notification: ' . $e->getMessage());
+            }
 
             DB::commit();
 

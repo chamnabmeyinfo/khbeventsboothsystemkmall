@@ -103,9 +103,20 @@ class PaymentController extends Controller
             'user_id' => Auth::id(),
         ]);
 
-        // Update booth status to paid
+        // Update booth status to paid and send notifications
         foreach ($booking->booths() as $booth) {
+            $oldStatus = $booth->status;
             $booth->update(['status' => Booth::STATUS_PAID]);
+            
+            // Send notification about payment and status change
+            try {
+                \App\Services\NotificationService::notifyPaymentReceived($booth, $booth->price ?? 0);
+                if ($oldStatus != Booth::STATUS_PAID) {
+                    \App\Services\NotificationService::notifyBoothStatusChange($booth, $oldStatus, Booth::STATUS_PAID);
+                }
+            } catch (\Exception $e) {
+                \Log::error('Failed to send payment notification: ' . $e->getMessage());
+            }
         }
 
         return redirect()->route('finance.payments.index')

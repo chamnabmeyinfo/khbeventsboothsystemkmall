@@ -177,6 +177,13 @@ class ClientController extends Controller
             $client = Client::create($validated);
         }
 
+        // Send notification about client action
+        try {
+            \App\Services\NotificationService::notifyClientAction($isUpdate ? 'updated' : 'created', $client, auth()->id());
+        } catch (\Exception $e) {
+            \Log::error('Failed to send client notification: ' . $e->getMessage());
+        }
+
         // Return JSON if request expects JSON (for AJAX/modal requests)
         if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
             return response()->json([
@@ -368,12 +375,26 @@ class ClientController extends Controller
 
         $client->update($validated);
 
+        // Send notification about client update
+        try {
+            \App\Services\NotificationService::notifyClientAction('updated', $client, auth()->id());
+        } catch (\Exception $e) {
+            \Log::error('Failed to send client update notification: ' . $e->getMessage());
+        }
+
         return redirect()->route('clients.index')
             ->with('success', 'Client updated successfully.');
     }
 
     public function destroy(Client $client)
     {
+        // Send notification about client deletion before deleting
+        try {
+            \App\Services\NotificationService::notifyClientAction('deleted', $client, auth()->id());
+        } catch (\Exception $e) {
+            \Log::error('Failed to send client deletion notification: ' . $e->getMessage());
+        }
+
         $client->delete();
         return redirect()->route('clients.index')
             ->with('success', 'Client deleted successfully.');

@@ -1286,17 +1286,27 @@ setTimeout(function() {
     });
 }, 5000);
 
-// Update notification badge
+// Update notification badge with real-time alerts
 function updateNotificationBadge() {
     fetch('{{ route("notifications.unread-count") }}')
         .then(response => response.json())
         .then(data => {
             const badge = document.getElementById('notification-badge');
-            if (data.count > 0) {
-                badge.textContent = data.count;
-                badge.style.display = 'block';
-            } else {
-                badge.style.display = 'none';
+            if (badge) {
+                const oldCount = parseInt(badge.textContent) || 0;
+                const newCount = data.count || 0;
+                
+                if (newCount > 0) {
+                    badge.textContent = newCount;
+                    badge.style.display = 'block';
+                    
+                    // Show alert if new notifications arrived
+                    if (newCount > oldCount && oldCount > 0) {
+                        showNotificationAlert(newCount - oldCount);
+                    }
+                } else {
+                    badge.style.display = 'none';
+                }
             }
         })
         .catch(error => {
@@ -1304,9 +1314,28 @@ function updateNotificationBadge() {
         });
 }
 
-// Update badge on page load and every 30 seconds
+// Show real-time notification alert
+function showNotificationAlert(count) {
+    const message = count === 1 
+        ? 'You have a new notification!' 
+        : `You have ${count} new notifications!`;
+    
+    // Show toastr notification
+    if (typeof toastr !== 'undefined') {
+        toastr.info(message, 'New Notification', {
+            timeOut: 5000,
+            closeButton: true,
+            progressBar: true,
+            onclick: function() {
+                window.location.href = '{{ route("notifications.index") }}';
+            }
+        });
+    }
+}
+
+// Update badge on page load and every 15 seconds for real-time updates
 updateNotificationBadge();
-setInterval(updateNotificationBadge, 30000);
+setInterval(updateNotificationBadge, 15000);
 
 // Global Search
 let searchTimeout;
