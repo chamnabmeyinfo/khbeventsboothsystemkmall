@@ -5,7 +5,15 @@
 @section('breadcrumb', 'Insights / Reports')
 
 @push('styles')
+@php
+    $cdnSettings = \App\Models\Setting::getCDNSettings();
+    $useCDN = $cdnSettings['use_cdn'] ?? false;
+@endphp
+@if($useCDN)
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">
+@else
 <link rel="stylesheet" href="{{ asset('vendor/chartjs/chart.min.css') }}">
+@endif
 <style>
     /* Modern Glassmorphism Report Cards */
     .report-card {

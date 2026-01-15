@@ -5,7 +5,15 @@
 @section('breadcrumb', 'Reports / Booking Trends')
 
 @push('styles')
+@php
+    $cdnSettings = \App\Models\Setting::getCDNSettings();
+    $useCDN = $cdnSettings['use_cdn'] ?? false;
+@endphp
+@if($useCDN)
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">
+@else
 <link rel="stylesheet" href="{{ asset('vendor/chartjs/chart.min.css') }}">
+@endif
 <style>
     .filter-bar {
         background: rgba(255, 255, 255, 0.95);
@@ -222,7 +230,11 @@
 @endsection
 
 @push('scripts')
+@if($useCDN)
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+@else
 <script src="{{ asset('vendor/chartjs/chart.umd.min.js') }}"></script>
+@endif
 <script>
 let trendsChart;
 let currentChartType = 'bar';

@@ -209,4 +209,32 @@ class Setting extends Model
 
         return self::getAppearanceSettings();
     }
+
+    /**
+     * Get CDN settings
+     */
+    public static function getCDNSettings()
+    {
+        return [
+            'use_cdn' => self::getValue('cdn_use_cdn', false), // Default: false (use local assets)
+        ];
+    }
+
+    /**
+     * Save CDN settings
+     */
+    public static function saveCDNSettings($settings)
+    {
+        $defaults = [
+            'use_cdn' => ['type' => 'boolean', 'description' => 'Use CDN for loading assets (CSS/JS libraries)'],
+        ];
+
+        foreach ($defaults as $key => $config) {
+            if (isset($settings[$key])) {
+                self::setValue('cdn_' . $key, $settings[$key], $config['type'], $config['description']);
+            }
+        }
+
+        return self::getCDNSettings();
+    }
 }

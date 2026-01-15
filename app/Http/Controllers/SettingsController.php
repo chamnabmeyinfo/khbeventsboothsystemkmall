@@ -923,5 +923,56 @@ class SettingsController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get CDN settings
+     */
+    public function getCDNSettings(Request $request)
+    {
+        try {
+            $settings = Setting::getCDNSettings();
+
+            return response()->json([
+                'status' => 200,
+                'data' => $settings
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error fetching CDN settings: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Save CDN settings
+     */
+    public function saveCDNSettings(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'use_cdn' => 'nullable|boolean',
+            ]);
+
+            $settings = Setting::saveCDNSettings($validated);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'CDN settings saved successfully. Please refresh the page to see changes.',
+                'data' => $settings
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error saving CDN settings: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
 

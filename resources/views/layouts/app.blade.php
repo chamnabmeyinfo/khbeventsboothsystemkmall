@@ -8,10 +8,27 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'KHB Booths Booking System')</title>
     
+    @php
+        $cdnSettings = \App\Models\Setting::getCDNSettings();
+        $useCDN = $cdnSettings['use_cdn'] ?? false;
+    @endphp
+    
     {{-- Performance Optimizations: Resource Hints --}}
+    @if($useCDN)
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://code.jquery.com">
+    <link rel="dns-prefetch" href="{{ url('/') }}">
+    @else
     <link rel="preconnect" href="{{ url('/') }}">
     <link rel="dns-prefetch" href="{{ url('/') }}">
+    @endif
     
+    @if($useCDN)
+    {{-- CDN CSS --}}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    @else
     {{-- Critical CSS: Preload essential stylesheets --}}
     <link rel="preload" href="{{ asset('vendor/bootstrap5/css/bootstrap.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <link rel="preload" href="{{ asset('vendor/fontawesome/css/all.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -19,6 +36,7 @@
         <link rel="stylesheet" href="{{ asset('vendor/bootstrap5/css/bootstrap.min.css') }}">
         <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
     </noscript>
+    @endif
     
     {{-- Conditional CSS Loading: Mobile vs Desktop --}}
     <script>
@@ -45,10 +63,12 @@
         })();
     </script>
     
+    @if(!$useCDN)
     {{-- Async CSS Loader Script --}}
     <script>
         !function(e){"use strict";var t=function(t,n,o){var i,r=e.document,a=r.createElement("link");if(n)i=n;else{var l=(r.body||r.getElementsByTagName("head")[0]).childNodes;i=l[l.length-1]}var d=r.styleSheets;a.rel="stylesheet",a.href=t,a.media="only x",function e(t){if(r.body)return t();setTimeout(function(){e(t)})}(function(){i.parentNode.insertBefore(a,n?i:i.nextSibling)});var f=function(e){for(var t=a.href,n=d.length;n--;)if(d[n].href===t)return e();setTimeout(function(){f(e)})};return a.addEventListener&&a.addEventListener("load",function(){this.media=o||"all"}),a.onloadcssdefined=f,f(function(){a.media!==o&&(a.media=o||"all")}),a};"undefined"!=typeof exports?exports.loadCSS=t:e.loadCSS=t}("undefined"!=typeof global?global:this);
     </script>
+    @endif
     
     @stack('styles')
 </head>
@@ -148,16 +168,23 @@
         @yield('content')
     </main>
 
-    {{-- Performance: Preload critical JavaScript --}}
-    <link rel="preload" href="{{ asset('vendor/jquery/jquery-3.7.0.min.js') }}" as="script">
-    <link rel="preload" href="{{ asset('vendor/bootstrap5/js/bootstrap.bundle.min.js') }}" as="script">
+@if($useCDN)
+{{-- CDN JavaScript --}}
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
+@else
+{{-- Performance: Preload critical JavaScript --}}
+<link rel="preload" href="{{ asset('vendor/jquery/jquery-3.7.0.min.js') }}" as="script">
+<link rel="preload" href="{{ asset('vendor/bootstrap5/js/bootstrap.bundle.min.js') }}" as="script">
     
-    {{-- Critical JavaScript: Load with defer (non-blocking) --}}
-    <script src="{{ asset('vendor/jquery/jquery-3.7.0.min.js') }}" defer></script>
-    <script src="{{ asset('vendor/bootstrap5/js/bootstrap.bundle.min.js') }}" defer></script>
+{{-- Critical JavaScript: Load with defer (non-blocking) --}}
+<script src="{{ asset('vendor/jquery/jquery-3.7.0.min.js') }}" defer></script>
+<script src="{{ asset('vendor/bootstrap5/js/bootstrap.bundle.min.js') }}" defer></script>
     
-    {{-- Non-Critical JavaScript: Lazy load only when needed --}}
-    <script>
+{{-- Non-Critical JavaScript: Lazy load only when needed --}}
+<script>
     (function() {
         'use strict';
         
@@ -195,7 +222,8 @@
             }, 50);
         });
     })();
-    </script>
+</script>
+@endif
     
     <!-- Custom Notification System -->
     <script>

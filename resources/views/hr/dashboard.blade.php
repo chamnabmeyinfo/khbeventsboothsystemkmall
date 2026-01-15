@@ -370,7 +370,15 @@
 @stop
 
 @push('scripts')
+@php
+    $cdnSettings = \App\Models\Setting::getCDNSettings();
+    $useCDN = $cdnSettings['use_cdn'] ?? false;
+@endphp
+@if($useCDN)
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+@else
 <script src="{{ asset('vendor/chartjs/chart.umd.min.js') }}"></script>
+@endif
 <script>
     // Attendance Trend Chart
     const ctx = document.getElementById('attendanceChart').getContext('2d');

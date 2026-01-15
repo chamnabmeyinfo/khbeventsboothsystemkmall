@@ -11,6 +11,8 @@
     @php
         $companySettings = \App\Models\Setting::getCompanySettings();
         $appearanceSettings = \App\Models\Setting::getAppearanceSettings();
+        $cdnSettings = \App\Models\Setting::getCDNSettings();
+        $useCDN = $cdnSettings['use_cdn'] ?? false;
     @endphp
     <title>@yield('title', $companySettings['company_name'] ?? 'KHB Booth System')</title>
     @if(!empty($companySettings['company_favicon']))
@@ -18,10 +20,29 @@
     @endif
     
     {{-- Performance Optimizations: Resource Hints --}}
+    @if($useCDN)
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://code.jquery.com">
+    <link rel="preconnect" href="https://code.ionicframework.com">
+    <link rel="dns-prefetch" href="https://cdn.datatables.net">
+    @else
     <link rel="preconnect" href="{{ url('/') }}">
     <link rel="dns-prefetch" href="{{ url('/') }}">
+    @endif
     
-    {{-- Critical CSS: Preload essential stylesheets --}}
+    @if($useCDN)
+    {{-- CDN CSS --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap4-theme@1.0.0/dist/select2-bootstrap4.min.css" rel="stylesheet" />
+    @else
+    {{-- Local CSS: Preload essential stylesheets --}}
     <link rel="preload" href="{{ asset('vendor/adminlte/css/adminlte.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <link rel="preload" href="{{ asset('vendor/fontawesome/css/all.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript>
@@ -44,6 +65,7 @@
         <link href="{{ asset('vendor/select2/css/select2.min.css') }}" rel="stylesheet" />
         <link href="{{ asset('vendor/select2/css/select2-bootstrap4.min.css') }}" rel="stylesheet" />
     </noscript>
+    @endif
     
     {{-- Async CSS Loader Script --}}
     <script>
@@ -1647,6 +1669,19 @@
 </div>
 <!-- ./wrapper -->
 
+@if($useCDN)
+{{-- CDN JavaScript --}}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+@else
 {{-- Performance: Preload critical JavaScript --}}
 <link rel="preload" href="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}" as="script">
 <link rel="preload" href="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}" as="script">
@@ -1711,6 +1746,7 @@
     }
 })();
 </script>
+@endif
 <!-- Image Upload Handler -->
 <script src="{{ asset('js/image-upload.js') }}"></script>
 

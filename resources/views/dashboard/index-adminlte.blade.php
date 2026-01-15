@@ -4,6 +4,11 @@
 @section('page-title', 'Dashboard')
 @section('breadcrumb', 'Dashboard')
 
+@php
+    $cdnSettings = \App\Models\Setting::getCDNSettings();
+    $useCDN = $cdnSettings['use_cdn'] ?? false;
+@endphp
+
 @push('styles')
 <style>
 /* ============================================
@@ -841,8 +846,12 @@
 @endsection
 
 @push('scripts')
-<!-- Chart.js - Local -->
+<!-- Chart.js -->
+@if($useCDN)
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+@else
 <script src="{{ asset('vendor/chartjs/chart.umd.min.js') }}"></script>
+@endif
 
 <script>
 // Wait for Chart.js to load

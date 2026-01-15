@@ -207,6 +207,11 @@
                     <i class="fas fa-palette me-2"></i>System Colors
                 </button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="cdn-tab" data-bs-toggle="tab" data-bs-target="#cdn" type="button" role="tab">
+                    <i class="fas fa-cloud me-2"></i>CDN Settings
+                </button>
+            </li>
         </ul>
 
         <!-- Tabs Content -->
@@ -387,6 +392,60 @@
                 </div>
             </div>
 
+            <!-- CDN Settings Tab -->
+            <div class="tab-pane fade" id="cdn" role="tabpanel">
+                <div class="card border-top-0 rounded-top-0">
+                    <div class="card-body">
+                        <h5 class="mb-4"><i class="fas fa-cloud me-2"></i>CDN Settings</h5>
+                        <p class="text-muted mb-4">Choose whether to load CSS and JavaScript libraries from CDN (Content Delivery Network) or from your local server.</p>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>CDN vs Local Assets:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li><strong>CDN (ON):</strong> Faster loading from global CDN servers, but requires internet connection</li>
+                                <li><strong>Local (OFF):</strong> Loads from your server, works offline, but may be slower</li>
+                            </ul>
+                        </div>
+                        
+                        <form id="cdnSettingsForm">
+                            @csrf
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <div class="card border">
+                                        <div class="card-body">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="use_cdn" name="use_cdn" style="width: 3rem; height: 1.5rem;">
+                                                <label class="form-check-label ms-3" for="use_cdn">
+                                                    <strong>Use CDN for Assets</strong>
+                                                    <p class="text-muted small mb-0 mt-1">When enabled, CSS and JavaScript libraries will be loaded from CDN instead of local files.</p>
+                                                </label>
+                                            </div>
+                                            
+                                            <div id="cdnStatus" class="mt-3 p-3 rounded" style="display: none;">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-circle me-2" style="font-size: 0.75rem;"></i>
+                                                    <span id="cdnStatusText"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Save CDN Settings
+                                </button>
+                                <button type="button" class="btn btn-secondary ms-2" onclick="location.reload()">
+                                    <i class="fas fa-sync-alt me-2"></i>Refresh Page
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -477,6 +536,43 @@
                 toastr.error('Failed to load appearance settings');
             });
     }
+
+    // Load CDN settings
+    function loadCDNSettings() {
+        $.get('{{ route("settings.cdn") }}')
+            .done(function(response) {
+                if (response.status === 200) {
+                    const data = response.data;
+                    $('#use_cdn').prop('checked', data.use_cdn || false);
+                    updateCDNStatus(data.use_cdn);
+                }
+            })
+            .fail(function() {
+                toastr.error('Failed to load CDN settings');
+            });
+    }
+
+    // Update CDN status display
+    function updateCDNStatus(useCDN) {
+        const statusDiv = $('#cdnStatus');
+        const statusText = $('#cdnStatusText');
+        
+        if (useCDN) {
+            statusDiv.removeClass('bg-light').addClass('bg-info text-white');
+            statusText.html('<strong>CDN Enabled:</strong> Assets will be loaded from CDN servers');
+            statusDiv.find('i').removeClass('text-success text-danger').addClass('text-white');
+        } else {
+            statusDiv.removeClass('bg-info text-white').addClass('bg-light');
+            statusText.html('<strong>Local Assets:</strong> Assets will be loaded from your local server');
+            statusDiv.find('i').removeClass('text-white').addClass('text-success');
+        }
+        statusDiv.show();
+    }
+
+    // CDN toggle change handler
+    $('#use_cdn').on('change', function() {
+        updateCDNStatus($(this).is(':checked'));
+    });
 
     // Sync color picker with text input
     $('input[type="color"]').on('change', function() {
@@ -626,9 +722,44 @@
     });
 
     // Load settings on page load
+    // Save CDN settings
+    $('#cdnSettingsForm').on('submit', function(e) {
+        e.preventDefault();
+        const data = {
+            use_cdn: $('#use_cdn').is(':checked') ? 1 : 0,
+            _token: '{{ csrf_token() }}'
+        };
+        
+        $.ajax({
+            url: '{{ route("settings.cdn.save") }}',
+            method: 'POST',
+            data: data,
+            success: function(response) {
+                if (response.status === 200) {
+                    toastr.success(response.message || 'CDN settings saved successfully');
+                    updateCDNStatus(data.use_cdn === 1);
+                    // Show message to refresh page
+                    setTimeout(function() {
+                        toastr.info('Please refresh the page to apply CDN changes', 'Refresh Required', {
+                            timeOut: 0,
+                            extendedTimeOut: 0,
+                            closeButton: true
+                        });
+                    }, 1000);
+                } else {
+                    toastr.error(response.message || 'Failed to save CDN settings');
+                }
+            },
+            error: function(xhr) {
+                toastr.error(xhr.responseJSON?.message || 'Failed to save CDN settings');
+            }
+        });
+    });
+
     $(document).ready(function() {
         loadCompanySettings();
         loadAppearanceSettings();
+        loadCDNSettings();
     });
 </script>
 @push('styles')
