@@ -533,19 +533,40 @@
             justify-content: center;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                        box-shadow 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        border-width 0.3s ease;
             user-select: none;
             pointer-events: auto;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            transform-origin: center center;
             /* Rotation will be stored in CSS variable and preserved during shake */
             --booth-rotation: 0deg;
+            --dock-scale: 1;
+            --dock-lift: 0px;
         }
         
         .dropped-booth:hover {
-            transform: scale(1.08) rotate(var(--booth-rotation));
-            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            transform: scale(calc(1.5 * var(--dock-scale))) translateY(calc(-20px + var(--dock-lift))) rotate(var(--booth-rotation));
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 20px rgba(0,0,0,0.2);
             z-index: 1000 !important;
             border-width: 3px;
+        }
+        
+        /* Ripple effect for nearby booths */
+        .dropped-booth.dock-ripple-1 {
+            transform: scale(1.15) rotate(var(--booth-rotation));
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .dropped-booth.dock-ripple-2 {
+            transform: scale(1.08) rotate(var(--booth-rotation));
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .dropped-booth.dock-ripple-3 {
+            transform: scale(1.04) rotate(var(--booth-rotation));
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         
         /* Mobile touch improvements */
@@ -1111,11 +1132,41 @@
                 const tooltip = document.getElementById('boothTooltip');
                 let tooltipTimeout;
                 
+                // macOS dock-style animation with ripple effect
                 boothElement.addEventListener('mouseenter', function(e) {
                     clearTimeout(tooltipTimeout);
                     const rect = this.getBoundingClientRect();
                     const statusLabel = statusLabels[booth.status] || 'Unknown';
                     const statusColor = statusColors[booth.status] || '#6c757d';
+                    
+                    // Calculate position for ripple effect (dock-style animation)
+                    const hoveredX = parseFloat(this.style.left) + (parseFloat(this.style.width) || 80) / 2;
+                    const hoveredY = parseFloat(this.style.top) + (parseFloat(this.style.height) || 50) / 2;
+                    
+                    // Find and animate nearby booths (ripple effect)
+                    const allBooths = document.querySelectorAll('.dropped-booth');
+                    allBooths.forEach(function(otherBooth) {
+                        if (otherBooth === boothElement) return; // Skip self
+                        
+                        const otherX = parseFloat(otherBooth.style.left) + (parseFloat(otherBooth.style.width) || 80) / 2;
+                        const otherY = parseFloat(otherBooth.style.top) + (parseFloat(otherBooth.style.height) || 50) / 2;
+                        
+                        // Calculate distance
+                        const distance = Math.sqrt(Math.pow(hoveredX - otherX, 2) + Math.pow(hoveredY - otherY, 2));
+                        
+                        // Apply ripple effect based on distance (max 200px for effect)
+                        if (distance < 200) {
+                            const rippleIntensity = 1 - (distance / 200); // 1 at 0px, 0 at 200px
+                            
+                            if (rippleIntensity > 0.5) {
+                                otherBooth.classList.add('dock-ripple-1');
+                            } else if (rippleIntensity > 0.25) {
+                                otherBooth.classList.add('dock-ripple-2');
+                            } else {
+                                otherBooth.classList.add('dock-ripple-3');
+                            }
+                        }
+                    });
                     
                     let tooltipHTML = '<div class="tooltip-title"><i class="fas fa-store mr-1"></i>Booth ' + booth.booth_number + '</div>';
                     
@@ -1206,6 +1257,12 @@
                     tooltipTimeout = setTimeout(function() {
                         tooltip.style.display = 'none';
                     }, 100);
+                    
+                    // Remove ripple effects from all booths (dock animation cleanup)
+                    const allBooths = document.querySelectorAll('.dropped-booth');
+                    allBooths.forEach(function(otherBooth) {
+                        otherBooth.classList.remove('dock-ripple-1', 'dock-ripple-2', 'dock-ripple-3');
+                    });
                 });
                 
                 // Function to update tooltip position

@@ -336,31 +336,52 @@
     align-items: stretch; /* Stretch both sidebar and canvas to same height */
 }
 
-/* Sidebar - 25% width, flex layout */
+/* Sidebar - 25% width, flex layout - Modern Glassmorphism Design */
 .designer-sidebar {
     width: 25%; /* 25% of parent container */
     flex: 0 0 25%; /* Don't grow or shrink, fixed at 25% */
     height: 100%; /* Full height of parent */
     max-height: 100%;
-    background: rgba(255, 255, 255, 0.1); /* 10% transparent background */
-    backdrop-filter: blur(10px); /* Add blur effect for better readability */
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(222, 226, 230, 0.3);
-    border-right: 1px solid rgba(222, 226, 230, 0.3);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-right: 1px solid rgba(255, 255, 255, 0.18);
     border-left: none;
-    border-radius: 0 8px 8px 0;
-    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+    border-radius: 0 16px 16px 0;
+    box-shadow: 
+        2px 0 24px rgba(0, 0, 0, 0.12),
+        inset -1px 0 1px rgba(255, 255, 255, 0.1);
     display: flex;
     flex-direction: column;
-    position: relative; /* Relative positioning within flex container */
-    z-index: 1000 !important; /* Always on top of canvas content */
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, width 0.3s ease;
+    position: relative;
+    z-index: 1000 !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     transform: translateX(0);
     opacity: 1;
-    pointer-events: auto; /* Ensure sidebar is clickable */
-    visibility: visible !important; /* Ensure sidebar is visible */
-    overflow-y: auto; /* Allow scrolling if content overflows */
+    pointer-events: auto;
+    visibility: visible !important;
+    overflow-y: auto;
     overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(102, 126, 234, 0.5) transparent;
+}
+
+.designer-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.designer-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.designer-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.5);
+    border-radius: 10px;
+}
+
+.designer-sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 126, 234, 0.7);
 }
 
 .designer-sidebar.hidden {
@@ -446,287 +467,292 @@
     width: calc(100% - 50px) !important;
 }
 
-/* Zone sections styling for transparent sidebar */
+/* Zone sections styling - Modern Card Design */
 .zone-section {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(224, 224, 224, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.zone-section:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
 }
 
 .zone-header {
-    background: rgba(102, 126, 234, 0.7) !important;
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.85) 0%, rgba(88, 101, 242, 0.85) 100%);
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 12px;
+    padding: 12px 16px;
     cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.zone-header:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(88, 101, 242, 0.95) 100%);
 }
 
 .zone-header-left {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     flex: 1;
+    min-width: 0;
 }
 
+.zone-header-left .zone-chevron {
+    font-size: 12px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.zone-section.collapsed .zone-chevron {
+    transform: rotate(-90deg);
+}
+
+.zone-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: white;
+    letter-spacing: 0.3px;
+}
+
+.zone-count {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.15);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.btn-add-all-zone,
+.btn-add-selected-zone,
+.btn-add-all-zone-click,
+.btn-zone-settings,
+.btn-zone-appearance,
+.btn-zone-clear,
+.btn-zone-zoom,
+.btn-zone-add-new,
+.btn-zone-delete {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    min-width: 32px;
+    height: 32px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-add-all-zone:hover,
+.btn-add-selected-zone:hover,
+.btn-add-all-zone-click:hover,
+.btn-zone-settings:hover,
+.btn-zone-appearance:hover,
+.btn-zone-zoom:hover,
+.btn-zone-add-new:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-zone-clear:hover,
+.btn-zone-delete:hover {
+    background: rgba(220, 53, 69, 0.9);
+    border-color: rgba(220, 53, 69, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+.btn-add-all-zone:active,
+.btn-add-selected-zone:active,
+.btn-add-all-zone-click:active,
+.btn-zone-settings:active,
+.btn-zone-appearance:active,
+.btn-zone-clear:active,
+.btn-zone-zoom:active,
+.btn-zone-add-new:active,
+.btn-zone-delete:active {
+    transform: translateY(0);
+}
+
+.btn-add-all-zone i,
+.btn-add-selected-zone i,
+.btn-add-all-zone-click i,
+.btn-zone-settings i,
+.btn-zone-appearance i,
+.btn-zone-clear i,
+.btn-zone-zoom i,
+.btn-zone-add-new i,
+.btn-zone-delete i {
+    font-size: 11px;
+}
+
+/* Specific button color overrides */
 .btn-add-all-zone {
     background: rgba(40, 167, 69, 0.8);
-    color: white;
-    border: none;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    transition: all 0.2s ease;
-    white-space: nowrap;
+    border-color: rgba(40, 167, 69, 0.6);
 }
 
 .btn-add-all-zone:hover {
     background: rgba(40, 167, 69, 1);
-    transform: scale(1.05);
+    border-color: rgba(40, 167, 69, 1);
 }
 
-.btn-add-all-zone:active {
-    transform: scale(0.95);
-}
-
-.btn-add-all-zone i {
-    font-size: 10px;
-}
-
-.btn-add-all-zone-click {
+.btn-add-selected-zone {
     background: rgba(0, 123, 255, 0.8);
-    color: white;
-    border: none;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    cursor: pointer;
-    margin-left: 4px;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    border-color: rgba(0, 123, 255, 0.6);
 }
 
-.btn-add-all-zone-click:hover {
+.btn-add-selected-zone:hover {
     background: rgba(0, 123, 255, 1);
-    transform: scale(1.05);
+    border-color: rgba(0, 123, 255, 1);
 }
 
-.btn-add-all-zone-click:active {
-    transform: scale(0.95);
+.btn-zone-settings {
+    background: rgba(255, 152, 0, 0.8);
+    border-color: rgba(255, 152, 0, 0.6);
+}
+
+.btn-zone-settings:hover {
+    background: rgba(255, 152, 0, 1);
+    border-color: rgba(255, 152, 0, 1);
+}
+
+.btn-zone-appearance {
+    background: rgba(102, 126, 234, 0.8);
+    border-color: rgba(102, 126, 234, 0.6);
+}
+
+.btn-zone-appearance:hover {
+    background: rgba(102, 126, 234, 1);
+    border-color: rgba(102, 126, 234, 1);
+}
+
+.btn-zone-zoom {
+    background: rgba(0, 123, 255, 0.8);
+    border-color: rgba(0, 123, 255, 0.6);
+}
+
+.btn-zone-zoom:hover {
+    background: rgba(0, 123, 255, 1);
+    border-color: rgba(0, 123, 255, 1);
+}
+
+.btn-zone-add-new {
+    background: rgba(40, 167, 69, 0.8);
+    border-color: rgba(40, 167, 69, 0.6);
+}
+
+.btn-zone-add-new:hover {
+    background: rgba(40, 167, 69, 1);
+    border-color: rgba(40, 167, 69, 1);
 }
 
 .btn-add-all-zone-click.active {
     background: rgba(255, 193, 7, 0.9);
+    border-color: rgba(255, 193, 7, 1);
     animation: pulse 1.5s infinite;
+    box-shadow: 0 0 12px rgba(255, 193, 7, 0.5);
 }
 
 @keyframes pulse {
     0%, 100% {
         opacity: 1;
+        transform: translateY(-2px) scale(1);
     }
     50% {
-        opacity: 0.7;
+        opacity: 0.8;
+        transform: translateY(-2px) scale(1.05);
     }
 }
 
-.btn-add-all-zone-click i {
-    font-size: 10px;
-}
-
-.btn-zone-clear {
-    background: rgba(220, 53, 69, 0.8);
-    color: white;
-    border: none;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    cursor: pointer;
-    margin-left: 4px;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-zone-clear:hover {
-    background: rgba(220, 53, 69, 1);
-    transform: scale(1.05);
-}
-
-.btn-zone-clear:active {
-    transform: scale(0.95);
-}
-
-.btn-zone-clear i {
-    font-size: 10px;
-}
-
-.btn-zone-zoom {
-    background: rgba(0, 123, 255, 0.8);
-    color: white;
-    border: none;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    cursor: pointer;
-    margin-left: 4px;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-zone-zoom:hover {
-    background: rgba(0, 123, 255, 1);
-    transform: scale(1.05);
-}
-
-.btn-zone-zoom:active {
-    transform: scale(0.95);
-}
-
-.btn-zone-zoom i {
-    font-size: 10px;
-}
-
-.btn-zone-add-new {
-    background: rgba(40, 167, 69, 0.8);
-    color: white;
-    border: none;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    cursor: pointer;
-    margin-left: 4px;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-zone-add-new:hover {
-    background: rgba(40, 167, 69, 1);
-    transform: scale(1.05);
-}
-
-.btn-zone-add-new:active {
-    transform: scale(0.95);
-}
-
-.btn-zone-add-new i {
-    font-size: 10px;
-}
-
-.btn-zone-settings {
-    background: rgba(255, 152, 0, 0.8);
-    color: white;
-    border: none;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    cursor: pointer;
-    margin-left: 4px;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-zone-settings:hover {
-    background: rgba(255, 152, 0, 1);
-    transform: scale(1.05);
-}
-
-.btn-zone-settings:active {
-    transform: scale(0.95);
-}
-
-.btn-zone-settings i {
-    font-size: 10px;
-}
-
-.btn-zone-appearance {
-    background: rgba(102, 126, 234, 0.8);
-    color: white;
-    border: none;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    cursor: pointer;
-    margin-left: 4px;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-zone-appearance:hover {
-    background: rgba(102, 126, 234, 1);
-    transform: scale(1.05);
-}
-
-.btn-zone-appearance:active {
-    transform: scale(0.95);
-}
-
-.btn-zone-appearance i {
-    font-size: 10px;
-}
-
-.btn-zone-delete {
-    background: rgba(220, 53, 69, 0.8);
-    color: white;
-    border: none;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    cursor: pointer;
-    margin-left: 4px;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-zone-delete:hover {
-    background: rgba(220, 53, 69, 1);
-    transform: scale(1.05);
-}
-
-.btn-zone-delete:active {
-    transform: scale(0.95);
-}
-
-.btn-zone-delete i {
-    font-size: 10px;
+.zone-content {
+    padding: 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 10px;
+    transition: all 0.3s ease;
 }
 
 .booth-number-item {
-    background: rgba(255, 255, 255, 0.9) !important;
-    border-color: rgba(170, 170, 170, 0.6) !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%) !important;
+    border: 1px solid rgba(102, 126, 234, 0.3) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+    border-radius: 8px !important;
+    padding: 10px 8px !important;
+    text-align: center !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    color: #333 !important;
+    cursor: grab !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.booth-number-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.booth-number-item:hover {
+    transform: translateY(-3px) scale(1.05) !important;
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.25), 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    border-color: rgba(102, 126, 234, 0.5) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(240, 245, 255, 1) 100%) !important;
+}
+
+.booth-number-item:hover::before {
+    left: 100%;
+}
+
+.booth-number-item:active {
+    cursor: grabbing !important;
+    transform: translateY(-1px) scale(1.02) !important;
 }
 
 /* Responsive adjustments for sidebar */
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
     .designer-sidebar {
-        width: 250px;
-        left: 0; /* Stick to left edge */
-        top: 0; /* Stick to top of canvas container */
-        height: calc(100vh - 120px);
-        max-height: calc(100vh - 120px);
+        width: 30%;
+        flex: 0 0 30%;
     }
     
-    .designer-sidebar.collapsed {
-        width: 50px !important;
-        flex: 0 0 50px !important;
+    .designer-sidebar:not(.hidden):not(.collapsed) {
+        width: 30% !important;
+        flex: 0 0 30% !important;
     }
     
     .designer-sidebar.collapsed + .canvas-container {
@@ -734,67 +760,277 @@
         width: calc(100% - 50px) !important;
     }
     
+    .zone-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .zone-header-left {
+        width: 100%;
+    }
+    
+    .btn-add-all-zone,
+    .btn-add-selected-zone,
+    .btn-add-all-zone-click,
+    .btn-zone-settings,
+    .btn-zone-appearance,
+    .btn-zone-clear,
+    .btn-zone-zoom,
+    .btn-zone-add-new,
+    .btn-zone-delete {
+        font-size: 10px;
+        padding: 5px 8px;
+        min-width: 28px;
+        height: 28px;
+    }
+}
+
+@media (max-width: 992px) {
+    .designer-sidebar {
+        width: 35%;
+        flex: 0 0 35%;
+    }
+    
+    .designer-sidebar:not(.hidden):not(.collapsed) {
+        width: 35% !important;
+        flex: 0 0 35% !important;
+    }
+    
+    .sidebar-content {
+        padding: 16px;
+    }
+    
+    .zone-content {
+        grid-template-columns: repeat(auto-fill, minmax(55px, 1fr));
+        gap: 8px;
+    }
+}
+
+@media (max-width: 768px) {
+    .designer-sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 280px;
+        max-width: 85vw;
+        height: 100vh;
+        max-height: 100vh;
+        z-index: 2000;
+        transform: translateX(-100%);
+        border-radius: 0;
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+    }
+    
+    .designer-sidebar:not(.hidden):not(.collapsed) {
+        transform: translateX(0) !important;
+        width: 280px !important;
+        max-width: 85vw !important;
+        flex: none !important;
+    }
+    
+    .designer-sidebar.collapsed {
+        width: 50px !important;
+        flex: none !important;
+        transform: translateX(0);
+    }
+    
+    .designer-sidebar.collapsed + .canvas-container {
+        flex: 0 0 100% !important;
+        width: 100% !important;
+    }
+    
+    .sidebar-header {
+        padding: 14px 16px;
+    }
+    
+    .sidebar-header h6 {
+        font-size: 14px;
+    }
+    
+    .sidebar-content {
+        padding: 14px;
+    }
+    
     .btn-toggle-stock span {
         display: none;
     }
     
     .btn-toggle-stock {
+        padding: 6px 10px;
+        min-width: 36px;
+    }
+    
+    .zone-header {
+        padding: 10px 12px;
+    }
+    
+    .zone-content {
+        grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+        gap: 8px;
+        padding: 10px;
+    }
+    
+    .booth-number-item {
+        padding: 8px 6px !important;
+        font-size: 12px !important;
+    }
+    
+    .btn-add-all-zone,
+    .btn-add-selected-zone,
+    .btn-add-all-zone-click,
+    .btn-zone-settings,
+    .btn-zone-appearance,
+    .btn-zone-clear,
+    .btn-zone-zoom,
+    .btn-zone-add-new,
+    .btn-zone-delete {
+        font-size: 9px;
         padding: 4px 6px;
+        min-width: 26px;
+        height: 26px;
+    }
+    
+    .zone-header-actions {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    
+    .zone-controls-content {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 10px 14px;
+    }
+    
+    .zone-controls-header {
+        padding: 10px 14px;
+    }
+}
+
+@media (max-width: 576px) {
+    .zone-controls-content {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        padding: 8px 12px;
+    }
+    
+    .zone-controls-header {
+        padding: 10px 12px;
+    }
+    
+    .zone-controls-header span {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 576px) {
+    .designer-sidebar {
+        width: 100%;
+        max-width: 100vw;
+    }
+    
+    .designer-sidebar:not(.hidden):not(.collapsed) {
+        width: 100% !important;
+        max-width: 100vw !important;
+    }
+    
+    .sidebar-header {
+        padding: 12px 14px;
+    }
+    
+    .sidebar-content {
+        padding: 12px;
+    }
+    
+    .zone-content {
+        grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+        gap: 6px;
+    }
+    
+    .booth-number-item {
+        padding: 6px 4px !important;
+        font-size: 11px !important;
     }
 }
 
 .sidebar-header {
-    background: rgba(102, 126, 234, 0.85); /* Semi-transparent gradient background */
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(88, 101, 242, 0.95) 100%);
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
     color: white;
-    padding: 12px 15px;
+    padding: 16px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-weight: 600;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    border-radius: 0 8px 0 0;
-    transition: opacity 0.3s ease;
+    border-radius: 0 16px 0 0;
     flex-shrink: 0;
-    gap: 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    gap: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-header h6 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.sidebar-header h6 i {
+    font-size: 16px;
+    opacity: 0.95;
 }
 
 .sidebar-header-actions {
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
 }
 
 .btn-toggle-stock {
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
     color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
+    padding: 6px 12px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-size: 12px;
+    font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn-toggle-stock:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-toggle-stock:active {
+    transform: translateY(0);
 }
 
 .btn-toggle-stock.active {
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.95);
     color: #667eea;
-    border-color: rgba(255, 255, 255, 0.9);
+    border-color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.3);
 }
 
 .btn-toggle-stock i {
-    font-size: 14px;
+    font-size: 13px;
 }
 
 /* Hide booths that are not in stock when filter is active */
@@ -802,25 +1038,187 @@
     display: none !important;
 }
 
-.sidebar-header h6 {
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
 .sidebar-content {
     flex: 1;
     overflow-y: auto;
-    padding: 15px;
+    padding: 20px;
     transition: opacity 0.3s ease;
     opacity: 1;
-    background: rgba(255, 255, 255, 0.05); /* Slightly more opaque for content area */
+    background: transparent;
+}
+
+.sidebar-search {
+    margin-bottom: 16px;
+    position: relative;
 }
 
 .sidebar-search input {
-    border-radius: 5px;
-    border: 1px solid #ced4da;
+    width: 100%;
+    padding: 10px 16px 10px 40px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #fff;
+    font-size: 14px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-search input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.sidebar-search input:focus {
+    outline: none;
+    border-color: rgba(102, 126, 234, 0.6);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.sidebar-search::before {
+    content: '\f002';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Zone Controls Panel */
+.zone-controls-panel {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.zone-controls-panel:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.zone-controls-header {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.6) 0%, rgba(88, 101, 242, 0.6) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.zone-controls-header:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.75) 0%, rgba(88, 101, 242, 0.75) 100%);
+}
+
+.zone-controls-header i:first-child {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.zone-controls-header span {
+    flex: 1;
+    font-weight: 600;
+    font-size: 13px;
+    color: white;
+    letter-spacing: 0.3px;
+}
+
+.zone-controls-chevron {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.8);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.zone-controls-panel.collapsed .zone-controls-chevron {
+    transform: rotate(-90deg);
+}
+
+.zone-controls-content {
+    padding: 12px 16px;
+    max-height: 400px;
+    overflow-y: auto;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.zone-controls-panel.collapsed .zone-controls-content {
+    max-height: 0;
+    padding: 0 16px;
+    overflow: hidden;
+    opacity: 0;
+}
+
+.zone-control-item {
+    display: flex;
+    align-items: center;
+}
+
+.zone-control-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    width: 100%;
+    user-select: none;
+}
+
+.zone-control-label:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.zone-control-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #667eea;
+    flex-shrink: 0;
+}
+
+.zone-control-text {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    flex: 1;
+}
+
+.zone-controls-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.zone-controls-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.zone-controls-content::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.5);
+    border-radius: 10px;
+}
+
+.zone-controls-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 126, 234, 0.7);
 }
 
 /* Canvas Container - 75% width */
@@ -949,39 +1347,7 @@
     border-radius: 12px;
 }
 
-.zone-content {
-    padding: 8px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    max-height: 500px;
-    overflow-y: auto;
-    transition: max-height 0.3s ease, padding 0.3s ease;
-}
-
-.zone-section.collapsed .zone-content {
-    max-height: 0;
-    padding: 0 8px;
-    overflow: hidden;
-}
-
-.zone-content::-webkit-scrollbar {
-    width: 6px;
-}
-
-.zone-content::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
-}
-
-.zone-content::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 3px;
-}
-
-.zone-content::-webkit-scrollbar-thumb:hover {
-    background: #555;
-}
+/* Duplicate removed - using modern grid layout defined earlier */
 
 .booth-number-item {
     -webkit-user-select: none;
@@ -1947,14 +2313,80 @@
                         </div>
                 </div>
                 <div class="sidebar-content">
-                    <div class="mb-2 d-flex align-items-center" style="gap:8px;">
-                        <button class="btn btn-sm btn-primary btn-block" id="btnAddZoneMain" style="flex:1;">
+                    <div class="mb-3 d-flex align-items-center" style="gap:8px;">
+                        <button class="btn btn-sm btn-primary btn-block" id="btnAddZoneMain" style="flex:1; border-radius: 10px; padding: 10px 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
                             <i class="fas fa-plus"></i> Add Zone
                         </button>
                     </div>
                     <div class="sidebar-search mb-2">
                         <input type="text" class="form-control form-control-sm" id="boothSearchSidebar" placeholder="Search booths...">
                     </div>
+                    
+                    <!-- Zone Header Button Controls -->
+                    <div class="zone-controls-panel mb-3">
+                        <div class="zone-controls-header" id="zoneControlsToggle">
+                            <i class="fas fa-cog"></i>
+                            <span>Button Controls</span>
+                            <i class="fas fa-chevron-down zone-controls-chevron"></i>
+                        </div>
+                        <div class="zone-controls-content" id="zoneControlsContent">
+                            <div class="zone-control-item">
+                                <label class="zone-control-label">
+                                    <input type="checkbox" class="zone-control-checkbox" data-button="add-all" checked>
+                                    <span class="zone-control-text">Add All</span>
+                                </label>
+                            </div>
+                            <div class="zone-control-item">
+                                <label class="zone-control-label">
+                                    <input type="checkbox" class="zone-control-checkbox" data-button="add-selected" checked>
+                                    <span class="zone-control-text">Add Selected</span>
+                                </label>
+                            </div>
+                            <div class="zone-control-item">
+                                <label class="zone-control-label">
+                                    <input type="checkbox" class="zone-control-checkbox" data-button="add-click" checked>
+                                    <span class="zone-control-text">Click to Place</span>
+                                </label>
+                            </div>
+                            <div class="zone-control-item">
+                                <label class="zone-control-label">
+                                    <input type="checkbox" class="zone-control-checkbox" data-button="settings" checked>
+                                    <span class="zone-control-text">Zone Settings</span>
+                                </label>
+                            </div>
+                            <div class="zone-control-item">
+                                <label class="zone-control-label">
+                                    <input type="checkbox" class="zone-control-checkbox" data-button="appearance" checked>
+                                    <span class="zone-control-text">Appearance</span>
+                                </label>
+                            </div>
+                            <div class="zone-control-item">
+                                <label class="zone-control-label">
+                                    <input type="checkbox" class="zone-control-checkbox" data-button="clear" checked>
+                                    <span class="zone-control-text">Clear Zone</span>
+                                </label>
+                            </div>
+                            <div class="zone-control-item">
+                                <label class="zone-control-label">
+                                    <input type="checkbox" class="zone-control-checkbox" data-button="zoom" checked>
+                                    <span class="zone-control-text">Zoom to Zone</span>
+                                </label>
+                            </div>
+                            <div class="zone-control-item">
+                                <label class="zone-control-label">
+                                    <input type="checkbox" class="zone-control-checkbox" data-button="add-new" checked>
+                                    <span class="zone-control-text">Add New Booth</span>
+                                </label>
+                            </div>
+                            <div class="zone-control-item">
+                                <label class="zone-control-label">
+                                    <input type="checkbox" class="zone-control-checkbox" data-button="delete" checked>
+                                    <span class="zone-control-text">Delete</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="blogs" id="boothNumbersContainer">
                             @php
                                 // Group booths by zone (extract first letter from booth number)
@@ -8582,6 +9014,11 @@ const FloorPlanDesigner = {
             
             // Setup toggle handler for new zone
             this.setupZoneToggle(zoneHeader);
+            
+            // Apply button visibility settings to newly created zone
+            if (typeof window.applyZoneButtonVisibility === 'function') {
+                window.applyZoneButtonVisibility();
+            }
         }
         
         return zoneSection;
@@ -8817,8 +9254,8 @@ const FloorPlanDesigner = {
         const rotation = boothData.rotation !== undefined && boothData.rotation !== null ? boothData.rotation : effectiveSettings.rotation;
         const zIndex = boothData.z_index !== undefined && boothData.z_index !== null ? boothData.z_index : effectiveSettings.zIndex;
         const fontSize = boothData.font_size !== undefined && boothData.font_size !== null ? boothData.font_size : effectiveSettings.fontSize;
-        const borderWidth = boothData.border_width !== undefined && boothData.border_width !== null ? boothData.border_width : effectiveSettings.borderWidth;
-        const borderRadius = boothData.border_radius !== undefined && boothData.border_radius !== null ? boothData.border_radius : effectiveSettings.borderRadius;
+        let borderWidth = boothData.border_width !== undefined && boothData.border_width !== null ? boothData.border_width : effectiveSettings.borderWidth;
+        let borderRadius = boothData.border_radius !== undefined && boothData.border_radius !== null ? boothData.border_radius : effectiveSettings.borderRadius;
         const opacity = boothData.opacity !== undefined && boothData.opacity !== null ? boothData.opacity : effectiveSettings.opacity;
         
         div.setAttribute('data-width', width);
@@ -8862,9 +9299,10 @@ const FloorPlanDesigner = {
         // BUT: Status colors will override background and border colors
         const backgroundColor = statusColor.background || statusColor.bg; // Status color takes priority
         const borderColor = statusColor.border; // Status color takes priority
-        const borderWidth = statusColor.border_width || 2;
+        // Override borderWidth and borderRadius with status color values if available
+        borderWidth = statusColor.border_width !== undefined ? statusColor.border_width : borderWidth;
         const borderStyle = statusColor.border_style || 'solid';
-        const borderRadius = statusColor.border_radius || 4;
+        borderRadius = statusColor.border_radius !== undefined ? statusColor.border_radius : borderRadius;
         const textColor = statusColor.text; // Status color takes priority for text too
         const fontWeight = boothData.font_weight || effectiveSettings.font_weight || this.defaultFontWeight || 'bold';
         const fontFamily = boothData.font_family || effectiveSettings.font_family || this.defaultFontFamily || 'Arial, sans-serif';
@@ -14254,6 +14692,75 @@ const FloorPlanDesigner = {
         }
         
         // Also filter when search is performed
+        // Zone Controls Panel Toggle
+        $('#zoneControlsToggle').on('click', function() {
+            $('.zone-controls-panel').toggleClass('collapsed');
+        });
+        
+        // Load saved button visibility settings from localStorage
+        function loadZoneButtonSettings() {
+            const savedSettings = localStorage.getItem('zoneButtonSettings');
+            if (savedSettings) {
+                try {
+                    const settings = JSON.parse(savedSettings);
+                    $('.zone-control-checkbox').each(function() {
+                        const buttonType = $(this).data('button');
+                        if (settings.hasOwnProperty(buttonType)) {
+                            $(this).prop('checked', settings[buttonType]);
+                        }
+                    });
+                    applyZoneButtonVisibility();
+                } catch (e) {
+                    console.error('Error loading zone button settings:', e);
+                }
+            }
+        }
+        
+        // Apply button visibility based on checkbox states
+        function applyZoneButtonVisibility() {
+            const settings = {};
+            const buttonMap = {
+                'add-all': '.btn-add-all-zone',
+                'add-selected': '.btn-add-selected-zone',
+                'add-click': '.btn-add-all-zone-click',
+                'settings': '.btn-zone-settings',
+                'appearance': '.btn-zone-appearance',
+                'clear': '.btn-zone-clear',
+                'zoom': '.btn-zone-zoom',
+                'add-new': '.btn-zone-add-new',
+                'delete': '.btn-zone-delete'
+            };
+            
+            $('.zone-control-checkbox').each(function() {
+                const buttonType = $(this).data('button');
+                const isVisible = $(this).is(':checked');
+                settings[buttonType] = isVisible;
+                
+                const buttonClass = buttonMap[buttonType];
+                if (buttonClass) {
+                    if (isVisible) {
+                        $(buttonClass).show();
+                    } else {
+                        $(buttonClass).hide();
+                    }
+                }
+            });
+            
+            // Save settings to localStorage
+            localStorage.setItem('zoneButtonSettings', JSON.stringify(settings));
+        }
+        
+        // Make applyZoneButtonVisibility globally accessible for dynamic zone creation
+        window.applyZoneButtonVisibility = applyZoneButtonVisibility;
+        
+        // Handle checkbox changes
+        $(document).on('change', '.zone-control-checkbox', function() {
+            applyZoneButtonVisibility();
+        });
+        
+        // Initialize on page load
+        loadZoneButtonSettings();
+        
         $('#boothSearchSidebar').on('input', function() {
             const searchTerm = $(this).val().toLowerCase();
             const boothItems = document.querySelectorAll('#boothNumbersContainer .booth-number-item');
