@@ -1494,7 +1494,10 @@ function renderStatusSettings(statuses) {
     html += '<th style="width: 80px;">Code</th>';
     html += '<th>Status Name</th>';
     html += '<th style="width: 150px;">Background</th>';
-    html += '<th style="width: 150px;">Border</th>';
+    html += '<th style="width: 150px;">Border Color</th>';
+    html += '<th style="width: 100px;">Border Width</th>';
+    html += '<th style="width: 120px;">Border Style</th>';
+    html += '<th style="width: 100px;">Border Radius</th>';
     html += '<th style="width: 150px;">Text</th>';
     html += '<th style="width: 120px;">Badge</th>';
     html += '<th>Description</th>';
@@ -1536,6 +1539,20 @@ function renderStatusRow(status, index) {
     
     // Border Color with visual picker
     html += '<td><div class="input-group input-group-sm"><input type="color" class="form-control form-control-color status-border-color" value="' + (status.border_color || status.status_color || '#28a745') + '" style="width: 60px; height: 38px;"><input type="text" class="form-control form-control-sm status-border-color-text" value="' + (status.border_color || status.status_color || '#28a745') + '" maxlength="7" style="width: 80px;"></div></td>';
+    
+    // Border Width
+    html += '<td><input type="number" class="form-control form-control-sm status-border-width" value="' + (status.border_width || 2) + '" min="0" max="10" style="width: 80px;" title="Border width (0-10px)"></td>';
+    
+    // Border Style
+    html += '<td><select class="form-control form-control-sm status-border-style" style="width: 100px;">';
+    const borderStyles = ['solid', 'dashed', 'dotted', 'double', 'groove', 'ridge', 'inset', 'outset', 'none'];
+    borderStyles.forEach(function(style) {
+        html += '<option value="' + style + '"' + ((status.border_style || 'solid') === style ? ' selected' : '') + '>' + style.charAt(0).toUpperCase() + style.slice(1) + '</option>';
+    });
+    html += '</select></td>';
+    
+    // Border Radius
+    html += '<td><input type="number" class="form-control form-control-sm status-border-radius" value="' + (status.border_radius || 4) + '" min="0" max="50" style="width: 80px;" title="Border radius (0-50px)"></td>';
     
     // Text Color with visual picker
     html += '<td><div class="input-group input-group-sm"><input type="color" class="form-control form-control-color status-text-color" value="' + (status.text_color || '#ffffff') + '" style="width: 60px; height: 38px;"><input type="text" class="form-control form-control-sm status-text-color-text" value="' + (status.text_color || '#ffffff') + '" maxlength="7" style="width: 80px;"></div></td>';
@@ -1648,20 +1665,23 @@ $('#btnAddStatus').on('click', function() {
         return parseInt($(this).val()) || 0;
     }).get(), 0);
     
-    const newStatus = {
-        id: null,
-        status_code: maxCode + 1,
-        status_name: 'New Status',
-        status_color: '#6c757d',
-        border_color: '#6c757d',
-        text_color: '#ffffff',
-        badge_color: 'secondary',
-        description: '',
-        floor_plan_id: null,
-        is_active: true,
-        sort_order: $('#statusSettingsBody tr').length + 1,
-        is_default: false
-    };
+        const newStatus = {
+            id: null,
+            status_code: maxCode + 1,
+            status_name: 'New Status',
+            status_color: '#6c757d',
+            border_color: '#6c757d',
+            border_width: 2,
+            border_style: 'solid',
+            border_radius: 4,
+            text_color: '#ffffff',
+            badge_color: 'secondary',
+            description: '',
+            floor_plan_id: null,
+            is_active: true,
+            sort_order: $('#statusSettingsBody tr').length + 1,
+            is_default: false
+        };
 
     if ($('#statusSettingsBody').length === 0) {
         renderStatusSettings([newStatus]);
@@ -1690,6 +1710,9 @@ $('#btnSaveStatusSettings').on('click', function() {
             status_name: row.find('.status-name').val() || '',
             status_color: row.find('.status-bg-color-text').val() || '#28a745',
             border_color: row.find('.status-border-color-text').val() || null,
+            border_width: parseInt(row.find('.status-border-width').val()) || 2,
+            border_style: row.find('.status-border-style').val() || 'solid',
+            border_radius: parseInt(row.find('.status-border-radius').val()) || 4,
             text_color: row.find('.status-text-color-text').val() || '#ffffff',
             badge_color: row.find('.status-badge-color').val() || 'success',
             description: row.find('.status-description').val() || '',

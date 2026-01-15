@@ -1139,9 +1139,16 @@
 /* Status colors matching legend - these override custom background colors */
 /* Dynamic status colors from database */
 @if(isset($statusSettings) && $statusSettings->count() > 0)
-    @foreach($statusSettings as $status)
-.dropped-booth.status-{{ $status->status_code }} { background: {{ $status->status_color }} !important; border-color: {{ $status->border_color ?? $status->status_color }} !important; color: {{ $status->text_color }} !important; }
-    @endforeach
+                @foreach($statusSettings as $status)
+                    .dropped-booth.status-{{ $status->status_code }} { 
+                        background: {{ $status->status_color }} !important; 
+                        border-color: {{ $status->border_color ?? $status->status_color }} !important; 
+                        border-width: {{ $status->border_width ?? 2 }}px !important;
+                        border-style: {{ $status->border_style ?? 'solid' }} !important;
+                        border-radius: {{ $status->border_radius ?? 4 }}px !important;
+                        color: {{ $status->text_color }} !important; 
+                    }
+                @endforeach
 @else
     {{-- Fallback to defaults if no custom statuses --}}
 .dropped-booth.status-1 { background: #28a745 !important; border-color: #28a745 !important; color: #ffffff !important; }
@@ -8849,12 +8856,15 @@ const FloorPlanDesigner = {
         
         // Get status-based colors (these will override custom colors)
         const boothStatus = boothData.status || 1;
-        const statusColor = statusColors[boothStatus] || statusColors[1] || { bg: '#28a745', border: '#28a745', text: '#ffffff' };
+        const statusColor = statusColors[boothStatus] || statusColors[1] || { bg: '#28a745', border: '#28a745', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 };
         
         // Apply appearance settings (use zone settings if available, otherwise booth data, then defaults)
         // BUT: Status colors will override background and border colors
-        const backgroundColor = statusColor.bg; // Status color takes priority
+        const backgroundColor = statusColor.background || statusColor.bg; // Status color takes priority
         const borderColor = statusColor.border; // Status color takes priority
+        const borderWidth = statusColor.border_width || 2;
+        const borderStyle = statusColor.border_style || 'solid';
+        const borderRadius = statusColor.border_radius || 4;
         const textColor = statusColor.text; // Status color takes priority for text too
         const fontWeight = boothData.font_weight || effectiveSettings.font_weight || this.defaultFontWeight || 'bold';
         const fontFamily = boothData.font_family || effectiveSettings.font_family || this.defaultFontFamily || 'Arial, sans-serif';
@@ -8863,6 +8873,9 @@ const FloorPlanDesigner = {
         
         div.style.backgroundColor = backgroundColor;
         div.style.borderColor = borderColor;
+        div.style.borderWidth = borderWidth + 'px';
+        div.style.borderStyle = borderStyle;
+        div.style.borderRadius = borderRadius + 'px';
         div.style.color = textColor;
         div.style.fontWeight = fontWeight;
         div.style.fontFamily = fontFamily;
@@ -12074,8 +12087,12 @@ const FloorPlanDesigner = {
                 Object.keys(data.data).forEach(function(statusCode) {
                     const status = data.data[statusCode];
                     colors[parseInt(statusCode)] = {
-                        bg: status.background,
+                        background: status.background,
+                        bg: status.background, // Keep for backward compatibility
                         border: status.border || status.background,
+                        border_width: status.border_width || 2,
+                        border_style: status.border_style || 'solid',
+                        border_radius: status.border_radius || 4,
                         text: status.text
                     };
                 });
@@ -12084,11 +12101,11 @@ const FloorPlanDesigner = {
             }
             // Fallback to defaults
             return {
-                1: { bg: '#28a745', border: '#28a745', text: '#ffffff' },
-                2: { bg: '#0dcaf0', border: '#0dcaf0', text: '#ffffff' },
-                3: { bg: '#ffc107', border: '#ffc107', text: '#333333' },
-                4: { bg: '#6c757d', border: '#6c757d', text: '#ffffff' },
-                5: { bg: '#212529', border: '#212529', text: '#ffffff' }
+                1: { background: '#28a745', bg: '#28a745', border: '#28a745', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 },
+                2: { background: '#0dcaf0', bg: '#0dcaf0', border: '#0dcaf0', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 },
+                3: { background: '#ffc107', bg: '#ffc107', border: '#ffc107', text: '#333333', border_width: 2, border_style: 'solid', border_radius: 4 },
+                4: { background: '#6c757d', bg: '#6c757d', border: '#6c757d', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 },
+                5: { background: '#212529', bg: '#212529', border: '#212529', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 }
             };
         })
         .catch(function(error) {
@@ -12110,13 +12127,13 @@ const FloorPlanDesigner = {
         if (self.statusColorsCache) {
             return self.statusColorsCache;
         }
-        // Return defaults if not loaded yet
+            // Return defaults if not loaded yet
         return {
-            1: { bg: '#28a745', border: '#28a745', text: '#ffffff' },
-            2: { bg: '#0dcaf0', border: '#0dcaf0', text: '#ffffff' },
-            3: { bg: '#ffc107', border: '#ffc107', text: '#333333' },
-            4: { bg: '#6c757d', border: '#6c757d', text: '#ffffff' },
-            5: { bg: '#212529', border: '#212529', text: '#ffffff' }
+            1: { background: '#28a745', bg: '#28a745', border: '#28a745', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 },
+            2: { background: '#0dcaf0', bg: '#0dcaf0', border: '#0dcaf0', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 },
+            3: { background: '#ffc107', bg: '#ffc107', border: '#ffc107', text: '#333333', border_width: 2, border_style: 'solid', border_radius: 4 },
+            4: { background: '#6c757d', bg: '#6c757d', border: '#6c757d', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 },
+            5: { background: '#212529', bg: '#212529', border: '#212529', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 }
         };
     },
     
@@ -12809,11 +12826,14 @@ const FloorPlanDesigner = {
                     
                     // Apply status-based colors (these override custom background/border colors)
                     const boothStatus = booth.status || 1;
-                    const statusColor = statusColors[boothStatus] || statusColors[1] || { bg: '#28a745', border: '#28a745', text: '#ffffff' };
+                    const statusColor = statusColors[boothStatus] || statusColors[1] || { background: '#28a745', border: '#28a745', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 };
                     
                     // Status colors take priority over custom colors
-                    existingBooth.style.backgroundColor = statusColor.bg;
+                    existingBooth.style.backgroundColor = statusColor.background || statusColor.bg;
                     existingBooth.style.borderColor = statusColor.border;
+                    existingBooth.style.borderWidth = (statusColor.border_width || 2) + 'px';
+                    existingBooth.style.borderStyle = statusColor.border_style || 'solid';
+                    existingBooth.style.borderRadius = (statusColor.border_radius || 4) + 'px';
                     existingBooth.style.color = statusColor.text;
                     
                     // Store status colors in data attributes
@@ -12927,22 +12947,19 @@ const FloorPlanDesigner = {
                     boothElement.setAttribute('data-opacity', booth.opacity);
                 }
                 
-                // Status colors mapping (matching legend colors)
-                const statusColors = {
-                    1: { bg: '#28a745', border: '#28a745', text: '#ffffff' }, // Available - Green
-                    2: { bg: '#0dcaf0', border: '#0dcaf0', text: '#ffffff' }, // Confirmed - Cyan
-                    3: { bg: '#ffc107', border: '#ffc107', text: '#333333' }, // Reserved - Yellow
-                    4: { bg: '#6c757d', border: '#6c757d', text: '#ffffff' }, // Hidden - Gray
-                    5: { bg: '#212529', border: '#212529', text: '#ffffff' }  // Paid - Black
-                };
+                // Get status colors from cache (loaded from database)
+                const statusColors = self.getStatusColors();
                 
                 // Apply status-based colors (these override custom background/border colors)
                 const boothStatus = booth.status || 1;
-                const statusColor = statusColors[boothStatus] || statusColors[1];
+                const statusColor = statusColors[boothStatus] || statusColors[1] || { background: '#28a745', border: '#28a745', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 };
                 
                 // Status colors take priority over custom colors
-                boothElement.style.backgroundColor = statusColor.bg;
+                boothElement.style.backgroundColor = statusColor.background || statusColor.bg;
                 boothElement.style.borderColor = statusColor.border;
+                boothElement.style.borderWidth = (statusColor.border_width || 2) + 'px';
+                boothElement.style.borderStyle = statusColor.border_style || 'solid';
+                boothElement.style.borderRadius = (statusColor.border_radius || 4) + 'px';
                 boothElement.style.color = statusColor.text;
                 
                 // Store status colors in data attributes

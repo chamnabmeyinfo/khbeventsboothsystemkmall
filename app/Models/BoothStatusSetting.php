@@ -15,6 +15,9 @@ class BoothStatusSetting extends Model
         'status_name',
         'status_color',
         'border_color',
+        'border_width',
+        'border_style',
+        'border_radius',
         'text_color',
         'badge_color',
         'description',
@@ -28,6 +31,8 @@ class BoothStatusSetting extends Model
         'is_active' => 'boolean',
         'sort_order' => 'integer',
         'is_default' => 'boolean',
+        'border_width' => 'integer',
+        'border_radius' => 'integer',
     ];
 
     /**
@@ -125,6 +130,9 @@ class BoothStatusSetting extends Model
             $colors[$status->status_code] = [
                 'background' => $status->status_color,
                 'border' => $status->border_color ?? $status->status_color,
+                'border_width' => $status->border_width ?? 2,
+                'border_style' => $status->border_style ?? 'solid',
+                'border_radius' => $status->border_radius ?? 4,
                 'text' => $status->text_color,
                 'badge' => $status->badge_color,
             ];

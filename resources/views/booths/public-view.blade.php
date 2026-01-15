@@ -25,53 +25,71 @@
         .public-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px 30px;
+            padding: 8px 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             z-index: 1000;
             position: relative;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 10px;
+            min-height: 48px;
         }
         
         .header-left {
             display: flex;
             align-items: center;
-            gap: 25px;
+            gap: 12px;
             flex: 1;
             flex-wrap: wrap;
         }
         
+        .header-title-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
         .header-title-section h1 {
-            font-size: 1.75rem;
-            font-weight: 700;
+            font-size: 1.1rem;
+            font-weight: 600;
             margin: 0;
-            line-height: 1.2;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .header-title-section h1 i {
+            font-size: 1rem;
         }
         
         .project-name {
-            font-size: 0.95rem;
-            opacity: 0.95;
-            margin-top: 5px;
+            font-size: 0.75rem;
+            opacity: 0.85;
             font-weight: 400;
+            margin-left: 4px;
         }
         
         .header-stats {
             display: flex;
-            gap: 15px;
+            gap: 8px;
         }
         
         .stat-badge {
             background: rgba(255, 255, 255, 0.2);
-            padding: 8px 16px;
-            border-radius: 20px;
+            padding: 4px 10px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
+            gap: 5px;
+            font-size: 0.75rem;
             backdrop-filter: blur(10px);
+        }
+        
+        .stat-badge i {
+            font-size: 0.7rem;
         }
         
         .header-right {
@@ -81,173 +99,194 @@
             flex-wrap: wrap;
         }
         
-        /* Status Legend - Inside Header Left, Horizontal Layout */
+        /* Status Legend - Minimal Compact Layout */
         .status-legend-inline {
             display: flex;
             align-items: center;
-            gap: 15px;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 10px 18px;
-            border-radius: 25px;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 4px 10px;
+            border-radius: 12px;
             backdrop-filter: blur(10px);
             flex-wrap: wrap;
         }
         
         .legend-label {
             color: white;
-            font-weight: 600;
-            font-size: 0.9rem;
+            font-weight: 500;
+            font-size: 0.7rem;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 4px;
             white-space: nowrap;
         }
         
         .legend-label i {
-            font-size: 1rem;
+            font-size: 0.7rem;
         }
         
         .legend-items-horizontal {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
             flex-wrap: wrap;
         }
         
         .legend-item-horizontal {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
         }
         
         .legend-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             flex-shrink: 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         
         .legend-text {
             color: white;
-            font-weight: 500;
-            font-size: 0.85rem;
+            font-weight: 400;
+            font-size: 0.7rem;
             white-space: nowrap;
         }
         
         @media (max-width: 768px) {
-            .status-legend-inline {
-                padding: 8px 14px;
-                gap: 10px;
-            }
-            
-            .legend-label {
-                font-size: 0.85rem;
-            }
-            
-            .legend-items-horizontal {
+            .public-header {
+                padding: 6px 12px;
                 gap: 8px;
             }
             
-            .legend-item-horizontal {
-                gap: 4px;
+            .header-title-section h1 {
+                font-size: 1rem;
+            }
+            
+            .status-legend-inline {
+                padding: 3px 8px;
+                gap: 6px;
+            }
+            
+            .legend-label {
+                font-size: 0.65rem;
+            }
+            
+            .legend-items-horizontal {
+                gap: 6px;
             }
             
             .legend-color {
-                width: 18px;
-                height: 18px;
+                width: 12px;
+                height: 12px;
             }
             
             .legend-text {
-                font-size: 0.8rem;
+                font-size: 0.65rem;
+            }
+            
+            .zoom-controls-simple {
+                padding: 3px 6px;
+                gap: 4px;
+            }
+            
+            .zoom-btn-simple {
+                width: 22px;
+                height: 22px;
             }
         }
         
         @media (max-width: 480px) {
+            .public-header {
+                padding: 6px 10px;
+                min-height: 44px;
+            }
+            
+            .header-left {
+                gap: 8px;
+            }
+            
+            .header-title-section h1 {
+                font-size: 0.9rem;
+            }
+            
+            .project-name {
+                display: none;
+            }
+            
             .status-legend-inline {
                 width: 100%;
                 justify-content: center;
-            }
-            
-            .legend-label {
-                width: 100%;
-                justify-content: center;
-                margin-bottom: 5px;
-            }
-            
-            .legend-items-horizontal {
-                justify-content: center;
-                width: 100%;
+                margin-top: 4px;
             }
         }
         
-        /* Simplified Zoom Controls */
+        /* Minimal Zoom Controls */
         .zoom-controls-simple {
             display: flex;
             align-items: center;
-            gap: 10px;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 8px 15px;
-            border-radius: 25px;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 4px 8px;
+            border-radius: 12px;
             backdrop-filter: blur(10px);
         }
         
         .zoom-label {
             color: white;
-            font-weight: 600;
-            font-size: 0.85rem;
-            margin-right: 5px;
+            font-weight: 500;
+            font-size: 0.7rem;
+            margin-right: 2px;
         }
         
         .zoom-btn-simple {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.25);
             border: none;
             color: white;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
-            font-size: 0.9rem;
+            font-size: 0.7rem;
+            padding: 0;
         }
         
         .zoom-btn-simple:hover {
-            background: rgba(255, 255, 255, 0.5);
-            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.4);
         }
         
         .zoom-level-display {
             color: white;
-            font-weight: 700;
-            min-width: 55px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            min-width: 35px;
             text-align: center;
-            font-size: 0.95rem;
         }
         
-        /* Help Button */
+        /* Help Button - Icon Only, Minimal */
         .help-btn {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
             border: none;
             color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: all 0.3s;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: all 0.2s;
             backdrop-filter: blur(10px);
+            padding: 0;
         }
         
         .help-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.25);
         }
         
         /* Help Modal */
@@ -417,7 +456,7 @@
         
         .canvas-container {
             width: 100%;
-            height: calc(100vh - 80px);
+            height: calc(100vh - 48px);
             overflow: hidden;
             position: relative;
             background: #e9ecef;
@@ -498,10 +537,12 @@
             user-select: none;
             pointer-events: auto;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            /* Rotation will be stored in CSS variable and preserved during shake */
+            --booth-rotation: 0deg;
         }
         
         .dropped-booth:hover {
-            transform: scale(1.08);
+            transform: scale(1.08) rotate(var(--booth-rotation));
             box-shadow: 0 6px 20px rgba(0,0,0,0.4);
             z-index: 1000 !important;
             border-width: 3px;
@@ -518,9 +559,12 @@
         /* Dynamic status colors - will be generated from database settings */
         @foreach($statusSettings ?? [] as $status)
         .dropped-booth.status-{{ $status->status_code }} {
-            background: {{ $status->status_color }};
-            border-color: {{ $status->border_color ?? $status->status_color }};
-            color: {{ $status->text_color }};
+            background: {{ $status->status_color }} !important;
+            border-color: {{ $status->border_color ?? $status->status_color }} !important;
+            border-width: {{ $status->border_width ?? 2 }}px !important;
+            border-style: {{ $status->border_style ?? 'solid' }} !important;
+            border-radius: {{ $status->border_radius ?? 4 }}px !important;
+            color: {{ $status->text_color }} !important;
         }
         @endforeach
         
@@ -777,23 +821,23 @@
     </style>
 </head>
 <body>
-    <!-- Public Header -->
+    <!-- Public Header - Minimal Design -->
     <div class="public-header">
         <div class="header-left">
             <div class="header-title-section">
-                <h1><i class="fas fa-map mr-2"></i>{{ $floorPlan->name }}</h1>
+                <h1><i class="fas fa-map"></i>{{ $floorPlan->name }}</h1>
                 @if($floorPlan->project_name)
-                    <div class="project-name">{{ $floorPlan->project_name }}</div>
+                    <span class="project-name">• {{ $floorPlan->project_name }}</span>
                 @endif
             </div>
             <div class="header-stats">
                 <div class="stat-badge">
                     <i class="fas fa-store"></i>
-                    <span><strong>{{ $booths->count() }}</strong> Booths Available</span>
+                    <span><strong>{{ $booths->count() }}</strong></span>
                 </div>
             </div>
             
-            <!-- Status Legend - Horizontal Inside Header -->
+            <!-- Status Legend - Compact -->
             <div class="status-legend-inline">
                 <div class="legend-label">
                     <i class="fas fa-info-circle"></i>
@@ -847,9 +891,9 @@
                 </button>
             </div>
             
-            <!-- Help Button -->
+            <!-- Help Button - Icon Only -->
             <button class="help-btn" onclick="showHelp()" title="How to use this map">
-                <i class="fas fa-question-circle"></i> Help
+                <i class="fas fa-question-circle"></i>
             </button>
         </div>
     </div>
@@ -1023,10 +1067,13 @@
                 if (booth.width) boothElement.style.width = booth.width + 'px';
                 if (booth.height) boothElement.style.height = booth.height + 'px';
                 
-                // Set rotation
-                if (booth.rotation) {
-                    boothElement.style.transform = 'rotate(' + booth.rotation + 'deg)';
-                }
+                // Set rotation - store in CSS variable and apply to transform
+                const rotation = booth.rotation || 0;
+                boothElement.style.setProperty('--booth-rotation', rotation + 'deg');
+                boothElement.style.transform = 'rotate(' + rotation + 'deg)';
+                
+                // Apply subtle shake animation that preserves rotation
+                applyShakeAnimation(boothElement, rotation);
                 
                 // Set z-index
                 if (booth.z_index) boothElement.style.zIndex = booth.z_index;
@@ -1192,6 +1239,57 @@
                 canvas.appendChild(boothElement);
             }
         });
+        
+        // Function to apply shake animation while preserving rotation
+        function applyShakeAnimation(element, rotation) {
+            const shakeOffsets = [
+                { x: -0.5, y: 0.3 },
+                { x: 0.4, y: -0.2 },
+                { x: -0.3, y: 0.4 },
+                { x: 0.5, y: -0.3 },
+                { x: -0.2, y: 0.2 },
+                { x: 0.3, y: -0.4 },
+                { x: -0.4, y: 0.3 },
+                { x: 0.2, y: -0.2 },
+                { x: -0.3, y: 0.2 },
+                { x: 0, y: 0 }
+            ];
+            
+            let currentIndex = 0;
+            const rotationDeg = rotation || 0;
+            
+            // Store original transform for hover
+            element.style.setProperty('--booth-rotation', rotationDeg + 'deg');
+            
+            function animate() {
+                if (element.parentElement && !element.matches(':hover')) {
+                    const offset = shakeOffsets[currentIndex];
+                    element.style.transform = 'translate(' + offset.x + 'px, ' + offset.y + 'px) rotate(' + rotationDeg + 'deg)';
+                    currentIndex = (currentIndex + 1) % shakeOffsets.length;
+                }
+            }
+            
+            // Start animation with 300ms interval (3s total cycle)
+            const intervalId = setInterval(animate, 300);
+            
+            // Stop animation on hover
+            element.addEventListener('mouseenter', function() {
+                element.style.transform = 'scale(1.08) rotate(' + rotationDeg + 'deg)';
+            });
+            
+            element.addEventListener('mouseleave', function() {
+                animate(); // Resume animation
+            });
+            
+            // Clean up interval when element is removed
+            const observer = new MutationObserver(function(mutations) {
+                if (!element.parentElement) {
+                    clearInterval(intervalId);
+                    observer.disconnect();
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+        }
         
         // Zoom controls
         document.getElementById('zoomIn').addEventListener('click', function() {
