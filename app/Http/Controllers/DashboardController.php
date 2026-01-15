@@ -308,34 +308,56 @@ class DashboardController extends Controller
             $revenueTrendData = [];
             
             try {
+                // Use more efficient query to get booking counts per day
+                $bookingsByDate = Book::select(
+                    DB::raw('DATE(date_book) as booking_date'),
+                    DB::raw('COUNT(*) as booking_count')
+                )
+                ->whereDate('date_book', '>=', now()->subDays($days))
+                ->groupBy(DB::raw('DATE(date_book)'))
+                ->pluck('booking_count', 'booking_date')
+                ->toArray();
+                
                 for($i = $days - 1; $i >= 0; $i--) {
                     $date = now()->subDays($i);
                     $dateStr = $date->format('Y-m-d');
+                    $dateFormatted = $date->format('M d');
                     
-                    // Booking counts
-                    $count = Book::whereDate('date_book', $dateStr)->count();
+                    // Get booking count from pre-fetched data
+                    $count = isset($bookingsByDate[$dateStr]) ? (int)$bookingsByDate[$dateStr] : 0;
                     
-                    // Revenue calculation from booths
+                    // Revenue calculation - simplified
                     $dayRevenue = 0;
-                    $dayBookings = Book::whereDate('date_book', $dateStr)->get();
-                    foreach ($dayBookings as $booking) {
+                    if ($count > 0) {
                         try {
-                            $boothIds = json_decode($booking->boothid, true) ?? [];
-                            if (!empty($boothIds)) {
-                                $dayRevenue += Booth::whereIn('id', $boothIds)
-                                    ->where('status', Booth::STATUS_PAID)
-                                    ->sum('price');
+                            $dayBookings = Book::whereDate('date_book', $dateStr)->get();
+                            foreach ($dayBookings as $booking) {
+                                try {
+                                    $boothIds = json_decode($booking->boothid, true) ?? [];
+                                    if (!empty($boothIds) && is_array($boothIds)) {
+                                        $dayRevenue += Booth::whereIn('id', $boothIds)
+                                            ->where('status', Booth::STATUS_PAID)
+                                            ->sum('price');
+                                    }
+                                } catch (\Exception $e) {
+                                    // Skip if error
+                                    continue;
+                                }
                             }
                         } catch (\Exception $e) {
-                            // Skip if error
+                            // Skip revenue calculation if error
                         }
                     }
                     
-                    $bookingTrendDates[] = $date->format('M d');
+                    $bookingTrendDates[] = $dateFormatted;
                     $bookingTrendCounts[] = $count;
-                    $revenueTrendData[] = $dayRevenue;
+                    $revenueTrendData[] = round($dayRevenue, 2);
                 }
             } catch (\Exception $e) {
+                // Fallback: create empty data
+                $bookingTrendDates = [];
+                $bookingTrendCounts = [];
+                $revenueTrendData = [];
                 for($i = $days - 1; $i >= 0; $i--) {
                     $date = now()->subDays($i);
                     $bookingTrendDates[] = $date->format('M d');

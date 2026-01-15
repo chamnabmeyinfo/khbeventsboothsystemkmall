@@ -452,6 +452,20 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('vendor/toastr/css/toastr.min.css') }}">
+<style>
+    #statusSettingsTable tbody tr {
+        cursor: move;
+    }
+    #statusSettingsTable tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    .status-bg-color, .status-border-color, .status-text-color {
+        cursor: pointer;
+    }
+    .form-control-color {
+        height: 31px;
+    }
+</style>
 @endpush
 
 @push('scripts')
@@ -543,8 +557,10 @@
             .done(function(response) {
                 if (response.status === 200) {
                     const data = response.data;
-                    $('#use_cdn').prop('checked', data.use_cdn || false);
-                    updateCDNStatus(data.use_cdn);
+                    // The model defaults to true (CDN enabled) if setting doesn't exist
+                    // So data.use_cdn will always be a boolean (true or false)
+                    $('#use_cdn').prop('checked', data.use_cdn === true);
+                    updateCDNStatus(data.use_cdn === true);
                 }
             })
             .fail(function() {
@@ -762,21 +778,6 @@
         loadCDNSettings();
     });
 </script>
-@push('styles')
-<style>
-    #statusSettingsTable tbody tr {
-        cursor: move;
-    }
-    #statusSettingsTable tbody tr:hover {
-        background-color: #f8f9fa;
-    }
-    .status-bg-color, .status-border-color, .status-text-color {
-        cursor: pointer;
-    }
-    .form-control-color {
-        height: 31px;
-    }
-</style>
 @endpush
 @endsection
 

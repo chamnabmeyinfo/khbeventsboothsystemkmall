@@ -6,8 +6,13 @@
 
 @push('styles')
 @php
-    $cdnSettings = \App\Models\Setting::getCDNSettings();
-    $useCDN = $cdnSettings['use_cdn'] ?? false;
+    try {
+        $cdnSettings = \App\Models\Setting::getCDNSettings();
+        $useCDN = $cdnSettings['use_cdn'] ?? true; // Default to true (CDN enabled)
+    } catch (\Exception $e) {
+        // If settings table doesn't exist or error occurs, default to CDN enabled
+        $useCDN = true;
+    }
 @endphp
 @if($useCDN)
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">

@@ -1,0 +1,62 @@
+/* ============================================
+   TABLET-SPECIFIC OPTIMIZATIONS (769px-1024px)
+   Version: 1.0 - Hybrid Experience
+   ============================================ */
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    /* Tablet-optimized typography */
+    body {
+        font-size: 15px;
+        line-height: 1.65;
+    }
+    
+    /* Optimized grid layouts for tablets */
+    .stats-grid,
+    .mobile-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+    
+    /* Enhanced card interactions */
+    .kpi-card,
+    .mobile-stat-card,
+    .chart-card {
+        will-change: transform, box-shadow;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: translateZ(0);
+        backface-visibility: hidden;
+    }
+    
+    .kpi-card:hover,
+    .mobile-stat-card:hover {
+        transform: translateY(-6px) translateZ(0);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Touch-friendly on tablets */
+    .btn,
+    .nav-link,
+    .mobile-btn {
+        min-height: 48px;
+        padding: 12px 20px;
+        font-size: 15px;
+    }
+    
+    /* Optimize charts for tablet */
+    canvas {
+        image-rendering: -webkit-optimize-contrast;
+    }
+    
+    /* Smooth scrolling */
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    /* Optimize sidebar if visible */
+    .main-sidebar {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: transform;
+    }
+}

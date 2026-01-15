@@ -9,8 +9,13 @@
     <title>@yield('title', 'KHB Booths Booking System')</title>
     
     @php
-        $cdnSettings = \App\Models\Setting::getCDNSettings();
-        $useCDN = $cdnSettings['use_cdn'] ?? false;
+        try {
+            $cdnSettings = \App\Models\Setting::getCDNSettings();
+            $useCDN = $cdnSettings['use_cdn'] ?? true; // Default to true (CDN enabled)
+        } catch (\Exception $e) {
+            // If settings table doesn't exist or error occurs, default to CDN enabled
+            $useCDN = true;
+        }
     @endphp
     
     {{-- Performance Optimizations: Resource Hints --}}
@@ -36,6 +41,13 @@
         <link rel="stylesheet" href="{{ asset('vendor/bootstrap5/css/bootstrap.min.css') }}">
         <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
     </noscript>
+    
+    {{-- Device-Optimized Performance CSS --}}
+    <link rel="stylesheet" href="{{ asset('css/device-optimized.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/tablet-optimized.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/desktop-optimized.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/global-ux-consistency.css') }}">
     @endif
     
     {{-- Conditional CSS Loading: Mobile vs Desktop --}}
@@ -64,10 +76,8 @@
     </script>
     
     @if(!$useCDN)
-    {{-- Async CSS Loader Script --}}
-    <script>
-        !function(e){"use strict";var t=function(t,n,o){var i,r=e.document,a=r.createElement("link");if(n)i=n;else{var l=(r.body||r.getElementsByTagName("head")[0]).childNodes;i=l[l.length-1]}var d=r.styleSheets;a.rel="stylesheet",a.href=t,a.media="only x",function e(t){if(r.body)return t();setTimeout(function(){e(t)})}(function(){i.parentNode.insertBefore(a,n?i:i.nextSibling)});var f=function(e){for(var t=a.href,n=d.length;n--;)if(d[n].href===t)return e();setTimeout(function(){f(e)})};return a.addEventListener&&a.addEventListener("load",function(){this.media=o||"all"}),a.onloadcssdefined=f,f(function(){a.media!==o&&(a.media=o||"all")}),a};"undefined"!=typeof exports?exports.loadCSS=t:e.loadCSS=t}("undefined"!=typeof global?global:this);
-    </script>
+    {{-- Performance Optimizer - Load early --}}
+    <script src="{{ asset('js/performance-optimizer.js') }}" defer></script>
     @endif
     
     @stack('styles')
@@ -175,13 +185,17 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
 @else
-{{-- Performance: Preload critical JavaScript --}}
-<link rel="preload" href="{{ asset('vendor/jquery/jquery-3.7.0.min.js') }}" as="script">
-<link rel="preload" href="{{ asset('vendor/bootstrap5/js/bootstrap.bundle.min.js') }}" as="script">
+{{-- Performance: Preload critical JavaScript with high priority --}}
+<link rel="preload" href="{{ asset('vendor/jquery/jquery-3.7.0.min.js') }}" as="script" fetchpriority="high">
+<link rel="preload" href="{{ asset('vendor/bootstrap5/js/bootstrap.bundle.min.js') }}" as="script" fetchpriority="high">
     
 {{-- Critical JavaScript: Load with defer (non-blocking) --}}
 <script src="{{ asset('vendor/jquery/jquery-3.7.0.min.js') }}" defer></script>
 <script src="{{ asset('vendor/bootstrap5/js/bootstrap.bundle.min.js') }}" defer></script>
+
+{{-- Performance Optimizer - Load early --}}
+<script src="{{ asset('js/performance-optimizer.js') }}" defer></script>
+@endif
     
 {{-- Non-Critical JavaScript: Lazy load only when needed --}}
 <script>

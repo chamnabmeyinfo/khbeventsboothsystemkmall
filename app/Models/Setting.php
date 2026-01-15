@@ -21,13 +21,18 @@ class Setting extends Model
      */
     public static function getValue($key, $default = null)
     {
-        $setting = self::where('key', $key)->first();
-        
-        if (!$setting) {
+        try {
+            $setting = self::where('key', $key)->first();
+            
+            if (!$setting) {
+                return $default;
+            }
+
+            return self::castValue($setting->value, $setting->type);
+        } catch (\Exception $e) {
+            // If table doesn't exist or any error occurs, return default
             return $default;
         }
-
-        return self::castValue($setting->value, $setting->type);
     }
 
     /**
@@ -215,9 +220,16 @@ class Setting extends Model
      */
     public static function getCDNSettings()
     {
-        return [
-            'use_cdn' => self::getValue('cdn_use_cdn', false), // Default: false (use local assets)
-        ];
+        try {
+            return [
+                'use_cdn' => self::getValue('cdn_use_cdn', true), // Default: true (use CDN)
+            ];
+        } catch (\Exception $e) {
+            // If error occurs, return default CDN enabled
+            return [
+                'use_cdn' => true,
+            ];
+        }
     }
 
     /**

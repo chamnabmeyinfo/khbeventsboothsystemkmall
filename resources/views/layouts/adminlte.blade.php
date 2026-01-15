@@ -11,8 +11,13 @@
     @php
         $companySettings = \App\Models\Setting::getCompanySettings();
         $appearanceSettings = \App\Models\Setting::getAppearanceSettings();
-        $cdnSettings = \App\Models\Setting::getCDNSettings();
-        $useCDN = $cdnSettings['use_cdn'] ?? false;
+        try {
+            $cdnSettings = \App\Models\Setting::getCDNSettings();
+            $useCDN = $cdnSettings['use_cdn'] ?? true; // Default to true (CDN enabled)
+        } catch (\Exception $e) {
+            // If settings table doesn't exist or error occurs, default to CDN enabled
+            $useCDN = true;
+        }
     @endphp
     <title>@yield('title', $companySettings['company_name'] ?? 'KHB Booth System')</title>
     @if(!empty($companySettings['company_favicon']))
@@ -65,6 +70,14 @@
         <link href="{{ asset('vendor/select2/css/select2.min.css') }}" rel="stylesheet" />
         <link href="{{ asset('vendor/select2/css/select2-bootstrap4.min.css') }}" rel="stylesheet" />
     </noscript>
+    
+    {{-- Device-Optimized Performance CSS --}}
+    <link rel="stylesheet" href="{{ asset('css/device-optimized.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/tablet-optimized.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/desktop-optimized.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/global-ux-consistency.css') }}">
     @endif
     
     {{-- Async CSS Loader Script --}}
@@ -1682,14 +1695,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 @else
-{{-- Performance: Preload critical JavaScript --}}
-<link rel="preload" href="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}" as="script">
-<link rel="preload" href="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}" as="script">
+{{-- Performance: Preload critical JavaScript with high priority --}}
+<link rel="preload" href="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}" as="script" fetchpriority="high">
+<link rel="preload" href="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}" as="script" fetchpriority="high">
 
-{{-- Critical JavaScript: Load synchronously (required for page functionality) --}}
+{{-- Critical JavaScript: Load with defer (non-blocking) --}}
 <script src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}" defer></script>
 <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}" defer></script>
 <script src="{{ asset('vendor/adminlte/js/adminlte.min.js') }}" defer></script>
+
+{{-- Performance Optimizer - Load early --}}
+<script src="{{ asset('js/performance-optimizer.js') }}" defer></script>
 
 {{-- Non-Critical JavaScript: Load asynchronously (only when needed) --}}
 <script>

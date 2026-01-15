@@ -1,0 +1,56 @@
+/* ============================================
+   DESKTOP-SPECIFIC OPTIMIZATIONS (>1024px)
+   Version: 1.0 - Full Experience
+   ============================================ */
+
+@media (min-width: 1025px) {
+    /* Desktop-optimized animations */
+    .kpi-card {
+        will-change: transform, box-shadow;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: translateZ(0);
+        backface-visibility: hidden;
+    }
+    
+    .kpi-card:hover {
+        transform: translateY(-8px) scale(1.02) translateZ(0);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Smooth sidebar transitions */
+    .main-sidebar {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: transform;
+    }
+    
+    /* Optimize charts */
+    canvas {
+        image-rendering: auto;
+    }
+    
+    /* Desktop grid - more columns */
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+    }
+    
+    /* Enhanced hover effects */
+    .card:hover {
+        transform: translateY(-4px) translateZ(0);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Smooth table interactions */
+    .table tbody tr {
+        transition: background 0.2s ease;
+        will-change: background;
+    }
+    
+    .table tbody tr:hover {
+        background: #f8f9fc;
+        transform: translateX(2px) translateZ(0);
+    }
+}

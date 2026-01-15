@@ -5,60 +5,412 @@
 @section('breadcrumb', 'Dashboard')
 
 @php
-    $cdnSettings = \App\Models\Setting::getCDNSettings();
-    $useCDN = $cdnSettings['use_cdn'] ?? false;
+    try {
+        $cdnSettings = \App\Models\Setting::getCDNSettings();
+        $useCDN = $cdnSettings['use_cdn'] ?? true; // Default to true (CDN enabled)
+    } catch (\Exception $e) {
+        // If settings table doesn't exist or error occurs, default to CDN enabled
+        $useCDN = true;
+    }
 @endphp
 
 @push('styles')
+<link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}">
 <style>
 /* ============================================
-   DESKTOP STYLES - PRESERVED
+   MODERN DASHBOARD REDESIGN
    ============================================ */
+
+/* Desktop Modern Design */
 @media (min-width: 769px) {
-    .kpi-card {
-        background: #ffffff;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-        height: 100%;
-        cursor: pointer;
+    body {
+        background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%) !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
     }
     
-    .kpi-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    .container-fluid {
+        max-width: 1400px !important;
+        margin: 0 auto !important;
+        padding: 24px !important;
     }
     
-    .kpi-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        opacity: 0;
-        transition: opacity 0.3s;
+    .modern-dashboard-header {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%) !important;
+        border-radius: 24px !important;
+        padding: 32px !important;
+        margin-bottom: 32px !important;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+        color: white !important;
+        position: relative !important;
+        overflow: hidden !important;
+        display: block !important;
     }
     
-    .kpi-card:hover::before {
-        opacity: 1;
+    .modern-dashboard-header::before {
+        content: '' !important;
+        position: absolute !important;
+        top: -50% !important;
+        right: -20% !important;
+        width: 500px !important;
+        height: 500px !important;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%) !important;
+        border-radius: 50% !important;
+    }
+    
+    .modern-dashboard-header h1 {
+        font-size: 36px !important;
+        font-weight: 800 !important;
+        margin-bottom: 8px !important;
+        position: relative !important;
+        z-index: 1 !important;
+        color: white !important;
+    }
+    
+    .modern-dashboard-header p {
+        font-size: 18px !important;
+        opacity: 0.95 !important;
+        position: relative !important;
+        z-index: 1 !important;
+        color: white !important;
+        margin: 0 !important;
+    }
+    
+    .modern-kpi-grid {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 24px !important;
+        margin-bottom: 32px !important;
+    }
+    
+    .modern-kpi-card {
+        background: white !important;
+        border-radius: 24px !important;
+        padding: 24px !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !important;
+        border: 1px solid #e5e7eb !important;
+        position: relative !important;
+        overflow: hidden !important;
+        display: block !important;
+    }
+    
+    .modern-kpi-card::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 4px !important;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%) !important;
+        opacity: 0 !important;
+        transition: opacity 0.3s ease !important;
+    }
+    
+    .modern-kpi-card:hover {
+        transform: translateY(-8px) scale(1.02) !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+        border-color: #818cf8 !important;
+    }
+    
+    .modern-kpi-card:hover::before {
+        opacity: 1 !important;
+    }
+    
+    .modern-kpi-icon {
+        width: 64px !important;
+        height: 64px !important;
+        border-radius: 16px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 28px !important;
+        margin-bottom: 16px !important;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%) !important;
+        color: white !important;
+        box-shadow: 0 10px 30px -5px rgba(99, 102, 241, 0.3) !important;
+    }
+    
+    .modern-kpi-card.success .modern-kpi-icon {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    }
+    
+    .modern-kpi-card.warning .modern-kpi-icon {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+    }
+    
+    .modern-kpi-card.info .modern-kpi-icon {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+    }
+    
+    .modern-kpi-value {
+        font-size: 36px !important;
+        font-weight: 800 !important;
+        color: #111827 !important;
+        margin: 8px 0 !important;
+        line-height: 1 !important;
+        display: block !important;
+    }
+    
+    .modern-kpi-label {
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        color: #4b5563 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.1em !important;
+        display: block !important;
+    }
+    
+    /* Modern Buttons */
+    .modern-btn {
+        padding: 10px 20px !important;
+        border-radius: 12px !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        border: none !important;
+        cursor: pointer !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        transition: all 0.2s ease !important;
+        text-decoration: none !important;
+    }
+    
+    .modern-btn-ghost {
+        background: rgba(255, 255, 255, 0.2) !important;
+        color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    }
+    
+    .modern-btn-ghost:hover {
+        background: rgba(255, 255, 255, 0.3) !important;
+        transform: translateY(-2px) !important;
+    }
+    
+    .modern-chart-container {
+        background: white !important;
+        border-radius: 24px !important;
+        padding: 24px !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !important;
+        margin-bottom: 24px !important;
+        border: 1px solid #e5e7eb !important;
+        display: block !important;
+    }
+    
+    .modern-chart-container:hover {
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+        transform: translateY(-2px) !important;
+    }
+    
+    .modern-chart-header {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin-bottom: 24px !important;
+        padding-bottom: 16px !important;
+        border-bottom: 2px solid #f3f4f6 !important;
+    }
+    
+    .modern-chart-title {
+        font-size: 20px !important;
+        font-weight: 700 !important;
+        color: #111827 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        margin: 0 !important;
+    }
+    
+    .modern-chart-title i {
+        color: #6366f1 !important;
+        font-size: 22px !important;
+    }
+    
+    /* Modern Static Statistics Container */
+    .modern-stat-container {
+        background: white !important;
+        border-radius: 24px !important;
+        padding: 24px !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !important;
+        margin-bottom: 24px !important;
+        border: 1px solid #e5e7eb !important;
+        display: block !important;
+    }
+    
+    .modern-stat-header {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin-bottom: 24px !important;
+        padding-bottom: 16px !important;
+        border-bottom: 2px solid #f3f4f6 !important;
+    }
+    
+    .modern-stat-title {
+        font-size: 20px !important;
+        font-weight: 700 !important;
+        color: #111827 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        margin: 0 !important;
+    }
+    
+    .modern-stat-title i {
+        color: #6366f1 !important;
+        font-size: 22px !important;
+    }
+    
+    /* Booking Trends Visualization */
+    .modern-trend-visualization {
+        min-height: 300px !important;
+        padding: 16px 0 !important;
+        display: block !important;
+    }
+    
+    .modern-trend-bars {
+        display: flex !important;
+        align-items: flex-end !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+        height: 250px !important;
+        padding: 16px 0 !important;
+    }
+    
+    .modern-trend-bar-item {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        height: 100% !important;
+        justify-content: flex-end !important;
+    }
+    
+    .modern-trend-bar-wrapper {
+        width: 100% !important;
+        height: 100% !important;
+        display: flex !important;
+        align-items: flex-end !important;
+        justify-content: center !important;
+        position: relative !important;
+    }
+    
+    .modern-trend-bar {
+        width: 100% !important;
+        max-width: 40px !important;
+        background: linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%) !important;
+        border-radius: 12px 12px 0 0 !important;
+        position: relative !important;
+        min-height: 20px !important;
+        display: block !important;
+        cursor: pointer !important;
+    }
+    
+    .modern-trend-bar:hover {
+        opacity: 0.8 !important;
+    }
+    
+    .modern-trend-bar-value {
+        position: absolute !important;
+        top: -28px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        color: #374151 !important;
+        white-space: nowrap !important;
+        opacity: 0 !important;
+        transition: opacity 0.2s ease !important;
+    }
+    
+    .modern-trend-bar:hover .modern-trend-bar-value {
+        opacity: 1 !important;
+    }
+    
+    .modern-trend-bar-label {
+        font-size: 12px !important;
+        color: #4b5563 !important;
+        margin-top: 8px !important;
+        text-align: center !important;
+        font-weight: 500 !important;
+        display: block !important;
+    }
+    
+    .modern-trend-empty {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 250px !important;
+        color: #9ca3af !important;
+    }
+    
+    .modern-trend-empty i {
+        font-size: 48px !important;
+        margin-bottom: 16px !important;
+    }
+    
+    /* Booth Status Breakdown */
+    .modern-status-breakdown {
+        padding: 8px 0 !important;
+        display: block !important;
+    }
+    
+    .modern-status-item {
+        margin-bottom: 20px !important;
+        display: block !important;
+    }
+    
+    .modern-status-item:last-child {
+        margin-bottom: 0 !important;
+    }
+    
+    .modern-status-header {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin-bottom: 8px !important;
+    }
+    
+    .modern-status-label {
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        color: #374151 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+    
+    .modern-status-value {
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        color: #111827 !important;
+    }
+    
+    .modern-status-bar {
+        height: 12px !important;
+        background: #f3f4f6 !important;
+        border-radius: 9999px !important;
+        overflow: hidden !important;
+        position: relative !important;
+        display: block !important;
+    }
+    
+    .modern-status-bar-fill {
+        height: 100% !important;
+        border-radius: 9999px !important;
+        display: block !important;
     }
 }
 
 /* ============================================
-   MOBILE APP UX/UI - COMPLETE REDESIGN
+   MOBILE APP REDESIGN (≤768px)
    ============================================ */
 @media (max-width: 768px) {
-    /* Reset everything for mobile */
+    /* Reset for mobile */
     * {
         box-sizing: border-box;
     }
     
-    /* Hide AdminLTE sidebar and header on mobile */
+    /* Hide AdminLTE elements */
     .main-sidebar,
     .main-header,
     .content-header,
@@ -66,13 +418,14 @@
         display: none !important;
     }
     
-    /* Full mobile app container */
     body {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #ec4899 100%) !important;
         padding: 0 !important;
         margin: 0 !important;
-        padding-bottom: 80px !important; /* Space for bottom nav */
+        padding-bottom: 90px !important;
         overflow-x: hidden !important;
+        min-height: 100vh !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
     }
     
     .content-wrapper {
@@ -92,58 +445,64 @@
         max-width: 100% !important;
     }
     
-    /* ============================================
-       MOBILE APP HEADER
-       ============================================ */
-    .mobile-app-header {
-        position: sticky;
-        top: 0;
-        z-index: 1000;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-        margin: 0;
-        width: 100%;
+    /* Modern Mobile Header - Always Sticky at Top */
+    .modern-mobile-header {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        z-index: 9998 !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        padding: 20px !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+        display: block !important;
+        margin: 0 !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
     }
     
-    .mobile-app-header-content {
+    /* Add padding to body to account for fixed header */
+    body {
+        padding-top: 80px !important;
+    }
+    
+    .modern-mobile-header-content {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+    
+    .modern-mobile-greeting {
+        font-size: 12px !important;
+        color: rgba(255, 255, 255, 0.8) !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.1em !important;
+        margin-bottom: 4px !important;
+        display: block !important;
+    }
+    
+    .modern-mobile-title {
+        font-size: 24px !important;
+        font-weight: 800 !important;
+        color: white !important;
+        margin: 0 !important;
+        letter-spacing: -0.02em !important;
+        display: block !important;
+    }
+    
+    .modern-mobile-actions {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
+        gap: var(--spacing-2);
     }
     
-    .mobile-app-header-left {
-        flex: 1;
-    }
-    
-    .mobile-app-greeting {
-        font-size: 13px;
-        color: rgba(255, 255, 255, 0.9);
-        font-weight: 500;
-        margin-bottom: 6px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    .mobile-app-title {
-        font-size: 26px;
-        font-weight: 800;
-        color: #ffffff;
-        margin: 0;
-        letter-spacing: -0.02em;
-        line-height: 1.2;
-    }
-    
-    .mobile-app-header-actions {
-        display: flex;
-        gap: 10px;
-    }
-    
-    .mobile-app-header-btn {
+    .modern-mobile-action-btn {
         width: 44px;
         height: 44px;
-        border-radius: 14px;
-        background: rgba(255, 255, 255, 0.25);
+        border-radius: var(--radius-xl);
+        background: rgba(255, 255, 255, 0.2);
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.3);
         color: white;
@@ -151,919 +510,1014 @@
         align-items: center;
         justify-content: center;
         font-size: 18px;
-        transition: all 0.2s;
-        text-decoration: none;
-        cursor: pointer;
+        transition: all var(--transition-fast);
+        will-change: transform;
+        transform: translateZ(0);
     }
     
-    .mobile-app-header-btn:active {
-        background: rgba(255, 255, 255, 0.4);
-        transform: scale(0.95);
+    .modern-mobile-action-btn:active {
+        transform: scale(0.9) translateZ(0);
+        background: rgba(255, 255, 255, 0.3);
     }
     
-    /* ============================================
-       MOBILE STATS GRID
-       ============================================ */
-    .mobile-stats-container {
-        padding: 20px;
+    /* Modern Mobile Stats */
+    .modern-mobile-stats {
+        padding: 20px !important;
+        display: block !important;
     }
     
-    .mobile-stats-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 14px;
-        margin-bottom: 24px;
+    .modern-mobile-stats-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 16px !important;
+        margin-bottom: 24px !important;
     }
     
-    .mobile-stat-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: 20px;
-        padding: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        position: relative;
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .mobile-stat-card:active {
-        transform: scale(0.97);
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-    }
-    
-    .mobile-stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: var(--stat-gradient, linear-gradient(90deg, #667eea, #764ba2));
-    }
-    
-    .mobile-stat-label {
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: #9ca3af;
-        margin-bottom: 10px;
-        display: block;
-    }
-    
-    .mobile-stat-value {
-        font-size: 32px;
-        font-weight: 800;
-        line-height: 1;
-        margin: 8px 0;
-        letter-spacing: -0.03em;
-        color: var(--stat-color, #111827);
-    }
-    
-    .mobile-stat-icon {
-        position: absolute;
-        bottom: 16px;
-        right: 16px;
-        width: 50px;
-        height: 50px;
-        border-radius: 14px;
-        background: var(--stat-bg, rgba(102, 126, 234, 0.15));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        color: var(--stat-color, #667eea);
-    }
-    
-    .mobile-stat-card.primary {
-        --stat-gradient: linear-gradient(90deg, #667eea, #764ba2);
-        --stat-color: #667eea;
-        --stat-bg: rgba(102, 126, 234, 0.15);
-    }
-    
-    .mobile-stat-card.success {
-        --stat-gradient: linear-gradient(90deg, #10b981, #059669);
-        --stat-color: #10b981;
-        --stat-bg: rgba(16, 185, 129, 0.15);
-    }
-    
-    .mobile-stat-card.warning {
-        --stat-gradient: linear-gradient(90deg, #f59e0b, #d97706);
-        --stat-color: #f59e0b;
-        --stat-bg: rgba(245, 158, 11, 0.15);
-    }
-    
-    .mobile-stat-card.info {
-        --stat-gradient: linear-gradient(90deg, #3b82f6, #2563eb);
-        --stat-color: #3b82f6;
-        --stat-bg: rgba(59, 130, 246, 0.15);
-    }
-    
-    .mobile-stat-card.danger {
-        --stat-gradient: linear-gradient(90deg, #ef4444, #dc2626);
-        --stat-color: #ef4444;
-        --stat-bg: rgba(239, 68, 68, 0.15);
-    }
-    
-    .mobile-stat-card.dark {
-        --stat-gradient: linear-gradient(90deg, #1f2937, #111827);
-        --stat-color: #1f2937;
-        --stat-bg: rgba(31, 41, 55, 0.15);
-    }
-    
-    /* ============================================
-       MOBILE SECTION HEADERS
-       ============================================ */
-    .mobile-section {
-        padding: 0 20px;
-        margin-bottom: 24px;
-    }
-    
-    .mobile-section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 16px;
-    }
-    
-    .mobile-section-title {
-        font-size: 20px;
-        font-weight: 800;
-        color: #111827;
-        margin: 0;
-        letter-spacing: -0.01em;
-    }
-    
-    .mobile-section-link {
-        font-size: 13px;
-        font-weight: 600;
-        color: #667eea;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-    
-    /* ============================================
-       MOBILE CHART CARDS
-       ============================================ */
-    .mobile-chart-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: 20px;
-        padding: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        margin-bottom: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-    
-    .mobile-chart-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 20px;
-        padding-bottom: 16px;
-        border-bottom: 1px solid #f3f4f6;
-    }
-    
-    .mobile-chart-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 14px;
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #667eea;
-        font-size: 20px;
-    }
-    
-    .mobile-chart-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: #111827;
-        margin: 0;
-    }
-    
-    /* ============================================
-       MOBILE RECENT ACTIVITY
-       ============================================ */
-    .mobile-activity-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: 20px;
-        padding: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-    
-    .mobile-activity-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-    
-    .mobile-activity-item {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding: 16px 0;
-        border-bottom: 1px solid #f3f4f6;
-        transition: all 0.2s;
-    }
-    
-    .mobile-activity-item:last-child {
-        border-bottom: none;
-    }
-    
-    .mobile-activity-item:active {
-        background: #f9fafb;
-        margin: 0 -20px;
-        padding-left: 20px;
-        padding-right: 20px;
-        border-radius: 12px;
-    }
-    
-    .mobile-activity-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        background: rgba(102, 126, 234, 0.1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #667eea;
-        font-size: 18px;
-        flex-shrink: 0;
-    }
-    
-    .mobile-activity-content {
-        flex: 1;
-        min-width: 0;
-    }
-    
-    .mobile-activity-title {
-        font-size: 15px;
-        font-weight: 600;
-        color: #111827;
-        margin-bottom: 4px;
-    }
-    
-    .mobile-activity-subtitle {
-        font-size: 12px;
-        color: #6b7280;
-    }
-    
-    /* ============================================
-       MOBILE BOTTOM NAVIGATION
-       ============================================ */
-    .mobile-bottom-nav {
-        position: fixed !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
+    .modern-mobile-stat {
         background: rgba(255, 255, 255, 0.95) !important;
         backdrop-filter: blur(20px) !important;
-        border-top: 1px solid rgba(229, 231, 235, 0.5) !important;
-        padding: 10px 0 calc(10px + env(safe-area-inset-bottom)) !important;
-        z-index: 1050 !important;
-        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1) !important;
-        display: flex !important;
-        justify-content: space-around !important;
-        align-items: center !important;
-        width: 100% !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border-radius: 24px !important;
+        padding: 20px !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        position: relative !important;
+        overflow: hidden !important;
+        display: block !important;
     }
     
-    .mobile-bottom-nav-item {
-        flex: 1;
+    .modern-mobile-stat::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 3px !important;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%) !important;
+    }
+    
+    .modern-mobile-stat.success::before {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    }
+    
+    .modern-mobile-stat.warning::before {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+    }
+    
+    .modern-mobile-stat.info::before {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+    }
+    
+    .modern-mobile-stat-label {
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        color: #6b7280 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.1em !important;
+        margin-bottom: 8px !important;
+        display: block !important;
+    }
+    
+    .modern-mobile-stat-value {
+        font-size: 30px !important;
+        font-weight: 800 !important;
+        color: #111827 !important;
+        line-height: 1 !important;
+        margin: 8px 0 !important;
+        letter-spacing: -0.02em !important;
+        display: block !important;
+    }
+    
+    .modern-mobile-stat-icon {
+        position: absolute !important;
+        bottom: 16px !important;
+        right: 16px !important;
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 12px !important;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%) !important;
+        color: white !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 20px !important;
+        opacity: 0.9 !important;
+    }
+    
+    .modern-mobile-stat.success .modern-mobile-stat-icon {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    }
+    
+    .modern-mobile-stat.warning .modern-mobile-stat-icon {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+    }
+    
+    .modern-mobile-stat.info .modern-mobile-stat-icon {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+    }
+    
+    /* Modern Mobile Statistics Section */
+    .modern-mobile-stat-section {
+        padding: 0 20px 24px !important;
+    }
+    
+    .modern-mobile-stat-card {
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 24px !important;
+        padding: 20px !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        margin-bottom: 16px !important;
+        display: block !important;
+    }
+    
+    .modern-mobile-stat-card-title {
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        color: #111827 !important;
+        margin-bottom: 16px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+    
+    .modern-mobile-stat-card-title i {
+        color: #6366f1 !important;
+        font-size: 20px !important;
+    }
+    
+    /* Mobile Trend Visualization */
+    .modern-mobile-trend-visualization {
+        min-height: 200px !important;
+        padding: 12px 0 !important;
+        display: block !important;
+    }
+    
+    .modern-mobile-trend-bars {
+        display: flex !important;
+        align-items: flex-end !important;
+        justify-content: space-between !important;
+        gap: 4px !important;
+        height: 180px !important;
+        padding: 12px 0 !important;
+    }
+    
+    .modern-mobile-trend-item {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        height: 100% !important;
+        justify-content: flex-end !important;
+    }
+    
+    .modern-mobile-trend-bar-wrapper {
+        width: 100% !important;
+        height: 100% !important;
+        display: flex !important;
+        align-items: flex-end !important;
+        justify-content: center !important;
+        position: relative !important;
+    }
+    
+    .modern-mobile-trend-bar {
+        width: 100% !important;
+        max-width: 24px !important;
+        background: linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%) !important;
+        border-radius: 6px 6px 0 0 !important;
+        position: relative !important;
+        min-height: 16px !important;
+        display: block !important;
+    }
+    
+    .modern-mobile-trend-value {
+        position: absolute !important;
+        top: -20px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        color: #374151 !important;
+        white-space: nowrap !important;
+    }
+    
+    .modern-mobile-trend-label {
+        font-size: 9px !important;
+        color: #4b5563 !important;
+        margin-top: 4px !important;
+        text-align: center !important;
+        font-weight: 500 !important;
+        display: block !important;
+    }
+    
+    .modern-mobile-trend-empty {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 8px 4px;
-        text-decoration: none;
-        color: #9ca3af;
-        transition: all 0.2s;
-        min-height: 64px;
-        position: relative;
+        height: 180px;
+        color: var(--color-gray-400);
     }
     
-    .mobile-bottom-nav-item i {
-        font-size: 22px;
-        margin-bottom: 4px;
-        transition: all 0.2s;
-    }
-    
-    .mobile-bottom-nav-item span {
-        font-size: 10px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-    
-    .mobile-bottom-nav-item.active {
-        color: #667eea;
-    }
-    
-    .mobile-bottom-nav-item.active::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 40px;
-        height: 3px;
-        background: #667eea;
-        border-radius: 0 0 3px 3px;
-    }
-    
-    .mobile-bottom-nav-item:active {
-        transform: scale(0.95);
-    }
-    
-    /* ============================================
-       FLOATING ACTION BUTTON
-       ============================================ */
-    .mobile-fab {
-        position: fixed;
-        bottom: 90px;
-        right: 20px;
-        width: 60px;
-        height: 60px;
-        border-radius: 18px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        box-shadow: 0 6px 24px rgba(102, 126, 234, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 26px;
-        z-index: 1040;
-        transition: all 0.3s;
-        cursor: pointer;
-        text-decoration: none;
-    }
-    
-    .mobile-fab:active {
-        transform: scale(0.9);
-        box-shadow: 0 3px 12px rgba(102, 126, 234, 0.4);
-    }
-    
-    /* ============================================
-       EMPTY STATES
-       ============================================ */
-    .mobile-empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        color: #9ca3af;
-    }
-    
-    .mobile-empty-icon {
-        width: 80px;
-        height: 80px;
-        border-radius: 20px;
-        background: #f3f4f6;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 20px;
+    .modern-mobile-trend-empty i {
         font-size: 36px;
-        color: #d1d5db;
+        margin-bottom: var(--spacing-3);
     }
     
-    .mobile-empty-text {
-        font-size: 15px;
-        font-weight: 500;
-        margin: 0;
+    /* Mobile Status Breakdown */
+    .modern-mobile-status-breakdown {
+        padding: 8px 0 !important;
+        display: block !important;
     }
     
-    /* Hide all desktop elements */
-    .row.d-none.d-md-flex,
-    .d-none.d-md-flex,
-    .d-md-none.d-none {
+    .modern-mobile-status-item {
+        margin-bottom: 16px !important;
+        display: block !important;
+    }
+    
+    .modern-mobile-status-item:last-child {
+        margin-bottom: 0 !important;
+    }
+    
+    .modern-mobile-status-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .modern-mobile-status-label {
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        color: #374151 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+    }
+    
+    .modern-mobile-status-value {
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        color: #111827 !important;
+    }
+    
+    .modern-mobile-status-bar {
+        height: 8px !important;
+        background: #f3f4f6 !important;
+        border-radius: 9999px !important;
+        overflow: hidden !important;
+        position: relative !important;
+        display: block !important;
+    }
+    
+    .modern-mobile-status-fill {
+        height: 100% !important;
+        border-radius: 9999px !important;
+        display: block !important;
+    }
+    
+    /* Modern Mobile Bottom Nav - Always Sticky at Bottom */
+    .modern-mobile-nav {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+        padding: 12px 16px !important;
+        padding-bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+        z-index: 9999 !important;
+        display: flex !important;
+        justify-content: space-around !important;
+        align-items: center !important;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1) !important;
+        will-change: transform !important;
+        transform: translateZ(0) !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Ensure nav stays at bottom even on scroll */
+    html, body {
+        overflow-x: hidden !important;
+    }
+    
+    /* Add padding to content to prevent overlap */
+    .modern-mobile-stat-section {
+        padding-bottom: 100px !important;
+    }
+    
+    .modern-mobile-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--spacing-1);
+        padding: var(--spacing-2);
+        border-radius: var(--radius-lg);
+        color: var(--color-gray-600);
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        min-width: 60px;
+        will-change: transform;
+        transform: translateZ(0);
+    }
+    
+    .modern-mobile-nav-item i {
+        font-size: 22px;
+    }
+    
+    .modern-mobile-nav-item span {
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-semibold);
+    }
+    
+    .modern-mobile-nav-item.active {
+        color: var(--color-primary);
+        background: rgba(99, 102, 241, 0.1);
+    }
+    
+    .modern-mobile-nav-item:active {
+        transform: scale(0.9) translateZ(0);
+    }
+    
+    /* Modern Mobile FAB */
+    .modern-mobile-fab {
+        position: fixed;
+        bottom: 100px;
+        right: var(--spacing-5);
+        width: 64px;
+        height: 64px;
+        border-radius: var(--radius-full);
+        background: var(--gradient-primary);
+        color: white;
+        box-shadow: 0 12px 32px rgba(99, 102, 241, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        border: none;
+        cursor: pointer;
+        z-index: 1040;
+        transition: all var(--transition-spring);
+        will-change: transform, box-shadow;
+        transform: translateZ(0);
+    }
+    
+    .modern-mobile-fab:active {
+        transform: scale(0.9) translateZ(0);
+        box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+    }
+    
+    /* Hide desktop elements on mobile */
+    .d-none.d-md-block {
+        display: none !important;
+    }
+}
+
+/* ============================================
+   DESKTOP STYLES FOR MOBILE ELEMENTS (d-md-none)
+   ============================================ */
+@media (min-width: 769px) {
+    /* Hide mobile elements on desktop - d-md-none should work */
+    .d-md-none {
         display: none !important;
     }
     
-    /* Force mobile elements visible */
-    .mobile-only {
-        display: block !important;
+    /* Modern Mobile Header - Desktop Version */
+    .modern-mobile-header {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        z-index: 9998 !important;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%) !important;
+        border-radius: 0 !important;
+        padding: 24px 32px !important;
+        margin-bottom: 0 !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+        overflow: hidden !important;
+    }
+    
+    /* Add padding to body for fixed header on desktop */
+    body {
+        padding-top: 90px !important;
+    }
+    
+    .modern-mobile-header::before {
+        content: '' !important;
+        position: absolute !important;
+        top: -50% !important;
+        right: -20% !important;
+        width: 500px !important;
+        height: 500px !important;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%) !important;
+        border-radius: 50% !important;
+    }
+    
+    .modern-mobile-greeting {
+        font-size: 14px !important;
+        color: rgba(255, 255, 255, 0.9) !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.1em !important;
+        margin-bottom: 8px !important;
+    }
+    
+    .modern-mobile-title {
+        font-size: 36px !important;
+        font-weight: 800 !important;
+        color: white !important;
+        margin: 0 !important;
+        letter-spacing: -0.02em !important;
+    }
+    
+    .modern-mobile-action-btn {
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 16px !important;
+        background: rgba(255, 255, 255, 0.2) !important;
+        backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        color: white !important;
+        font-size: 20px !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .modern-mobile-action-btn:hover {
+        background: rgba(255, 255, 255, 0.3) !important;
+        transform: translateY(-2px) !important;
+    }
+    
+    /* Modern Mobile Stats - Desktop Version */
+    .modern-mobile-stats {
+        padding: 0 !important;
+        margin-bottom: 32px !important;
+    }
+    
+    .modern-mobile-stats-grid {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 24px !important;
+        margin-bottom: 0 !important;
+    }
+    
+    .modern-mobile-stat {
+        background: white !important;
+        border-radius: 24px !important;
+        padding: 24px !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !important;
+        border: 1px solid #e5e7eb !important;
+        transition: all 0.3s ease !important;
+        position: relative !important;
+        overflow: hidden !important;
+    }
+    
+    .modern-mobile-stat:hover {
+        transform: translateY(-8px) scale(1.02) !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+        border-color: #818cf8 !important;
+    }
+    
+    .modern-mobile-stat-label {
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        color: #4b5563 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.1em !important;
+        margin-bottom: 12px !important;
+    }
+    
+    .modern-mobile-stat-value {
+        font-size: 36px !important;
+        font-weight: 800 !important;
+        color: #111827 !important;
+        line-height: 1 !important;
+        margin: 12px 0 !important;
+    }
+    
+    .modern-mobile-stat-icon {
+        position: absolute !important;
+        bottom: 20px !important;
+        right: 20px !important;
+        width: 64px !important;
+        height: 64px !important;
+        border-radius: 16px !important;
+        font-size: 28px !important;
+    }
+    
+    /* Modern Mobile Stat Section - Desktop Version */
+    .modern-mobile-stat-section {
+        padding: 0 !important;
+        margin-bottom: 32px !important;
+    }
+    
+    .modern-mobile-stat-card {
+        background: white !important;
+        border-radius: 24px !important;
+        padding: 32px !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !important;
+        border: 1px solid #e5e7eb !important;
+        margin-bottom: 24px !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .modern-mobile-stat-card:hover {
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+        transform: translateY(-4px) !important;
+    }
+    
+    .modern-mobile-stat-card-title {
+        font-size: 24px !important;
+        font-weight: 700 !important;
+        color: #111827 !important;
+        margin-bottom: 24px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+    }
+    
+    .modern-mobile-stat-card-title i {
+        color: #6366f1 !important;
+        font-size: 28px !important;
+    }
+    
+    /* Mobile Trend Visualization - Desktop Version */
+    .modern-mobile-trend-visualization {
+        min-height: 350px !important;
+        padding: 24px 0 !important;
+    }
+    
+    .modern-mobile-trend-bars {
+        height: 300px !important;
+        gap: 8px !important;
+        padding: 24px 0 !important;
+    }
+    
+    .modern-mobile-trend-bar {
+        max-width: 50px !important;
+        border-radius: 12px 12px 0 0 !important;
+    }
+    
+    .modern-mobile-trend-value {
+        font-size: 12px !important;
+        top: -28px !important;
+    }
+    
+    .modern-mobile-trend-label {
+        font-size: 12px !important;
+        margin-top: 8px !important;
+    }
+    
+    /* Mobile Status Breakdown - Desktop Version */
+    .modern-mobile-status-breakdown {
+        padding: 16px 0 !important;
+    }
+    
+    .modern-mobile-status-item {
+        margin-bottom: 24px !important;
+    }
+    
+    .modern-mobile-status-row {
+        margin-bottom: 8px !important;
+    }
+    
+    .modern-mobile-status-label {
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        gap: 8px !important;
+    }
+    
+    .modern-mobile-status-label i {
+        font-size: 12px !important;
+    }
+    
+    .modern-mobile-status-value {
+        font-size: 20px !important;
+        font-weight: 700 !important;
+    }
+    
+    .modern-mobile-status-bar {
+        height: 12px !important;
+    }
+    
+    /* Hide Mobile Nav and FAB on Desktop */
+    .modern-mobile-nav,
+    .modern-mobile-fab {
+        display: none !important;
+    }
+}
+
+/* ============================================
+   TABLET OPTIMIZATIONS (769px-1024px)
+   ============================================ */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .modern-kpi-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 20px !important;
+    }
+    
+    .modern-kpi-card:hover {
+        transform: translateY(-6px) !important;
+    }
+    
+    .modern-dashboard-header {
+        padding: 24px !important;
+    }
+    
+    .modern-dashboard-header h1 {
+        font-size: 28px !important;
+    }
+    
+    .modern-dashboard-header p {
+        font-size: 16px !important;
+    }
+    
+    .modern-stat-container {
+        padding: 20px !important;
+    }
+    
+    .modern-trend-bars {
+        gap: 6px !important;
+    }
+    
+    .modern-trend-bar {
+        max-width: 35px !important;
     }
 }
 </style>
 @endpush
 
 @section('content')
-<!-- Desktop View - Preserved -->
+<!-- Desktop Modern Dashboard -->
 <div class="container-fluid d-none d-md-block">
-    <!-- Welcome Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card" style="border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-radius: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <div class="card-body" style="padding: 28px 32px;">
-                    <div class="d-flex justify-content-between align-items-center flex-wrap">
-                        <div>
-                            <h2 class="text-white mb-2" style="font-weight: 700; font-size: 1.75rem;">
-                                Welcome back, {{ auth()->user()->username }}! 👋
-                            </h2>
-                            <p class="text-white mb-0" style="opacity: 0.95; font-size: 0.95rem;">
-                                Here's your system overview and analytics
-                            </p>
+    <!-- Modern Welcome Header -->
+    <div class="modern-dashboard-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h1>Welcome back, {{ auth()->user()->username }}! 👋</h1>
+                <p>Here's your comprehensive system overview and analytics</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="modern-btn modern-btn-ghost" onclick="refreshDashboard()" style="background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.3);">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+                <a href="{{ route('settings.index') }}" class="modern-btn modern-btn-ghost" style="background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.3);">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modern KPI Grid -->
+    <div class="modern-kpi-grid">
+        <div class="modern-kpi-card animate-fade-in-up">
+            <div class="modern-kpi-icon">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="modern-kpi-label">Total Revenue</div>
+            <div class="modern-kpi-value">${{ number_format($stats['total_revenue'] ?? 0, 2) }}</div>
+        </div>
+        
+        <div class="modern-kpi-card success animate-fade-in-up" style="animation-delay: 0.1s;">
+            <div class="modern-kpi-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="modern-kpi-label">Total Bookings</div>
+            <div class="modern-kpi-value">{{ number_format($stats['total_bookings'] ?? 0) }}</div>
+        </div>
+        
+        <div class="modern-kpi-card info animate-fade-in-up" style="animation-delay: 0.2s;">
+            <div class="modern-kpi-icon">
+                <i class="fas fa-store"></i>
+            </div>
+            <div class="modern-kpi-label">Total Booths</div>
+            <div class="modern-kpi-value">{{ number_format($stats['total_booths'] ?? 0) }}</div>
+        </div>
+        
+        <div class="modern-kpi-card warning animate-fade-in-up" style="animation-delay: 0.3s;">
+            <div class="modern-kpi-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="modern-kpi-label">Total Clients</div>
+            <div class="modern-kpi-value">{{ number_format($stats['total_clients'] ?? 0) }}</div>
+        </div>
+    </div>
+    
+    <!-- Modern Statistics Row - Static Design -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="modern-stat-container">
+                <div class="modern-stat-header">
+                    <h3 class="modern-stat-title">
+                        <i class="fas fa-chart-line"></i>
+                        Booking Trends (Last 30 Days)
+                    </h3>
+                </div>
+                <div class="modern-trend-visualization">
+                    @php
+                        $maxCount = max($bookingTrendCounts ?? [0]);
+                        $trendData = array_combine($bookingTrendDates ?? [], $bookingTrendCounts ?? []);
+                        $displayDays = array_slice($trendData, -14, 14, true); // Show last 14 days
+                    @endphp
+                    @if(!empty($displayDays) && $maxCount > 0)
+                        <div class="modern-trend-bars">
+                            @foreach($displayDays as $date => $count)
+                                @php
+                                    $height = $maxCount > 0 ? ($count / $maxCount) * 100 : 0;
+                                    $height = max($height, 5); // Minimum 5% height for visibility
+                                @endphp
+                                <div class="modern-trend-bar-item">
+                                    <div class="modern-trend-bar-wrapper">
+                                        <div class="modern-trend-bar" style="height: {{ $height }}%;" title="{{ $date }}: {{ $count }} bookings">
+                                            <span class="modern-trend-bar-value">{{ $count }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="modern-trend-bar-label">{{ $date }}</div>
+                                </div>
+                            @endforeach
                         </div>
-                        <div class="d-flex gap-2 mt-3 mt-md-0">
-                            <button type="button" class="btn btn-light btn-sm" onclick="refreshDashboard()">
-                                <i class="fas fa-sync-alt mr-1"></i>Refresh
-                            </button>
-                            <a href="{{ route('settings.index') }}" class="btn btn-light btn-sm">
-                                <i class="fas fa-cog mr-1"></i>Settings
-                            </a>
+                    @else
+                        <div class="modern-trend-empty">
+                            <i class="fas fa-chart-line"></i>
+                            <p>No booking data available</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="modern-stat-container">
+                <div class="modern-stat-header">
+                    <h3 class="modern-stat-title">
+                        <i class="fas fa-chart-pie"></i>
+                        Booth Status
+                    </h3>
+                </div>
+                <div class="modern-status-breakdown">
+                    @php
+                        $totalBooths = ($stats['available_booths'] ?? 0) + ($stats['reserved_booths'] ?? 0) + ($stats['confirmed_booths'] ?? 0) + ($stats['paid_booths'] ?? 0);
+                        $totalBooths = max($totalBooths, 1); // Prevent division by zero
+                    @endphp
+                    <div class="modern-status-item">
+                        <div class="modern-status-header">
+                            <span class="modern-status-label">
+                                <i class="fas fa-circle" style="color: #10b981;"></i>
+                                Available
+                            </span>
+                            <span class="modern-status-value">{{ $stats['available_booths'] ?? 0 }}</span>
+                        </div>
+                        <div class="modern-status-bar">
+                            <div class="modern-status-bar-fill" style="width: {{ (($stats['available_booths'] ?? 0) / $totalBooths) * 100 }}%; background: #10b981;"></div>
+                        </div>
+                    </div>
+                    <div class="modern-status-item">
+                        <div class="modern-status-header">
+                            <span class="modern-status-label">
+                                <i class="fas fa-circle" style="color: #f59e0b;"></i>
+                                Reserved
+                            </span>
+                            <span class="modern-status-value">{{ $stats['reserved_booths'] ?? 0 }}</span>
+                        </div>
+                        <div class="modern-status-bar">
+                            <div class="modern-status-bar-fill" style="width: {{ (($stats['reserved_booths'] ?? 0) / $totalBooths) * 100 }}%; background: #f59e0b;"></div>
+                        </div>
+                    </div>
+                    <div class="modern-status-item">
+                        <div class="modern-status-header">
+                            <span class="modern-status-label">
+                                <i class="fas fa-circle" style="color: #3b82f6;"></i>
+                                Confirmed
+                            </span>
+                            <span class="modern-status-value">{{ $stats['confirmed_booths'] ?? 0 }}</span>
+                        </div>
+                        <div class="modern-status-bar">
+                            <div class="modern-status-bar-fill" style="width: {{ (($stats['confirmed_booths'] ?? 0) / $totalBooths) * 100 }}%; background: #3b82f6;"></div>
+                        </div>
+                    </div>
+                    <div class="modern-status-item">
+                        <div class="modern-status-header">
+                            <span class="modern-status-label">
+                                <i class="fas fa-circle" style="color: #6366f1;"></i>
+                                Paid
+                            </span>
+                            <span class="modern-status-value">{{ $stats['paid_booths'] ?? 0 }}</span>
+                        </div>
+                        <div class="modern-status-bar">
+                            <div class="modern-status-bar-fill" style="width: {{ (($stats['paid_booths'] ?? 0) / $totalBooths) * 100 }}%; background: #6366f1;"></div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- KPI Cards Grid -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="kpi-card primary">
-                <div style="padding: 24px;">
-                    <div class="kpi-icon"><i class="fas fa-dollar-sign"></i></div>
-                    <div class="kpi-label">Total Revenue</div>
-                    <div class="kpi-value">${{ number_format($stats['total_revenue'] ?? 0, 2) }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="kpi-card success">
-                <div style="padding: 24px;">
-                    <div class="kpi-icon"><i class="fas fa-calendar-check"></i></div>
-                    <div class="kpi-label">Total Bookings</div>
-                    <div class="kpi-value">{{ number_format($stats['total_bookings'] ?? 0) }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="kpi-card info">
-                <div style="padding: 24px;">
-                    <div class="kpi-icon"><i class="fas fa-store"></i></div>
-                    <div class="kpi-label">Total Booths</div>
-                    <div class="kpi-value">{{ number_format($stats['total_booths'] ?? 0) }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="kpi-card warning">
-                <div style="padding: 24px;">
-                    <div class="kpi-icon"><i class="fas fa-users"></i></div>
-                    <div class="kpi-label">Total Clients</div>
-                    <div class="kpi-value">{{ number_format($stats['total_clients'] ?? 0) }}</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Charts Row -->
-    <div class="row">
-        <div class="col-md-6">
-            <div class="chart-card">
-                <div class="chart-header">
-                    <h3 class="chart-title"><i class="fas fa-chart-line mr-2 text-primary"></i>Booking Trends</h3>
-                </div>
-                <canvas id="trendChartDesktop" height="80"></canvas>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="chart-card">
-                <div class="chart-header">
-                    <h3 class="chart-title"><i class="fas fa-chart-pie mr-2 text-success"></i>Booth Status</h3>
-                </div>
-                <canvas id="boothStatusChartDesktop" height="200"></canvas>
             </div>
         </div>
     </div>
 </div>
 
 <!-- ============================================
-   MOBILE APP VIEW - COMPLETE REDESIGN
+   MOBILE APP VIEW - MODERN REDESIGN
    ============================================ -->
-
-<!-- Mobile App Header -->
-<div class="mobile-app-header d-md-none" style="display: block !important;">
-    <div class="mobile-app-header-content">
-        <div class="mobile-app-header-left">
-            <div class="mobile-app-greeting">Welcome back</div>
-            <h1 class="mobile-app-title">{{ auth()->user()->username }}</h1>
-        </div>
-        <div class="mobile-app-header-actions">
-            <button type="button" class="mobile-app-header-btn" onclick="refreshDashboard()" title="Refresh">
-                <i class="fas fa-sync-alt"></i>
-            </button>
-            <a href="{{ route('settings.index') }}" class="mobile-app-header-btn" title="Settings">
-                <i class="fas fa-cog"></i>
-            </a>
-        </div>
-    </div>
-</div>
-
-<!-- Mobile Stats Grid -->
-<div class="mobile-stats-container d-md-none" style="display: block !important;">
-    <div class="mobile-stats-grid">
-        <div class="mobile-stat-card primary">
-            <span class="mobile-stat-label">Total Booths</span>
-            <h2 class="mobile-stat-value">{{ $stats['total_booths'] ?? 0 }}</h2>
-            <div class="mobile-stat-icon">
-                <i class="fas fa-store"></i>
+<div class="d-md-none">
+    <!-- Modern Mobile Header -->
+    <div class="modern-mobile-header">
+        <div class="modern-mobile-header-content">
+            <div>
+                <div class="modern-mobile-greeting">Welcome back</div>
+                <h1 class="modern-mobile-title">{{ auth()->user()->username }}</h1>
+            </div>
+            <div class="modern-mobile-actions">
+                <button type="button" class="modern-mobile-action-btn" onclick="refreshDashboard()" title="Refresh">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <a href="{{ route('settings.index') }}" class="modern-mobile-action-btn" title="Settings">
+                    <i class="fas fa-cog"></i>
+                </a>
             </div>
         </div>
-        
-        <div class="mobile-stat-card success">
-            <span class="mobile-stat-label">Available</span>
-            <h2 class="mobile-stat-value">{{ $stats['available_booths'] ?? 0 }}</h2>
-            <div class="mobile-stat-icon">
-                <i class="fas fa-check-circle"></i>
-            </div>
-        </div>
-        
-        <div class="mobile-stat-card warning">
-            <span class="mobile-stat-label">Reserved</span>
-            <h2 class="mobile-stat-value">{{ $stats['reserved_booths'] ?? 0 }}</h2>
-            <div class="mobile-stat-icon">
-                <i class="fas fa-clock"></i>
-            </div>
-        </div>
-        
-        <div class="mobile-stat-card info">
-            <span class="mobile-stat-label">Confirmed</span>
-            <h2 class="mobile-stat-value">{{ $stats['confirmed_booths'] ?? 0 }}</h2>
-            <div class="mobile-stat-icon">
-                <i class="fas fa-check-double"></i>
-            </div>
-        </div>
-        
-        <div class="mobile-stat-card dark">
-            <span class="mobile-stat-label">Paid</span>
-            <h2 class="mobile-stat-value">{{ $stats['paid_booths'] ?? 0 }}</h2>
-            <div class="mobile-stat-icon">
-                <i class="fas fa-money-bill-wave"></i>
-            </div>
-        </div>
-        
-        <div class="mobile-stat-card primary">
-            <span class="mobile-stat-label">Bookings</span>
-            <h2 class="mobile-stat-value">{{ $stats['total_bookings'] ?? 0 }}</h2>
-            <div class="mobile-stat-icon">
-                <i class="fas fa-calendar-check"></i>
-            </div>
-        </div>
-        
-        <div class="mobile-stat-card success">
-            <span class="mobile-stat-label">Clients</span>
-            <h2 class="mobile-stat-value">{{ $stats['total_clients'] ?? 0 }}</h2>
-            <div class="mobile-stat-icon">
-                <i class="fas fa-users"></i>
-            </div>
-        </div>
-        
-        <div class="mobile-stat-card info">
-            <span class="mobile-stat-label">Revenue</span>
-            <h2 class="mobile-stat-value">${{ number_format($stats['total_revenue'] ?? 0, 0) }}</h2>
-            <div class="mobile-stat-icon">
-                <i class="fas fa-dollar-sign"></i>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Mobile Charts Section -->
-<div class="mobile-section d-md-none" style="display: block !important;">
-    <div class="mobile-section-header">
-        <h3 class="mobile-section-title">Analytics</h3>
-        <a href="{{ route('reports.index') }}" class="mobile-section-link">
-            View All
-            <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
-        </a>
     </div>
     
-    <div class="mobile-chart-card">
-        <div class="mobile-chart-header">
-            <div class="mobile-chart-icon">
-                <i class="fas fa-chart-pie"></i>
-            </div>
-            <h4 class="mobile-chart-title">Booth Status</h4>
-        </div>
-        <canvas id="boothStatusChartMobile" height="250"></canvas>
-    </div>
-    
-    <div class="mobile-chart-card">
-        <div class="mobile-chart-header">
-            <div class="mobile-chart-icon">
-                <i class="fas fa-chart-line"></i>
-            </div>
-            <h4 class="mobile-chart-title">Booking Trends</h4>
-        </div>
-        <canvas id="trendChartMobile" height="250"></canvas>
-    </div>
-</div>
-
-<!-- Mobile Recent Activity -->
-<div class="mobile-section d-md-none" style="display: block !important;">
-    <div class="mobile-section-header">
-        <h3 class="mobile-section-title">Recent Activity</h3>
-        <a href="{{ route('books.index') }}" class="mobile-section-link">
-            See All
-            <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
-        </a>
-    </div>
-    
-    <div class="mobile-activity-card">
-        @if(!empty($recentActivities) && $recentActivities->count() > 0)
-        <ul class="mobile-activity-list">
-            @foreach($recentActivities->take(5) as $activity)
-            <li class="mobile-activity-item">
-                <div class="mobile-activity-icon">
-                    @if(str_contains(strtolower($activity->action ?? ''), 'create'))
-                        <i class="fas fa-plus"></i>
-                    @elseif(str_contains(strtolower($activity->action ?? ''), 'update'))
-                        <i class="fas fa-edit"></i>
-                    @elseif(str_contains(strtolower($activity->action ?? ''), 'delete'))
-                        <i class="fas fa-trash"></i>
-                    @else
-                        <i class="fas fa-circle"></i>
-                    @endif
+    <!-- Modern Mobile Stats Grid -->
+    <div class="modern-mobile-stats">
+        <div class="modern-mobile-stats-grid">
+            <div class="modern-mobile-stat">
+                <div class="modern-mobile-stat-label">Total Booths</div>
+                <div class="modern-mobile-stat-value">{{ $stats['total_booths'] ?? 0 }}</div>
+                <div class="modern-mobile-stat-icon">
+                    <i class="fas fa-store"></i>
                 </div>
-                <div class="mobile-activity-content">
-                    <div class="mobile-activity-title">{{ $activity->description ?? $activity->action ?? 'Activity' }}</div>
-                    <div class="mobile-activity-subtitle">
-                        @if($activity->user){{ $activity->user->username }} • @endif{{ $activity->created_at->diffForHumans() }}
+            </div>
+            
+            <div class="modern-mobile-stat success">
+                <div class="modern-mobile-stat-label">Total Bookings</div>
+                <div class="modern-mobile-stat-value">{{ $stats['total_bookings'] ?? 0 }}</div>
+                <div class="modern-mobile-stat-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+            </div>
+            
+            <div class="modern-mobile-stat info">
+                <div class="modern-mobile-stat-label">Total Clients</div>
+                <div class="modern-mobile-stat-value">{{ $stats['total_clients'] ?? 0 }}</div>
+                <div class="modern-mobile-stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+            
+            <div class="modern-mobile-stat warning">
+                <div class="modern-mobile-stat-label">Total Revenue</div>
+                <div class="modern-mobile-stat-value">${{ number_format(($stats['total_revenue'] ?? 0) / 1000, 1) }}K</div>
+                <div class="modern-mobile-stat-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modern Mobile Statistics - Static Design -->
+    <div class="modern-mobile-stat-section">
+        <div class="modern-mobile-stat-card">
+            <div class="modern-mobile-stat-card-title">
+                <i class="fas fa-chart-line"></i>
+                Booking Trends (Last 14 Days)
+            </div>
+            <div class="modern-mobile-trend-visualization">
+                @php
+                    $maxCount = max($bookingTrendCounts ?? [0]);
+                    $trendData = array_combine($bookingTrendDates ?? [], $bookingTrendCounts ?? []);
+                    $displayDays = array_slice($trendData, -14, 14, true);
+                @endphp
+                @if(!empty($displayDays) && $maxCount > 0)
+                    <div class="modern-mobile-trend-bars">
+                        @foreach($displayDays as $date => $count)
+                            @php
+                                $height = $maxCount > 0 ? ($count / $maxCount) * 100 : 0;
+                                $height = max($height, 8);
+                            @endphp
+                            <div class="modern-mobile-trend-item">
+                                <div class="modern-mobile-trend-bar-wrapper">
+                                    <div class="modern-mobile-trend-bar" style="height: {{ $height }}%;" title="{{ $date }}: {{ $count }}">
+                                        <span class="modern-mobile-trend-value">{{ $count }}</span>
+                                    </div>
+                                </div>
+                                <div class="modern-mobile-trend-label">{{ substr($date, 0, 3) }}</div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="modern-mobile-trend-empty">
+                        <i class="fas fa-chart-line"></i>
+                        <p>No data available</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+        
+        <div class="modern-mobile-stat-card">
+            <div class="modern-mobile-stat-card-title">
+                <i class="fas fa-chart-pie"></i>
+                Booth Status
+            </div>
+            <div class="modern-mobile-status-breakdown">
+                @php
+                    $totalBooths = ($stats['available_booths'] ?? 0) + ($stats['reserved_booths'] ?? 0) + ($stats['confirmed_booths'] ?? 0) + ($stats['paid_booths'] ?? 0);
+                    $totalBooths = max($totalBooths, 1);
+                @endphp
+                <div class="modern-mobile-status-item">
+                    <div class="modern-mobile-status-row">
+                        <span class="modern-mobile-status-label">
+                            <i class="fas fa-circle" style="color: #10b981; font-size: 10px;"></i>
+                            Available
+                        </span>
+                        <span class="modern-mobile-status-value">{{ $stats['available_booths'] ?? 0 }}</span>
+                    </div>
+                    <div class="modern-mobile-status-bar">
+                        <div class="modern-mobile-status-fill" style="width: {{ (($stats['available_booths'] ?? 0) / $totalBooths) * 100 }}%; background: #10b981;"></div>
                     </div>
                 </div>
-            </li>
-            @endforeach
-        </ul>
-        @else
-        <div class="mobile-empty-state">
-            <div class="mobile-empty-icon">
-                <i class="fas fa-inbox"></i>
+                <div class="modern-mobile-status-item">
+                    <div class="modern-mobile-status-row">
+                        <span class="modern-mobile-status-label">
+                            <i class="fas fa-circle" style="color: #f59e0b; font-size: 10px;"></i>
+                            Reserved
+                        </span>
+                        <span class="modern-mobile-status-value">{{ $stats['reserved_booths'] ?? 0 }}</span>
+                    </div>
+                    <div class="modern-mobile-status-bar">
+                        <div class="modern-mobile-status-fill" style="width: {{ (($stats['reserved_booths'] ?? 0) / $totalBooths) * 100 }}%; background: #f59e0b;"></div>
+                    </div>
+                </div>
+                <div class="modern-mobile-status-item">
+                    <div class="modern-mobile-status-row">
+                        <span class="modern-mobile-status-label">
+                            <i class="fas fa-circle" style="color: #3b82f6; font-size: 10px;"></i>
+                            Confirmed
+                        </span>
+                        <span class="modern-mobile-status-value">{{ $stats['confirmed_booths'] ?? 0 }}</span>
+                    </div>
+                    <div class="modern-mobile-status-bar">
+                        <div class="modern-mobile-status-fill" style="width: {{ (($stats['confirmed_booths'] ?? 0) / $totalBooths) * 100 }}%; background: #3b82f6;"></div>
+                    </div>
+                </div>
+                <div class="modern-mobile-status-item">
+                    <div class="modern-mobile-status-row">
+                        <span class="modern-mobile-status-label">
+                            <i class="fas fa-circle" style="color: #6366f1; font-size: 10px;"></i>
+                            Paid
+                        </span>
+                        <span class="modern-mobile-status-value">{{ $stats['paid_booths'] ?? 0 }}</span>
+                    </div>
+                    <div class="modern-mobile-status-bar">
+                        <div class="modern-mobile-status-fill" style="width: {{ (($stats['paid_booths'] ?? 0) / $totalBooths) * 100 }}%; background: #6366f1;"></div>
+                    </div>
+                </div>
             </div>
-            <p class="mobile-empty-text">No recent activity</p>
         </div>
-        @endif
     </div>
+    
+    <!-- Modern Mobile Bottom Navigation -->
+    <div class="modern-mobile-nav">
+        <a href="{{ route('dashboard') }}" class="modern-mobile-nav-item active">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="{{ route('booths.index') }}" class="modern-mobile-nav-item">
+            <i class="fas fa-store"></i>
+            <span>Booths</span>
+        </a>
+        <a href="{{ route('books.index') }}" class="modern-mobile-nav-item">
+            <i class="fas fa-calendar-check"></i>
+            <span>Bookings</span>
+        </a>
+        <a href="{{ route('clients.index') }}" class="modern-mobile-nav-item">
+            <i class="fas fa-users"></i>
+            <span>Clients</span>
+        </a>
+        <a href="{{ route('settings.index') }}" class="modern-mobile-nav-item">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+        </a>
+    </div>
+    
+    <!-- Modern Mobile FAB -->
+    <button class="modern-mobile-fab" onclick="window.location.href='{{ route('books.create') }}'" title="New Booking">
+        <i class="fas fa-plus"></i>
+    </button>
 </div>
-
-<!-- Mobile Bottom Navigation -->
-<nav class="mobile-bottom-nav d-md-none" style="display: flex !important;">
-    <a href="{{ route('dashboard') }}" class="mobile-bottom-nav-item active">
-        <i class="fas fa-home"></i>
-        <span>Home</span>
-    </a>
-    <a href="{{ route('booths.index') }}" class="mobile-bottom-nav-item">
-        <i class="fas fa-store"></i>
-        <span>Booths</span>
-    </a>
-    <a href="{{ route('books.index') }}" class="mobile-bottom-nav-item">
-        <i class="fas fa-calendar-check"></i>
-        <span>Bookings</span>
-    </a>
-    <a href="{{ route('clients.index') }}" class="mobile-bottom-nav-item">
-        <i class="fas fa-users"></i>
-        <span>Clients</span>
-    </a>
-    <a href="{{ route('settings.index') }}" class="mobile-bottom-nav-item">
-        <i class="fas fa-cog"></i>
-        <span>More</span>
-    </a>
-</nav>
-
-<!-- Floating Action Button -->
-<a href="{{ route('books.create') }}" class="mobile-fab d-md-none" style="display: flex !important;" title="New Booking">
-    <i class="fas fa-plus"></i>
-</a>
-
 @endsection
 
 @push('scripts')
-<!-- Chart.js -->
-@if($useCDN)
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-@else
-<script src="{{ asset('vendor/chartjs/chart.umd.min.js') }}"></script>
-@endif
-
 <script>
-// Wait for Chart.js to load
-function initCharts() {
-    if (typeof Chart === 'undefined') {
-        setTimeout(initCharts, 100);
-        return;
-    }
-    
-    // Mobile Booth Status Chart
-    const boothStatusMobile = document.getElementById('boothStatusChartMobile');
-    if (boothStatusMobile && typeof Chart !== 'undefined') {
-        try {
-            new Chart(boothStatusMobile.getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['Available', 'Reserved', 'Confirmed', 'Paid'],
-                    datasets: [{
-                        data: [
-                            {{ $stats['available_booths'] ?? 0 }},
-                            {{ $stats['reserved_booths'] ?? 0 }},
-                            {{ $stats['confirmed_booths'] ?? 0 }},
-                            {{ $stats['paid_booths'] ?? 0 }}
-                        ],
-                        backgroundColor: ['#10b981', '#f59e0b', '#3b82f6', '#667eea'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 20,
-                                font: { size: 12, weight: '600' },
-                                usePointStyle: true
-                            }
-                        }
-                    },
-                    cutout: '70%'
-                }
-            });
-        } catch(e) {
-            console.error('Chart error:', e);
-        }
-    }
-    
-    // Mobile Booking Trends Chart
-    const trendChartMobile = document.getElementById('trendChartMobile');
-    if (trendChartMobile && typeof Chart !== 'undefined') {
-        try {
-            const bookingDates = @json($bookingTrendDates ?? []);
-            const bookingCounts = @json($bookingTrendCounts ?? []);
-            
-            new Chart(trendChartMobile.getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: bookingDates,
-                    datasets: [{
-                        label: 'Bookings',
-                        data: bookingCounts,
-                        borderColor: '#667eea',
-                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                        tension: 0.4,
-                        fill: true,
-                        borderWidth: 3,
-                        pointRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { stepSize: 1 }
-                        }
-                    },
-                    plugins: {
-                        legend: { display: false }
-                    }
-                }
-            });
-        } catch(e) {
-            console.error('Chart error:', e);
-        }
-    }
-    
-    // Desktop Charts
-    const trendChartDesktop = document.getElementById('trendChartDesktop');
-    if (trendChartDesktop && typeof Chart !== 'undefined') {
-        try {
-            const bookingDates = @json($bookingTrendDates ?? []);
-            const bookingCounts = @json($bookingTrendCounts ?? []);
-            const revenueData = @json($revenueTrendData ?? []);
-            
-            new Chart(trendChartDesktop.getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: bookingDates,
-                    datasets: [
-                        {
-                            label: 'Bookings',
-                            data: bookingCounts,
-                            borderColor: 'rgb(102, 126, 234)',
-                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        },
-                        {
-                            label: 'Revenue ($)',
-                            data: revenueData,
-                            borderColor: 'rgb(72, 187, 120)',
-                            backgroundColor: 'rgba(72, 187, 120, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: { position: 'top' }
-                    },
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
-                }
-            });
-        } catch(e) {
-            console.error('Chart error:', e);
-        }
-    }
-    
-    const boothStatusDesktop = document.getElementById('boothStatusChartDesktop');
-    if (boothStatusDesktop && typeof Chart !== 'undefined') {
-        try {
-            new Chart(boothStatusDesktop.getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['Available', 'Reserved', 'Confirmed', 'Paid'],
-                    datasets: [{
-                        data: [
-                            {{ $stats['available_booths'] ?? 0 }},
-                            {{ $stats['reserved_booths'] ?? 0 }},
-                            {{ $stats['confirmed_booths'] ?? 0 }},
-                            {{ $stats['paid_booths'] ?? 0 }}
-                        ],
-                        backgroundColor: ['rgba(25, 135, 84, 0.8)', 'rgba(255, 193, 7, 0.8)', 'rgba(13, 202, 240, 0.8)', 'rgba(33, 37, 41, 0.8)']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    }
-                }
-            });
-        } catch(e) {
-            console.error('Chart error:', e);
-        }
-    }
-}
-
-// Initialize charts when ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(initCharts, 500);
-    });
-} else {
-    setTimeout(initCharts, 500);
-}
-
+// Refresh Dashboard Function
 function refreshDashboard() {
     window.location.reload();
 }
 
-// Force Mobile Styles
-(function() {
-    function applyMobileStyles() {
-        if (window.innerWidth <= 768) {
-            // Hide sidebar and header
-            const sidebar = document.querySelector('.main-sidebar');
-            const header = document.querySelector('.main-header');
-            if (sidebar) sidebar.style.display = 'none';
-            if (header) header.style.display = 'none';
-            
-            // Force mobile elements visible
-            document.querySelectorAll('.mobile-app-header, .mobile-stats-container, .mobile-section, .mobile-bottom-nav, .mobile-fab').forEach(el => {
-                if (el) el.style.display = 'block';
-            });
-            document.querySelectorAll('.mobile-bottom-nav').forEach(el => {
-                if (el) el.style.display = 'flex';
-            });
-            
-            // Remove content wrapper margin
-            const contentWrapper = document.querySelector('.content-wrapper');
-            if (contentWrapper) {
-                contentWrapper.style.marginLeft = '0';
-                contentWrapper.style.padding = '0';
-            }
-        }
-    }
-    
-    applyMobileStyles();
-    window.addEventListener('resize', applyMobileStyles);
-    setTimeout(applyMobileStyles, 100);
-    setTimeout(applyMobileStyles, 500);
-})();
+// No Chart.js needed - all visualizations are static CSS/HTML
+// This ensures zero animations, zero loops, and maximum performance
 </script>
 @endpush

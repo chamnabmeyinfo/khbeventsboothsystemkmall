@@ -1,11 +1,17 @@
 /**
  * KHB Booth System - Enhanced Mobile Design System
- * Version: 3.0 - Mobile-First Renovation
+ * Version: 4.0 - Ultra-Fast Performance Optimized
  * Date: 2026-01-15
  * 
  * A comprehensive, production-ready mobile-first design system
  * with modern UX patterns, glassmorphism, and enhanced interactions
  * for all modules across the KHB Booth Management System
+ * 
+ * PERFORMANCE OPTIMIZATIONS:
+ * - GPU acceleration (translateZ, will-change)
+ * - Smooth animations (cubic-bezier easing)
+ * - Reduced repaints (contain, backface-visibility)
+ * - Optimized transitions (hardware-accelerated)
  * 
  * NOTE: Desktop styles are preserved - this file only affects mobile (max-width: 768px)
  */
@@ -98,6 +104,10 @@
   --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-bounce: 400ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  
+  /* Performance Optimizations */
+  --animation-duration: 0.3s;
+  --will-change: transform, opacity;
   --transition-spring: 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* Touch Targets - Enhanced to 48px for better accessibility */
@@ -126,6 +136,23 @@
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    contain: layout style paint;
+  }
+  
+  /* GPU Acceleration for Smooth Performance */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Optimize repaints */
+  .mobile-card,
+  .mobile-kpi-card,
+  .mobile-stat-card {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
 
   /* ============================================
@@ -140,9 +167,13 @@
     margin-bottom: var(--space-4);
     box-shadow: var(--shadow-xl);
     border: 1px solid var(--glass-border);
-    transition: all var(--transition-base);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
 
   .mobile-card::before {
@@ -163,8 +194,9 @@
   }
 
   .mobile-card:active {
-    transform: scale(0.98) translateY(2px);
+    transform: scale(0.98) translateY(2px) translateZ(0);
     box-shadow: var(--shadow-md);
+    transition-duration: 0.1s;
   }
 
   .mobile-card-compact {
@@ -217,7 +249,11 @@
     position: relative;
     overflow: hidden;
     box-shadow: var(--shadow-lg);
-    transition: all var(--transition-base);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
 
   .mobile-kpi-card::before {
@@ -310,13 +346,17 @@
     border-radius: var(--radius-xl);
     border: none;
     cursor: pointer;
-    transition: all var(--transition-base);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
     white-space: nowrap;
     -webkit-tap-highlight-color: transparent;
     position: relative;
     overflow: hidden;
     letter-spacing: 0.02em;
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
 
   .mobile-btn::before {
@@ -429,12 +469,17 @@
     border: none;
     cursor: pointer;
     z-index: var(--z-fixed);
-    transition: all var(--transition-spring);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.2s ease;
+    will-change: transform, box-shadow;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
 
   .mobile-fab:active {
-    transform: scale(0.9);
+    transform: scale(0.9) translateZ(0);
     box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    transition-duration: 0.1s;
   }
 
   .mobile-fab i {
