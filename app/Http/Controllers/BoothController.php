@@ -301,8 +301,15 @@ class BoothController extends Controller
         $canEditCanvas = auth()->user()->hasPermission('booths.canvas.edit') || auth()->user()->isAdmin();
         
         // Get booth status settings for custom colors
-        $statusSettings = \App\Models\BoothStatusSetting::getActiveStatuses();
-        $statusColors = \App\Models\BoothStatusSetting::getStatusColors();
+        try {
+            $statusSettings = \App\Models\BoothStatusSetting::getActiveStatuses();
+            $statusColors = \App\Models\BoothStatusSetting::getStatusColors();
+        } catch (\Exception $e) {
+            // If table doesn't exist yet or error occurs, use empty collections
+            \Log::warning('Error loading booth status settings: ' . $e->getMessage());
+            $statusSettings = collect([]);
+            $statusColors = [];
+        }
         
         return view('booths.index', compact(
             'booths',
@@ -2399,8 +2406,15 @@ class BoothController extends Controller
         }
         
         // Get booth status settings for custom colors and labels
-        $statusSettings = \App\Models\BoothStatusSetting::getActiveStatuses();
-        $statusColors = \App\Models\BoothStatusSetting::getStatusColors();
+        try {
+            $statusSettings = \App\Models\BoothStatusSetting::getActiveStatuses();
+            $statusColors = \App\Models\BoothStatusSetting::getStatusColors();
+        } catch (\Exception $e) {
+            // If table doesn't exist yet or error occurs, use empty collections
+            \Log::warning('Error loading booth status settings: ' . $e->getMessage());
+            $statusSettings = collect([]);
+            $statusColors = [];
+        }
         
         return view('booths.public-view', compact(
             'floorPlan',

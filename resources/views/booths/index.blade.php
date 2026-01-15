@@ -6446,74 +6446,54 @@ const FloorPlanDesigner = {
         const canvas = document.getElementById('print');
         if (!canvas) return;
         
-        // Find all booths on canvas that belong to this zone
-        const zoneBooths = canvas.querySelectorAll('.dropped-booth[data-booth-zone="' + zoneName + '"]');
+        // IMPORTANT: Zone settings should ONLY apply to booths still in the sidebar (not yet on canvas)
+        // Booths already on canvas should have independent settings and not be affected
+        const sidebarContainer = document.getElementById('boothNumbersContainer');
+        const sidebarBooths = sidebarContainer ? sidebarContainer.querySelectorAll('.booth-number-item[data-booth-zone="' + zoneName + '"]') : [];
         
-        if (zoneBooths.length === 0) {
+        // Find booths on canvas for reference (to skip them)
+        const canvasBooths = canvas.querySelectorAll('.dropped-booth[data-booth-zone="' + zoneName + '"]');
+        const canvasBoothIds = new Set();
+        canvasBooths.forEach(function(booth) {
+            const boothId = booth.getAttribute('data-booth-id');
+            if (boothId) canvasBoothIds.add(boothId);
+        });
+        
+        if (sidebarBooths.length === 0) {
             Swal.fire({
-                icon: 'warning',
-                title: 'No Booths Found',
-                text: 'No booths from Zone ' + zoneName + ' found on canvas'
+                icon: 'info',
+                title: 'No Booths in Sidebar',
+                text: 'No booths from Zone ' + zoneName + ' found in sidebar. Settings will be saved for future booths added to this zone.'
             });
-            return;
         }
         
         const boothsToSave = [];
         let updatedCount = 0;
         
-        // Apply shape/layout settings to each booth
-        zoneBooths.forEach(function(boothElement) {
-            const width = Math.max(5, shapeSettings.width);
-            const height = Math.max(5, shapeSettings.height);
-            let rotation = shapeSettings.rotation;
-            const zIndex = Math.max(1, Math.min(1000, shapeSettings.zIndex));
+        // Apply shape/layout settings ONLY to booths in sidebar (not yet on canvas)
+        sidebarBooths.forEach(function(boothItem) {
+            const boothId = boothItem.getAttribute('data-booth-id');
             
-            // Normalize rotation
-            rotation = rotation % 360;
-            if (rotation > 360) rotation -= 360;
-            if (rotation < -360) rotation += 360;
-            
-            // Apply to element (only shape/layout properties)
-            boothElement.style.width = width + 'px';
-            boothElement.style.height = height + 'px';
-            boothElement.style.transform = 'rotate(' + rotation + 'deg)';
-            boothElement.style.zIndex = zIndex;
-            
-            // Update attributes
-            boothElement.setAttribute('data-width', width);
-            boothElement.setAttribute('data-height', height);
-            boothElement.setAttribute('data-rotation', rotation);
-            boothElement.setAttribute('data-z-index', zIndex);
-            
-            // Update resize handles and rotation indicator
-            self.updateResizeHandlesSize(boothElement);
-            self.updateRotationIndicator(boothElement);
-            
-            // Recalculate font size based on new width
-            const userFontSize = parseFloat(boothElement.getAttribute('data-font-size')) || self.defaultBoothFontSize;
-            const calculatedFontSize = Math.min(userFontSize, Math.max(8, width * 0.45));
-            boothElement.style.fontSize = calculatedFontSize + 'px';
-            boothElement.setAttribute('data-calculated-font-size', calculatedFontSize);
-            
-            // Get booth ID and position for saving
-            const boothId = boothElement.getAttribute('data-booth-id');
-            const x = parseFloat(boothElement.style.left) || 0;
-            const y = parseFloat(boothElement.style.top) || 0;
-            
-            if (boothId) {
-                boothsToSave.push({
-                    id: parseInt(boothId),
-                    position_x: x,
-                    position_y: y,
-                    width: width,
-                    height: height,
-                    rotation: rotation,
-                    z_index: zIndex,
-                    font_size: calculatedFontSize
-                });
+            // Skip if this booth is already on canvas (zone settings don't apply to canvas booths)
+            if (boothId && canvasBoothIds.has(boothId)) {
+                console.log('Skipping booth ' + boothId + ' - already on canvas, zone settings do not apply');
+                return;
             }
             
-            updatedCount++;
+            // For sidebar booths, we only save the settings to the database
+            // They will be applied when the booth is first added to canvas
+            if (boothId) {
+                // Get current position if booth exists in database (might have been on canvas before)
+                // We'll update the database with zone settings, but only if booth is not currently on canvas
+                boothsToSave.push({
+                    id: parseInt(boothId),
+                    width: Math.max(5, shapeSettings.width),
+                    height: Math.max(5, shapeSettings.height),
+                    rotation: shapeSettings.rotation % 360,
+                    z_index: Math.max(1, Math.min(1000, shapeSettings.zIndex))
+                });
+                updatedCount++;
+            }
         });
         
         // Get current floor plan ID
@@ -6596,8 +6576,8 @@ const FloorPlanDesigner = {
                 Swal.fire({
                     icon: 'success',
                     title: 'Saved!',
-                    text: 'Shape & Layout settings saved for ' + updatedCount + ' booth(s) in Zone ' + zoneName,
-                    timer: 2000,
+                    text: 'Shape & Layout settings saved for ' + updatedCount + ' booth(s) in Zone ' + zoneName + ' (sidebar only). Canvas booths are not affected.',
+                    timer: 3000,
                     showConfirmButton: false
                 });
                 // Save state for undo/redo
@@ -6619,88 +6599,45 @@ const FloorPlanDesigner = {
         const canvas = document.getElementById('print');
         if (!canvas) return;
         
-        // Find all booths on canvas that belong to this zone
-        const zoneBooths = canvas.querySelectorAll('.dropped-booth[data-booth-zone="' + zoneName + '"]');
+        // IMPORTANT: Zone settings should ONLY apply to booths still in the sidebar (not yet on canvas)
+        // Booths already on canvas should have independent settings and not be affected
+        const sidebarContainer = document.getElementById('boothNumbersContainer');
+        const sidebarBooths = sidebarContainer ? sidebarContainer.querySelectorAll('.booth-number-item[data-booth-zone="' + zoneName + '"]') : [];
         
-        if (zoneBooths.length === 0) {
+        // Find booths on canvas for reference (to skip them)
+        const canvasBooths = canvas.querySelectorAll('.dropped-booth[data-booth-zone="' + zoneName + '"]');
+        const canvasBoothIds = new Set();
+        canvasBooths.forEach(function(booth) {
+            const boothId = booth.getAttribute('data-booth-id');
+            if (boothId) canvasBoothIds.add(boothId);
+        });
+        
+        if (sidebarBooths.length === 0) {
             Swal.fire({
-                icon: 'warning',
-                title: 'No Booths Found',
-                text: 'No booths from Zone ' + zoneName + ' found on canvas'
+                icon: 'info',
+                title: 'No Booths in Sidebar',
+                text: 'No booths from Zone ' + zoneName + ' found in sidebar. Settings will be saved for future booths added to this zone.'
             });
-            return;
         }
         
         const boothsToSave = [];
         let updatedCount = 0;
         
-        // Apply appearance settings to each booth (preserve size/rotation)
-        zoneBooths.forEach(function(boothElement) {
-            // Get current size/rotation values (preserve them)
-            const width = parseFloat(boothElement.style.width) || parseFloat(boothElement.getAttribute('data-width')) || self.defaultBoothWidth;
-            const height = parseFloat(boothElement.style.height) || parseFloat(boothElement.getAttribute('data-height')) || self.defaultBoothHeight;
-            const rotation = parseFloat(boothElement.getAttribute('data-rotation')) || 0;
-            const zIndex = parseFloat(boothElement.style.zIndex) || 10;
+        // Apply appearance settings ONLY to booths in sidebar (not yet on canvas)
+        sidebarBooths.forEach(function(boothItem) {
+            const boothId = boothItem.getAttribute('data-booth-id');
             
-            // Apply appearance/color settings
-            if (appearanceSettings.background_color) {
-                boothElement.style.backgroundColor = appearanceSettings.background_color;
-                boothElement.setAttribute('data-background-color', appearanceSettings.background_color);
-            }
-            if (appearanceSettings.border_color) {
-                boothElement.style.borderColor = appearanceSettings.border_color;
-                boothElement.setAttribute('data-border-color', appearanceSettings.border_color);
-            }
-            if (appearanceSettings.text_color) {
-                boothElement.style.color = appearanceSettings.text_color;
-                boothElement.setAttribute('data-text-color', appearanceSettings.text_color);
-            }
-            if (appearanceSettings.font_weight) {
-                boothElement.style.fontWeight = appearanceSettings.font_weight;
-                boothElement.setAttribute('data-font-weight', appearanceSettings.font_weight);
-            }
-            if (appearanceSettings.font_family) {
-                boothElement.style.fontFamily = appearanceSettings.font_family;
-                boothElement.setAttribute('data-font-family', appearanceSettings.font_family);
-            }
-            if (appearanceSettings.text_align) {
-                boothElement.style.textAlign = appearanceSettings.text_align;
-                boothElement.setAttribute('data-text-align', appearanceSettings.text_align);
-            }
-            if (appearanceSettings.box_shadow) {
-                boothElement.style.boxShadow = appearanceSettings.box_shadow;
-                boothElement.setAttribute('data-box-shadow', appearanceSettings.box_shadow);
+            // Skip if this booth is already on canvas (zone settings don't apply to canvas booths)
+            if (boothId && canvasBoothIds.has(boothId)) {
+                console.log('Skipping booth ' + boothId + ' - already on canvas, zone settings do not apply');
+                return;
             }
             
-            // Apply border radius, border width, opacity
-            if (appearanceSettings.borderRadius !== undefined) {
-                const borderRadius = Math.max(0, Math.min(50, appearanceSettings.borderRadius));
-                boothElement.style.borderRadius = borderRadius + 'px';
-                boothElement.setAttribute('data-border-radius', borderRadius);
-            }
-            if (appearanceSettings.borderWidth !== undefined) {
-                const borderWidth = Math.max(0, Math.min(10, appearanceSettings.borderWidth));
-                boothElement.style.borderWidth = borderWidth + 'px';
-                boothElement.setAttribute('data-border-width', borderWidth);
-            }
-            if (appearanceSettings.opacity !== undefined) {
-                const opacity = Math.max(0, Math.min(1, appearanceSettings.opacity));
-                boothElement.style.opacity = opacity;
-                boothElement.setAttribute('data-opacity', opacity);
-            }
-            
-            // Get booth ID and position for saving
-            const boothId = boothElement.getAttribute('data-booth-id');
-            const x = parseFloat(boothElement.style.left) || 0;
-            const y = parseFloat(boothElement.style.top) || 0;
-            const fontSize = parseFloat(boothElement.style.fontSize) || parseFloat(boothElement.getAttribute('data-font-size')) || self.defaultBoothFontSize;
-            
+            // For sidebar booths, we only save the settings to the database
+            // They will be applied when the booth is first added to canvas
             if (boothId) {
                 const boothData = {
                     id: parseInt(boothId),
-                    position_x: x,
-                    position_y: y,
-                    font_size: fontSize,
                     background_color: appearanceSettings.background_color,
                     border_color: appearanceSettings.border_color,
                     text_color: appearanceSettings.text_color,
@@ -6811,8 +6748,8 @@ const FloorPlanDesigner = {
                 Swal.fire({
                     icon: 'success',
                     title: 'Saved!',
-                    text: 'Appearance & Style settings saved for ' + updatedCount + ' booth(s) in Zone ' + zoneName,
-                    timer: 2000,
+                    text: 'Appearance & Style settings saved for ' + updatedCount + ' booth(s) in Zone ' + zoneName + ' (sidebar only). Canvas booths are not affected.',
+                    timer: 3000,
                     showConfirmButton: false
                 });
                 // Save state for undo/redo

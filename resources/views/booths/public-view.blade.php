@@ -1041,8 +1041,24 @@
                 if (booth.opacity !== null) boothElement.style.opacity = booth.opacity;
                 
                 // Status labels and colors from database
-                const statusLabels = @json($statusSettings->pluck('status_name', 'status_code')->toArray() ?? [1 => 'Available', 2 => 'Confirmed', 3 => 'Reserved', 4 => 'Hidden', 5 => 'Paid']);
-                const statusColors = @json($statusColors ?? [1 => '#28a745', 2 => '#0dcaf0', 3 => '#ffc107', 4 => '#6c757d', 5 => '#212529']);
+                @php
+                    $statusLabelsArray = isset($statusSettings) && $statusSettings->count() > 0 
+                        ? $statusSettings->pluck('status_name', 'status_code')->toArray() 
+                        : [1 => 'Available', 2 => 'Confirmed', 3 => 'Reserved', 4 => 'Hidden', 5 => 'Paid'];
+                    
+                    // Convert statusColors from nested array format to simple color strings
+                    $statusColorsArray = [];
+                    if (isset($statusColors) && !empty($statusColors)) {
+                        foreach ($statusColors as $code => $colorData) {
+                            $statusColorsArray[$code] = is_array($colorData) ? ($colorData['background'] ?? '#6c757d') : $colorData;
+                        }
+                    } else {
+                        // Fallback defaults
+                        $statusColorsArray = [1 => '#28a745', 2 => '#0dcaf0', 3 => '#ffc107', 4 => '#6c757d', 5 => '#212529'];
+                    }
+                @endphp
+                const statusLabels = @json($statusLabelsArray);
+                const statusColors = @json($statusColorsArray);
                 
                 // Enhanced tooltip on hover
                 const tooltip = document.getElementById('boothTooltip');
