@@ -212,6 +212,11 @@
                     <i class="fas fa-cloud me-2"></i>CDN Settings
                 </button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="module-display-tab" data-bs-toggle="tab" data-bs-target="#module-display" type="button" role="tab">
+                    <i class="fas fa-mobile-alt me-2"></i>Module Display Customize
+                </button>
+            </li>
         </ul>
 
         <!-- Tabs Content -->
@@ -398,7 +403,7 @@
                     <div class="card-body">
                         <h5 class="mb-4"><i class="fas fa-cloud me-2"></i>CDN Settings</h5>
                         <p class="text-muted mb-4">Choose whether to load CSS and JavaScript libraries from CDN (Content Delivery Network) or from your local server.</p>
-                        
+
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle me-2"></i>
                             <strong>CDN vs Local Assets:</strong>
@@ -407,7 +412,7 @@
                                 <li><strong>Local (OFF):</strong> Loads from your server, works offline, but may be slower</li>
                             </ul>
                         </div>
-                        
+
                         <form id="cdnSettingsForm">
                             @csrf
                             <div class="row g-3">
@@ -421,7 +426,7 @@
                                                     <p class="text-muted small mb-0 mt-1">When enabled, CSS and JavaScript libraries will be loaded from CDN instead of local files.</p>
                                                 </label>
                                             </div>
-                                            
+
                                             <div id="cdnStatus" class="mt-3 p-3 rounded" style="display: none;">
                                                 <div class="d-flex align-items-center">
                                                     <i class="fas fa-circle me-2" style="font-size: 0.75rem;"></i>
@@ -432,13 +437,55 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="mt-4">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-save me-2"></i>Save CDN Settings
                                 </button>
                                 <button type="button" class="btn btn-secondary ms-2" onclick="location.reload()">
                                     <i class="fas fa-sync-alt me-2"></i>Refresh Page
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Module Display Customize Tab -->
+            <div class="tab-pane fade" id="module-display" role="tabpanel">
+                <div class="card border-top-0 rounded-top-0">
+                    <div class="card-body">
+                        <h5 class="mb-4"><i class="fas fa-mobile-alt me-2"></i>Module Display Customize</h5>
+                        <p class="text-muted mb-4">Control which modules and features are visible on Mobile and Tablet devices. This allows you to customize the user experience for different screen sizes.</p>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Device-Specific Display:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li><strong>Mobile (≤768px):</strong> Control visibility on smartphones</li>
+                                <li><strong>Tablet (769px-1024px):</strong> Control visibility on tablets</li>
+                                <li>Desktop views are not affected by these settings</li>
+                            </ul>
+                        </div>
+
+                        <form id="moduleDisplayForm">
+                            @csrf
+                            <div class="row g-3" id="moduleDisplayContainer">
+                                <!-- Modules will be loaded here -->
+                                <div class="col-12 text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-3 text-muted">Loading module settings...</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Save Module Display Settings
+                                </button>
+                                <button type="button" class="btn btn-secondary ms-2" onclick="loadModuleDisplaySettings()">
+                                    <i class="fas fa-sync-alt me-2"></i>Reset to Defaults
                                 </button>
                             </div>
                         </form>
@@ -772,10 +819,156 @@
         });
     });
 
+    // Module Display Settings
+    const moduleConfig = {
+        'dashboard': { name: 'Dashboard', icon: 'fa-home', description: 'Main dashboard with statistics and overview' },
+        'booths': { name: 'Booths', icon: 'fa-store', description: 'Booth management and floor plan designer' },
+        'bookings': { name: 'Bookings', icon: 'fa-calendar-check', description: 'Booking management and calendar' },
+        'clients': { name: 'Clients', icon: 'fa-users', description: 'Client management and directory' },
+        'settings': { name: 'Settings', icon: 'fa-cog', description: 'System settings and configuration' },
+        'reports': { name: 'Reports', icon: 'fa-chart-bar', description: 'Analytics and reporting tools' },
+        'finance': { name: 'Finance', icon: 'fa-dollar-sign', description: 'Financial management and transactions' },
+        'hr': { name: 'HR', icon: 'fa-user-tie', description: 'Human resources management' },
+        'users': { name: 'Users', icon: 'fa-user-shield', description: 'User management and permissions' },
+        'categories': { name: 'Categories', icon: 'fa-folder', description: 'Category and classification management' }
+    };
+
+    function loadModuleDisplaySettings() {
+        $.get('{{ route("settings.module-display") }}')
+            .done(function(response) {
+                if (response.status === 200) {
+                    renderModuleDisplaySettings(response.data);
+                }
+            })
+            .fail(function() {
+                toastr.error('Failed to load module display settings');
+                $('#moduleDisplayContainer').html('<div class="alert alert-danger">Failed to load settings. Please refresh the page.</div>');
+            });
+    }
+
+    function renderModuleDisplaySettings(settings) {
+        let html = '';
+        
+        Object.keys(moduleConfig).forEach(function(moduleKey) {
+            const module = moduleConfig[moduleKey];
+            const moduleSettings = settings[moduleKey] || { mobile: true, tablet: true };
+            
+            html += `
+                <div class="col-md-6 col-lg-4">
+                    <div class="card border h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                        <i class="fas ${module.icon} fa-lg"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-0">${module.name}</h6>
+                                    <small class="text-muted">${module.description}</small>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input module-toggle" type="checkbox" 
+                                               id="module_${moduleKey}_mobile" 
+                                               data-module="${moduleKey}" 
+                                               data-device="mobile"
+                                               ${moduleSettings.mobile ? 'checked' : ''}
+                                               style="width: 2.5rem; height: 1.25rem;">
+                                        <label class="form-check-label" for="module_${moduleKey}_mobile">
+                                            <i class="fas fa-mobile-alt me-1"></i> Mobile
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input module-toggle" type="checkbox" 
+                                               id="module_${moduleKey}_tablet" 
+                                               data-module="${moduleKey}" 
+                                               data-device="tablet"
+                                               ${moduleSettings.tablet ? 'checked' : ''}
+                                               style="width: 2.5rem; height: 1.25rem;">
+                                        <label class="form-check-label" for="module_${moduleKey}_tablet">
+                                            <i class="fas fa-tablet-alt me-1"></i> Tablet
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        $('#moduleDisplayContainer').html(html);
+    }
+
+    // Save module display settings
+    $('#moduleDisplayForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const modules = {};
+        $('.module-toggle').each(function() {
+            const module = $(this).data('module');
+            const device = $(this).data('device');
+            
+            if (!modules[module]) {
+                modules[module] = {};
+            }
+            
+            modules[module][device] = $(this).is(':checked');
+        });
+        
+        const data = {
+            modules: modules,
+            _token: '{{ csrf_token() }}'
+        };
+        
+        $.ajax({
+            url: '{{ route("settings.module-display.save") }}',
+            method: 'POST',
+            data: data,
+            success: function(response) {
+                if (response.status === 200) {
+                    toastr.success(response.message || 'Module display settings saved successfully');
+                    // Reload to apply changes
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    toastr.error(response.message || 'Failed to save module display settings');
+                }
+            },
+            error: function(xhr) {
+                const errors = xhr.responseJSON?.errors || {};
+                let message = xhr.responseJSON?.message || 'Failed to save module display settings';
+                if (Object.keys(errors).length > 0) {
+                    message += ': ' + Object.values(errors).flat().join(', ');
+                }
+                toastr.error(message);
+            }
+        });
+    });
+
+    // Load module display settings when tab is shown
+    $('#module-display-tab').on('shown.bs.tab', function() {
+        if ($('#moduleDisplayContainer').children().length === 1 && $('#moduleDisplayContainer').find('.spinner-border').length > 0) {
+            loadModuleDisplaySettings();
+        }
+    });
+
     $(document).ready(function() {
         loadCompanySettings();
         loadAppearanceSettings();
         loadCDNSettings();
+        
+        // Load module display settings if tab is active
+        if ($('#module-display-tab').hasClass('active')) {
+            loadModuleDisplaySettings();
+        }
     });
 </script>
 @endpush

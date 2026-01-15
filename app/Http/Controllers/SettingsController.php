@@ -974,5 +974,67 @@ class SettingsController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get module display settings
+     */
+    public function getModuleDisplaySettings(Request $request)
+    {
+        try {
+            $settings = Setting::getModuleDisplaySettings();
+
+            return response()->json([
+                'status' => 200,
+                'data' => $settings
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error fetching module display settings: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Save module display settings
+     */
+    public function saveModuleDisplaySettings(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'modules' => 'required|array',
+                'modules.*.mobile' => 'nullable|boolean',
+                'modules.*.tablet' => 'nullable|boolean',
+            ]);
+
+            // Transform the input to match our expected format
+            $settings = [];
+            foreach ($validated['modules'] as $module => $config) {
+                $settings[$module] = [
+                    'mobile' => $config['mobile'] ?? true,
+                    'tablet' => $config['tablet'] ?? true,
+                ];
+            }
+
+            $savedSettings = Setting::saveModuleDisplaySettings($settings);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Module display settings saved successfully.',
+                'data' => $savedSettings
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error saving module display settings: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
 

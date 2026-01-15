@@ -352,6 +352,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/settings/cdn', [SettingsController::class, 'getCDNSettings'])->name('settings.cdn');
         Route::post('/settings/cdn', [SettingsController::class, 'saveCDNSettings'])->name('settings.cdn.save');
         
+        // Module Display Settings
+        Route::get('/settings/module-display', [SettingsController::class, 'getModuleDisplaySettings'])->name('settings.module-display');
+        Route::post('/settings/module-display', [SettingsController::class, 'saveModuleDisplaySettings'])->name('settings.module-display.save');
+        
         // Image Upload Routes
         Route::prefix('images')->name('images.')->group(function () {
             Route::post('/avatar/upload', [\App\Http\Controllers\ImageController::class, 'uploadAvatar'])->name('avatar.upload');

@@ -8,17 +8,108 @@
 <link rel="stylesheet" href="{{ asset('vendor/datatables/css/dataTables.bootstrap5.min.css') }}">
 <link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}">
 <style>
-    /* Modern Booth Management Design */
+    /* Modern Booth Management Design - All Devices */
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
+    }
+    
     @media (min-width: 769px) {
         body {
             background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%) !important;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
         }
         
         .container-fluid {
             max-width: 1400px !important;
             margin: 0 auto !important;
             padding: 24px !important;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        body {
+            background: #f5f7fa !important;
+            padding-bottom: 90px !important;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .container-fluid {
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: 100% !important;
+        }
+        
+        /* Mobile App Header */
+        .mobile-app-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            padding: 16px 20px !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 1000 !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        .mobile-app-header-content {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            color: white !important;
+        }
+        
+        .mobile-app-title {
+            font-size: 24px !important;
+            font-weight: 800 !important;
+            color: white !important;
+            margin: 0 !important;
+            letter-spacing: -0.5px !important;
+        }
+        
+        .mobile-app-subtitle {
+            font-size: 13px !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+            margin-top: 4px !important;
+        }
+        
+        .mobile-header-actions {
+            display: flex !important;
+            gap: 12px !important;
+            align-items: center !important;
+        }
+        
+        .mobile-header-btn {
+            width: 44px !important;
+            height: 44px !important;
+            border-radius: 12px !important;
+            background: rgba(255, 255, 255, 0.2) !important;
+            border: none !important;
+            color: white !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 18px !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            transition: all 0.2s ease !important;
+        }
+        
+        .mobile-header-btn:active {
+            background: rgba(255, 255, 255, 0.3) !important;
+            transform: scale(0.95) !important;
+        }
+        
+        /* Hide desktop header on mobile */
+        .modern-page-header {
+            display: none !important;
+        }
+    }
+    
+    @media (min-width: 769px) and (max-width: 1024px) {
+        body {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%) !important;
+        }
+        
+        .container-fluid {
+            padding: 20px !important;
         }
     }
     
@@ -218,16 +309,6 @@
     
     /* Mobile Responsive Styles */
     @media (max-width: 768px) {
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #ec4899 100%) !important;
-            padding-bottom: 90px !important;
-        }
-        
-        .container-fluid {
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-        
         /* Quick Filters - Scrollable horizontal on mobile */
         .btn-group {
             display: flex !important;
@@ -320,6 +401,317 @@
         .modal-content {
             height: 100vh !important;
             border-radius: 0 !important;
+        }
+        
+        /* Mobile App Stats Cards */
+        .mobile-stats-container {
+            padding: 16px 20px !important;
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px !important;
+            background: white !important;
+            margin-bottom: 12px !important;
+        }
+        
+        .mobile-stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            border-radius: 16px !important;
+            padding: 16px !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2) !important;
+            position: relative !important;
+            overflow: hidden !important;
+        }
+        
+        .mobile-stat-card:nth-child(1) {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        }
+        
+        .mobile-stat-card:nth-child(2) {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        }
+        
+        .mobile-stat-card:nth-child(3) {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+        }
+        
+        .mobile-stat-card:nth-child(4) {
+            background: linear-gradient(135deg, #ec4899 0%, #db2777 100%) !important;
+        }
+        
+        .mobile-stat-label {
+            font-size: 11px !important;
+            opacity: 0.9 !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            margin-bottom: 8px !important;
+        }
+        
+        .mobile-stat-value {
+            font-size: 28px !important;
+            font-weight: 800 !important;
+            line-height: 1 !important;
+        }
+        
+        /* Mobile Search Bar */
+        .mobile-search-container {
+            padding: 0 20px 16px !important;
+            background: white !important;
+        }
+        
+        .mobile-search-bar {
+            position: relative !important;
+        }
+        
+        .mobile-search-input {
+            width: 100% !important;
+            padding: 14px 16px 14px 48px !important;
+            border: 2px solid #e5e7eb !important;
+            border-radius: 16px !important;
+            font-size: 16px !important;
+            background: #f9fafb !important;
+            transition: all 0.2s ease !important;
+        }
+        
+        .mobile-search-input:focus {
+            outline: none !important;
+            border-color: #667eea !important;
+            background: white !important;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1) !important;
+        }
+        
+        .mobile-search-icon {
+            position: absolute !important;
+            left: 16px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            color: #9ca3af !important;
+            font-size: 18px !important;
+        }
+        
+        /* Mobile Quick Filters */
+        .mobile-filters-container {
+            padding: 0 20px 16px !important;
+            background: white !important;
+        }
+        
+        .mobile-filters-scroll {
+            display: flex !important;
+            gap: 10px !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            padding-bottom: 4px !important;
+        }
+        
+        .mobile-filter-chip {
+            padding: 10px 18px !important;
+            border-radius: 20px !important;
+            background: #f3f4f6 !important;
+            color: #374151 !important;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            white-space: nowrap !important;
+            border: 2px solid transparent !important;
+            transition: all 0.2s ease !important;
+            min-height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+        
+        .mobile-filter-chip.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
+        }
+        
+        /* Mobile App Booth Cards */
+        .mobile-booth-card {
+            background: white !important;
+            border-radius: 20px !important;
+            margin: 0 20px 16px !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+            overflow: hidden !important;
+            transition: all 0.3s ease !important;
+            border: 1px solid #f3f4f6 !important;
+        }
+        
+        .mobile-booth-card:active {
+            transform: scale(0.98) !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+        }
+        
+        .mobile-booth-card-header {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: flex-start !important;
+            padding: 20px 20px 16px !important;
+            background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%) !important;
+        }
+        
+        .mobile-booth-number-section {
+            flex: 1 !important;
+        }
+        
+        .mobile-booth-number {
+            font-size: 32px !important;
+            font-weight: 900 !important;
+            color: #111827 !important;
+            line-height: 1 !important;
+            margin-bottom: 4px !important;
+            letter-spacing: -1px !important;
+        }
+        
+        .mobile-booth-type {
+            font-size: 13px !important;
+            color: #6b7280 !important;
+            font-weight: 600 !important;
+            margin-top: 4px !important;
+        }
+        
+        .mobile-booth-status-badge {
+            padding: 8px 14px !important;
+            border-radius: 12px !important;
+            font-size: 12px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+        }
+        
+        .mobile-booth-image-container {
+            width: 100% !important;
+            height: 200px !important;
+            overflow: hidden !important;
+            background: #f3f4f6 !important;
+            position: relative !important;
+        }
+        
+        .mobile-booth-image {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+        }
+        
+        .mobile-booth-info {
+            padding: 16px 20px !important;
+        }
+        
+        .mobile-info-row {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 12px 0 !important;
+            border-bottom: 1px solid #f3f4f6 !important;
+        }
+        
+        .mobile-info-row:last-child {
+            border-bottom: none !important;
+        }
+        
+        .mobile-info-label {
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            color: #6b7280 !important;
+            font-weight: 500 !important;
+            font-size: 14px !important;
+        }
+        
+        .mobile-info-label i {
+            width: 20px !important;
+            text-align: center !important;
+            color: #9ca3af !important;
+        }
+        
+        .mobile-info-value {
+            color: #111827 !important;
+            font-weight: 700 !important;
+            font-size: 15px !important;
+            text-align: right !important;
+        }
+        
+        .mobile-info-value.price {
+            color: #10b981 !important;
+            font-size: 18px !important;
+        }
+        
+        .mobile-booth-actions {
+            display: flex !important;
+            gap: 8px !important;
+            padding: 16px 20px !important;
+            background: #f9fafb !important;
+            border-top: 1px solid #f3f4f6 !important;
+        }
+        
+        .mobile-booth-actions .btn {
+            flex: 1 !important;
+            min-height: 48px !important;
+            border-radius: 12px !important;
+            font-weight: 700 !important;
+            font-size: 14px !important;
+            border: none !important;
+            transition: all 0.2s ease !important;
+        }
+        
+        .mobile-booth-actions .btn:active {
+            transform: scale(0.95) !important;
+        }
+        
+        .mobile-booth-actions .btn-info {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+            color: white !important;
+        }
+        
+        .mobile-booth-actions .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+        }
+        
+        .mobile-booth-actions .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+            color: white !important;
+        }
+        
+        /* Empty State */
+        .mobile-empty-state {
+            text-align: center !important;
+            padding: 60px 20px !important;
+            background: white !important;
+            margin: 20px !important;
+            border-radius: 20px !important;
+        }
+        
+        .mobile-empty-state i {
+            font-size: 64px !important;
+            color: #d1d5db !important;
+            margin-bottom: 16px !important;
+        }
+        
+        .mobile-empty-state p {
+            color: #6b7280 !important;
+            font-size: 16px !important;
+            font-weight: 600 !important;
+        }
+        
+        /* Mobile Pagination */
+        .mobile-pagination {
+            padding: 20px !important;
+            text-align: center !important;
+            background: white !important;
+        }
+        
+        .mobile-pagination .pagination {
+            justify-content: center !important;
+        }
+        
+        .mobile-pagination .page-link {
+            min-width: 44px !important;
+            min-height: 44px !important;
+            border-radius: 12px !important;
+            margin: 0 4px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
     }
     
@@ -1040,13 +1432,21 @@
         </div>
     </div>
     
-    <!-- Mobile Header -->
-    <div class="d-md-none" style="padding: 20px 16px;">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 style="font-size: 24px; font-weight: 800; margin: 0;"><i class="fas fa-store me-2"></i>Booths</h2>
-            <button type="button" class="btn btn-sm btn-primary" onclick="openStatusSettingsModal()">
-                <i class="fas fa-tags"></i>
-            </button>
+    <!-- Mobile App Header -->
+    <div class="mobile-app-header d-md-none">
+        <div class="mobile-app-header-content">
+            <div>
+                <h1 class="mobile-app-title">Booth Management</h1>
+                <div class="mobile-app-subtitle">Manage all your booths</div>
+            </div>
+            <div class="mobile-header-actions">
+                <button type="button" class="mobile-header-btn" onclick="openStatusSettingsModal()" title="Status Settings">
+                    <i class="fas fa-tags"></i>
+                </button>
+                <a href="{{ url('/booths?view=canvas') }}" class="mobile-header-btn" title="Canvas View">
+                    <i class="fas fa-map"></i>
+                </a>
+            </div>
         </div>
     </div>
 
@@ -1090,51 +1490,76 @@
         </div>
     </div>
     
-    <!-- Modern Statistics Cards - Mobile -->
-    <div class="d-md-none" style="padding: 0 16px 20px;">
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-            <div class="modern-stat-card">
-                <div class="modern-stat-value" style="font-size: 28px;">{{ number_format($stats['total']) }}</div>
-                <div class="modern-stat-label">Total</div>
-            </div>
-            <div class="modern-stat-card success">
-                <div class="modern-stat-value" style="font-size: 28px;">{{ number_format($stats['available']) }}</div>
-                <div class="modern-stat-label">Available</div>
-            </div>
-            <div class="modern-stat-card warning">
-                <div class="modern-stat-value" style="font-size: 28px;">{{ number_format($stats['reserved']) }}</div>
-                <div class="modern-stat-label">Reserved</div>
-            </div>
-            <div class="modern-stat-card info">
-                <div class="modern-stat-value" style="font-size: 28px;">{{ number_format($stats['confirmed']) }}</div>
-                <div class="modern-stat-label">Confirmed</div>
-            </div>
-            <div class="modern-stat-card danger" style="grid-column: span 2;">
-                <div class="modern-stat-value" style="font-size: 28px;">{{ number_format($stats['paid']) }}</div>
-                <div class="modern-stat-label">Paid</div>
-            </div>
+    <!-- Mobile App Stats Cards -->
+    <div class="mobile-stats-container d-md-none">
+        <div class="mobile-stat-card">
+            <div class="mobile-stat-label">Total Booths</div>
+            <div class="mobile-stat-value">{{ number_format($stats['total']) }}</div>
+        </div>
+        <div class="mobile-stat-card">
+            <div class="mobile-stat-label">Available</div>
+            <div class="mobile-stat-value">{{ number_format($stats['available']) }}</div>
+        </div>
+        <div class="mobile-stat-card">
+            <div class="mobile-stat-label">Reserved</div>
+            <div class="mobile-stat-value">{{ number_format($stats['reserved']) }}</div>
+        </div>
+        <div class="mobile-stat-card">
+            <div class="mobile-stat-label">Paid</div>
+            <div class="mobile-stat-value">{{ number_format($stats['paid']) }}</div>
         </div>
     </div>
 
-    <!-- Modern Quick Filters -->
-    <div class="mb-4" style="padding: 0 16px;">
+    <!-- Mobile Search Bar -->
+    <div class="mobile-search-container d-md-none">
+        <form method="GET" action="{{ route('booths.index', ['view' => 'table']) }}" id="mobileSearchForm">
+            <div class="mobile-search-bar">
+                <i class="fas fa-search mobile-search-icon"></i>
+                <input type="text" name="search" class="mobile-search-input" placeholder="Search booths..." value="{{ request('search') }}" autocomplete="off">
+            </div>
+        </form>
+    </div>
+
+    <!-- Mobile Quick Filters -->
+    <div class="mobile-filters-container d-md-none">
+        <div class="mobile-filters-scroll">
+            <button type="button" class="mobile-filter-chip active" onclick="applyQuickFilter('all')">
+                All
+            </button>
+            <button type="button" class="mobile-filter-chip" onclick="applyQuickFilter('available')">
+                Available
+            </button>
+            <button type="button" class="mobile-filter-chip" onclick="applyQuickFilter('reserved')">
+                Reserved
+            </button>
+            <button type="button" class="mobile-filter-chip" onclick="applyQuickFilter('paid')">
+                Paid
+            </button>
+            <button type="button" class="mobile-filter-chip" onclick="applyQuickFilter('confirmed')">
+                Confirmed
+            </button>
+        </div>
+    </div>
+
+    <!-- Modern Quick Filters - Desktop -->
+    <div class="mb-4 d-none d-md-block" style="padding: 0 16px;">
         <div class="btn-group" role="group" aria-label="Quick Filters" style="display: flex; gap: 8px; flex-wrap: wrap;">
             <button type="button" class="btn btn-outline-primary quick-filter-btn" onclick="applyQuickFilter('all')">
-                <i class="fas fa-list"></i> <span class="d-none d-md-inline">All Booths</span><span class="d-md-none">All</span>
+                <i class="fas fa-list"></i> All Booths
             </button>
             <button type="button" class="btn btn-outline-success quick-filter-btn" onclick="applyQuickFilter('available')">
-                <i class="fas fa-check-circle"></i> <span class="d-none d-md-inline">Available</span><span class="d-md-none">Avail</span>
+                <i class="fas fa-check-circle"></i> Available
             </button>
             <button type="button" class="btn btn-outline-info quick-filter-btn" onclick="applyQuickFilter('booked')">
-                <i class="fas fa-bookmark"></i> <span class="d-none d-md-inline">Booked</span><span class="d-md-none">Book</span>
+                <i class="fas fa-bookmark"></i> Booked
             </button>
             <button type="button" class="btn btn-outline-warning quick-filter-btn" onclick="applyQuickFilter('paid')">
-                <i class="fas fa-dollar-sign"></i> <span class="d-none d-md-inline">Paid</span>
+                <i class="fas fa-dollar-sign"></i> Paid
             </button>
-            <button type="button" class="btn btn-outline-secondary quick-filter-btn d-none d-md-inline" onclick="applyQuickFilter('today')">
+            <button type="button" class="btn btn-outline-secondary quick-filter-btn" onclick="applyQuickFilter('today')">
                 <i class="fas fa-calendar-day"></i> Today
             </button>
-            <button type="button" class="btn btn-outline-danger quick-filter-btn d-none d-md-inline" onclick="applyQuickFilter('overdue')">
+            <button type="button" class="btn btn-outline-danger quick-filter-btn" onclick="applyQuickFilter('overdue')">
                 <i class="fas fa-exclamation-triangle"></i> Overdue
             </button>
             <button type="button" class="btn btn-link" onclick="clearAllFilters()" style="color: #6366f1; text-decoration: none; font-weight: 600;">
@@ -1143,8 +1568,8 @@
         </div>
     </div>
 
-    <!-- Filter Bar -->
-    <div class="filter-bar">
+    <!-- Filter Bar - Desktop -->
+    <div class="filter-bar d-none d-md-block">
         <form method="GET" action="{{ route('booths.index', ['view' => 'table']) }}" id="filterForm">
             <div class="row g-3">
                 <div class="col-md-3">
@@ -1229,8 +1654,8 @@
         </div>
     </div>
 
-    <!-- Booths Table -->
-    <div class="card table-modern">
+    <!-- Booths Table - Desktop View -->
+    <div class="card table-modern d-none d-md-block">
         <div class="card-body p-0">
             <table class="table table-hover mb-0" id="boothsTable">
                 <thead>
@@ -1261,7 +1686,7 @@
                             @if($booth->booth_image)
                                 <img src="{{ asset($booth->booth_image) }}" alt="Booth Image" class="booth-image-preview" onclick="viewImage('{{ asset($booth->booth_image) }}')">
                             @else
-                                <div style="width: 60px; height: 60px; background: #e9ecef; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #6c757d;">
+                                <div style="width: 60px; height: 60px; background: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #9ca3af;">
                                     <i class="fas fa-image"></i>
                                 </div>
                             @endif
@@ -1292,10 +1717,10 @@
                             <strong style="color: #10b981; font-size: 15px; font-weight: 700;">${{ number_format($booth->price, 2) }}</strong>
                         </td>
                         <td>
-                            {{ $booth->area_sqm ? number_format($booth->area_sqm, 2) . ' m²' : 'N/A' }}
+                            <span style="color: #6b7280;">{{ $booth->area_sqm ? number_format($booth->area_sqm, 2) . ' m²' : 'N/A' }}</span>
                         </td>
                         <td>
-                            {{ $booth->capacity ? $booth->capacity . ' people' : 'N/A' }}
+                            <span style="color: #6b7280;">{{ $booth->capacity ? $booth->capacity . ' people' : 'N/A' }}</span>
                         </td>
                         <td>
                             <div class="action-buttons">
@@ -1335,6 +1760,102 @@
                     {{ $booths->links() }}
                 </div>
             </div>
+        </div>
+        @endif
+    </div>
+    
+    <!-- Mobile App Booth Cards -->
+    <div class="d-md-none" style="padding-bottom: 20px;">
+        @forelse($booths as $booth)
+        <div class="mobile-booth-card" onclick="viewBooth({{ $booth->id }})" style="cursor: pointer;">
+            <div class="mobile-booth-card-header">
+                <div class="mobile-booth-number-section">
+                    <div class="mobile-booth-number">#{{ $booth->booth_number }}</div>
+                    <div class="mobile-booth-type">{{ $booth->boothType ? $booth->boothType->name : ($booth->type == 1 ? 'Booth' : 'Space Only') }}</div>
+                </div>
+                <span class="badge mobile-booth-status-badge badge-{{ $booth->getStatusColor() }}">
+                    {{ $booth->getStatusLabel() }}
+                </span>
+            </div>
+            
+            @if($booth->booth_image)
+            <div class="mobile-booth-image-container">
+                <img src="{{ asset($booth->booth_image) }}" alt="Booth Image" class="mobile-booth-image" onclick="event.stopPropagation(); viewImage('{{ asset($booth->booth_image) }}')">
+            </div>
+            @endif
+            
+            <div class="mobile-booth-info">
+                <div class="mobile-info-row">
+                    <span class="mobile-info-label">
+                        <i class="fas fa-map"></i>
+                        <span>Floor Plan</span>
+                    </span>
+                    <span class="mobile-info-value">{{ $booth->floorPlan ? $booth->floorPlan->name : 'N/A' }}</span>
+                </div>
+                <div class="mobile-info-row">
+                    <span class="mobile-info-label">
+                        <i class="fas fa-building"></i>
+                        <span>Company</span>
+                    </span>
+                    <span class="mobile-info-value">{{ $booth->client ? $booth->client->company : 'N/A' }}</span>
+                </div>
+                <div class="mobile-info-row">
+                    <span class="mobile-info-label">
+                        <i class="fas fa-folder"></i>
+                        <span>Category</span>
+                    </span>
+                    <span class="mobile-info-value">{{ $booth->category ? $booth->category->name : 'N/A' }}</span>
+                </div>
+                <div class="mobile-info-row">
+                    <span class="mobile-info-label">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span>Price</span>
+                    </span>
+                    <span class="mobile-info-value price">${{ number_format($booth->price, 2) }}</span>
+                </div>
+                @if($booth->area_sqm)
+                <div class="mobile-info-row">
+                    <span class="mobile-info-label">
+                        <i class="fas fa-ruler-combined"></i>
+                        <span>Area</span>
+                    </span>
+                    <span class="mobile-info-value">{{ number_format($booth->area_sqm, 2) }} m²</span>
+                </div>
+                @endif
+                @if($booth->capacity)
+                <div class="mobile-info-row">
+                    <span class="mobile-info-label">
+                        <i class="fas fa-users"></i>
+                        <span>Capacity</span>
+                    </span>
+                    <span class="mobile-info-value">{{ $booth->capacity }} people</span>
+                </div>
+                @endif
+            </div>
+            
+            <div class="mobile-booth-actions" onclick="event.stopPropagation();">
+                <button type="button" class="btn btn-info" onclick="viewBooth({{ $booth->id }})">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button type="button" class="btn btn-primary" onclick="editBooth({{ $booth->id }})">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button type="button" class="btn btn-danger" onclick="deleteBooth({{ $booth->id }})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+        @empty
+        <div class="mobile-empty-state">
+            <i class="fas fa-inbox"></i>
+            <p>No booths found</p>
+            <p style="font-size: 14px; margin-top: 8px; color: #9ca3af;">Create your first booth to get started</p>
+        </div>
+        @endforelse
+        
+        @if($booths->hasPages())
+        <div class="mobile-pagination">
+            {{ $booths->links() }}
         </div>
         @endif
     </div>
@@ -2487,7 +3008,38 @@ document.addEventListener('DOMContentLoaded', function() {
     const status = urlParams.get('status');
     const bookedToday = urlParams.get('booked_today');
     const paymentOverdue = urlParams.get('payment_overdue');
-    
+
+    // Mobile search debounce
+    const mobileSearchInput = document.querySelector('.mobile-search-input');
+    if (mobileSearchInput) {
+        let searchTimeout;
+        mobileSearchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                document.getElementById('mobileSearchForm').submit();
+            }, 500);
+        });
+    }
+
+    // Set active mobile filter chip based on current status
+    if (window.innerWidth <= 768) {
+        const statusMap = {
+            '1': 'available',
+            '2': 'confirmed',
+            '3': 'reserved',
+            '5': 'paid'
+        };
+        
+        const activeFilter = statusMap[status] || 'all';
+        document.querySelectorAll('.mobile-filter-chip').forEach(chip => {
+            chip.classList.remove('active');
+            if (chip.textContent.trim().toLowerCase() === activeFilter || 
+                (activeFilter === 'all' && chip.textContent.trim().toLowerCase() === 'all')) {
+                chip.classList.add('active');
+            }
+        });
+    }
+
     // Highlight appropriate button based on current filters
     if (bookedToday) {
         document.querySelector('.quick-filter-btn[onclick*="today"]')?.classList.add('active');

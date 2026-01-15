@@ -298,6 +298,180 @@
                 font-size: 14px;
             }
             
+            /* Modern Slide-Out Aside Menu - Mobile & Tablet */
+            .modern-aside-menu {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 280px !important;
+                max-width: 85vw !important;
+                height: 100vh !important;
+                height: 100dvh !important;
+                background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%) !important;
+                z-index: 10000 !important;
+                transform: translateX(-100%) !important;
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3) !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                -webkit-overflow-scrolling: touch !important;
+                will-change: transform !important;
+            }
+            
+            .modern-aside-menu.open {
+                transform: translateX(0) !important;
+            }
+            
+            /* Aside Menu Overlay */
+            .modern-aside-overlay {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                background: rgba(0, 0, 0, 0.5) !important;
+                backdrop-filter: blur(4px) !important;
+                -webkit-backdrop-filter: blur(4px) !important;
+                z-index: 9999 !important;
+                opacity: 0 !important;
+                visibility: hidden !important;
+                transition: opacity 0.3s ease, visibility 0.3s ease !important;
+            }
+            
+            .modern-aside-overlay.active {
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+            
+            /* Aside Menu Header */
+            .modern-aside-header {
+                padding: 20px !important;
+                background: rgba(255, 255, 255, 0.05) !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                position: sticky !important;
+                top: 0 !important;
+                z-index: 1 !important;
+            }
+            
+            .modern-aside-header h3 {
+                color: white !important;
+                font-size: 20px !important;
+                font-weight: 700 !important;
+                margin: 0 !important;
+            }
+            
+            .modern-aside-close {
+                width: 40px !important;
+                height: 40px !important;
+                border-radius: 10px !important;
+                background: rgba(255, 255, 255, 0.1) !important;
+                border: none !important;
+                color: white !important;
+                font-size: 20px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                cursor: pointer !important;
+                transition: all 0.2s ease !important;
+            }
+            
+            .modern-aside-close:hover {
+                background: rgba(255, 255, 255, 0.2) !important;
+                transform: scale(1.1) !important;
+            }
+            
+            /* Aside Menu Body */
+            .modern-aside-body {
+                padding: 16px !important;
+            }
+            
+            /* Aside Menu Items */
+            .modern-aside-item {
+                display: flex !important;
+                align-items: center !important;
+                padding: 14px 16px !important;
+                margin-bottom: 8px !important;
+                border-radius: 12px !important;
+                color: rgba(255, 255, 255, 0.9) !important;
+                text-decoration: none !important;
+                transition: all 0.2s ease !important;
+                position: relative !important;
+            }
+            
+            .modern-aside-item:hover {
+                background: rgba(255, 255, 255, 0.1) !important;
+                color: white !important;
+                transform: translateX(4px) !important;
+            }
+            
+            .modern-aside-item.active {
+                background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+                color: white !important;
+                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+            }
+            
+            .modern-aside-item i {
+                width: 24px !important;
+                font-size: 20px !important;
+                margin-right: 12px !important;
+            }
+            
+            .modern-aside-item span {
+                font-size: 15px !important;
+                font-weight: 500 !important;
+            }
+            
+            /* Aside Menu Divider */
+            .modern-aside-divider {
+                height: 1px !important;
+                background: rgba(255, 255, 255, 0.1) !important;
+                margin: 16px 0 !important;
+            }
+            
+            /* Aside Menu Section Title */
+            .modern-aside-section-title {
+                padding: 12px 16px 8px !important;
+                color: rgba(255, 255, 255, 0.6) !important;
+                font-size: 12px !important;
+                font-weight: 700 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 1px !important;
+            }
+            
+            /* Menu Toggle Button */
+            .modern-menu-toggle {
+                position: fixed !important;
+                top: 16px !important;
+                left: 16px !important;
+                width: 48px !important;
+                height: 48px !important;
+                border-radius: 12px !important;
+                background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+                color: white !important;
+                border: none !important;
+                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 20px !important;
+                cursor: pointer !important;
+                z-index: 9998 !important;
+                transition: all 0.3s ease !important;
+                will-change: transform !important;
+            }
+            
+            .modern-menu-toggle:hover {
+                transform: scale(1.1) !important;
+                box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5) !important;
+            }
+            
+            .modern-menu-toggle:active {
+                transform: scale(0.95) !important;
+            }
+            
             /* Modern Mobile Bottom Nav - Always Sticky at Bottom - Mobile (≤768px) */
             .modern-mobile-nav {
                 position: fixed !important;
@@ -321,9 +495,6 @@
                 transform: translateZ(0) !important;
                 margin: 0 !important;
                 box-sizing: border-box !important;
-                /* Ensure it stays at bottom even on scroll */
-                position: -webkit-sticky !important;
-                position: sticky !important;
             }
             
             /* Ensure body has padding at bottom for nav */
@@ -544,8 +715,25 @@
         }
         
         /* Tablet specific */
-        /* Tablet - Keep Mobile Nav Sticky (769px-1024px) */
-        @media (min-width: 769px) and (max-width: 1024px) {
+            /* Tablet - Slide-Out Menu */
+            @media (min-width: 769px) and (max-width: 1024px) {
+                .modern-aside-menu {
+                    width: 320px !important;
+                }
+                
+                .modern-aside-header {
+                    padding: 24px !important;
+                }
+                
+                .modern-aside-item {
+                    padding: 16px 20px !important;
+                    font-size: 16px !important;
+                }
+                
+                .modern-aside-item i {
+                    width: 28px !important;
+                    font-size: 22px !important;
+                }
             /* Modern Mobile Bottom Nav - Always Sticky at Bottom - Tablet */
             .modern-mobile-nav {
                 position: fixed !important;
@@ -662,7 +850,10 @@
         /* Desktop - Hide Mobile Navigation (≥1025px) */
         @media (min-width: 1025px) {
             .modern-mobile-nav,
-            .modern-mobile-fab {
+            .modern-mobile-fab,
+            .modern-menu-toggle,
+            .modern-aside-menu,
+            .modern-aside-overlay {
                 display: none !important;
             }
             
@@ -1264,6 +1455,101 @@
     @stack('styles')
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
+<!-- Modern Slide-Out Aside Menu - Mobile & Tablet -->
+<div class="modern-aside-overlay" id="asideOverlay"></div>
+<aside class="modern-aside-menu d-md-none d-lg-none" id="asideMenu">
+    <div class="modern-aside-header">
+        <h3><i class="fas fa-bars me-2"></i>Menu</h3>
+        <button class="modern-aside-close" id="asideCloseBtn" aria-label="Close menu">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <div class="modern-aside-body">
+        @php
+            try {
+                $moduleSettings = \App\Models\Setting::getModuleDisplaySettings();
+            } catch (\Exception $e) {
+                $moduleSettings = [
+                    'dashboard' => ['mobile' => true, 'tablet' => true],
+                    'booths' => ['mobile' => true, 'tablet' => true],
+                    'bookings' => ['mobile' => true, 'tablet' => true],
+                    'clients' => ['mobile' => true, 'tablet' => true],
+                    'settings' => ['mobile' => true, 'tablet' => true],
+                ];
+            }
+        @endphp
+        
+        @if(($moduleSettings['dashboard']['mobile'] ?? true) || ($moduleSettings['dashboard']['tablet'] ?? true))
+        <a href="{{ route('dashboard') }}" class="modern-aside-item" data-route="dashboard">
+            <i class="fas fa-home"></i>
+            <span>Dashboard</span>
+        </a>
+        @endif
+        
+        @if(($moduleSettings['booths']['mobile'] ?? true) || ($moduleSettings['booths']['tablet'] ?? true))
+        <a href="{{ route('booths.index', ['view' => 'table']) }}" class="modern-aside-item" data-route="booths">
+            <i class="fas fa-store"></i>
+            <span>Booths</span>
+        </a>
+        @endif
+        
+        @if(($moduleSettings['bookings']['mobile'] ?? true) || ($moduleSettings['bookings']['tablet'] ?? true))
+        <a href="{{ route('books.index') }}" class="modern-aside-item" data-route="books">
+            <i class="fas fa-calendar-check"></i>
+            <span>Bookings</span>
+        </a>
+        @endif
+        
+        @if(($moduleSettings['clients']['mobile'] ?? true) || ($moduleSettings['clients']['tablet'] ?? true))
+        <a href="{{ route('clients.index') }}" class="modern-aside-item" data-route="clients">
+            <i class="fas fa-users"></i>
+            <span>Clients</span>
+        </a>
+        @endif
+        
+        @if(($moduleSettings['reports']['mobile'] ?? true) || ($moduleSettings['reports']['tablet'] ?? true))
+        <a href="{{ route('reports.index') }}" class="modern-aside-item" data-route="reports">
+            <i class="fas fa-chart-bar"></i>
+            <span>Reports</span>
+        </a>
+        @endif
+        
+        @if(($moduleSettings['finance']['mobile'] ?? true) || ($moduleSettings['finance']['tablet'] ?? true))
+        <a href="{{ route('finance.dashboard') }}" class="modern-aside-item" data-route="finance">
+            <i class="fas fa-dollar-sign"></i>
+            <span>Finance</span>
+        </a>
+        @endif
+        
+        <div class="modern-aside-divider"></div>
+        
+        @if(($moduleSettings['settings']['mobile'] ?? true) || ($moduleSettings['settings']['tablet'] ?? true))
+        <a href="{{ route('settings.index') }}" class="modern-aside-item" data-route="settings">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+        </a>
+        @endif
+        
+        @auth
+        <div class="modern-aside-divider"></div>
+        <div class="modern-aside-section-title">
+            <i class="fas fa-user me-2"></i>Account
+        </div>
+        <a href="{{ route('dashboard') }}" class="modern-aside-item">
+            <i class="fas fa-user-circle"></i>
+            <span>{{ auth()->user()->username }}</span>
+        </a>
+        <form method="POST" action="{{ route('logout') }}" class="d-inline">
+            @csrf
+            <button type="submit" class="modern-aside-item w-100 text-start" style="border: none; background: none; cursor: pointer;">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </form>
+        @endauth
+    </div>
+</aside>
+
 <div class="wrapper">
 
     <!-- Navbar -->
@@ -2269,27 +2555,60 @@ $.widget.bridge('uibutton', $.ui.button);
 
 <!-- Modern Mobile Bottom Navigation - Global (Shows on Mobile & Tablet) -->
 <div class="d-md-none d-lg-none">
+    <!-- Menu Toggle Button for Aside Menu -->
+    <button class="modern-menu-toggle" id="asideMenuToggle" aria-label="Open menu">
+        <i class="fas fa-bars"></i>
+    </button>
+    
     <div class="modern-mobile-nav">
+        @php
+            try {
+                $moduleSettings = \App\Models\Setting::getModuleDisplaySettings();
+            } catch (\Exception $e) {
+                $moduleSettings = [
+                    'dashboard' => ['mobile' => true, 'tablet' => true],
+                    'booths' => ['mobile' => true, 'tablet' => true],
+                    'bookings' => ['mobile' => true, 'tablet' => true],
+                    'clients' => ['mobile' => true, 'tablet' => true],
+                    'settings' => ['mobile' => true, 'tablet' => true],
+                ];
+            }
+        @endphp
+        
+        @if(($moduleSettings['dashboard']['mobile'] ?? true) || ($moduleSettings['dashboard']['tablet'] ?? true))
         <a href="{{ route('dashboard') }}" class="modern-mobile-nav-item" data-route="dashboard">
             <i class="fas fa-home"></i>
             <span>Home</span>
         </a>
+        @endif
+        
+        @if(($moduleSettings['booths']['mobile'] ?? true) || ($moduleSettings['booths']['tablet'] ?? true))
         <a href="{{ route('booths.index', ['view' => 'table']) }}" class="modern-mobile-nav-item" data-route="booths">
             <i class="fas fa-store"></i>
             <span>Booths</span>
         </a>
+        @endif
+        
+        @if(($moduleSettings['bookings']['mobile'] ?? true) || ($moduleSettings['bookings']['tablet'] ?? true))
         <a href="{{ route('books.index') }}" class="modern-mobile-nav-item" data-route="books">
             <i class="fas fa-calendar-check"></i>
             <span>Bookings</span>
         </a>
+        @endif
+        
+        @if(($moduleSettings['clients']['mobile'] ?? true) || ($moduleSettings['clients']['tablet'] ?? true))
         <a href="{{ route('clients.index') }}" class="modern-mobile-nav-item" data-route="clients">
             <i class="fas fa-users"></i>
             <span>Clients</span>
         </a>
+        @endif
+        
+        @if(($moduleSettings['settings']['mobile'] ?? true) || ($moduleSettings['settings']['tablet'] ?? true))
         <a href="{{ route('settings.index') }}" class="modern-mobile-nav-item" data-route="settings">
             <i class="fas fa-cog"></i>
             <span>Settings</span>
         </a>
+        @endif
     </div>
     
     <!-- Modern Mobile FAB (Floating Action Button) -->
@@ -2330,11 +2649,51 @@ $.widget.bridge('uibutton', $.ui.button);
         });
     }
     
+    // Hide/show navigation items based on device type and module settings
+    function applyModuleDisplaySettings() {
+        const isMobile = window.innerWidth <= 768;
+        const isTablet = window.innerWidth > 768 && window.innerWidth <= 1024;
+        
+        if (!isMobile && !isTablet) {
+            return; // Desktop - nav is hidden anyway
+        }
+        
+        const device = isMobile ? 'mobile' : 'tablet';
+        const navItems = document.querySelectorAll('.modern-mobile-nav-item');
+        
+        navItems.forEach(function(item) {
+            const route = item.getAttribute('data-route');
+            if (route) {
+                // Fetch module settings and hide if disabled
+                fetch('{{ route("settings.module-display") }}')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 200 && data.data[route]) {
+                            const moduleSettings = data.data[route];
+                            if (!moduleSettings[device]) {
+                                item.style.display = 'none';
+                            } else {
+                                item.style.display = 'flex';
+                            }
+                        }
+                    })
+                    .catch(function() {
+                        // On error, show all items (default behavior)
+                        item.style.display = 'flex';
+                    });
+            }
+        });
+    }
+    
     // Set active on page load
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', setActiveNavItem);
+        document.addEventListener('DOMContentLoaded', function() {
+            setActiveNavItem();
+            applyModuleDisplaySettings();
+        });
     } else {
         setActiveNavItem();
+        applyModuleDisplaySettings();
     }
     
     // Update active state when navigating
@@ -2343,6 +2702,132 @@ $.widget.bridge('uibutton', $.ui.button);
             setTimeout(setActiveNavItem, 100);
         });
     });
+    
+    // Re-apply settings on resize
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+            applyModuleDisplaySettings();
+        }, 250);
+    });
+})();
+
+// Slide-Out Aside Menu Functionality
+(function() {
+    'use strict';
+    
+    const asideMenu = document.getElementById('asideMenu');
+    const asideOverlay = document.getElementById('asideOverlay');
+    const asideToggle = document.getElementById('asideMenuToggle');
+    const asideCloseBtn = document.getElementById('asideCloseBtn');
+    
+    function openAsideMenu() {
+        if (asideMenu && asideOverlay) {
+            asideMenu.classList.add('open');
+            asideOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+    
+    function closeAsideMenu() {
+        if (asideMenu && asideOverlay) {
+            asideMenu.classList.remove('open');
+            asideOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    }
+    
+    // Toggle menu
+    if (asideToggle) {
+        asideToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            openAsideMenu();
+        });
+    }
+    
+    // Close menu
+    if (asideCloseBtn) {
+        asideCloseBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeAsideMenu();
+        });
+    }
+    
+    // Close on overlay click
+    if (asideOverlay) {
+        asideOverlay.addEventListener('click', function() {
+            closeAsideMenu();
+        });
+    }
+    
+    // Close on menu item click (mobile)
+    const asideItems = document.querySelectorAll('.modern-aside-item');
+    asideItems.forEach(function(item) {
+        item.addEventListener('click', function() {
+            // Close menu after a short delay to allow navigation
+            setTimeout(function() {
+                if (window.innerWidth <= 1024) {
+                    closeAsideMenu();
+                }
+            }, 200);
+        });
+    });
+    
+    // Close on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && asideMenu && asideMenu.classList.contains('open')) {
+            closeAsideMenu();
+        }
+    });
+    
+    // Prevent body scroll when menu is open
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.attributeName === 'class') {
+                if (asideMenu && asideMenu.classList.contains('open')) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = '';
+                }
+            }
+        });
+    });
+    
+    if (asideMenu) {
+        observer.observe(asideMenu, { attributes: true });
+    }
+    
+    // Set active state for aside menu items
+    function setActiveAsideItem() {
+        const currentPath = window.location.pathname;
+        const asideItems = document.querySelectorAll('.modern-aside-item');
+        
+        asideItems.forEach(function(item) {
+            item.classList.remove('active');
+            const href = item.getAttribute('href');
+            const route = item.getAttribute('data-route');
+            
+            if (href && currentPath) {
+                if (currentPath === href || currentPath.startsWith(href + '/')) {
+                    item.classList.add('active');
+                } else if (route) {
+                    if (currentPath.includes('/' + route) || currentPath === '/' + route) {
+                        item.classList.add('active');
+                    }
+                }
+            }
+        });
+    }
+    
+    // Set active on page load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setActiveAsideItem);
+    } else {
+        setActiveAsideItem();
+    }
 })();
 </script>
 

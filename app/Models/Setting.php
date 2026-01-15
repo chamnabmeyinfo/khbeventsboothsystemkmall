@@ -249,4 +249,103 @@ class Setting extends Model
 
         return self::getCDNSettings();
     }
+
+    /**
+     * Get module display settings for mobile and tablet
+     */
+    public static function getModuleDisplaySettings()
+    {
+        try {
+            $defaultSettings = [
+                'dashboard' => ['mobile' => true, 'tablet' => true],
+                'booths' => ['mobile' => true, 'tablet' => true],
+                'bookings' => ['mobile' => true, 'tablet' => true],
+                'clients' => ['mobile' => true, 'tablet' => true],
+                'settings' => ['mobile' => true, 'tablet' => true],
+                'reports' => ['mobile' => false, 'tablet' => true],
+                'finance' => ['mobile' => false, 'tablet' => true],
+                'hr' => ['mobile' => false, 'tablet' => false],
+                'users' => ['mobile' => false, 'tablet' => false],
+                'categories' => ['mobile' => false, 'tablet' => false],
+            ];
+
+            $savedSettings = self::getValue('module_display_settings', json_encode($defaultSettings));
+            
+            if (is_string($savedSettings)) {
+                $decoded = json_decode($savedSettings, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    // Merge with defaults to ensure all modules are present
+                    return array_merge($defaultSettings, $decoded);
+                }
+            }
+
+            return $defaultSettings;
+        } catch (\Exception $e) {
+            // Return defaults on error
+            return [
+                'dashboard' => ['mobile' => true, 'tablet' => true],
+                'booths' => ['mobile' => true, 'tablet' => true],
+                'bookings' => ['mobile' => true, 'tablet' => true],
+                'clients' => ['mobile' => true, 'tablet' => true],
+                'settings' => ['mobile' => true, 'tablet' => true],
+                'reports' => ['mobile' => false, 'tablet' => true],
+                'finance' => ['mobile' => false, 'tablet' => true],
+                'hr' => ['mobile' => false, 'tablet' => false],
+                'users' => ['mobile' => false, 'tablet' => false],
+                'categories' => ['mobile' => false, 'tablet' => false],
+            ];
+        }
+    }
+
+    /**
+     * Save module display settings
+     */
+    public static function saveModuleDisplaySettings($settings)
+    {
+        try {
+            // Validate structure
+            $validated = [];
+            $allowedModules = ['dashboard', 'booths', 'bookings', 'clients', 'settings', 'reports', 'finance', 'hr', 'users', 'categories'];
+            
+            foreach ($allowedModules as $module) {
+                if (isset($settings[$module])) {
+                    $validated[$module] = [
+                        'mobile' => isset($settings[$module]['mobile']) ? (bool) $settings[$module]['mobile'] : true,
+                        'tablet' => isset($settings[$module]['tablet']) ? (bool) $settings[$module]['tablet'] : true,
+                    ];
+                } else {
+                    // Default to enabled if not provided
+                    $validated[$module] = ['mobile' => true, 'tablet' => true];
+                }
+            }
+
+            self::setValue(
+                'module_display_settings',
+                json_encode($validated),
+                'json',
+                'Module display settings for mobile and tablet devices'
+            );
+
+            return self::getModuleDisplaySettings();
+        } catch (\Exception $e) {
+            \Log::error('Error saving module display settings: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Check if a module should be displayed on a specific device
+     */
+    public static function isModuleVisible($module, $device = 'mobile')
+    {
+        try {
+            $settings = self::getModuleDisplaySettings();
+            if (isset($settings[$module])) {
+                return $settings[$module][$device] ?? true;
+            }
+            return true; // Default to visible if module not found
+        } catch (\Exception $e) {
+            return true; // Default to visible on error
+        }
+    }
 }
