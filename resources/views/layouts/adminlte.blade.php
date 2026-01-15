@@ -3,7 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @php
         $companySettings = \App\Models\Setting::getCompanySettings();
@@ -43,6 +46,389 @@
             --navbar-bg: {{ $appearanceSettings['navbar_bg'] ?? '#ffffff' }};
             --footer-bg: {{ $appearanceSettings['footer_bg'] ?? '#f8f9fc' }};
             --sidebar-width: 250px;
+        }
+        
+        /* Mobile Navigation & Responsive Styles */
+        @media (max-width: 768px) {
+            /* Body adjustments */
+            body {
+                font-size: 14px;
+            }
+            
+            /* Main header - Make sticky */
+            .main-header {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 1030;
+            }
+            
+            /* Content wrapper - Add top padding for fixed header */
+            .content-wrapper {
+                margin-top: 56px !important;
+                padding: 10px !important;
+            }
+            
+            /* Sidebar - Better mobile menu */
+            .main-sidebar {
+                position: fixed !important;
+                top: 56px;
+                left: -250px;
+                width: 250px !important;
+                height: calc(100vh - 56px);
+                transition: left 0.3s ease;
+                z-index: 1050 !important; /* Higher than navbar */
+                box-shadow: 3px 0 10px rgba(0,0,0,0.3);
+                background: var(--sidebar-bg) !important;
+            }
+            
+            body.sidebar-open .main-sidebar {
+                left: 0 !important;
+            }
+            
+            /* Ensure sidebar content is visible */
+            .main-sidebar .sidebar {
+                padding-bottom: 60px;
+                overflow-y: auto;
+                height: 100%;
+                background: var(--sidebar-bg) !important;
+            }
+            
+            /* Make sure all sidebar elements are visible */
+            .main-sidebar,
+            .main-sidebar .brand-link,
+            .main-sidebar .user-panel,
+            .main-sidebar .nav,
+            .main-sidebar .nav-link {
+                visibility: visible !important;
+                opacity: 1 !important;
+                display: block !important;
+            }
+            
+            /* Brand link on mobile */
+            .main-sidebar .brand-link {
+                padding: 12px 15px !important;
+                font-size: 1.1rem !important;
+            }
+            
+            /* User panel on mobile */
+            .main-sidebar .user-panel {
+                padding: 12px 15px !important;
+            }
+            
+            /* Navigation on mobile */
+            .main-sidebar .nav-sidebar {
+                display: block !important;
+            }
+            
+            .main-sidebar .nav-sidebar > .nav-item {
+                display: block !important;
+            }
+            
+            .main-sidebar .nav-sidebar > .nav-item > .nav-link {
+                display: flex !important;
+                align-items: center;
+            }
+            
+            /* Overlay when sidebar open */
+            .sidebar-overlay {
+                position: fixed;
+                top: 56px;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.6);
+                z-index: 1040 !important; /* Below sidebar but above content */
+                display: none;
+                backdrop-filter: blur(2px);
+            }
+            
+            body.sidebar-open .sidebar-overlay {
+                display: block !important;
+            }
+            
+            /* Main header z-index */
+            .main-header {
+                z-index: 1060 !important; /* Highest - always on top */
+            }
+            
+            /* Content wrapper margin */
+            .content-wrapper {
+                margin-left: 0 !important; /* No margin on mobile */
+            }
+            
+            /* Hamburger menu icon - Make it obvious */
+            .navbar-nav .nav-link[data-widget="pushmenu"] {
+                font-size: 1.5rem !important;
+                padding: 8px 15px !important;
+                color: #333 !important;
+            }
+            
+            .navbar-nav .nav-link[data-widget="pushmenu"]:active {
+                background: rgba(102, 126, 234, 0.1) !important;
+                border-radius: 8px;
+            }
+            
+            /* Add pulse animation to menu icon on first load */
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+            }
+            
+            .first-visit .navbar-nav .nav-link[data-widget="pushmenu"] i {
+                animation: pulse 1s ease-in-out 3;
+                color: #667eea !important;
+            }
+            
+            /* Navbar - Touch friendly */
+            .navbar-nav .nav-link {
+                min-height: 44px;
+                padding: 12px 15px !important;
+            }
+            
+            /* Sidebar menu - Touch friendly */
+            .nav-sidebar > .nav-item > .nav-link {
+                padding: 12px 15px !important;
+                font-size: 15px;
+            }
+            
+            .nav-sidebar .nav-icon {
+                font-size: 18px;
+                margin-right: 10px;
+            }
+            
+            /* Dropdowns - Full width */
+            .dropdown-menu {
+                position: fixed !important;
+                left: 10px !important;
+                right: 10px !important;
+                width: calc(100% - 20px) !important;
+                max-width: none !important;
+            }
+            
+            /* Cards */
+            .card {
+                margin-bottom: 15px;
+                border-radius: 8px;
+            }
+            
+            .card-header {
+                padding: 10px 15px;
+            }
+            
+            .card-body {
+                padding: 15px;
+            }
+            
+            .card-title {
+                font-size: 1.1rem;
+            }
+            
+            /* Buttons - Touch friendly */
+            .btn {
+                min-height: 44px;
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+            
+            .btn-sm {
+                min-height: 38px;
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+            
+            .btn-xs {
+                min-height: 32px;
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+            
+            /* Form controls */
+            .form-control, 
+            .form-select,
+            select {
+                font-size: 16px !important; /* Prevent zoom on iOS */
+                padding: 10px 12px;
+                min-height: 44px;
+            }
+            
+            .form-control-sm {
+                font-size: 14px !important;
+                min-height: 38px;
+            }
+            
+            .form-label {
+                font-size: 14px;
+                font-weight: 600;
+                margin-bottom: 6px;
+            }
+            
+            /* Tables - Horizontal scroll */
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin: -15px;
+                padding: 15px;
+            }
+            
+            .table {
+                min-width: 600px;
+                font-size: 13px;
+            }
+            
+            .table th,
+            .table td {
+                padding: 8px;
+                white-space: nowrap;
+            }
+            
+            /* Pagination */
+            .pagination {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .page-link {
+                padding: 8px 12px;
+                min-width: 40px;
+            }
+            
+            /* Breadcrumb */
+            .breadcrumb {
+                font-size: 13px;
+                padding: 8px 15px;
+                flex-wrap: wrap;
+            }
+            
+            /* Footer */
+            .main-footer {
+                padding: 10px 15px;
+                font-size: 12px;
+            }
+            
+            /* Modals - Full screen */
+            .modal {
+                padding: 0 !important;
+            }
+            
+            .modal-dialog {
+                margin: 0;
+                max-width: 100%;
+                height: 100vh;
+            }
+            
+            .modal-content {
+                height: 100vh;
+                border-radius: 0;
+                border: none;
+            }
+            
+            .modal-header {
+                padding: 12px 15px;
+            }
+            
+            .modal-body {
+                padding: 15px;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .modal-footer {
+                padding: 10px 15px;
+                flex-wrap: wrap;
+            }
+            
+            .modal-footer .btn {
+                margin: 5px;
+                flex: 1;
+                min-width: calc(50% - 10px);
+            }
+            
+            /* Hide desktop-only elements */
+            .d-none-mobile {
+                display: none !important;
+            }
+            
+            /* Show mobile-only elements */
+            .d-block-mobile {
+                display: block !important;
+            }
+            
+            /* Reduce white space */
+            .row {
+                margin-left: -10px;
+                margin-right: -10px;
+            }
+            
+            .row > [class*='col-'] {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+            
+            /* Content header */
+            .content-header {
+                padding: 10px 15px !important;
+            }
+            
+            .content-header h1 {
+                font-size: 1.5rem !important;
+            }
+        }
+        
+        /* Tablet specific */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .main-sidebar {
+                width: 200px;
+            }
+            
+            .content-wrapper {
+                margin-left: 200px;
+            }
+            
+            .nav-sidebar > .nav-item > .nav-link {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+        }
+        
+        /* Touch device improvements */
+        @media (hover: none) and (pointer: coarse) {
+            /* Remove all hover effects */
+            .btn:hover,
+            .nav-link:hover,
+            .nav-item:hover {
+                transform: none;
+                background-color: inherit;
+            }
+            
+            /* Active states instead */
+            .btn:active,
+            .nav-link:active {
+                opacity: 0.7;
+                transform: scale(0.98);
+            }
+            
+            /* Scrollbars */
+            * {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+        
+        /* Landscape phone */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .main-header {
+                height: 50px;
+            }
+            
+            .main-sidebar {
+                top: 50px;
+                height: calc(100vh - 50px);
+            }
+            
+            .content-wrapper {
+                margin-top: 50px !important;
+            }
         }
         
         /* Loading Overlay */
@@ -584,6 +970,10 @@
             }
         }
     </style>
+    
+    <!-- Mobile Design System -->
+    <link rel="stylesheet" href="{{ asset('css/mobile-design-system.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/global-mobile-enhancements.css') }}">
     
     @stack('styles')
 </head>
@@ -1414,6 +1804,119 @@ $(document).ready(function() {
 
 // Resolve conflict in jQuery UI tooltip with Bootstrap tooltip
 $.widget.bridge('uibutton', $.ui.button);
+
+// Mobile Navigation Enhancement
+(function() {
+    'use strict';
+    
+    function initMobileMenu() {
+        console.log('Initializing mobile menu...');
+        
+        // Create overlay element if it doesn't exist
+        if (!document.querySelector('.sidebar-overlay')) {
+            const overlay = document.createElement('div');
+            overlay.className = 'sidebar-overlay';
+            document.body.appendChild(overlay);
+            
+            // Close sidebar when overlay clicked
+            overlay.addEventListener('click', function() {
+                console.log('Overlay clicked - closing sidebar');
+                document.body.classList.remove('sidebar-open');
+            });
+            
+            console.log('Overlay created');
+        }
+        
+        // Handle menu toggle button
+        const menuToggle = document.querySelector('[data-widget="pushmenu"]');
+        if (menuToggle) {
+            console.log('Menu toggle found');
+            
+            // Remove any existing listeners
+            menuToggle.removeEventListener('click', handleMenuClick);
+            
+            // Add new listener
+            menuToggle.addEventListener('click', handleMenuClick);
+        } else {
+            console.warn('Menu toggle button not found!');
+        }
+        
+        // Close sidebar when navigation link clicked on mobile
+        const navLinks = document.querySelectorAll('.main-sidebar .nav-link');
+        console.log('Found ' + navLinks.length + ' nav links');
+        
+        navLinks.forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    setTimeout(function() {
+                        document.body.classList.remove('sidebar-open');
+                    }, 200);
+                }
+            });
+        });
+        
+        // Close sidebar on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.body.classList.contains('sidebar-open')) {
+                document.body.classList.remove('sidebar-open');
+            }
+        });
+    }
+    
+    // Menu click handler
+    function handleMenuClick(e) {
+        console.log('Menu button clicked, window width:', window.innerWidth);
+        
+        if (window.innerWidth <= 768) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const isOpen = document.body.classList.contains('sidebar-open');
+            console.log('Sidebar is currently:', isOpen ? 'open' : 'closed');
+            
+            document.body.classList.toggle('sidebar-open');
+            
+            console.log('Sidebar toggled to:', document.body.classList.contains('sidebar-open') ? 'open' : 'closed');
+        }
+    }
+    
+    function setVh() {
+        let vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', vh + 'px');
+    }
+    
+    // Initialize on DOM ready
+    $(document).ready(function() {
+        console.log('DOM Ready - Starting mobile menu initialization');
+        initMobileMenu();
+        setVh();
+        
+        if (window.innerWidth <= 768) {
+            document.body.classList.add('mobile-device');
+            console.log('Mobile device class added');
+        }
+        
+        if ('ontouchstart' in window) {
+            document.body.classList.add('touch-device');
+            console.log('Touch device class added');
+        }
+        
+        // Force sidebar to be visible initially on desktop
+        if (window.innerWidth > 768) {
+            document.body.classList.remove('sidebar-open');
+        }
+    });
+    
+    // Handle window resize
+    $(window).on('resize', function() {
+        setVh();
+        
+        // Close sidebar on resize to desktop
+        if (window.innerWidth > 768) {
+            document.body.classList.remove('sidebar-open');
+        }
+    });
+})();
 </script>
 
 </body>

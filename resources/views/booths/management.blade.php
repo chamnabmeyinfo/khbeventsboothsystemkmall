@@ -52,6 +52,299 @@
         background: linear-gradient(135deg, #e74a3b 0%, #c23321 100%);
     }
     
+    /* Quick Filters */
+    .quick-filter-btn {
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        white-space: nowrap;
+    }
+    
+    .quick-filter-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .quick-filter-btn.active {
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+        /* Quick Filters - Stack on mobile */
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .quick-filter-btn {
+            width: 100%;
+            margin-bottom: 8px;
+            font-size: 14px;
+            padding: 10px 15px;
+        }
+        
+        /* Stat Cards - Full width on mobile */
+        .stat-card {
+            margin-bottom: 15px;
+            padding: 15px;
+        }
+        
+        .stat-card h3 {
+            font-size: 1.5rem;
+        }
+        
+        .stat-card p {
+            font-size: 0.85rem;
+        }
+        
+        /* Filter Bar - Stack inputs */
+        .filter-bar .row {
+            flex-direction: column;
+        }
+        
+        .filter-bar .col-md-3,
+        .filter-bar .col-md-2 {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        /* Table - Make responsive */
+        .table-modern {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .table-modern table {
+            min-width: 800px;
+        }
+        
+        /* Action Buttons - Stack on mobile */
+        .action-buttons {
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .action-buttons .btn {
+            width: 100%;
+            margin: 2px 0;
+        }
+        
+        /* Modal - Full screen on mobile */
+        .modal-dialog {
+            margin: 0;
+            max-width: 100%;
+            height: 100vh;
+        }
+        
+        .modal-content {
+            height: 100vh;
+            border-radius: 0;
+        }
+        
+        /* Reduce padding on mobile */
+        .container-fluid {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+        
+        /* Stats section */
+        .row.mb-4 {
+            margin-bottom: 1rem !important;
+        }
+        
+        /* Page header */
+        .d-flex.justify-content-between {
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+        
+        .d-flex.justify-content-between h2 {
+            margin-bottom: 10px;
+        }
+        
+        .d-flex.justify-content-between .btn {
+            width: 100%;
+        }
+    }
+    
+    /* Tablet Specific */
+    @media (min-width: 769px) and (max-width: 1024px) {
+        .quick-filter-btn {
+            font-size: 12px;
+            padding: 8px 12px;
+        }
+        
+        .stat-card {
+            padding: 15px;
+        }
+        
+        .table-modern thead th {
+            font-size: 0.75rem;
+            padding: 12px;
+        }
+        
+        .table-modern tbody td {
+            font-size: 0.85rem;
+            padding: 10px;
+        }
+    }
+    
+    /* Touch-friendly improvements */
+    @media (hover: none) and (pointer: coarse) {
+        /* Increase touch targets */
+        .btn, .quick-filter-btn, .action-buttons .btn {
+            min-height: 44px;
+            min-width: 44px;
+        }
+        
+        /* Remove hover effects on touch devices */
+        .quick-filter-btn:hover,
+        .stat-card:hover {
+            transform: none;
+        }
+        
+        /* Make checkboxes larger */
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+    }
+    
+    /* Mobile Card View (Alternative to table) */
+    @media (max-width: 768px) {
+        .mobile-booth-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+        }
+        
+        .mobile-booth-card.available {
+            border-left-color: #28a745;
+        }
+        
+        .mobile-booth-card.paid {
+            border-left-color: #17a673;
+        }
+        
+        .mobile-booth-card.reserved {
+            border-left-color: #f6c23e;
+        }
+        
+        .mobile-booth-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .mobile-booth-number {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .mobile-booth-info {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .mobile-info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+        }
+        
+        .mobile-info-label {
+            color: #6c757d;
+            font-weight: 600;
+        }
+        
+        .mobile-info-value {
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .mobile-booth-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .mobile-booth-actions .btn {
+            flex: 1;
+            min-width: calc(50% - 4px);
+            font-size: 0.85rem;
+            padding: 8px 12px;
+        }
+        
+        /* Hide desktop table on mobile */
+        .table-responsive.d-none-mobile {
+            display: none;
+        }
+        
+        /* Show mobile cards on mobile */
+        .mobile-view {
+            display: block;
+        }
+    }
+    
+    /* Show table on desktop */
+    @media (min-width: 769px) {
+        .mobile-view {
+            display: none;
+        }
+        
+        .table-responsive.d-none-mobile {
+            display: block;
+        }
+    }
+    
+    /* Improve form inputs on mobile */
+    @media (max-width: 768px) {
+        .form-control, .form-select, select.form-control {
+            font-size: 16px; /* Prevents iOS zoom */
+            padding: 12px;
+            height: auto;
+        }
+        
+        .form-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        
+        /* Better spacing */
+        .card-body {
+            padding: 15px;
+        }
+        
+        .card-header {
+            padding: 12px 15px;
+        }
+        
+        /* Improve pagination */
+        .pagination {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .pagination .page-link {
+            padding: 8px 12px;
+            min-width: 40px;
+        }
+    }
+    
     .filter-bar {
         background: white;
         padding: 20px;
@@ -508,6 +801,33 @@
                 <i class="fas fa-map mr-2"></i>Canvas View
             </a>
         </div>
+    </div>
+
+    <!-- Quick Filters -->
+    <div class="mb-3">
+        <div class="btn-group" role="group" aria-label="Quick Filters">
+            <button type="button" class="btn btn-outline-primary quick-filter-btn" onclick="applyQuickFilter('all')">
+                <i class="fas fa-list"></i> All Booths
+            </button>
+            <button type="button" class="btn btn-outline-success quick-filter-btn" onclick="applyQuickFilter('available')">
+                <i class="fas fa-check-circle"></i> Available Only
+            </button>
+            <button type="button" class="btn btn-outline-info quick-filter-btn" onclick="applyQuickFilter('booked')">
+                <i class="fas fa-bookmark"></i> Booked Only
+            </button>
+            <button type="button" class="btn btn-outline-warning quick-filter-btn" onclick="applyQuickFilter('paid')">
+                <i class="fas fa-dollar-sign"></i> Paid Only
+            </button>
+            <button type="button" class="btn btn-outline-secondary quick-filter-btn" onclick="applyQuickFilter('today')">
+                <i class="fas fa-calendar-day"></i> Booked Today
+            </button>
+            <button type="button" class="btn btn-outline-danger quick-filter-btn" onclick="applyQuickFilter('overdue')">
+                <i class="fas fa-exclamation-triangle"></i> Overdue Payments
+            </button>
+        </div>
+        <button type="button" class="btn btn-link float-right" onclick="clearAllFilters()">
+            <i class="fas fa-times-circle"></i> Clear Filters
+        </button>
     </div>
 
     <!-- Filter Bar -->
@@ -1756,6 +2076,118 @@ $('#btnSaveStatusSettings').on('click', function() {
 $(document).ready(function() {
     if ($('#statusSettingsModal').hasClass('show')) {
         loadStatusSettings();
+    }
+});
+
+// Quick Filter Functions
+function applyQuickFilter(filterType) {
+    const form = document.getElementById('filterForm');
+    const searchInput = form.querySelector('input[name="search"]');
+    const statusSelect = form.querySelector('select[name="status"]');
+    const categorySelect = form.querySelector('select[name="category_id"]');
+    
+    // Clear existing filters first
+    searchInput.value = '';
+    statusSelect.value = '';
+    categorySelect.value = '';
+    
+    // Highlight active button
+    document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.closest('.quick-filter-btn').classList.add('active');
+    
+    // Apply filter based on type
+    switch(filterType) {
+        case 'all':
+            // No filters, just submit
+            break;
+            
+        case 'available':
+            statusSelect.value = '1'; // Available status
+            break;
+            
+        case 'booked':
+            // Filter for confirmed, reserved, or paid (not available)
+            statusSelect.value = '2'; // Confirmed
+            break;
+            
+        case 'paid':
+            statusSelect.value = '5'; // Paid status
+            break;
+            
+        case 'today':
+            // Add hidden input for today's bookings
+            let todayInput = form.querySelector('input[name="booked_today"]');
+            if (!todayInput) {
+                todayInput = document.createElement('input');
+                todayInput.type = 'hidden';
+                todayInput.name = 'booked_today';
+                form.appendChild(todayInput);
+            }
+            todayInput.value = '1';
+            break;
+            
+        case 'overdue':
+            // Add hidden input for overdue payments
+            let overdueInput = form.querySelector('input[name="payment_overdue"]');
+            if (!overdueInput) {
+                overdueInput = document.createElement('input');
+                overdueInput.type = 'hidden';
+                overdueInput.name = 'payment_overdue';
+                form.appendChild(overdueInput);
+            }
+            overdueInput.value = '1';
+            break;
+    }
+    
+    // Submit the form
+    form.submit();
+}
+
+function clearAllFilters() {
+    const form = document.getElementById('filterForm');
+    
+    // Clear all inputs
+    form.querySelectorAll('input[type="text"]').forEach(input => input.value = '');
+    form.querySelectorAll('select').forEach(select => select.value = '');
+    
+    // Remove hidden inputs
+    form.querySelectorAll('input[type="hidden"]').forEach(input => {
+        if (input.name === 'booked_today' || input.name === 'payment_overdue') {
+            input.remove();
+        }
+    });
+    
+    // Remove active class from all buttons
+    document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Submit to show all
+    form.submit();
+}
+
+// Mark active filter on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const status = urlParams.get('status');
+    const bookedToday = urlParams.get('booked_today');
+    const paymentOverdue = urlParams.get('payment_overdue');
+    
+    // Highlight appropriate button based on current filters
+    if (bookedToday) {
+        document.querySelector('.quick-filter-btn[onclick*="today"]')?.classList.add('active');
+    } else if (paymentOverdue) {
+        document.querySelector('.quick-filter-btn[onclick*="overdue"]')?.classList.add('active');
+    } else if (status === '1') {
+        document.querySelector('.quick-filter-btn[onclick*="available"]')?.classList.add('active');
+    } else if (status === '5') {
+        document.querySelector('.quick-filter-btn[onclick*="paid"]')?.classList.add('active');
+    } else if (status === '2' || status === '3') {
+        document.querySelector('.quick-filter-btn[onclick*="booked"]')?.classList.add('active');
+    } else if (!status && !bookedToday && !paymentOverdue) {
+        document.querySelector('.quick-filter-btn[onclick*="all"]')?.classList.add('active');
     }
 });
 </script>

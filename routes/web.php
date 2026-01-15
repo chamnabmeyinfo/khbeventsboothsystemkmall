@@ -110,6 +110,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/booths/delete-in-zone/{zoneName}', [BoothController::class, 'deleteBoothsInZone'])->name('booths.delete-in-zone');
     Route::post('/booths/book-booth', [BoothController::class, 'bookBooth'])->name('booths.book-booth');
     Route::post('/booths/{id}/upload-image', [BoothController::class, 'uploadBoothImage'])->name('booths.upload-image');
+    
+    // Booth Gallery Images (Multiple Images)
+    Route::post('/booths/{id}/upload-gallery', [BoothController::class, 'uploadBoothGalleryImages'])->name('booths.upload-gallery');
+    Route::get('/booths/{id}/images', [BoothController::class, 'getBoothImages'])->name('booths.get-images');
+    Route::delete('/booths/{boothId}/images/{imageId}', [BoothController::class, 'deleteBoothImage'])->name('booths.delete-image');
+    Route::post('/booths/{boothId}/images/{imageId}/set-primary', [BoothController::class, 'setPrimaryImage'])->name('booths.set-primary-image');
+    Route::post('/booths/{boothId}/images/reorder', [BoothController::class, 'updateImageOrder'])->name('booths.reorder-images');
 
     // Clients
     // IMPORTANT: Define specific routes BEFORE resource routes to avoid route conflicts
@@ -143,6 +150,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/categories/create-sub-category', [CategoryController::class, 'createSubCategory'])->name('categories.create-sub-category');
     Route::post('/categories/update-sub-category', [CategoryController::class, 'updateSubCategory'])->name('categories.update-sub-category');
 
+    // Finance Dashboard
+    Route::get('/finance/dashboard', [\App\Http\Controllers\FinanceController::class, 'dashboard'])->name('finance.dashboard');
+    
     // Reports & Analytics
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/', [\App\Http\Controllers\ReportController::class, 'index'])->name('index');

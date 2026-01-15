@@ -62,3 +62,7 @@ ROOT-DEPLOYMENT.md
 
 #Any SQL Files
 *.sql
+
+
+# MD Files.
+*.md 

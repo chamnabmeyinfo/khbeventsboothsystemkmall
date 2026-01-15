@@ -64,6 +64,15 @@ class Booth extends Model
         'area_sqm',
         'electricity_power',
         'notes',
+        // Payment tracking fields
+        'deposit_amount',
+        'deposit_paid',
+        'balance_due',
+        'balance_paid',
+        'payment_due_date',
+        'deposit_paid_date',
+        'balance_paid_date',
+        'payment_status',
     ];
 
     // Status constants
@@ -135,6 +144,30 @@ class Booth extends Model
     public function floorPlan()
     {
         return $this->belongsTo(FloorPlan::class, 'floor_plan_id');
+    }
+
+    /**
+     * Get all images for this booth
+     */
+    public function images()
+    {
+        return $this->hasMany(BoothImage::class)->orderBy('sort_order');
+    }
+
+    /**
+     * Get the primary image for this booth
+     */
+    public function primaryImage()
+    {
+        return $this->hasOne(BoothImage::class)->where('is_primary', true);
+    }
+
+    /**
+     * Get booking timeline for this booth
+     */
+    public function timeline()
+    {
+        return $this->hasMany(BookingTimeline::class)->orderBy('created_at', 'desc');
     }
 
     /**

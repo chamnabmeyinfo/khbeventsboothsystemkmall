@@ -4,6 +4,256 @@
 
 @push('styles')
 <style>
+/* Mobile Responsive Styles - CRITICAL */
+@media (max-width: 768px) {
+    /* Viewport meta tag optimization - add to head */
+    html {
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+    }
+    
+    body {
+        overflow-x: hidden;
+    }
+    
+    /* Floor plan designer - Adjust for mobile */
+    .floorplan-designer {
+        height: calc(100vh - 60px) !important;
+        min-height: 400px !important;
+        border-radius: 0 !important;
+        margin: 0 -15px;
+    }
+    
+    /* Toolbar - Stack and make touch-friendly */
+    .designer-toolbar {
+        flex-direction: column;
+        padding: 8px !important;
+        gap: 8px;
+        min-height: auto !important;
+    }
+    
+    .designer-toolbar .tool-group {
+        width: 100%;
+        justify-content: space-around;
+        flex-wrap: wrap;
+    }
+    
+    .designer-toolbar .btn, 
+    .designer-toolbar button {
+        min-height: 44px;
+        min-width: 44px;
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+    
+    /* Info toolbar - Single row, scroll if needed */
+    .info-toolbar {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+        padding: 8px !important;
+    }
+    
+    .info-toolbar > * {
+        display: inline-block;
+        margin-right: 10px;
+    }
+    
+    /* Canvas container - Full width */
+    .floorplan-canvas-container {
+        width: 100% !important;
+        height: calc(100vh - 200px) !important;
+    }
+    
+    /* Canvas - Touch optimized */
+    .floorplan-canvas {
+        touch-action: pan-x pan-y pinch-zoom;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    
+    /* Sidebar - Bottom drawer on mobile */
+    .sidebar {
+        position: fixed !important;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100% !important;
+        height: 40vh !important;
+        max-height: 400px !important;
+        transform: translateY(calc(100% - 50px));
+        transition: transform 0.3s ease;
+        z-index: 1001;
+        border-radius: 20px 20px 0 0;
+    }
+    
+    .sidebar.open {
+        transform: translateY(0);
+    }
+    
+    .sidebar-handle {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 5px;
+        background: rgba(255,255,255,0.3);
+        border-radius: 3px;
+        margin: 8px 0;
+        cursor: pointer;
+    }
+    
+    /* Panels - Full screen modals on mobile */
+    .panel, 
+    .properties-panel,
+    .settings-panel {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        max-width: 100vw !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+        z-index: 9999;
+    }
+    
+    /* Modal dialogs - Full screen */
+    .modal-dialog {
+        margin: 0;
+        max-width: 100%;
+        height: 100vh;
+    }
+    
+    .modal-content {
+        height: 100vh;
+        border-radius: 0;
+    }
+    
+    .modal-body {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Form controls - Larger for touch */
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+        font-size: 16px !important; /* Prevent iOS zoom */
+        padding: 12px !important;
+        min-height: 44px;
+    }
+    
+    /* Buttons - Touch friendly */
+    .btn {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 10px 16px;
+    }
+    
+    /* Floor plan selector - Better for touch */
+    #floorPlanSelector {
+        font-size: 16px;
+        padding: 10px;
+        width: 100%;
+    }
+    
+    /* Zoom controls - Larger */
+    .zoom-controls {
+        position: fixed !important;
+        bottom: 60px;
+        right: 10px;
+        z-index: 1000;
+    }
+    
+    .zoom-controls button {
+        min-height: 50px;
+        min-width: 50px;
+        font-size: 20px;
+        margin: 5px 0;
+    }
+    
+    /* Mini-map - Hide on small screens or move */
+    .minimap {
+        display: none;
+    }
+    
+    /* Context menu - Touch optimized */
+    .context-menu {
+        min-width: 200px;
+    }
+    
+    .context-menu button,
+    .context-menu .menu-item {
+        min-height: 44px;
+        padding: 12px 16px;
+        font-size: 16px;
+    }
+    
+    /* Color picker - Larger swatches */
+    .color-swatch {
+        width: 44px !important;
+        height: 44px !important;
+    }
+    
+    /* Loading screen */
+    .loading-screen {
+        font-size: 18px;
+    }
+}
+
+/* Tablet landscape */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .floorplan-designer {
+        height: calc(100vh - 80px);
+    }
+    
+    .sidebar {
+        width: 280px !important;
+    }
+    
+    .designer-toolbar {
+        padding: 8px 15px;
+    }
+    
+    .designer-toolbar .btn {
+        font-size: 13px;
+        padding: 6px 10px;
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    /* Disable hover states */
+    .btn:hover,
+    .tool-group button:hover {
+        transform: none !important;
+        box-shadow: none !important;
+    }
+    
+    /* Active states instead */
+    .btn:active,
+    .tool-group button:active {
+        transform: scale(0.95);
+        opacity: 0.8;
+    }
+    
+    /* Larger touch targets */
+    .draggable,
+    .selectable {
+        min-width: 44px;
+        min-height: 44px;
+    }
+    
+    /* Remove small tooltips on touch */
+    .tooltip {
+        display: none !important;
+    }
+}
+
 /* Advanced Floor Plan Designer Styles - Modern Minimal */
 .floorplan-designer {
     display: flex;

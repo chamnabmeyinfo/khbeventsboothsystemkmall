@@ -2707,5 +2707,230 @@ class BoothController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Upload multiple images for a booth (gallery)
+     */
+    public function uploadBoothGalleryImages(Request $request, $id)
+    {
+        try {
+            $booth = Booth::findOrFail($id);
+
+            $request->validate([
+                'images' => 'required|array|min:1|max:10',
+                'images.*' => 'image|mimes:jpeg,jpg,png,gif,webp|max:5120', // 5MB max per image
+                'image_type' => 'nullable|in:photo,layout,setup,teardown,facility',
+                'captions' => 'nullable|array',
+                'captions.*' => 'nullable|string|max:500',
+            ]);
+
+            $uploadedImages = [];
+            $imageType = $request->input('image_type', 'photo');
+            $captions = $request->input('captions', []);
+
+            if ($request->hasFile('images')) {
+                // Get current max sort order
+                $maxSort = \App\Models\BoothImage::where('booth_id', $booth->id)->max('sort_order') ?? 0;
+
+                foreach ($request->file('images') as $index => $image) {
+                    $imageName = 'booth_' . $booth->id . '_gallery_' . time() . '_' . $index . '.' . $image->getClientOriginalExtension();
+                    $imagePath = 'images/booths/gallery';
+
+                    // Create directory if it doesn't exist
+                    $fullPath = public_path($imagePath);
+                    if (!file_exists($fullPath)) {
+                        \Illuminate\Support\Facades\File::makeDirectory($fullPath, 0755, true);
+                    }
+
+                    // Move uploaded file
+                    $image->move($fullPath, $imageName);
+
+                    // Check if this is the first image for the booth
+                    $isFirst = \App\Models\BoothImage::where('booth_id', $booth->id)->count() === 0;
+
+                    // Create database record
+                    $boothImage = \App\Models\BoothImage::create([
+                        'booth_id' => $booth->id,
+                        'floor_plan_id' => $booth->floor_plan_id,
+                        'image_path' => $imagePath . '/' . $imageName,
+                        'image_type' => $imageType,
+                        'caption' => $captions[$index] ?? null,
+                        'sort_order' => $maxSort + $index + 1,
+                        'is_primary' => $isFirst, // First image is primary
+                    ]);
+
+                    $uploadedImages[] = [
+                        'id' => $boothImage->id,
+                        'image_path' => $boothImage->image_path,
+                        'image_url' => asset($boothImage->image_path),
+                        'type' => $boothImage->image_type,
+                        'caption' => $boothImage->caption,
+                        'is_primary' => $boothImage->is_primary,
+                    ];
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'message' => count($uploadedImages) . ' image(s) uploaded successfully.',
+                    'images' => $uploadedImages,
+                    'booth_id' => $booth->id,
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No images provided.'
+            ], 400);
+
+        } catch (\Exception $e) {
+            \Log::error('Error uploading booth gallery images: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error uploading images: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all images for a booth
+     */
+    public function getBoothImages($id)
+    {
+        try {
+            $booth = Booth::findOrFail($id);
+            $images = \App\Models\BoothImage::where('booth_id', $id)
+                ->orderBy('sort_order')
+                ->get()
+                ->map(function($image) {
+                    return [
+                        'id' => $image->id,
+                        'image_path' => $image->image_path,
+                        'image_url' => asset($image->image_path),
+                        'type' => $image->image_type,
+                        'type_label' => $image->getTypeLabel(),
+                        'caption' => $image->caption,
+                        'sort_order' => $image->sort_order,
+                        'is_primary' => $image->is_primary,
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'images' => $images,
+                'count' => $images->count(),
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching images: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete a booth image
+     */
+    public function deleteBoothImage($boothId, $imageId)
+    {
+        try {
+            $image = \App\Models\BoothImage::where('booth_id', $boothId)
+                ->where('id', $imageId)
+                ->firstOrFail();
+
+            // Delete physical file
+            if (file_exists(public_path($image->image_path))) {
+                \Illuminate\Support\Facades\File::delete(public_path($image->image_path));
+            }
+
+            // If this was primary, make another image primary
+            $wasPrimary = $image->is_primary;
+            $image->delete();
+
+            if ($wasPrimary) {
+                $nextImage = \App\Models\BoothImage::where('booth_id', $boothId)
+                    ->orderBy('sort_order')
+                    ->first();
+                if ($nextImage) {
+                    $nextImage->is_primary = true;
+                    $nextImage->save();
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Image deleted successfully.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error deleting image: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Set primary image for a booth
+     */
+    public function setPrimaryImage($boothId, $imageId)
+    {
+        try {
+            // Remove primary from all images
+            \App\Models\BoothImage::where('booth_id', $boothId)
+                ->update(['is_primary' => false]);
+
+            // Set new primary
+            $image = \App\Models\BoothImage::where('booth_id', $boothId)
+                ->where('id', $imageId)
+                ->firstOrFail();
+            
+            $image->is_primary = true;
+            $image->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Primary image updated successfully.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error setting primary image: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update image sort order
+     */
+    public function updateImageOrder(Request $request, $boothId)
+    {
+        try {
+            $request->validate([
+                'image_ids' => 'required|array',
+                'image_ids.*' => 'exists:booth_images,id',
+            ]);
+
+            $imageIds = $request->input('image_ids');
+            
+            foreach ($imageIds as $index => $imageId) {
+                \App\Models\BoothImage::where('id', $imageId)
+                    ->where('booth_id', $boothId)
+                    ->update(['sort_order' => $index + 1]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Image order updated successfully.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating order: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
 
