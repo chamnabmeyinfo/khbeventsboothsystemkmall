@@ -5,7 +5,7 @@
 @section('breadcrumb', 'Finance / Dashboard')
 
 @push('styles')
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">
+<link rel="stylesheet" href="{{ asset('vendor/chartjs/chart.min.css') }}">
 <style>
 /* Mobile Responsive Styles */
 @media (max-width: 768px) {
@@ -439,7 +439,7 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{{ asset('vendor/chartjs/chart.umd.min.js') }}"></script>
 <script>
 // Revenue by Zone Chart
 const zoneData = {

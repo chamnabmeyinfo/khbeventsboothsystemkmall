@@ -17,21 +17,38 @@
         <link rel="icon" type="image/x-icon" href="{{ asset($companySettings['company_favicon']) }}">
     @endif
     
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Ionicons -->
-    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-    <!-- AdminLTE -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-    <!-- DataTables -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap4.min.css">
-    <!-- SweetAlert2 -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <!-- Toastr for notifications -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-    <!-- Select2 for better dropdowns -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap4-theme@1.0.0/dist/select2-bootstrap4.min.css" rel="stylesheet" />
+    {{-- Performance Optimizations: Resource Hints --}}
+    <link rel="preconnect" href="{{ url('/') }}">
+    <link rel="dns-prefetch" href="{{ url('/') }}">
+    
+    {{-- Critical CSS: Preload essential stylesheets --}}
+    <link rel="preload" href="{{ asset('vendor/adminlte/css/adminlte.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="{{ asset('vendor/fontawesome/css/all.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="{{ asset('vendor/adminlte/css/adminlte.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
+    </noscript>
+    
+    {{-- Non-Critical CSS: Load asynchronously --}}
+    <link rel="preload" href="{{ asset('vendor/ionicons/css/ionicons.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="{{ asset('vendor/datatables/css/dataTables.bootstrap4.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="{{ asset('vendor/sweetalert2/css/sweetalert2.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="{{ asset('vendor/toastr/css/toastr.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="{{ asset('vendor/select2/css/select2.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="{{ asset('vendor/select2/css/select2-bootstrap4.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="{{ asset('vendor/ionicons/css/ionicons.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('vendor/datatables/css/dataTables.bootstrap4.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('vendor/sweetalert2/css/sweetalert2.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('vendor/toastr/css/toastr.min.css') }}">
+        <link href="{{ asset('vendor/select2/css/select2.min.css') }}" rel="stylesheet" />
+        <link href="{{ asset('vendor/select2/css/select2-bootstrap4.min.css') }}" rel="stylesheet" />
+    </noscript>
+    
+    {{-- Async CSS Loader Script --}}
+    <script>
+        !function(e){"use strict";var t=function(t,n,o){var i,r=e.document,a=r.createElement("link");if(n)i=n;else{var l=(r.body||r.getElementsByTagName("head")[0]).childNodes;i=l[l.length-1]}var d=r.styleSheets;a.rel="stylesheet",a.href=t,a.media="only x",function e(t){if(r.body)return t();setTimeout(function(){e(t)})}(function(){i.parentNode.insertBefore(a,n?i:i.nextSibling)});var f=function(e){for(var t=a.href,n=d.length;n--;)if(d[n].href===t)return e();setTimeout(function(){f(e)})};return a.addEventListener&&a.addEventListener("load",function(){this.media=o||"all"}),a.onloadcssdefined=f,f(function(){a.media!==o&&(a.media=o||"all")}),a};"undefined"!=typeof exports?exports.loadCSS=t:e.loadCSS=t}("undefined"!=typeof global?global:this);
+    </script>
     
     <style>
         /* Modern UX/UI Enhancements */
@@ -53,34 +70,35 @@
             /* Body adjustments */
             body {
                 font-size: 14px;
+                background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
+                padding-bottom: 80px !important;
             }
             
-            /* Main header - Make sticky */
+            /* Hide main header completely on mobile for app-style design */
             .main-header {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                z-index: 1030;
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                padding: 0 !important;
+                margin: 0 !important;
             }
             
-            /* Content wrapper - Add top padding for fixed header */
+            /* Content wrapper - No margin/padding for full mobile app */
             .content-wrapper {
-                margin-top: 56px !important;
-                padding: 10px !important;
+                margin: 0 !important;
+                margin-top: 0 !important;
+                padding: 0 !important;
+                background: transparent !important;
             }
             
-            /* Sidebar - Better mobile menu */
+            /* Hide sidebar completely on mobile */
             .main-sidebar {
-                position: fixed !important;
-                top: 56px;
-                left: -250px;
-                width: 250px !important;
-                height: calc(100vh - 56px);
-                transition: left 0.3s ease;
-                z-index: 1050 !important; /* Higher than navbar */
-                box-shadow: 3px 0 10px rgba(0,0,0,0.3);
-                background: var(--sidebar-bg) !important;
+                display: none !important;
+                visibility: hidden !important;
+                width: 0 !important;
+                height: 0 !important;
+                position: absolute !important;
+                left: -9999px !important;
             }
             
             body.sidebar-open .main-sidebar {
@@ -156,6 +174,19 @@
             /* Content wrapper margin */
             .content-wrapper {
                 margin-left: 0 !important; /* No margin on mobile */
+                margin-top: 0 !important;
+                padding: 0 !important;
+            }
+            
+            /* Hide content header on mobile */
+            .content-header {
+                display: none !important;
+            }
+            
+            /* Ensure content area is full width */
+            .content {
+                padding: 0 !important;
+                margin: 0 !important;
             }
             
             /* Hamburger menu icon - Make it obvious */
@@ -1616,25 +1647,70 @@
 </div>
 <!-- ./wrapper -->
 
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<!-- jQuery UI -->
-<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-<!-- AdminLTE App -->
-<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
-<!-- DataTables -->
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap4.min.js"></script>
-<!-- SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<!-- Toastr for notifications -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-<!-- Moment.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-<!-- Select2 for better dropdowns -->
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+{{-- Performance: Preload critical JavaScript --}}
+<link rel="preload" href="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}" as="script">
+<link rel="preload" href="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}" as="script">
+
+{{-- Critical JavaScript: Load synchronously (required for page functionality) --}}
+<script src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}" defer></script>
+<script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}" defer></script>
+<script src="{{ asset('vendor/adminlte/js/adminlte.min.js') }}" defer></script>
+
+{{-- Non-Critical JavaScript: Load asynchronously (only when needed) --}}
+<script>
+// Lazy load non-critical scripts
+(function() {
+    'use strict';
+    
+    // Function to load script dynamically
+    function loadScript(src, callback) {
+        var script = document.createElement('script');
+        script.src = src;
+        script.async = true;
+        if (callback) {
+            script.onload = callback;
+        }
+        document.head.appendChild(script);
+    }
+    
+    // Load scripts after DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load jQuery UI only if needed (check for elements that use it)
+            if (document.querySelector('.ui-widget, .ui-dialog, [data-toggle="tooltip"]')) {
+                loadScript('{{ asset('vendor/jquery-ui/jquery-ui.min.js') }}');
+            }
+            
+            // Load DataTables only if tables exist
+            if (document.querySelector('table.dataTable, .data-table')) {
+                loadScript('{{ asset('vendor/datatables/js/jquery.dataTables.min.js') }}', function() {
+                    loadScript('{{ asset('vendor/datatables/js/dataTables.bootstrap4.min.js') }}');
+                });
+            }
+            
+            // Load SweetAlert2 (lightweight, load early)
+            loadScript('{{ asset('vendor/sweetalert2/js/sweetalert2.min.js') }}');
+            
+            // Load Toastr (lightweight, load early)
+            loadScript('{{ asset('vendor/toastr/js/toastr.min.js') }}');
+            
+            // Load Moment.js only if date formatting is needed
+            if (document.querySelector('[data-moment], .moment, [data-date]')) {
+                loadScript('{{ asset('vendor/moment/moment.min.js') }}');
+            }
+            
+            // Load Select2 only if select elements with select2 class exist
+            if (document.querySelector('select.select2, .select2')) {
+                loadScript('{{ asset('vendor/select2/js/select2.min.js') }}');
+            }
+        });
+    } else {
+        // DOM already loaded, load immediately
+        loadScript('{{ asset('vendor/sweetalert2/js/sweetalert2.min.js') }}');
+        loadScript('{{ asset('vendor/toastr/js/toastr.min.js') }}');
+    }
+})();
+</script>
 <!-- Image Upload Handler -->
 <script src="{{ asset('js/image-upload.js') }}"></script>
 

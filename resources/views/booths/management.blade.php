@@ -5,8 +5,8 @@
 @section('breadcrumb', 'Booths / Management')
 
 @push('styles')
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="{{ asset('vendor/datatables/css/dataTables.bootstrap5.min.css') }}">
+<link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
 <style>
     .booth-image-preview {
         width: 60px;
@@ -1380,10 +1380,10 @@
 @endsection
 
 @push('scripts')
-<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/ui-lightness/jquery-ui.css">
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+<script src="{{ asset('vendor/jquery-ui/jquery-ui.min.js') }}"></script>
+<link rel="stylesheet" href="{{ asset('vendor/jquery-ui/css/jquery-ui.min.css') }}">
+<script src="{{ asset('vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('vendor/datatables/js/dataTables.bootstrap5.min.js') }}"></script>
 <script>
 let currentBoothId = null;
 

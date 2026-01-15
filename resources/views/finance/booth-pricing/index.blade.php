@@ -894,7 +894,7 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ asset('vendor/sweetalert2/js/sweetalert2.min.js') }}"></script>
 <script>
 $(document).ready(function() {
     // View Switch Function

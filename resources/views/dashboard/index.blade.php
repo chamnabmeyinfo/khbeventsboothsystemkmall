@@ -3,707 +3,528 @@
 @section('title', 'Dashboard')
 
 @push('styles')
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">
+<link rel="stylesheet" href="{{ asset('vendor/chartjs/chart.min.css') }}">
 <style>
 /* ============================================
-   DESKTOP STYLES
+   DESKTOP STYLES - PRESERVED
    ============================================ */
-
-/* Desktop Styles */
-.stat-card {
-    transition: transform 0.2s, box-shadow 0.2s;
-    border-left: 4px solid;
+@media (min-width: 769px) {
+    .stat-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border-left: 4px solid;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .stat-card.border-primary { border-left-color: #0d6efd; }
+    .stat-card.border-success { border-left-color: #198754; }
+    .stat-card.border-warning { border-left-color: #ffc107; }
+    .stat-card.border-info { border-left-color: #0dcaf0; }
+    .stat-card.border-dark { border-left-color: #212529; }
+    .stat-card.border-secondary { border-left-color: #6c757d; }
+    .stat-card.border-danger { border-left-color: #dc3545; }
 }
-.stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-.stat-card.border-primary { border-left-color: #0d6efd; }
-.stat-card.border-success { border-left-color: #198754; }
-.stat-card.border-warning { border-left-color: #ffc107; }
-.stat-card.border-info { border-left-color: #0dcaf0; }
-.stat-card.border-dark { border-left-color: #212529; }
-.stat-card.border-secondary { border-left-color: #6c757d; }
-.stat-card.border-danger { border-left-color: #dc3545; }
 
 /* ============================================
-   🚀 MOBILE APP - COMPLETELY UNIQUE DESIGN
-   Full-screen native app experience
+   MOBILE APP UX/UI DESIGN
    ============================================ */
 @media (max-width: 768px) {
-    /* HIDE ALL DESKTOP ELEMENTS */
+    /* Hide Navbar on Mobile */
+    nav.navbar,
     .navbar,
-    .navbar-collapse,
-    nav.navbar {
+    .navbar-expand-lg {
         display: none !important;
     }
-    /* FULL-SCREEN APP LAYOUT */
-    html {
-        height: 100%;
-        overflow-x: hidden;
-    }
     
+    /* App Container */
     body {
-        background: #0f0f1e !important;
+        background: #f5f7fa !important;
+        padding-bottom: 80px !important; /* Space for bottom nav */
         margin: 0 !important;
-        padding: 0 !important;
-        height: 100% !important;
-        overflow-x: hidden !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
     }
     
-    .content-wrapper,
-    .container,
+    main.container-fluid,
     .container-fluid {
-        background: transparent !important;
         padding: 0 !important;
         margin: 0 !important;
         max-width: 100% !important;
-        width: 100% !important;
     }
     
-    /* 📱 MOBILE APP HEADER - Dark Theme */
-    .dashboard-header {
-        background: linear-gradient(180deg, #1a1a2e 0%, #16162a 100%);
-        padding: 50px 20px 24px;
+    /* Remove any wrapper padding */
+    .content-wrapper,
+    .content {
+        padding: 0 !important;
         margin: 0 !important;
-        position: relative;
-        overflow: hidden;
     }
     
-    /* Animated background circles */
-    .dashboard-header::before {
-        content: '';
-        position: absolute;
-        top: -50px;
-        right: -50px;
-        width: 200px;
-        height: 200px;
-        background: radial-gradient(circle, rgba(99, 102, 241, 0.15), transparent);
-        border-radius: 50%;
-        animation: pulse 4s ease-in-out infinite;
+    /* App-Style Header */
+    .app-header {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 100 !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        padding: 20px !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+        margin: 0 0 24px 0 !important;
+        width: 100% !important;
+        display: block !important;
     }
     
-    .dashboard-header::after {
-        content: '';
-        position: absolute;
-        bottom: -80px;
-        left: -80px;
-        width: 250px;
-        height: 250px;
-        background: radial-gradient(circle, rgba(139, 92, 246, 0.1), transparent);
-        border-radius: 50%;
-        animation: pulse 6s ease-in-out infinite;
+    .app-header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
     
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); opacity: 0.6; }
-        50% { transform: scale(1.1); opacity: 0.8; }
+    .app-header-left {
+        flex: 1;
     }
     
-    .dashboard-header h2 {
-        font-size: 32px !important;
-        font-weight: 900 !important;
-        color: #ffffff !important;
-        margin-bottom: 6px !important;
-        letter-spacing: -1px !important;
-        position: relative;
-        z-index: 2;
-        background: linear-gradient(135deg, #fff 0%, #e0e7ff 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+    .app-header-greeting {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+        margin-bottom: 4px;
     }
     
-    .dashboard-header p {
-        font-size: 14px !important;
-        color: #9ca3af !important;
-        font-weight: 500 !important;
-        position: relative;
-        z-index: 2;
-        margin-bottom: 20px !important;
+    .app-header-title {
+        font-size: 24px;
+        font-weight: 800;
+        color: #ffffff;
+        margin: 0;
+        letter-spacing: -0.02em;
     }
     
-    /* Icon buttons in header */
-    .dashboard-actions {
+    .app-header-actions {
         display: flex;
         gap: 12px;
-        position: relative;
-        z-index: 2;
     }
     
-    .dashboard-actions .btn {
-        flex: 1;
-        min-height: 48px;
+    .app-header-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border: none;
+        color: white;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
-        font-size: 14px;
-        font-weight: 700;
-        border-radius: 16px;
-        background: rgba(99, 102, 241, 0.15);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1.5px solid rgba(99, 102, 241, 0.3);
-        color: #818cf8 !important;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2),
-                    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        font-size: 18px;
+        transition: all 0.2s;
     }
     
-    .dashboard-actions .btn:active {
-        transform: scale(0.93);
-        background: rgba(99, 102, 241, 0.25);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
-    
-    /* 🎯 MODERN KPI CARDS - Neumorphism Dark */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 14px;
-        padding: 20px;
-        margin: 0;
-        background: #0f0f1e;
-    }
-    
-    .stat-card {
-        border: none !important;
-        border-radius: 24px !important;
-        position: relative;
-        overflow: visible !important;
-        background: linear-gradient(145deg, #1e1e32, #16162a) !important;
-        box-shadow: 8px 8px 16px #0a0a14,
-                   -8px -8px 16px #24243c,
-                   inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid rgba(99, 102, 241, 0.1) !important;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        min-height: 140px;
-    }
-    
-    /* Glowing border effect */
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        inset: -2px;
-        border-radius: 24px;
-        padding: 2px;
-        background: linear-gradient(135deg, transparent, transparent);
-        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-        -webkit-mask-composite: xor;
-        mask-composite: exclude;
-        opacity: 0;
-        transition: opacity 0.4s;
-    }
-    
-    .stat-card.border-primary::before { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
-    .stat-card.border-success::before { background: linear-gradient(135deg, #10b981, #06b6d4); }
-    .stat-card.border-warning::before { background: linear-gradient(135deg, #f59e0b, #ef4444); }
-    .stat-card.border-info::before { background: linear-gradient(135deg, #3b82f6, #6366f1); }
-    .stat-card.border-dark::before { background: linear-gradient(135deg, #6b7280, #374151); }
-    .stat-card.border-secondary::before { background: linear-gradient(135deg, #8b5cf6, #ec4899); }
-    .stat-card.border-danger::before { background: linear-gradient(135deg, #ef4444, #dc2626); }
-    
-    /* Floating icon with glow */
-    .stat-card::after {
-        content: '';
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
-        background: rgba(99, 102, 241, 0.15);
-        box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
-        transition: all 0.3s;
-    }
-    
-    .stat-card:active {
-        transform: scale(0.97) translateY(2px);
-        box-shadow: 4px 4px 8px #0a0a14,
-                   -4px -4px 8px #24243c;
-    }
-    
-    .stat-card:active::before {
-        opacity: 1;
-    }
-    
-    .stat-card:active::after {
-        box-shadow: 0 0 30px rgba(99, 102, 241, 0.6);
-    }
-    
-    .stat-card .card-body {
-        padding: 20px !important;
-        position: relative;
-        z-index: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        min-height: 140px;
-    }
-    
-    .stat-card h6 {
-        font-size: 10px !important;
-        font-weight: 800 !important;
-        text-transform: uppercase;
-        letter-spacing: 1.2px !important;
-        margin-bottom: 12px !important;
-        color: #6b7280 !important;
-        line-height: 1;
-    }
-    
-    .stat-card h2 {
-        font-size: 36px !important;
-        font-weight: 900 !important;
-        margin-bottom: 6px !important;
-        color: #ffffff !important;
-        line-height: 1 !important;
-        letter-spacing: -1.5px !important;
-        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-    }
-    
-    /* Gradient numbers for each card type */
-    .stat-card.border-primary h2 {
-        background: linear-gradient(135deg, #818cf8, #c4b5fd);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-    
-    .stat-card.border-success h2 {
-        background: linear-gradient(135deg, #34d399, #6ee7b7);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-    
-    .stat-card.border-warning h2 {
-        background: linear-gradient(135deg, #fbbf24, #fcd34d);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-    
-    .stat-card.border-info h2 {
-        background: linear-gradient(135deg, #60a5fa, #93c5fd);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-    
-    .stat-card.border-dark h2,
-    .stat-card.border-secondary h2,
-    .stat-card.border-danger h2 {
-        background: linear-gradient(135deg, #f87171, #fca5a5);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-    
-    .stat-card small {
-        font-size: 11px !important;
-        color: #9ca3af !important;
-        font-weight: 600 !important;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-    
-    .stat-card small i {
-        font-size: 10px;
-        color: #6b7280;
-    }
-    
-    .stat-card .d-flex > div:last-child {
-        display: none !important;
-    }
-    
-    /* 📊 CHARTS SECTION - Dark Cards */
-    .dashboard-charts {
-        background: #0f0f1e;
-        padding: 0 20px 20px;
-        margin: 0;
-        min-height: auto;
-    }
-    
-    /* Section Headers with glow */
-    .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin: 24px 0 16px;
-        padding: 0;
-    }
-    
-    .section-title {
-        font-size: 22px;
-        font-weight: 900;
-        color: #ffffff;
-        letter-spacing: -0.5px;
-        text-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
-    }
-    
-    .section-link {
-        font-size: 13px;
-        color: #818cf8;
-        font-weight: 700;
-        text-decoration: none;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        padding: 8px 16px;
-        border-radius: 12px;
-        background: rgba(99, 102, 241, 0.1);
-        border: 1px solid rgba(99, 102, 241, 0.2);
-        transition: all 0.3s;
-    }
-    
-    .section-link:active {
-        background: rgba(99, 102, 241, 0.2);
+    .app-header-btn:active {
+        background: rgba(255, 255, 255, 0.3);
         transform: scale(0.95);
     }
     
-    /* Chart Cards - Dark Neumorphism */
-    .chart-card {
-        margin-bottom: 20px;
-        border-radius: 24px;
-        overflow: hidden;
-        background: linear-gradient(145deg, #1e1e32, #16162a);
-        border: 1px solid rgba(99, 102, 241, 0.1);
-        box-shadow: 8px 8px 16px #0a0a14,
-                   -8px -8px 16px #24243c;
+    /* Stats Section - App Style */
+    .app-stats-section {
+        padding: 0 20px !important;
+        margin-bottom: 24px !important;
+        width: 100% !important;
+        display: block !important;
     }
     
-    .chart-card .card-header {
-        background: transparent;
-        border-bottom: 1px solid rgba(99, 102, 241, 0.1);
-        padding: 20px;
+    .app-stats-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+        width: 100% !important;
     }
     
-    .chart-card .card-header h5 {
-        font-size: 16px;
-        font-weight: 800;
-        margin: 0;
-        color: #ffffff;
-        letter-spacing: -0.3px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+    .app-stat-card {
+        background: white !important;
+        border-radius: 20px !important;
+        padding: 20px !important;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08) !important;
+        position: relative !important;
+        overflow: hidden !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        border: none !important;
+        margin: 0 !important;
     }
     
-    .chart-card .card-header h5 i {
-        color: #818cf8;
-        font-size: 18px;
-        filter: drop-shadow(0 0 8px rgba(129, 140, 248, 0.6));
+    .app-stat-card:active {
+        transform: scale(0.97);
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
     }
     
-    .chart-card .card-body {
-        padding: 24px 20px;
-        background: transparent;
-    }
-    
-    .chart-card canvas {
-        max-height: 240px !important;
-        border-radius: 12px;
-        filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
-    }
-    
-    /* 📝 RECENT BOOKINGS - Dark List */
-    .recent-bookings-card {
-        border-radius: 24px;
-        margin-bottom: 80px;
-        background: linear-gradient(145deg, #1e1e32, #16162a);
-        border: 1px solid rgba(99, 102, 241, 0.1);
-        box-shadow: 8px 8px 16px #0a0a14,
-                   -8px -8px 16px #24243c;
-        overflow: hidden;
-    }
-    
-    .recent-bookings-card .card-header {
-        background: transparent;
-        border-bottom: 1px solid rgba(99, 102, 241, 0.1);
-        padding: 20px;
-    }
-    
-    .recent-bookings-card .card-header h5 {
-        font-size: 16px;
-        font-weight: 800;
-        margin: 0;
-        color: #ffffff;
-        letter-spacing: -0.3px;
-    }
-    
-    .recent-bookings-card .card-body {
-        padding: 0 !important;
-    }
-    
-    .recent-bookings-card .table thead {
-        display: none;
-    }
-    
-    /* Dark theme list items */
-    .recent-bookings-card .table tbody tr {
-        display: flex;
-        align-items: center;
-        padding: 16px 20px;
-        border-bottom: 1px solid rgba(99, 102, 241, 0.08);
-        background: transparent;
-        transition: all 0.3s;
-        margin: 0;
-        border-radius: 0;
-    }
-    
-    .recent-bookings-card .table tbody tr:last-child {
-        border-bottom: none;
-    }
-    
-    .recent-bookings-card .table tbody tr:active {
-        background: rgba(99, 102, 241, 0.05);
-        transform: scale(0.98);
-    }
-    
-    .recent-bookings-card .table tbody td {
-        display: none;
-        padding: 0;
-        border: none;
-    }
-    
-    /* Glowing ID badge */
-    .recent-bookings-card .table tbody td:nth-child(1) {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 44px;
-        height: 44px;
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
-        color: white;
-        font-weight: 800;
-        font-size: 14px;
-        border-radius: 14px;
-        margin-right: 14px;
-        flex-shrink: 0;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4),
-                   inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    }
-    
-    .recent-bookings-card .table tbody td:nth-child(1)::before {
-        content: none !important;
-    }
-    
-    /* Company name - bold white */
-    .recent-bookings-card .table tbody td:nth-child(2) {
-        display: block;
-        font-size: 16px;
-        font-weight: 700;
-        color: #ffffff;
-        flex: 1;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-    
-    .recent-bookings-card .table tbody td:nth-child(2)::before {
-        content: none !important;
-    }
-    
-    /* Booth count badge */
-    .recent-bookings-card .table tbody td:nth-child(3) {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-        color: #818cf8;
-        font-weight: 700;
-        padding: 6px 12px;
-        background: rgba(99, 102, 241, 0.15);
-        border-radius: 10px;
-        margin-left: 12px;
-        flex-shrink: 0;
-        border: 1px solid rgba(99, 102, 241, 0.3);
-    }
-    
-    .recent-bookings-card .table tbody td:nth-child(3)::before {
-        content: none !important;
-    }
-    
-    /* Chevron arrow */
-    .recent-bookings-card .table tbody td:nth-child(5) {
-        display: flex;
-        align-items: center;
-        font-size: 24px;
-        color: #4b5563;
-        margin-left: 12px;
-        flex-shrink: 0;
-    }
-    
-    .recent-bookings-card .table tbody td:nth-child(5)::before {
-        content: none !important;
-    }
-    
-    .recent-bookings-card .table tbody td:nth-child(5)::after {
-        content: '›';
-    }
-    
-    /* User Performance Table */
-    .user-performance-card .table thead {
-        display: none;
-    }
-    
-    .user-performance-card .table tbody tr {
-        display: block;
-        margin-bottom: var(--space-4);
-        border: 1px solid var(--gray-200);
-        border-radius: var(--radius-lg);
-        padding: var(--space-4);
-        background: white;
-    }
-    
-    .user-performance-card .table tbody td {
-        display: flex;
-        justify-content: space-between;
-        padding: var(--space-2) 0;
-        border-bottom: 1px solid var(--gray-100);
-    }
-    
-    .user-performance-card .table tbody td:last-child {
-        border-bottom: none;
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .user-performance-card .table tbody td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        font-size: var(--font-size-xs);
-        color: var(--gray-600);
-        text-transform: uppercase;
-    }
-    
-    .user-performance-card .progress {
-        margin-top: var(--space-2);
-    }
-    
-    /* Badge styles */
-    .badge {
-        padding: var(--space-1) var(--space-2);
-        font-size: var(--font-size-xs);
-        font-weight: 600;
-        border-radius: var(--radius-sm);
-    }
-    
-    /* Remove hover effects on mobile (replaced with active) */
-    .stat-card:hover {
-        transform: none;
-    }
-    
-    /* 📱 BOTTOM NAVIGATION BAR */
-    .mobile-bottom-nav {
-        position: fixed;
-        bottom: 0;
+    .app-stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
         left: 0;
         right: 0;
-        background: linear-gradient(180deg, #1e1e32, #1a1a2e);
-        border-top: 1px solid rgba(99, 102, 241, 0.2);
-        padding: 12px 20px 20px;
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        z-index: 1000;
-        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3),
-                   inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        height: 4px;
+        background: var(--stat-color, #667eea);
     }
     
-    .mobile-bottom-nav a {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        text-decoration: none;
-        color: #6b7280;
-        transition: all 0.3s;
-        padding: 8px 12px;
-        border-radius: 12px;
-        flex: 1;
-        max-width: 80px;
-    }
-    
-    .mobile-bottom-nav a.active {
-        color: #818cf8;
-        background: rgba(99, 102, 241, 0.15);
-    }
-    
-    .mobile-bottom-nav a:active {
-        transform: scale(0.9);
-    }
-    
-    .mobile-bottom-nav a i {
-        font-size: 22px;
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-    }
-    
-    .mobile-bottom-nav a.active i {
-        filter: drop-shadow(0 0 12px rgba(129, 140, 248, 0.6));
-    }
-    
-    .mobile-bottom-nav a span {
-        font-size: 10px;
+    .app-stat-label {
+        font-size: 12px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.1em;
+        color: #9ca3af;
+        margin-bottom: 12px;
+        display: block;
     }
     
-    /* Empty state styling */
-    .recent-bookings-card table tbody tr td[colspan] {
-        display: flex !important;
-        flex-direction: column;
+    .app-stat-value {
+        font-size: 32px;
+        font-weight: 800;
+        line-height: 1;
+        margin: 0;
+        letter-spacing: -0.03em;
+        color: var(--stat-color, #111827);
+    }
+    
+    .app-stat-icon {
+        position: absolute;
+        bottom: 16px;
+        right: 16px;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: var(--stat-bg, rgba(102, 126, 234, 0.1));
+        display: flex;
         align-items: center;
         justify-content: center;
-        padding: 60px 20px !important;
-        color: #6b7280 !important;
+        font-size: 24px;
+        color: var(--stat-color, #667eea);
+        opacity: 0.8;
     }
     
-    .recent-bookings-card table tbody tr td[colspan] i {
-        font-size: 64px !important;
+    .app-stat-card.primary {
+        --stat-color: #667eea;
+        --stat-bg: rgba(102, 126, 234, 0.1);
+    }
+    
+    .app-stat-card.success {
+        --stat-color: #10b981;
+        --stat-bg: rgba(16, 185, 129, 0.1);
+    }
+    
+    .app-stat-card.warning {
+        --stat-color: #f59e0b;
+        --stat-bg: rgba(245, 158, 11, 0.1);
+    }
+    
+    .app-stat-card.info {
+        --stat-color: #3b82f6;
+        --stat-bg: rgba(59, 130, 246, 0.1);
+    }
+    
+    .app-stat-card.dark {
+        --stat-color: #1f2937;
+        --stat-bg: rgba(31, 41, 55, 0.1);
+    }
+    
+    .app-stat-card.secondary {
+        --stat-color: #6b7280;
+        --stat-bg: rgba(107, 114, 128, 0.1);
+    }
+    
+    .app-stat-card.danger {
+        --stat-color: #ef4444;
+        --stat-bg: rgba(239, 68, 68, 0.1);
+    }
+    
+    /* Section Headers */
+    .app-section {
+        padding: 0 20px;
+        margin-bottom: 24px;
+    }
+    
+    .app-section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 16px;
-        color: #4b5563;
-        opacity: 0.3;
     }
     
-    .recent-bookings-card table tbody tr td[colspan] p {
+    .app-section-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: #111827;
         margin: 0;
-        font-size: 16px;
+        letter-spacing: -0.01em;
+    }
+    
+    .app-section-link {
+        font-size: 14px;
         font-weight: 600;
+        color: #667eea;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    /* Chart Cards - App Style */
+    .app-chart-card {
+        background: white;
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        margin-bottom: 16px;
+    }
+    
+    .app-chart-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    
+    .app-chart-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #667eea;
+        font-size: 20px;
+    }
+    
+    .app-chart-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+    }
+    
+    /* Recent Bookings - App Style */
+    .app-recent-card {
+        background: white;
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    }
+    
+    .app-recent-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .app-recent-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 0;
+        border-bottom: 1px solid #f3f4f6;
+        transition: background 0.2s;
+    }
+    
+    .app-recent-item:last-child {
+        border-bottom: none;
+    }
+    
+    .app-recent-item:active {
+        background: #f9fafb;
+        margin: 0 -20px;
+        padding-left: 20px;
+        padding-right: 20px;
+        border-radius: 12px;
+    }
+    
+    .app-recent-item-left {
+        flex: 1;
+    }
+    
+    .app-recent-item-id {
+        font-size: 16px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 4px;
+    }
+    
+    .app-recent-item-client {
+        font-size: 13px;
+        color: #6b7280;
+    }
+    
+    .app-recent-item-right {
+        text-align: right;
+    }
+    
+    .app-recent-item-booths {
+        font-size: 15px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 4px;
+    }
+    
+    .app-recent-item-date {
+        font-size: 12px;
         color: #9ca3af;
     }
     
-    /* User performance card mobile */
-    .user-performance-card {
-        background: linear-gradient(145deg, #1e1e32, #16162a) !important;
-        border: 1px solid rgba(99, 102, 241, 0.1) !important;
-        box-shadow: 8px 8px 16px #0a0a14,
-                   -8px -8px 16px #24243c !important;
-        border-radius: 24px !important;
-        margin-bottom: 80px;
+    /* Empty State */
+    .app-empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #9ca3af;
     }
     
-    .user-performance-card .card-header {
-        background: transparent !important;
-        border-bottom: 1px solid rgba(99, 102, 241, 0.1) !important;
-        padding: 20px !important;
+    .app-empty-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        background: #f3f4f6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 36px;
+        color: #d1d5db;
     }
     
-    .user-performance-card .card-header h5 {
-        color: #ffffff !important;
-        font-weight: 800 !important;
+    .app-empty-text {
+        font-size: 16px;
+        font-weight: 500;
+        margin: 0;
     }
     
-    .user-performance-card .card-header h5 i {
-        color: #818cf8 !important;
+    /* Bottom Navigation - Native App Style */
+    .app-bottom-nav {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        background: white !important;
+        border-top: 1px solid #e5e7eb !important;
+        padding: 8px 0 calc(8px + env(safe-area-inset-bottom)) !important;
+        z-index: 1000 !important;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05) !important;
+        display: flex !important;
+        justify-content: space-around !important;
+        align-items: center !important;
+        width: 100% !important;
+    }
+    
+    .app-bottom-nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 4px;
+        text-decoration: none;
+        color: #9ca3af;
+        transition: all 0.2s;
+        min-height: 64px;
+        position: relative;
+    }
+    
+    .app-bottom-nav-item i {
+        font-size: 22px;
+        margin-bottom: 4px;
+        transition: all 0.2s;
+    }
+    
+    .app-bottom-nav-item span {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .app-bottom-nav-item.active {
+        color: #667eea;
+    }
+    
+    .app-bottom-nav-item.active::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 3px;
+        background: #667eea;
+        border-radius: 0 0 3px 3px;
+    }
+    
+    .app-bottom-nav-item:active {
+        transform: scale(0.95);
+    }
+    
+    /* Quick Actions - Floating */
+    .app-quick-actions {
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        z-index: 999;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .app-fab {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        transition: all 0.3s;
+    }
+    
+    .app-fab:active {
+        transform: scale(0.9);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+    
+    /* Hide desktop elements on mobile */
+    .d-none.d-md-flex,
+    .row.d-none.d-md-flex {
+        display: none !important;
+    }
+    
+    /* Force mobile elements to show */
+    .d-md-none {
+        display: block !important;
+    }
+    
+    /* Override any conflicting styles */
+    .card {
+        margin-bottom: 16px !important;
+    }
+    
+    /* Ensure proper spacing */
+    .app-section {
+        padding: 0 20px !important;
+        margin-bottom: 24px !important;
+        width: 100% !important;
+        display: block !important;
+    }
+    
+    .app-chart-card,
+    .app-recent-card {
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
     }
 }
 </style>
 @endpush
 
 @section('content')
-<!-- Mobile-Optimized Header -->
+<!-- Desktop Header -->
 <div class="row mb-4 d-none d-md-flex">
     <div class="col">
         <h2><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h2>
@@ -722,18 +543,20 @@
 </div>
 
 <!-- Mobile App-Style Header -->
-<div class="dashboard-header d-md-none">
-    <h2>Dashboard</h2>
-    <p>Welcome back, {{ auth()->user()->username }}!</p>
-    <div class="dashboard-actions">
-        <button type="button" class="btn" onclick="refreshDashboard()">
-            <i class="fas fa-sync-alt"></i>
-            <span>Refresh</span>
-        </button>
-        <a href="{{ route('settings.index') }}" class="btn">
-            <i class="fas fa-cog"></i>
-            <span>Settings</span>
-        </a>
+<div class="app-header d-md-none" style="display: block !important; visibility: visible !important;">
+    <div class="app-header-content">
+        <div class="app-header-left">
+            <div class="app-header-greeting">Welcome back</div>
+            <h1 class="app-header-title">{{ auth()->user()->username }}</h1>
+        </div>
+        <div class="app-header-actions">
+            <button type="button" class="app-header-btn" onclick="refreshDashboard()" title="Refresh">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+            <a href="{{ route('settings.index') }}" class="app-header-btn" title="Settings">
+                <i class="fas fa-cog"></i>
+            </a>
+        </div>
     </div>
 </div>
 
@@ -806,7 +629,7 @@
     </div>
 </div>
 
-<div class="row g-4 mb-4">
+<div class="row g-4 mb-4 d-none d-md-flex">
     <div class="col-md-3">
         <div class="card stat-card border-dark">
             <div class="card-body">
@@ -869,159 +692,140 @@
     </div>
 </div>
 
-<!-- Statistics Cards - Mobile (2 Column Grid) -->
-<div class="stats-grid d-md-none">
-    <div class="card stat-card border-primary">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-2">Total Booths</h6>
-                    <h2 class="mb-0 text-primary">{{ $stats['total_booths'] }}</h2>
-                    @if($stats['total_booths'] > 0)
-                    <small class="text-muted">{{ number_format(($stats['available_booths'] / $stats['total_booths']) * 100, 1) }}% Available</small>
-                    @endif
-                </div>
+<!-- Mobile App-Style Statistics -->
+<div class="app-stats-section d-md-none" style="display: block !important;">
+    <div class="app-stats-grid">
+        <div class="app-stat-card primary">
+            <span class="app-stat-label">Total Booths</span>
+            <h2 class="app-stat-value">{{ $stats['total_booths'] }}</h2>
+            <div class="app-stat-icon">
+                <i class="fas fa-store"></i>
             </div>
         </div>
-    </div>
-    
-    <div class="card stat-card border-success">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-2">Available</h6>
-                    <h2 class="mb-0 text-success">{{ $stats['available_booths'] }}</h2>
-                </div>
+        
+        <div class="app-stat-card success">
+            <span class="app-stat-label">Available</span>
+            <h2 class="app-stat-value">{{ $stats['available_booths'] }}</h2>
+            <div class="app-stat-icon">
+                <i class="fas fa-check-circle"></i>
             </div>
         </div>
-    </div>
-    
-    <div class="card stat-card border-warning">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-2">Reserved</h6>
-                    <h2 class="mb-0 text-warning">{{ $stats['reserved_booths'] }}</h2>
-                </div>
+        
+        <div class="app-stat-card warning">
+            <span class="app-stat-label">Reserved</span>
+            <h2 class="app-stat-value">{{ $stats['reserved_booths'] }}</h2>
+            <div class="app-stat-icon">
+                <i class="fas fa-clock"></i>
             </div>
         </div>
-    </div>
-    
-    <div class="card stat-card border-info">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-2">Confirmed</h6>
-                    <h2 class="mb-0 text-info">{{ $stats['confirmed_booths'] }}</h2>
-                </div>
+        
+        <div class="app-stat-card info">
+            <span class="app-stat-label">Confirmed</span>
+            <h2 class="app-stat-value">{{ $stats['confirmed_booths'] }}</h2>
+            <div class="app-stat-icon">
+                <i class="fas fa-check-double"></i>
             </div>
         </div>
-    </div>
-    
-    <div class="card stat-card border-dark">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-2">Paid</h6>
-                    <h2 class="mb-0 text-dark">{{ $stats['paid_booths'] }}</h2>
-                </div>
+        
+        <div class="app-stat-card dark">
+            <span class="app-stat-label">Paid</span>
+            <h2 class="app-stat-value">{{ $stats['paid_booths'] }}</h2>
+            <div class="app-stat-icon">
+                <i class="fas fa-money-bill-wave"></i>
             </div>
         </div>
-    </div>
-    
-    <div class="card stat-card border-secondary">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-2">Total Clients</h6>
-                    <h2 class="mb-0 text-secondary">{{ $stats['total_clients'] }}</h2>
-                </div>
+        
+        <div class="app-stat-card secondary">
+            <span class="app-stat-label">Clients</span>
+            <h2 class="app-stat-value">{{ $stats['total_clients'] }}</h2>
+            <div class="app-stat-icon">
+                <i class="fas fa-users"></i>
             </div>
         </div>
-    </div>
-    
-    <div class="card stat-card border-danger">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-2">Total Users</h6>
-                    <h2 class="mb-0 text-danger">{{ $stats['total_users'] }}</h2>
-                </div>
+        
+        <div class="app-stat-card danger">
+            <span class="app-stat-label">Users</span>
+            <h2 class="app-stat-value">{{ $stats['total_users'] }}</h2>
+            <div class="app-stat-icon">
+                <i class="fas fa-user-shield"></i>
             </div>
         </div>
-    </div>
-    
-    <div class="card stat-card border-primary">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-2">Total Bookings</h6>
-                    <h2 class="mb-0 text-primary">{{ $stats['total_bookings'] }}</h2>
-                </div>
+        
+        <div class="app-stat-card primary">
+            <span class="app-stat-label">Bookings</span>
+            <h2 class="app-stat-value">{{ $stats['total_bookings'] }}</h2>
+            <div class="app-stat-icon">
+                <i class="fas fa-calendar-check"></i>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Charts Row -->
-<div class="dashboard-charts d-md-none">
-    <div class="section-header">
-        <h3 class="section-title">Analytics</h3>
-        <a href="#" class="section-link">View All</a>
+<!-- Charts Section - Mobile App Style -->
+<div class="app-section d-md-none" style="display: block !important;">
+    <div class="app-section-header">
+        <h3 class="app-section-title">Analytics</h3>
+        <a href="{{ route('reports.index') }}" class="app-section-link">
+            View All
+            <i class="fas fa-chevron-right" style="font-size: 12px;"></i>
+        </a>
     </div>
     
-    <div class="card chart-card">
-        <div class="card-header">
-            <h5><i class="fas fa-chart-pie"></i>Booth Status</h5>
-        </div>
-        <div class="card-body">
-            <canvas id="boothStatusChart" height="250"></canvas>
-        </div>
-    </div>
-    
-    <div class="card chart-card">
-        <div class="card-header">
-            <h5><i class="fas fa-chart-line"></i>Booking Trends</h5>
-        </div>
-        <div class="card-body">
-            <canvas id="bookingTrendChart" height="250"></canvas>
-        </div>
-    </div>
-    
-    <!-- Recent Bookings (Mobile) -->
-    <div class="section-header" style="margin-top: 24px;">
-        <h3 class="section-title">Recent Activity</h3>
-        <a href="#" class="section-link">See All</a>
-    </div>
-    
-    <div class="card recent-bookings-card">
-        <div class="card-header">
-            <h5>Recent Bookings</h5>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table">
-                    <tbody>
-                        @forelse($recentBookings as $booking)
-                        <tr>
-                            <td data-label="ID">{{ $booking->id }}</td>
-                            <td data-label="Client">{{ $booking->client->company ?? 'N/A' }}</td>
-                            <td data-label="Booths">{{ count(json_decode($booking->boothid, true) ?? []) }} booths</td>
-                            <td data-label="Date">{{ $booking->date_book->format('M d') }}</td>
-                            <td data-label="User">{{ $booking->user->username }}</td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="5" style="text-align: center; padding: 40px 20px; color: #9ca3af;">
-                                <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 12px; display: block;"></i>
-                                <p style="margin: 0;">No bookings yet</p>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+    <div class="app-chart-card">
+        <div class="app-chart-header">
+            <div class="app-chart-icon">
+                <i class="fas fa-chart-pie"></i>
             </div>
+            <h4 class="app-chart-title">Booth Status</h4>
         </div>
+        <canvas id="boothStatusChart" height="250"></canvas>
+    </div>
+    
+    <div class="app-chart-card">
+        <div class="app-chart-header">
+            <div class="app-chart-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h4 class="app-chart-title">Booking Trends</h4>
+        </div>
+        <canvas id="bookingTrendChart" height="250"></canvas>
+    </div>
+</div>
+
+<!-- Recent Bookings - Mobile App Style -->
+<div class="app-section d-md-none" style="display: block !important;">
+    <div class="app-section-header">
+        <h3 class="app-section-title">Recent Activity</h3>
+        <a href="{{ route('books.index') }}" class="app-section-link">
+            See All
+            <i class="fas fa-chevron-right" style="font-size: 12px;"></i>
+        </a>
+    </div>
+    
+    <div class="app-recent-card">
+        @if($recentBookings && $recentBookings->count() > 0)
+        <ul class="app-recent-list">
+            @foreach($recentBookings->take(5) as $booking)
+            <li class="app-recent-item">
+                <div class="app-recent-item-left">
+                    <div class="app-recent-item-id">#{{ $booking->id }}</div>
+                    <div class="app-recent-item-client">{{ $booking->client->company ?? 'N/A' }}</div>
+                </div>
+                <div class="app-recent-item-right">
+                    <div class="app-recent-item-booths">{{ count(json_decode($booking->boothid, true) ?? []) }} booths</div>
+                    <div class="app-recent-item-date">{{ $booking->date_book->format('M d, Y') }}</div>
+                </div>
+            </li>
+            @endforeach
+        </ul>
+        @else
+        <div class="app-empty-state">
+            <div class="app-empty-icon">
+                <i class="fas fa-inbox"></i>
+            </div>
+            <p class="app-empty-text">No bookings yet</p>
+        </div>
+        @endif
     </div>
 </div>
 
@@ -1054,7 +858,7 @@
     <div class="col">
         <div class="card recent-bookings-card">
             <div class="card-header">
-                <h5 class="mb-0">Recent Bookings</h5>
+                <h5 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Recent Bookings</h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -1071,11 +875,11 @@
                         <tbody>
                             @forelse($recentBookings as $booking)
                             <tr>
-                                <td data-label="ID">{{ $booking->id }}</td>
-                                <td data-label="Client">{{ $booking->client->company ?? 'N/A' }}</td>
-                                <td data-label="Booths">{{ count(json_decode($booking->boothid, true) ?? []) }} booths</td>
-                                <td data-label="Date">{{ $booking->date_book->format('Y-m-d H:i') }}</td>
-                                <td data-label="User">{{ $booking->user->username }}</td>
+                                <td>{{ $booking->id }}</td>
+                                <td>{{ $booking->client->company ?? 'N/A' }}</td>
+                                <td>{{ count(json_decode($booking->boothid, true) ?? []) }} booths</td>
+                                <td>{{ $booking->date_book->format('Y-m-d H:i') }}</td>
+                                <td>{{ $booking->user->username }}</td>
                             </tr>
                             @empty
                             <tr>
@@ -1142,34 +946,41 @@
 </div>
 @endif
 
-<!-- Mobile Bottom Navigation -->
-<nav class="mobile-bottom-nav d-md-none">
-    <a href="{{ route('dashboard') }}" class="active">
+<!-- Mobile Bottom Navigation - Native App Style -->
+<nav class="app-bottom-nav d-md-none" style="display: flex !important;">
+    <a href="{{ route('dashboard') }}" class="app-bottom-nav-item active">
         <i class="fas fa-home"></i>
         <span>Home</span>
     </a>
-    <a href="{{ route('booths.index') }}">
+    <a href="{{ route('booths.index') }}" class="app-bottom-nav-item">
         <i class="fas fa-store"></i>
         <span>Booths</span>
     </a>
-    <a href="{{ route('books.index') }}">
+    <a href="{{ route('books.index') }}" class="app-bottom-nav-item">
         <i class="fas fa-calendar-check"></i>
         <span>Bookings</span>
     </a>
-    <a href="{{ route('clients.index') }}">
+    <a href="{{ route('clients.index') }}" class="app-bottom-nav-item">
         <i class="fas fa-users"></i>
         <span>Clients</span>
     </a>
-    <a href="{{ route('settings.index') }}">
+    <a href="{{ route('settings.index') }}" class="app-bottom-nav-item">
         <i class="fas fa-cog"></i>
-        <span>Settings</span>
+        <span>More</span>
     </a>
 </nav>
+
+<!-- Floating Action Button -->
+<div class="app-quick-actions d-md-none" style="display: flex !important;">
+    <a href="{{ route('books.create') }}" class="app-fab" title="New Booking">
+        <i class="fas fa-plus"></i>
+    </a>
+</div>
 
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{{ asset('vendor/chartjs/chart.umd.min.js') }}"></script>
 <script>
 // Chart data
 const chartData = {
@@ -1182,14 +993,11 @@ const chartData = {
             {{ $stats['paid_booths'] }},
             {{ $stats['total_booths'] - $stats['available_booths'] - $stats['reserved_booths'] - $stats['confirmed_booths'] - $stats['paid_booths'] }}
         ],
-        colors: ['#34d399', '#fbbf24', '#60a5fa', '#818cf8', '#6b7280']
+        colors: ['#10b981', '#f59e0b', '#3b82f6', '#667eea', '#6b7280']
     }
 };
 
-// Check if mobile
-const isMobile = window.innerWidth <= 768;
-
-// Mobile Booth Status Chart - Dark Theme
+// Mobile Booth Status Chart
 const boothStatusMobile = document.getElementById('boothStatusChart');
 if (boothStatusMobile) {
     new Chart(boothStatusMobile.getContext('2d'), {
@@ -1199,10 +1007,8 @@ if (boothStatusMobile) {
             datasets: [{
                 data: chartData.boothStatus.data,
                 backgroundColor: chartData.boothStatus.colors,
-                borderWidth: 3,
-                borderColor: '#1a1a2e',
-                hoverOffset: 12,
-                hoverBorderWidth: 4
+                borderWidth: 0,
+                hoverOffset: 15
             }]
         },
         options: {
@@ -1212,20 +1018,19 @@ if (boothStatusMobile) {
                 legend: {
                     position: 'bottom',
                     labels: {
-                        padding: 16,
-                        font: { size: 13, weight: '700' },
+                        padding: 20,
+                        font: { size: 12, weight: '600' },
                         usePointStyle: true,
                         pointStyle: 'circle',
-                        color: '#e5e7eb',
-                        boxWidth: 8,
-                        boxHeight: 8
+                        color: '#374151',
+                        boxWidth: 8
                     }
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(30, 30, 50, 0.95)',
-                    titleColor: '#ffffff',
-                    bodyColor: '#e5e7eb',
-                    borderColor: 'rgba(99, 102, 241, 0.3)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    titleColor: '#111827',
+                    bodyColor: '#6b7280',
+                    borderColor: '#e5e7eb',
                     borderWidth: 1,
                     padding: 12,
                     cornerRadius: 12,
@@ -1264,7 +1069,7 @@ if (boothStatusDesktop) {
 const last7Days = @json($bookingTrendDates ?? []);
 const bookingCounts = @json($bookingTrendCounts ?? []);
 
-// Mobile Booking Trends Chart - Dark Theme
+// Mobile Booking Trends Chart
 const bookingTrendMobile = document.getElementById('bookingTrendChart');
 if (bookingTrendMobile) {
     new Chart(bookingTrendMobile.getContext('2d'), {
@@ -1274,18 +1079,16 @@ if (bookingTrendMobile) {
             datasets: [{
                 label: 'Bookings',
                 data: bookingCounts,
-                borderColor: '#818cf8',
-                backgroundColor: 'rgba(129, 140, 248, 0.15)',
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
                 tension: 0.4,
                 fill: true,
                 borderWidth: 3,
-                pointRadius: 5,
-                pointHoverRadius: 8,
-                pointBackgroundColor: '#818cf8',
-                pointBorderColor: '#1a1a2e',
-                pointBorderWidth: 3,
-                pointHoverBackgroundColor: '#a5b4fc',
-                pointHoverBorderWidth: 4
+                pointRadius: 6,
+                pointHoverRadius: 9,
+                pointBackgroundColor: '#667eea',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2
             }]
         },
         options: {
@@ -1297,35 +1100,31 @@ if (bookingTrendMobile) {
                     ticks: { 
                         stepSize: 1, 
                         font: { size: 12, weight: '600' },
-                        color: '#9ca3af'
+                        color: '#6b7280'
                     },
                     grid: { 
-                        color: 'rgba(99, 102, 241, 0.08)',
+                        color: 'rgba(102, 126, 234, 0.1)',
                         lineWidth: 1
-                    },
-                    border: { color: 'rgba(99, 102, 241, 0.2)' }
+                    }
                 },
                 x: {
                     ticks: { 
                         font: { size: 12, weight: '600' },
-                        color: '#9ca3af'
+                        color: '#6b7280'
                     },
-                    grid: { display: false },
-                    border: { color: 'rgba(99, 102, 241, 0.2)' }
+                    grid: { display: false }
                 }
             },
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: 'rgba(30, 30, 50, 0.95)',
-                    titleColor: '#ffffff',
-                    bodyColor: '#e5e7eb',
-                    borderColor: 'rgba(99, 102, 241, 0.3)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    titleColor: '#111827',
+                    bodyColor: '#6b7280',
+                    borderColor: '#e5e7eb',
                     borderWidth: 1,
                     padding: 12,
-                    cornerRadius: 12,
-                    titleFont: { size: 14, weight: 'bold' },
-                    bodyFont: { size: 13 }
+                    cornerRadius: 12
                 }
             }
         }
@@ -1367,6 +1166,130 @@ if (bookingTrendDesktop) {
 function refreshDashboard() {
     window.location.reload();
 }
+
+// Force Mobile Styles Check - AGGRESSIVE
+(function() {
+    function checkAndApplyMobileStyles() {
+        const width = window.innerWidth;
+        const isMobile = width <= 768;
+        
+        console.log('📱 Mobile Check - Width:', width, 'Is Mobile:', isMobile);
+        
+        if (isMobile) {
+            // Force body background
+            document.body.style.setProperty('background', '#f5f7fa', 'important');
+            document.body.style.setProperty('padding-bottom', '80px', 'important');
+            document.documentElement.style.setProperty('background', '#f5f7fa', 'important');
+            
+            // Hide navbar COMPLETELY
+            const navbars = document.querySelectorAll('nav.navbar, .navbar, .navbar-expand-lg');
+            navbars.forEach(nav => {
+                nav.style.setProperty('display', 'none', 'important');
+                nav.style.setProperty('visibility', 'hidden', 'important');
+                nav.style.setProperty('height', '0', 'important');
+                nav.style.setProperty('padding', '0', 'important');
+                nav.style.setProperty('margin', '0', 'important');
+            });
+            
+            // Remove main padding
+            const main = document.querySelector('main.container-fluid, #main-content, main');
+            if (main) {
+                main.style.setProperty('padding', '0', 'important');
+                main.style.setProperty('margin', '0', 'important');
+            }
+            
+            // Remove container-fluid padding everywhere
+            const containers = document.querySelectorAll('.container-fluid');
+            containers.forEach(container => {
+                container.style.setProperty('padding', '0', 'important');
+                container.style.setProperty('margin', '0', 'important');
+            });
+            
+            // Ensure mobile elements are visible
+            const mobileElements = document.querySelectorAll('.app-header, .app-stats-section, .app-section, .app-bottom-nav, .app-quick-actions');
+            mobileElements.forEach(el => {
+                if (el) {
+                    const tag = el.tagName.toLowerCase();
+                    if (tag === 'nav') {
+                        el.style.setProperty('display', 'flex', 'important');
+                    } else if (tag === 'div' && el.classList.contains('app-quick-actions')) {
+                        el.style.setProperty('display', 'flex', 'important');
+                    } else {
+                        el.style.setProperty('display', 'block', 'important');
+                    }
+                }
+            });
+            
+            // Hide desktop elements
+            const desktopElements = document.querySelectorAll('.d-none.d-md-flex, .row.d-none.d-md-flex');
+            desktopElements.forEach(el => {
+                el.style.setProperty('display', 'none', 'important');
+            });
+            
+            // Add visual test indicator (remove after confirming it works)
+            let testIndicator = document.getElementById('mobile-test-indicator');
+            if (!testIndicator) {
+                testIndicator = document.createElement('div');
+                testIndicator.id = 'mobile-test-indicator';
+                testIndicator.style.cssText = 'position:fixed;top:10px;right:10px;background:#10b981;color:white;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:bold;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.2);';
+                testIndicator.textContent = '✅ MOBILE MODE ACTIVE';
+                document.body.appendChild(testIndicator);
+                setTimeout(() => testIndicator.remove(), 5000);
+            }
+            
+            console.log('✅ Mobile styles FORCED - Width:', width);
+        } else {
+            console.log('🖥️ Desktop mode - Width:', width);
+        }
+    }
+    
+    // Run immediately
+    checkAndApplyMobileStyles();
+    
+    // Run on load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAndApplyMobileStyles();
+            setTimeout(checkAndApplyMobileStyles, 50);
+        });
+    } else {
+        checkAndApplyMobileStyles();
+        setTimeout(checkAndApplyMobileStyles, 50);
+    }
+    
+    // Run on resize
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(checkAndApplyMobileStyles, 100);
+    });
+    
+    // Run multiple times to override any late-loading styles
+    setTimeout(checkAndApplyMobileStyles, 100);
+    setTimeout(checkAndApplyMobileStyles, 300);
+    setTimeout(checkAndApplyMobileStyles, 500);
+    setTimeout(checkAndApplyMobileStyles, 1000);
+    
+    // Check CSS files loaded
+    const checkCSSLoaded = function() {
+        const stylesheets = Array.from(document.styleSheets);
+        let mobileCSSFound = false;
+        stylesheets.forEach(sheet => {
+            try {
+                if (sheet.href && (sheet.href.includes('mobile-design-system') || sheet.href.includes('global-mobile'))) {
+                    mobileCSSFound = true;
+                    console.log('✅ Mobile CSS loaded:', sheet.href);
+                }
+            } catch(e) {
+                // Cross-origin stylesheet, skip
+            }
+        });
+        if (!mobileCSSFound) {
+            console.warn('⚠️ Mobile CSS files not found in stylesheets');
+        }
+    };
+    
+    setTimeout(checkCSSLoaded, 500);
+})();
 </script>
 @endpush
-

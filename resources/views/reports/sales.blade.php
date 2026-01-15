@@ -5,7 +5,7 @@
 @section('breadcrumb', 'Reports / Sales Report')
 
 @push('styles')
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">
+<link rel="stylesheet" href="{{ asset('vendor/chartjs/chart.min.css') }}">
 <style>
     /* Modern Glassmorphism Styles */
     .kpi-card {
@@ -291,7 +291,7 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{{ asset('vendor/chartjs/chart.umd.min.js') }}"></script>
 <script>
 let revenueChart;
 let currentChartType = 'line';

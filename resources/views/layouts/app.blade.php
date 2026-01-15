@@ -2,22 +2,58 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'KHB Booths Booking System')</title>
     
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Mobile Design System -->
-    <link rel="stylesheet" href="{{ asset('css/mobile-design-system.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/global-mobile-enhancements.css') }}">
+    {{-- Performance Optimizations: Resource Hints --}}
+    <link rel="preconnect" href="{{ url('/') }}">
+    <link rel="dns-prefetch" href="{{ url('/') }}">
+    
+    {{-- Critical CSS: Preload essential stylesheets --}}
+    <link rel="preload" href="{{ asset('vendor/bootstrap5/css/bootstrap.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="{{ asset('vendor/fontawesome/css/all.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="{{ asset('vendor/bootstrap5/css/bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
+    </noscript>
+    
+    {{-- Conditional CSS Loading: Mobile vs Desktop --}}
+    <script>
+        (function() {
+            var isMobile = window.innerWidth <= 768;
+            var isTablet = window.innerWidth > 768 && window.innerWidth <= 1024;
+            
+            // Load mobile CSS only on mobile devices
+            if (isMobile) {
+                var mobileCSS = document.createElement('link');
+                mobileCSS.rel = 'stylesheet';
+                mobileCSS.href = '{{ asset('css/mobile-design-system.css') }}';
+                mobileCSS.media = 'only x';
+                mobileCSS.onload = function() { this.media = 'all'; };
+                document.head.appendChild(mobileCSS);
+                
+                var mobileEnhancements = document.createElement('link');
+                mobileEnhancements.rel = 'stylesheet';
+                mobileEnhancements.href = '{{ asset('css/global-mobile-enhancements.css') }}';
+                mobileEnhancements.media = 'only x';
+                mobileEnhancements.onload = function() { this.media = 'all'; };
+                document.head.appendChild(mobileEnhancements);
+            }
+        })();
+    </script>
+    
+    {{-- Async CSS Loader Script --}}
+    <script>
+        !function(e){"use strict";var t=function(t,n,o){var i,r=e.document,a=r.createElement("link");if(n)i=n;else{var l=(r.body||r.getElementsByTagName("head")[0]).childNodes;i=l[l.length-1]}var d=r.styleSheets;a.rel="stylesheet",a.href=t,a.media="only x",function e(t){if(r.body)return t();setTimeout(function(){e(t)})}(function(){i.parentNode.insertBefore(a,n?i:i.nextSibling)});var f=function(e){for(var t=a.href,n=d.length;n--;)if(d[n].href===t)return e();setTimeout(function(){f(e)})};return a.addEventListener&&a.addEventListener("load",function(){this.media=o||"all"}),a.onloadcssdefined=f,f(function(){a.media!==o&&(a.media=o||"all")}),a};"undefined"!=typeof exports?exports.loadCSS=t:e.loadCSS=t}("undefined"!=typeof global?global:this);
+    </script>
     
     @stack('styles')
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary d-none d-md-block">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ route('dashboard') }}">
                 <i class="fas fa-calendar-alt me-2"></i>KHB Booths
@@ -83,7 +119,7 @@
         </div>
     </nav>
 
-    <main class="container-fluid py-4">
+    <main class="container-fluid py-4" id="main-content">
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ session('success') }}
@@ -112,14 +148,54 @@
         @yield('content')
     </main>
 
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <!-- SweetAlert2 for beautiful modals -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Panzoom Library for Zoom & Pan -->
-    <script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
+    {{-- Performance: Preload critical JavaScript --}}
+    <link rel="preload" href="{{ asset('vendor/jquery/jquery-3.7.0.min.js') }}" as="script">
+    <link rel="preload" href="{{ asset('vendor/bootstrap5/js/bootstrap.bundle.min.js') }}" as="script">
+    
+    {{-- Critical JavaScript: Load with defer (non-blocking) --}}
+    <script src="{{ asset('vendor/jquery/jquery-3.7.0.min.js') }}" defer></script>
+    <script src="{{ asset('vendor/bootstrap5/js/bootstrap.bundle.min.js') }}" defer></script>
+    
+    {{-- Non-Critical JavaScript: Lazy load only when needed --}}
+    <script>
+    (function() {
+        'use strict';
+        
+        function loadScript(src, callback) {
+            var script = document.createElement('script');
+            script.src = src;
+            script.async = true;
+            if (callback) script.onload = callback;
+            document.head.appendChild(script);
+        }
+        
+        // Wait for DOM and jQuery to be ready
+        function whenReady(callback) {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', callback);
+            } else {
+                callback();
+            }
+        }
+        
+        whenReady(function() {
+            // Wait for jQuery
+            var checkJQuery = setInterval(function() {
+                if (typeof jQuery !== 'undefined') {
+                    clearInterval(checkJQuery);
+                    
+                    // Load SweetAlert2 (lightweight, commonly used)
+                    loadScript('{{ asset('vendor/sweetalert2/js/sweetalert2.min.js') }}');
+                    
+                    // Load Panzoom only if needed (check for panzoom elements)
+                    if (document.querySelector('[data-panzoom], .panzoom, canvas, svg')) {
+                        loadScript('{{ asset('vendor/panzoom/panzoom.min.js') }}');
+                    }
+                }
+            }, 50);
+        });
+    })();
+    </script>
     
     <!-- Custom Notification System -->
     <script>
@@ -334,6 +410,39 @@
     </style>
     
     @stack('scripts')
+    
+    <style>
+    /* Mobile Overrides - Force Mobile App Design */
+    @media (max-width: 768px) {
+        /* Hide navbar completely on mobile */
+        nav.navbar,
+        .navbar,
+        .navbar-expand-lg {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        
+        /* Remove main padding */
+        main.container-fluid,
+        #main-content {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        
+        /* Full width content */
+        body {
+            overflow-x: hidden !important;
+        }
+        
+        /* Ensure proper background */
+        html, body {
+            background: #f5f7fa !important;
+        }
+    }
+    </style>
 </body>
 </html>
 

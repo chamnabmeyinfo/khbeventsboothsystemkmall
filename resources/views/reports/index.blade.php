@@ -5,7 +5,7 @@
 @section('breadcrumb', 'Insights / Reports')
 
 @push('styles')
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">
+<link rel="stylesheet" href="{{ asset('vendor/chartjs/chart.min.css') }}">
 <style>
     /* Modern Glassmorphism Report Cards */
     .report-card {
