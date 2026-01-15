@@ -162,11 +162,12 @@ class Booth extends Model
     }
 
     /**
-     * Get status label (uses custom settings if available)
+     * Get status label (uses custom settings if available, filtered by floor plan)
      */
     public function getStatusLabel(): string
     {
-        $statusSetting = BoothStatusSetting::getByCode($this->status);
+        $floorPlanId = $this->floor_plan_id;
+        $statusSetting = BoothStatusSetting::getByCode($this->status, $floorPlanId);
         if ($statusSetting) {
             return $statusSetting->status_name;
         }
@@ -183,11 +184,12 @@ class Booth extends Model
     }
 
     /**
-     * Get status badge color (uses custom settings if available)
+     * Get status badge color (uses custom settings if available, filtered by floor plan)
      */
     public function getStatusColor(): string
     {
-        $statusSetting = BoothStatusSetting::getByCode($this->status);
+        $floorPlanId = $this->floor_plan_id;
+        $statusSetting = BoothStatusSetting::getByCode($this->status, $floorPlanId);
         if ($statusSetting && $statusSetting->badge_color) {
             return $statusSetting->badge_color;
         }
@@ -204,11 +206,12 @@ class Booth extends Model
     }
 
     /**
-     * Get status colors array (background, border, text)
+     * Get status colors array (background, border, text) - filtered by floor plan
      */
     public function getStatusColors(): array
     {
-        $statusSetting = BoothStatusSetting::getByCode($this->status);
+        $floorPlanId = $this->floor_plan_id;
+        $statusSetting = BoothStatusSetting::getByCode($this->status, $floorPlanId);
         if ($statusSetting) {
             return [
                 'background' => $statusSetting->status_color,

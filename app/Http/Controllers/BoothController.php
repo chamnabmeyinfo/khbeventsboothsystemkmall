@@ -300,10 +300,10 @@ class BoothController extends Controller
         // Check if user has permission to edit canvas
         $canEditCanvas = auth()->user()->hasPermission('booths.canvas.edit') || auth()->user()->isAdmin();
         
-        // Get booth status settings for custom colors
+        // Get booth status settings for custom colors (filtered by current floor plan)
         try {
-            $statusSettings = \App\Models\BoothStatusSetting::getActiveStatuses();
-            $statusColors = \App\Models\BoothStatusSetting::getStatusColors();
+            $statusSettings = \App\Models\BoothStatusSetting::getActiveStatuses($currentFloorPlan ? $currentFloorPlan->id : null);
+            $statusColors = \App\Models\BoothStatusSetting::getStatusColors($currentFloorPlan ? $currentFloorPlan->id : null);
         } catch (\Exception $e) {
             // If table doesn't exist yet or error occurs, use empty collections
             \Log::warning('Error loading booth status settings: ' . $e->getMessage());
@@ -2405,10 +2405,10 @@ class BoothController extends Controller
             }
         }
         
-        // Get booth status settings for custom colors and labels
+        // Get booth status settings for custom colors and labels (filtered by floor plan)
         try {
-            $statusSettings = \App\Models\BoothStatusSetting::getActiveStatuses();
-            $statusColors = \App\Models\BoothStatusSetting::getStatusColors();
+            $statusSettings = \App\Models\BoothStatusSetting::getActiveStatuses($floorPlan->id);
+            $statusColors = \App\Models\BoothStatusSetting::getStatusColors($floorPlan->id);
         } catch (\Exception $e) {
             // If table doesn't exist yet or error occurs, use empty collections
             \Log::warning('Error loading booth status settings: ' . $e->getMessage());
@@ -2494,6 +2494,14 @@ class BoothController extends Controller
             'paid' => Booth::where('status', Booth::STATUS_PAID)->count(),
         ];
         
+        // Get booth status settings for management page
+        try {
+            $statusSettings = \App\Models\BoothStatusSetting::orderBy('floor_plan_id')->orderBy('sort_order')->get();
+        } catch (\Exception $e) {
+            \Log::warning('Error loading booth status settings: ' . $e->getMessage());
+            $statusSettings = collect([]);
+        }
+        
         return view('booths.management', compact(
             'booths',
             'floorPlans',
@@ -2502,7 +2510,8 @@ class BoothController extends Controller
             'clients',
             'stats',
             'sortBy',
-            'sortDir'
+            'sortDir',
+            'statusSettings'
         ));
     }
 

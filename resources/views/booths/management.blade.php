@@ -410,11 +410,67 @@
         cursor: pointer;
         box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
+    
+    /* Status Settings Modal Styles */
+    #statusSettingsModal .modal-dialog {
+        max-width: 95%;
+    }
+    
+    #statusSettingsModal .form-control-color {
+        height: 38px;
+        width: 60px;
+        border: 2px solid #dee2e6;
+        border-radius: 6px;
+        cursor: pointer;
+        padding: 2px;
+    }
+    
+    #statusSettingsModal .form-control-color:hover {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    #statusSettingsTable tbody tr {
+        cursor: move;
+        transition: background-color 0.2s;
+    }
+    
+    #statusSettingsTable tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    #statusSettingsTable .status-bg-color,
+    #statusSettingsTable .status-border-color,
+    #statusSettingsTable .status-text-color {
+        cursor: pointer;
+    }
+    
+    .status-color-preview {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        border: 2px solid #dee2e6;
+        margin-right: 8px;
+        vertical-align: middle;
+    }
 </style>
 @endpush
 
 @section('content')
 <div class="container-fluid">
+    <!-- Page Header with Status Settings Button -->
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0"><i class="fas fa-store me-2"></i>Booth Management</h2>
+                <button type="button" class="btn btn-primary" onclick="openStatusSettingsModal()">
+                    <i class="fas fa-tags me-2"></i>Booth Status Settings
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-md-2">
@@ -950,9 +1006,62 @@
         </div>
     </div>
 </div>
+
+<!-- Status Settings Modal -->
+<div class="modal fade" id="statusSettingsModal" tabindex="-1" role="dialog" aria-labelledby="statusSettingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h5 class="modal-title" id="statusSettingsModalLabel">
+                    <i class="fas fa-tags me-2"></i>Booth Status Settings
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Customize booking status names, colors, and assign them to specific floor plans.</strong>
+                    <br>Statuses assigned to a floor plan will only be available for that floor plan. Global statuses (no floor plan assigned) are available for all floor plans.
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="mb-0"><i class="fas fa-list me-2"></i>Status Configuration</h6>
+                        <small class="text-muted">Drag rows to reorder, or use the Order field</small>
+                    </div>
+                    <button type="button" class="btn btn-primary" id="btnAddStatus">
+                        <i class="fas fa-plus me-2"></i>Add New Status
+                    </button>
+                </div>
+
+                <div id="statusSettingsContainer">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Loading status settings...</p>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top">
+                    <button type="button" class="btn btn-success" id="btnSaveStatusSettings">
+                        <i class="fas fa-save me-2"></i>Save All Status Settings
+                    </button>
+                    <button type="button" class="btn btn-secondary ms-2" id="btnResetStatusSettings">
+                        <i class="fas fa-undo me-2"></i>Reset to Defaults
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/ui-lightness/jquery-ui.css">
 <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 <script>
@@ -1354,5 +1463,275 @@ if (imageUploadArea) {
         }
     }, false);
 }
+
+// Status Settings Modal
+function openStatusSettingsModal() {
+    loadStatusSettings();
+    $('#statusSettingsModal').modal('show');
+}
+
+function loadStatusSettings() {
+    $.get('{{ route("settings.booth-statuses") }}')
+        .done(function(response) {
+            if (response.status === 200) {
+                renderStatusSettings(response.data);
+            }
+        })
+        .fail(function() {
+            $('#statusSettingsContainer').html('<div class="alert alert-danger">Failed to load status settings</div>');
+        });
+}
+
+function renderStatusSettings(statuses) {
+    if (!statuses || statuses.length === 0) {
+        $('#statusSettingsContainer').html('<div class="alert alert-info">No status settings found. Click "Add New Status" to create one.</div>');
+        return;
+    }
+
+    let html = '<div class="table-responsive"><table class="table table-bordered table-hover" id="statusSettingsTable">';
+    html += '<thead class="table-light"><tr>';
+    html += '<th style="width: 60px;">Order</th>';
+    html += '<th style="width: 80px;">Code</th>';
+    html += '<th>Status Name</th>';
+    html += '<th style="width: 150px;">Background</th>';
+    html += '<th style="width: 150px;">Border</th>';
+    html += '<th style="width: 150px;">Text</th>';
+    html += '<th style="width: 120px;">Badge</th>';
+    html += '<th>Description</th>';
+    html += '<th style="width: 200px;">Floor Plan</th>';
+    html += '<th style="width: 100px;">Default</th>';
+    html += '<th style="width: 100px;">Active</th>';
+    html += '<th style="width: 120px;">Actions</th>';
+    html += '</tr></thead><tbody id="statusSettingsBody">';
+
+    statuses.forEach(function(status, index) {
+        html += renderStatusRow(status, index);
+    });
+
+    html += '</tbody></table></div>';
+    $('#statusSettingsContainer').html(html);
+    
+    // Make rows sortable
+    makeStatusRowsSortable();
+    
+    // Attach event handlers
+    attachStatusEventHandlers();
+}
+
+function renderStatusRow(status, index) {
+    const rowId = 'status-row-' + (status.id || 'new-' + index);
+    let html = '<tr id="' + rowId + '" data-status-id="' + (status.id || '') + '" data-status-code="' + status.status_code + '">';
+    
+    // Sort Order
+    html += '<td><input type="number" class="form-control form-control-sm status-sort-order" value="' + (status.sort_order || 0) + '" min="0" style="width: 60px;"></td>';
+    
+    // Status Code
+    html += '<td><input type="number" class="form-control form-control-sm status-code" value="' + status.status_code + '" min="1" required style="width: 70px;"></td>';
+    
+    // Status Name
+    html += '<td><input type="text" class="form-control form-control-sm status-name" value="' + (status.status_name || '') + '" required maxlength="100"></td>';
+    
+    // Background Color with visual picker
+    html += '<td><div class="input-group input-group-sm"><input type="color" class="form-control form-control-color status-bg-color" value="' + (status.status_color || '#28a745') + '" style="width: 60px; height: 38px;"><input type="text" class="form-control form-control-sm status-bg-color-text" value="' + (status.status_color || '#28a745') + '" maxlength="7" style="width: 80px;"></div></td>';
+    
+    // Border Color with visual picker
+    html += '<td><div class="input-group input-group-sm"><input type="color" class="form-control form-control-color status-border-color" value="' + (status.border_color || status.status_color || '#28a745') + '" style="width: 60px; height: 38px;"><input type="text" class="form-control form-control-sm status-border-color-text" value="' + (status.border_color || status.status_color || '#28a745') + '" maxlength="7" style="width: 80px;"></div></td>';
+    
+    // Text Color with visual picker
+    html += '<td><div class="input-group input-group-sm"><input type="color" class="form-control form-control-color status-text-color" value="' + (status.text_color || '#ffffff') + '" style="width: 60px; height: 38px;"><input type="text" class="form-control form-control-sm status-text-color-text" value="' + (status.text_color || '#ffffff') + '" maxlength="7" style="width: 80px;"></div></td>';
+    
+    // Badge Color
+    html += '<td><select class="form-control form-control-sm status-badge-color">';
+    const badgeColors = ['success', 'info', 'warning', 'danger', 'primary', 'secondary', 'dark', 'light'];
+    badgeColors.forEach(function(color) {
+        html += '<option value="' + color + '"' + (status.badge_color === color ? ' selected' : '') + '>' + color.charAt(0).toUpperCase() + color.slice(1) + '</option>';
+    });
+    html += '</select></td>';
+    
+    // Description
+    html += '<td><input type="text" class="form-control form-control-sm status-description" value="' + (status.description || '') + '" placeholder="Status description"></td>';
+    
+    // Floor Plan Assignment
+    html += '<td><select class="form-control form-control-sm status-floor-plan">';
+    html += '<option value="">Global (All Floor Plans)</option>';
+    @foreach($floorPlans as $fp)
+    html += '<option value="{{ $fp->id }}"' + (status.floor_plan_id == {{ $fp->id }} ? ' selected' : '') + '>{{ $fp->name }}</option>';
+    @endforeach
+    html += '</select></td>';
+    
+    // Is Default
+    html += '<td class="text-center"><input type="checkbox" class="form-check-input status-is-default" ' + (status.is_default ? 'checked' : '') + '></td>';
+    
+    // Is Active
+    html += '<td class="text-center"><input type="checkbox" class="form-check-input status-is-active" ' + (status.is_active !== false ? 'checked' : '') + '></td>';
+    
+    // Actions
+    html += '<td class="text-center">';
+    html += '<button type="button" class="btn btn-sm btn-danger btn-delete-status" title="Delete"><i class="fas fa-trash"></i></button>';
+    html += '</td>';
+    
+    html += '</tr>';
+    return html;
+}
+
+function makeStatusRowsSortable() {
+    $('#statusSettingsBody').sortable({
+        handle: '.status-sort-order',
+        axis: 'y',
+        update: function(event, ui) {
+            $('#statusSettingsBody tr').each(function(index) {
+                $(this).find('.status-sort-order').val(index + 1);
+            });
+        }
+    });
+}
+
+function attachStatusEventHandlers() {
+    // Sync color pickers with text inputs
+    $('.status-bg-color, .status-border-color, .status-text-color').on('change', function() {
+        const textInput = $(this).siblings('input[type="text"]');
+        textInput.val($(this).val());
+    });
+
+    $('.status-bg-color-text, .status-border-color-text, .status-text-color-text').on('input', function() {
+        const colorInput = $(this).siblings('input[type="color"]');
+        const value = $(this).val();
+        if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+            colorInput.val(value);
+        }
+    });
+
+    // Only one default status allowed
+    $('.status-is-default').on('change', function() {
+        if ($(this).is(':checked')) {
+            $('.status-is-default').not(this).prop('checked', false);
+        }
+    });
+
+    // Delete status
+    $('.btn-delete-status').on('click', function() {
+        const row = $(this).closest('tr');
+        const statusId = row.data('status-id');
+        const statusName = row.find('.status-name').val();
+
+        if (!confirm('Are you sure you want to delete status "' + statusName + '"? This action cannot be undone.')) {
+            return;
+        }
+
+        if (statusId) {
+            $.ajax({
+                url: '{{ route("settings.booth-statuses.delete", ":id") }}'.replace(':id', statusId),
+                method: 'DELETE',
+                data: { _token: '{{ csrf_token() }}' },
+                success: function(response) {
+                    if (response.status === 200) {
+                        toastr.success(response.message);
+                        row.fadeOut(300, function() {
+                            $(this).remove();
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    toastr.error(xhr.responseJSON?.message || 'Failed to delete status');
+                }
+            });
+        } else {
+            row.fadeOut(300, function() {
+                $(this).remove();
+            });
+        }
+    });
+}
+
+$('#btnAddStatus').on('click', function() {
+    const maxCode = Math.max(...$('.status-code').map(function() {
+        return parseInt($(this).val()) || 0;
+    }).get(), 0);
+    
+    const newStatus = {
+        id: null,
+        status_code: maxCode + 1,
+        status_name: 'New Status',
+        status_color: '#6c757d',
+        border_color: '#6c757d',
+        text_color: '#ffffff',
+        badge_color: 'secondary',
+        description: '',
+        floor_plan_id: null,
+        is_active: true,
+        sort_order: $('#statusSettingsBody tr').length + 1,
+        is_default: false
+    };
+
+    if ($('#statusSettingsBody').length === 0) {
+        renderStatusSettings([newStatus]);
+    } else {
+        const newRow = $(renderStatusRow(newStatus, $('#statusSettingsBody tr').length));
+        $('#statusSettingsBody').append(newRow);
+        attachStatusEventHandlers();
+    }
+});
+
+$('#btnSaveStatusSettings').on('click', function() {
+    const btn = $(this);
+    const originalText = btn.html();
+    btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Saving...');
+
+    const statuses = [];
+    $('#statusSettingsBody tr').each(function() {
+        const row = $(this);
+        const statusId = row.data('status-id');
+        
+        statuses.push({
+            id: statusId || null,
+            status_code: parseInt(row.find('.status-code').val()) || 1,
+            status_name: row.find('.status-name').val() || '',
+            status_color: row.find('.status-bg-color-text').val() || '#28a745',
+            border_color: row.find('.status-border-color-text').val() || null,
+            text_color: row.find('.status-text-color-text').val() || '#ffffff',
+            badge_color: row.find('.status-badge-color').val() || 'success',
+            description: row.find('.status-description').val() || '',
+            floor_plan_id: row.find('.status-floor-plan').val() || null,
+            is_active: row.find('.status-is-active').is(':checked'),
+            sort_order: parseInt(row.find('.status-sort-order').val()) || 0,
+            is_default: row.find('.status-is-default').is(':checked')
+        });
+    });
+
+    $.ajax({
+        url: '{{ route("settings.booth-statuses.save") }}',
+        method: 'POST',
+        data: {
+            statuses: statuses,
+            _token: '{{ csrf_token() }}'
+        },
+        success: function(response) {
+            if (response.status === 200) {
+                toastr.success(response.message || 'Status settings saved successfully');
+                setTimeout(function() {
+                    loadStatusSettings();
+                }, 500);
+            }
+        },
+        error: function(xhr) {
+            const errors = xhr.responseJSON?.errors || {};
+            let message = xhr.responseJSON?.message || 'Failed to save status settings';
+            if (Object.keys(errors).length > 0) {
+                message += ': ' + Object.values(errors).flat().join(', ');
+            }
+            toastr.error(message);
+        },
+        complete: function() {
+            btn.prop('disabled', false).html(originalText);
+        }
+    });
+});
+
+// Load on page load if modal is opened
+$(document).ready(function() {
+    if ($('#statusSettingsModal').hasClass('show')) {
+        loadStatusSettings();
+    }
+});
 </script>
 @endpush

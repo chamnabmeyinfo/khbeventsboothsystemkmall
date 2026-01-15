@@ -10,6 +10,7 @@ class BoothStatusSetting extends Model
     use HasFactory;
 
     protected $fillable = [
+        'floor_plan_id',
         'status_code',
         'status_name',
         'status_color',
@@ -30,41 +31,84 @@ class BoothStatusSetting extends Model
     ];
 
     /**
-     * Get all active statuses ordered by sort_order
+     * Get floor plan relationship
      */
-    public static function getActiveStatuses()
+    public function floorPlan()
     {
-        return self::where('is_active', true)
-            ->orderBy('sort_order')
-            ->get();
+        return $this->belongsTo(\App\Models\FloorPlan::class, 'floor_plan_id');
     }
 
     /**
-     * Get status by code
+     * Get all active statuses ordered by sort_order (optionally filtered by floor plan)
      */
-    public static function getByCode($statusCode)
+    public static function getActiveStatuses($floorPlanId = null)
     {
-        return self::where('status_code', $statusCode)
-            ->where('is_active', true)
-            ->first();
+        $query = self::where('is_active', true);
+        
+        if ($floorPlanId !== null) {
+            // Get statuses for specific floor plan OR global statuses (floor_plan_id is null)
+            $query->where(function($q) use ($floorPlanId) {
+                $q->where('floor_plan_id', $floorPlanId)
+                  ->orWhereNull('floor_plan_id');
+            });
+        } else {
+            // Get only global statuses (no floor plan assigned)
+            $query->whereNull('floor_plan_id');
+        }
+        
+        return $query->orderBy('sort_order')->get();
     }
 
     /**
-     * Get default status
+     * Get status by code (optionally filtered by floor plan)
      */
-    public static function getDefaultStatus()
+    public static function getByCode($statusCode, $floorPlanId = null)
     {
-        return self::where('is_default', true)
-            ->where('is_active', true)
-            ->first();
+        $query = self::where('status_code', $statusCode)
+            ->where('is_active', true);
+        
+        if ($floorPlanId !== null) {
+            // Get status for specific floor plan OR global status
+            $query->where(function($q) use ($floorPlanId) {
+                $q->where('floor_plan_id', $floorPlanId)
+                  ->orWhereNull('floor_plan_id');
+            })->orderByRaw('CASE WHEN floor_plan_id IS NOT NULL THEN 0 ELSE 1 END'); // Prefer floor-plan-specific over global
+        } else {
+            // Get only global status
+            $query->whereNull('floor_plan_id');
+        }
+        
+        return $query->first();
     }
 
     /**
-     * Get all statuses as array for dropdowns
+     * Get default status (optionally filtered by floor plan)
      */
-    public static function getStatusesArray()
+    public static function getDefaultStatus($floorPlanId = null)
     {
-        return self::getActiveStatuses()
+        $query = self::where('is_default', true)
+            ->where('is_active', true);
+        
+        if ($floorPlanId !== null) {
+            // Get default status for specific floor plan OR global default
+            $query->where(function($q) use ($floorPlanId) {
+                $q->where('floor_plan_id', $floorPlanId)
+                  ->orWhereNull('floor_plan_id');
+            })->orderByRaw('CASE WHEN floor_plan_id IS NOT NULL THEN 0 ELSE 1 END'); // Prefer floor-plan-specific over global
+        } else {
+            // Get only global default
+            $query->whereNull('floor_plan_id');
+        }
+        
+        return $query->first();
+    }
+
+    /**
+     * Get all statuses as array for dropdowns (optionally filtered by floor plan)
+     */
+    public static function getStatusesArray($floorPlanId = null)
+    {
+        return self::getActiveStatuses($floorPlanId)
             ->mapWithKeys(function ($status) {
                 return [$status->status_code => $status->status_name];
             })
@@ -72,12 +116,12 @@ class BoothStatusSetting extends Model
     }
 
     /**
-     * Get status colors as array
+     * Get status colors as array (optionally filtered by floor plan)
      */
-    public static function getStatusColors()
+    public static function getStatusColors($floorPlanId = null)
     {
         $colors = [];
-        foreach (self::getActiveStatuses() as $status) {
+        foreach (self::getActiveStatuses($floorPlanId) as $status) {
             $colors[$status->status_code] = [
                 'background' => $status->status_color,
                 'border' => $status->border_color ?? $status->status_color,

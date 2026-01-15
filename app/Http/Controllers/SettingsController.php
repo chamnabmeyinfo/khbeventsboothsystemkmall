@@ -787,6 +787,7 @@ class SettingsController extends Controller
                 'statuses.*.is_active' => 'nullable|boolean',
                 'statuses.*.sort_order' => 'required|integer|min:0',
                 'statuses.*.is_default' => 'nullable|boolean',
+                'statuses.*.floor_plan_id' => 'nullable|integer|exists:floor_plans,id',
             ]);
 
             $saved = [];
@@ -794,12 +795,44 @@ class SettingsController extends Controller
 
             foreach ($validated['statuses'] as $statusData) {
                 try {
-                    // If only one status should be default, unset others first
+                    // Handle floor_plan_id (can be null for global, or empty string should be null)
+                    if (isset($statusData['floor_plan_id']) && $statusData['floor_plan_id'] === '') {
+                        $statusData['floor_plan_id'] = null;
+                    }
+                    
+                    // If only one status should be default, unset others first (within same floor plan scope)
                     if (isset($statusData['is_default']) && $statusData['is_default']) {
-                        BoothStatusSetting::where('id', '!=', $statusData['id'] ?? 0)
-                            ->update(['is_default' => false]);
+                        $defaultQuery = BoothStatusSetting::where('id', '!=', $statusData['id'] ?? 0);
+                        // Only unset defaults for the same floor plan (or global if this is global)
+                        if (isset($statusData['floor_plan_id']) && $statusData['floor_plan_id'] !== null) {
+                            $defaultQuery->where('floor_plan_id', $statusData['floor_plan_id']);
+                        } else {
+                            $defaultQuery->whereNull('floor_plan_id');
+                        }
+                        $defaultQuery->update(['is_default' => false]);
+                    }
+                    
+                    // Check for duplicate status_code within same floor plan
+                    $existingStatus = BoothStatusSetting::where('status_code', $statusData['status_code'])
+                        ->where(function($q) use ($statusData) {
+                            if (isset($statusData['floor_plan_id']) && $statusData['floor_plan_id'] !== null) {
+                                $q->where('floor_plan_id', $statusData['floor_plan_id']);
+                            } else {
+                                $q->whereNull('floor_plan_id');
+                            }
+                        })
+                        ->where('id', '!=', $statusData['id'] ?? 0)
+                        ->first();
+                    
+                    if ($existingStatus) {
+                        throw new \Exception('Status code ' . $statusData['status_code'] . ' already exists for this floor plan assignment.');
                     }
 
+                    // Handle floor_plan_id (can be null for global, or empty string should be null)
+                    if (isset($statusData['floor_plan_id']) && $statusData['floor_plan_id'] === '') {
+                        $statusData['floor_plan_id'] = null;
+                    }
+                    
                     if (isset($statusData['id']) && $statusData['id']) {
                         // Update existing
                         $status = BoothStatusSetting::findOrFail($statusData['id']);
