@@ -300,6 +300,10 @@ class BoothController extends Controller
         // Check if user has permission to edit canvas
         $canEditCanvas = auth()->user()->hasPermission('booths.canvas.edit') || auth()->user()->isAdmin();
         
+        // Get booth status settings for custom colors
+        $statusSettings = \App\Models\BoothStatusSetting::getActiveStatuses();
+        $statusColors = \App\Models\BoothStatusSetting::getStatusColors();
+        
         return view('booths.index', compact(
             'booths',
             'boothsForJS',
@@ -320,6 +324,8 @@ class BoothController extends Controller
             'bookedBooths',
             'reservedBoothsCount',
             'paidBooths',
+            'statusSettings',
+            'statusColors',
             'occupiedBooths',
             'occupancyPercentage',
             'totalRevenue',
@@ -2392,6 +2398,10 @@ class BoothController extends Controller
             }
         }
         
+        // Get booth status settings for custom colors and labels
+        $statusSettings = \App\Models\BoothStatusSetting::getActiveStatuses();
+        $statusColors = \App\Models\BoothStatusSetting::getStatusColors();
+        
         return view('booths.public-view', compact(
             'floorPlan',
             'booths',
@@ -2400,7 +2410,9 @@ class BoothController extends Controller
             'canvasHeight',
             'floorImage',
             'floorImageUrl',
-            'floorImageExists'
+            'floorImageExists',
+            'statusSettings',
+            'statusColors'
         ));
     }
 

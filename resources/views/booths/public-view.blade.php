@@ -515,6 +515,17 @@
             }
         }
         
+        /* Dynamic status colors - will be generated from database settings */
+        @foreach($statusSettings ?? [] as $status)
+        .dropped-booth.status-{{ $status->status_code }} {
+            background: {{ $status->status_color }};
+            border-color: {{ $status->border_color ?? $status->status_color }};
+            color: {{ $status->text_color }};
+        }
+        @endforeach
+        
+        /* Fallback colors if no custom statuses */
+        @if(empty($statusSettings))
         .dropped-booth.status-1 {
             background: rgba(40, 167, 69, 0.9);
             border-color: #28a745;
@@ -544,6 +555,7 @@
             border-color: #212529;
             color: white;
         }
+        @endif
         
         .booth-tooltip {
             position: absolute;
@@ -788,26 +800,34 @@
                     <span>Status:</span>
                 </div>
                 <div class="legend-items-horizontal">
-                    <div class="legend-item-horizontal">
-                        <span class="legend-color" style="background: #28a745;"></span>
-                        <span class="legend-text">Available</span>
-                    </div>
-                    <div class="legend-item-horizontal">
-                        <span class="legend-color" style="background: #0dcaf0;"></span>
-                        <span class="legend-text">Confirmed</span>
-                    </div>
-                    <div class="legend-item-horizontal">
-                        <span class="legend-color" style="background: #ffc107;"></span>
-                        <span class="legend-text">Reserved</span>
-                    </div>
-                    <div class="legend-item-horizontal">
-                        <span class="legend-color" style="background: #6c757d;"></span>
-                        <span class="legend-text">Hidden</span>
-                    </div>
-                    <div class="legend-item-horizontal">
-                        <span class="legend-color" style="background: #212529;"></span>
-                        <span class="legend-text">Paid</span>
-                    </div>
+                    @forelse($statusSettings ?? [] as $status)
+                        <div class="legend-item-horizontal">
+                            <span class="legend-color" style="background: {{ $status->status_color }};"></span>
+                            <span class="legend-text">{{ $status->status_name }}</span>
+                        </div>
+                    @empty
+                        {{-- Fallback to defaults if no custom statuses --}}
+                        <div class="legend-item-horizontal">
+                            <span class="legend-color" style="background: #28a745;"></span>
+                            <span class="legend-text">Available</span>
+                        </div>
+                        <div class="legend-item-horizontal">
+                            <span class="legend-color" style="background: #0dcaf0;"></span>
+                            <span class="legend-text">Confirmed</span>
+                        </div>
+                        <div class="legend-item-horizontal">
+                            <span class="legend-color" style="background: #ffc107;"></span>
+                            <span class="legend-text">Reserved</span>
+                        </div>
+                        <div class="legend-item-horizontal">
+                            <span class="legend-color" style="background: #6c757d;"></span>
+                            <span class="legend-text">Hidden</span>
+                        </div>
+                        <div class="legend-item-horizontal">
+                            <span class="legend-color" style="background: #212529;"></span>
+                            <span class="legend-text">Paid</span>
+                        </div>
+                    @endforelse
                 </div>
             </div>
         </div>
@@ -1020,22 +1040,9 @@
                 if (booth.border_radius) boothElement.style.borderRadius = booth.border_radius + 'px';
                 if (booth.opacity !== null) boothElement.style.opacity = booth.opacity;
                 
-                // Status labels
-                const statusLabels = {
-                    1: 'Available',
-                    2: 'Confirmed',
-                    3: 'Reserved',
-                    4: 'Hidden',
-                    5: 'Paid'
-                };
-                
-                const statusColors = {
-                    1: '#28a745',
-                    2: '#0dcaf0',
-                    3: '#ffc107',
-                    4: '#6c757d',
-                    5: '#212529'
-                };
+                // Status labels and colors from database
+                const statusLabels = @json($statusSettings->pluck('status_name', 'status_code')->toArray() ?? [1 => 'Available', 2 => 'Confirmed', 3 => 'Reserved', 4 => 'Hidden', 5 => 'Paid']);
+                const statusColors = @json($statusColors ?? [1 => '#28a745', 2 => '#0dcaf0', 3 => '#ffc107', 4 => '#6c757d', 5 => '#212529']);
                 
                 // Enhanced tooltip on hover
                 const tooltip = document.getElementById('boothTooltip');

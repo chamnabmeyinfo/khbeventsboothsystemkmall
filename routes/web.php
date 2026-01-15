@@ -324,6 +324,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/settings/canvas', [SettingsController::class, 'getCanvasSettings'])->name('settings.canvas');
         Route::post('/settings/canvas', [SettingsController::class, 'saveCanvasSettings'])->name('settings.canvas.save');
         
+        // Booth Status Settings API
+        Route::get('/settings/booth-statuses', [SettingsController::class, 'getBoothStatusSettings'])->name('settings.booth-statuses');
+        Route::get('/settings/booth-statuses/colors', [SettingsController::class, 'getBoothStatusColors'])->name('settings.booth-statuses.colors');
+        Route::post('/settings/booth-statuses', [SettingsController::class, 'saveBoothStatusSettings'])->name('settings.booth-statuses.save');
+        Route::delete('/settings/booth-statuses/{id}', [SettingsController::class, 'deleteBoothStatusSetting'])->name('settings.booth-statuses.delete');
+        
         // Company & Appearance Settings API
         Route::get('/settings/company', [SettingsController::class, 'getCompanySettings'])->name('settings.company');
         Route::post('/settings/company', [SettingsController::class, 'saveCompanySettings'])->name('settings.company.save');

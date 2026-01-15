@@ -1137,11 +1137,19 @@
 }
 
 /* Status colors matching legend - these override custom background colors */
+/* Dynamic status colors from database */
+@if(isset($statusSettings) && $statusSettings->count() > 0)
+    @foreach($statusSettings as $status)
+.dropped-booth.status-{{ $status->status_code }} { background: {{ $status->status_color }} !important; border-color: {{ $status->border_color ?? $status->status_color }} !important; color: {{ $status->text_color }} !important; }
+    @endforeach
+@else
+    {{-- Fallback to defaults if no custom statuses --}}
 .dropped-booth.status-1 { background: #28a745 !important; border-color: #28a745 !important; color: #ffffff !important; }
 .dropped-booth.status-2 { background: #0dcaf0 !important; border-color: #0dcaf0 !important; color: #ffffff !important; }
 .dropped-booth.status-3 { background: #ffc107 !important; border-color: #ffc107 !important; color: #333333 !important; }
 .dropped-booth.status-4 { background: #6c757d !important; border-color: #6c757d !important; color: #ffffff !important; }
 .dropped-booth.status-5 { background: #212529 !important; border-color: #212529 !important; color: #ffffff !important; }
+@endif
 
 /* Context menu for booths (right-click) */
 .booth-context-menu {
@@ -2599,14 +2607,28 @@
                             <i class="fas fa-tag"></i> Booking Status
                         </label>
                         <select class="form-control" id="bookingStatus" name="status">
-                            <option value="2">Confirmed</option>
-                            <option value="3">Reserved</option>
-                            <option value="5">Paid</option>
+                            @php
+                                $bookingStatuses = isset($statusSettings) ? $statusSettings->filter(function($s) {
+                                    return $s->status_code != 1 && $s->status_code != 4; // Exclude Available and Hidden
+                                }) : collect();
+                            @endphp
+                            @forelse($bookingStatuses as $status)
+                                <option value="{{ $status->status_code }}">{{ $status->status_name }}</option>
+                            @empty
+                                {{-- Fallback to defaults --}}
+                                <option value="2">Confirmed</option>
+                                <option value="3">Reserved</option>
+                                <option value="5">Paid</option>
+                            @endforelse
                         </select>
                         <small class="form-text text-muted">
-                            <strong>Confirmed:</strong> Client has confirmed the booking<br>
-                            <strong>Reserved:</strong> Booth is reserved but not yet confirmed<br>
-                            <strong>Paid:</strong> Payment has been received
+                            @forelse($bookingStatuses as $status)
+                                <strong>{{ $status->status_name }}:</strong> {{ $status->description ?? 'No description' }}<br>
+                            @empty
+                                <strong>Confirmed:</strong> Client has confirmed the booking<br>
+                                <strong>Reserved:</strong> Booth is reserved but not yet confirmed<br>
+                                <strong>Paid:</strong> Payment has been received
+                            @endforelse
                         </small>
                     </div>
                     
@@ -3470,6 +3492,9 @@ const FloorPlanDesigner = {
     zoneSettingsCache: {},
     zoneSettingsLoading: {},
     
+    // Status colors cache (loaded from database)
+    statusColorsCache: null,
+    
     // Helper: Get cached DOM element (with lazy initialization)
     getElement: function(id) {
         const self = this;
@@ -3723,8 +3748,11 @@ const FloorPlanDesigner = {
             @endif
         @endif
         
-        // Load booth default settings from database first, then setup
-        this.loadBoothSettingsFromDatabase().then(function() {
+        // Load booth default settings and status colors from database first, then setup
+        Promise.all([
+            this.loadBoothSettingsFromDatabase(),
+            this.loadStatusColors()
+        ]).then(function() {
             self.setupDragAndDrop();
             self.setupToolbar();
             self.setupCanvas();
@@ -8722,7 +8750,20 @@ const FloorPlanDesigner = {
             
             // Only save if skipSave is not true
             if (!skipSave) {
-            this.saveBoothPosition(boothData.id, x, y, width, height, rotation, zIndex, fontSize, borderWidth, borderRadius, opacity);
+                const boothId = parseInt(boothData.id);
+                if (isNaN(boothId)) {
+                    console.error('Invalid booth ID:', boothData.id);
+                    showNotification('Error: Invalid booth ID. Cannot save position.', 'error');
+                    return;
+                }
+                this.saveBoothPosition(boothId, x, y, width, height, rotation, zIndex, fontSize, borderWidth, borderRadius, opacity)
+                    .then(function() {
+                        console.log('✅ Booth position updated successfully');
+                    })
+                    .catch(function(error) {
+                        console.error('❌ Failed to update booth position:', error);
+                        showNotification('Failed to save booth position: ' + (error.message || 'Unknown error'), 'error');
+                    });
             }
             return;
         }
@@ -8749,22 +8790,44 @@ const FloorPlanDesigner = {
         // Wait a moment to ensure element is fully rendered
         // Only save if skipSave is not true (for batch operations)
         if (!skipSave) {
-        setTimeout(function() {
-            const width = parseFloat(boothElement.style.width) || parseFloat(boothElement.getAttribute('data-width')) || self.defaultBoothWidth;
-            const height = parseFloat(boothElement.style.height) || parseFloat(boothElement.getAttribute('data-height')) || self.defaultBoothHeight;
-            const rotation = parseFloat(boothElement.getAttribute('data-rotation')) || self.defaultBoothRotation;
-            const zIndex = parseFloat(boothElement.style.zIndex) || parseFloat(boothElement.getAttribute('data-z-index')) || self.defaultBoothZIndex;
-            const fontSize = parseFloat(boothElement.style.fontSize) || parseFloat(boothElement.getAttribute('data-font-size')) || self.defaultBoothFontSize;
-            const borderWidth = parseFloat(boothElement.style.borderWidth) || parseFloat(boothElement.getAttribute('data-border-width')) || self.defaultBoothBorderWidth;
-            const borderRadius = parseFloat(boothElement.style.borderRadius) || parseFloat(boothElement.getAttribute('data-border-radius')) || self.defaultBoothBorderRadius;
-            const opacity = parseFloat(boothElement.style.opacity) || parseFloat(boothElement.getAttribute('data-opacity')) || self.defaultBoothOpacity;
+            // Ensure booth ID is valid
+            if (!boothData.id) {
+                console.error('Cannot save booth: Missing booth ID', boothData);
+                showNotification('Error: Booth ID is missing. Cannot save position.', 'error');
+                return;
+            }
             
-            self.saveBoothPosition(boothData.id, x, y, width, height, rotation, zIndex, fontSize, borderWidth, borderRadius, opacity);
-            self.saveState();
+            setTimeout(function() {
+                const width = parseFloat(boothElement.style.width) || parseFloat(boothElement.getAttribute('data-width')) || self.defaultBoothWidth;
+                const height = parseFloat(boothElement.style.height) || parseFloat(boothElement.getAttribute('data-height')) || self.defaultBoothHeight;
+                const rotation = parseFloat(boothElement.getAttribute('data-rotation')) || self.defaultBoothRotation;
+                const zIndex = parseFloat(boothElement.style.zIndex) || parseFloat(boothElement.getAttribute('data-z-index')) || self.defaultBoothZIndex;
+                const fontSize = parseFloat(boothElement.style.fontSize) || parseFloat(boothElement.getAttribute('data-font-size')) || self.defaultBoothFontSize;
+                const borderWidth = parseFloat(boothElement.style.borderWidth) || parseFloat(boothElement.getAttribute('data-border-width')) || self.defaultBoothBorderWidth;
+                const borderRadius = parseFloat(boothElement.style.borderRadius) || parseFloat(boothElement.getAttribute('data-border-radius')) || self.defaultBoothBorderRadius;
+                const opacity = parseFloat(boothElement.style.opacity) || parseFloat(boothElement.getAttribute('data-opacity')) || self.defaultBoothOpacity;
                 
-                // Sync sidebar to remove this booth from sidebar
-                self.syncSidebarWithCanvas();
-        }, 100);
+                // Convert booth ID to integer if it's a string
+                const boothId = parseInt(boothData.id);
+                if (isNaN(boothId)) {
+                    console.error('Invalid booth ID:', boothData.id);
+                    showNotification('Error: Invalid booth ID. Cannot save position.', 'error');
+                    return;
+                }
+                
+                console.log('Saving booth position:', boothId, 'at', x, y);
+                self.saveBoothPosition(boothId, x, y, width, height, rotation, zIndex, fontSize, borderWidth, borderRadius, opacity)
+                    .then(function() {
+                        console.log('✅ Booth position saved successfully');
+                        // Sync sidebar to remove this booth from sidebar
+                        self.syncSidebarWithCanvas();
+                    })
+                    .catch(function(error) {
+                        console.error('❌ Failed to save booth position:', error);
+                        showNotification('Failed to save booth position: ' + (error.message || 'Unknown error'), 'error');
+                    });
+                self.saveState();
+            }, 100);
         } else {
             // Still save state even if skipping individual save
             self.saveState();
@@ -8831,18 +8894,12 @@ const FloorPlanDesigner = {
         const calculatedFontSize = Math.min(fontSize, Math.max(8, width * 0.45));
         div.style.fontSize = calculatedFontSize + 'px';
         
-        // Status colors mapping (matching legend colors)
-        const statusColors = {
-            1: { bg: '#28a745', border: '#28a745', text: '#ffffff' }, // Available - Green
-            2: { bg: '#0dcaf0', border: '#0dcaf0', text: '#ffffff' }, // Confirmed - Cyan
-            3: { bg: '#ffc107', border: '#ffc107', text: '#333333' }, // Reserved - Yellow
-            4: { bg: '#6c757d', border: '#6c757d', text: '#ffffff' }, // Hidden - Gray
-            5: { bg: '#212529', border: '#212529', text: '#ffffff' }  // Paid - Black
-        };
+        // Get status colors from cache (loaded from database)
+        const statusColors = self.getStatusColors();
         
         // Get status-based colors (these will override custom colors)
         const boothStatus = boothData.status || 1;
-        const statusColor = statusColors[boothStatus] || statusColors[1];
+        const statusColor = statusColors[boothStatus] || statusColors[1] || { bg: '#28a745', border: '#28a745', text: '#ffffff' };
         
         // Apply appearance settings (use zone settings if available, otherwise booth data, then defaults)
         // BUT: Status colors will override background and border colors
@@ -11532,12 +11589,16 @@ const FloorPlanDesigner = {
             }
             return response.json();
         }).then(function(data) {
+            if (data.error) {
+                console.error('❌ Error saving booth position:', data.error);
+                throw new Error(data.error);
+            }
             console.log('✅ Booth position saved successfully:', boothId, data);
             return data;
         }).catch(function(error) {
             console.error('❌ Error saving booth position:', error);
-            // Don't throw error - just log it so it doesn't break other functionality
-            return { error: error.message };
+            // Re-throw error so calling code can handle it
+            throw error;
         });
     },
     
@@ -12009,6 +12070,85 @@ const FloorPlanDesigner = {
             // Fallback to localStorage if database fails
             self.loadBoothSettingsFromLocalStorage();
         });
+    },
+    
+    // Load status colors from database
+    loadStatusColors: function() {
+        const self = this;
+        
+        // Return cached if available
+        if (self.statusColorsCache) {
+            return Promise.resolve(self.statusColorsCache);
+        }
+        
+        return fetch('/settings/booth-statuses/colors', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            if (data.status === 200 && data.data) {
+                // Convert to format expected by JavaScript
+                const colors = {};
+                Object.keys(data.data).forEach(function(statusCode) {
+                    const status = data.data[statusCode];
+                    colors[parseInt(statusCode)] = {
+                        bg: status.background,
+                        border: status.border || status.background,
+                        text: status.text
+                    };
+                });
+                self.statusColorsCache = colors;
+                return colors;
+            }
+            // Fallback to defaults
+            return {
+                1: { bg: '#28a745', border: '#28a745', text: '#ffffff' },
+                2: { bg: '#0dcaf0', border: '#0dcaf0', text: '#ffffff' },
+                3: { bg: '#ffc107', border: '#ffc107', text: '#333333' },
+                4: { bg: '#6c757d', border: '#6c757d', text: '#ffffff' },
+                5: { bg: '#212529', border: '#212529', text: '#ffffff' }
+            };
+        })
+        .catch(function(error) {
+            console.error('Error loading status colors:', error);
+            // Return defaults on error
+            return {
+                1: { bg: '#28a745', border: '#28a745', text: '#ffffff' },
+                2: { bg: '#0dcaf0', border: '#0dcaf0', text: '#ffffff' },
+                3: { bg: '#ffc107', border: '#ffc107', text: '#333333' },
+                4: { bg: '#6c757d', border: '#6c757d', text: '#ffffff' },
+                5: { bg: '#212529', border: '#212529', text: '#ffffff' }
+            };
+        });
+    },
+    
+    // Get status colors (returns cached or loads if needed)
+    getStatusColors: function() {
+        const self = this;
+        if (self.statusColorsCache) {
+            return self.statusColorsCache;
+        }
+        // Return defaults if not loaded yet
+        return {
+            1: { bg: '#28a745', border: '#28a745', text: '#ffffff' },
+            2: { bg: '#0dcaf0', border: '#0dcaf0', text: '#ffffff' },
+            3: { bg: '#ffc107', border: '#ffc107', text: '#333333' },
+            4: { bg: '#6c757d', border: '#6c757d', text: '#ffffff' },
+            5: { bg: '#212529', border: '#212529', text: '#ffffff' }
+        };
+    },
+    
+    // Refresh status colors cache (call after status settings are updated)
+    refreshStatusColors: function() {
+        const self = this;
+        self.statusColorsCache = null;
+        return self.loadStatusColors();
     },
     
     // Load booth default settings from localStorage (fallback)
@@ -12688,18 +12828,12 @@ const FloorPlanDesigner = {
                         existingBooth.setAttribute('data-opacity', booth.opacity);
                     }
                     
-                    // Status colors mapping (matching legend colors)
-                    const statusColors = {
-                        1: { bg: '#28a745', border: '#28a745', text: '#ffffff' }, // Available - Green
-                        2: { bg: '#0dcaf0', border: '#0dcaf0', text: '#ffffff' }, // Confirmed - Cyan
-                        3: { bg: '#ffc107', border: '#ffc107', text: '#333333' }, // Reserved - Yellow
-                        4: { bg: '#6c757d', border: '#6c757d', text: '#ffffff' }, // Hidden - Gray
-                        5: { bg: '#212529', border: '#212529', text: '#ffffff' }  // Paid - Black
-                    };
+                    // Get status colors from cache (loaded from database)
+                    const statusColors = self.getStatusColors();
                     
                     // Apply status-based colors (these override custom background/border colors)
                     const boothStatus = booth.status || 1;
-                    const statusColor = statusColors[boothStatus] || statusColors[1];
+                    const statusColor = statusColors[boothStatus] || statusColors[1] || { bg: '#28a745', border: '#28a745', text: '#ffffff' };
                     
                     // Status colors take priority over custom colors
                     existingBooth.style.backgroundColor = statusColor.bg;

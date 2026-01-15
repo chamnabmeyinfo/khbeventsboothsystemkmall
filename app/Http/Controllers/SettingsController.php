@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\File;
 use App\Models\Setting;
 use App\Models\CanvasSetting;
+use App\Models\BoothStatusSetting;
 
 class SettingsController extends Controller
 {
@@ -716,6 +717,155 @@ class SettingsController extends Controller
             return response()->json([
                 'status' => 500,
                 'message' => 'Error uploading favicon: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all booth status settings
+     */
+    public function getBoothStatusSettings(Request $request)
+    {
+        try {
+            $statuses = BoothStatusSetting::orderBy('sort_order')->get();
+
+            return response()->json([
+                'status' => 200,
+                'data' => $statuses
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error fetching booth status settings: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get booth status colors as JSON (for JavaScript use)
+     */
+    public function getBoothStatusColors(Request $request)
+    {
+        try {
+            $colors = BoothStatusSetting::getStatusColors();
+
+            return response()->json([
+                'status' => 200,
+                'data' => $colors
+            ]);
+        } catch (\Exception $e) {
+            // Fallback to default colors if error
+            return response()->json([
+                'status' => 200,
+                'data' => [
+                    1 => ['background' => '#28a745', 'border' => '#28a745', 'text' => '#ffffff'],
+                    2 => ['background' => '#0dcaf0', 'border' => '#0dcaf0', 'text' => '#ffffff'],
+                    3 => ['background' => '#ffc107', 'border' => '#ffc107', 'text' => '#333333'],
+                    4 => ['background' => '#6c757d', 'border' => '#6c757d', 'text' => '#ffffff'],
+                    5 => ['background' => '#212529', 'border' => '#212529', 'text' => '#ffffff'],
+                ]
+            ]);
+        }
+    }
+
+    /**
+     * Save booth status settings (create or update)
+     */
+    public function saveBoothStatusSettings(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'statuses' => 'required|array',
+                'statuses.*.id' => 'nullable|integer|exists:booth_status_settings,id',
+                'statuses.*.status_code' => 'required|integer|min:1',
+                'statuses.*.status_name' => 'required|string|max:100',
+                'statuses.*.status_color' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'statuses.*.border_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'statuses.*.text_color' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'statuses.*.badge_color' => 'nullable|string|max:50',
+                'statuses.*.description' => 'nullable|string',
+                'statuses.*.is_active' => 'nullable|boolean',
+                'statuses.*.sort_order' => 'required|integer|min:0',
+                'statuses.*.is_default' => 'nullable|boolean',
+            ]);
+
+            $saved = [];
+            $errors = [];
+
+            foreach ($validated['statuses'] as $statusData) {
+                try {
+                    // If only one status should be default, unset others first
+                    if (isset($statusData['is_default']) && $statusData['is_default']) {
+                        BoothStatusSetting::where('id', '!=', $statusData['id'] ?? 0)
+                            ->update(['is_default' => false]);
+                    }
+
+                    if (isset($statusData['id']) && $statusData['id']) {
+                        // Update existing
+                        $status = BoothStatusSetting::findOrFail($statusData['id']);
+                        $status->update($statusData);
+                    } else {
+                        // Create new
+                        $status = BoothStatusSetting::create($statusData);
+                    }
+                    $saved[] = $status;
+                } catch (\Exception $e) {
+                    $errors[] = [
+                        'status_code' => $statusData['status_code'] ?? 'unknown',
+                        'error' => $e->getMessage()
+                    ];
+                }
+            }
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Booth status settings saved successfully.',
+                'data' => $saved,
+                'errors' => $errors
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error saving booth status settings: ' . $e->getMessage());
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error saving booth status settings: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete a booth status setting
+     */
+    public function deleteBoothStatusSetting(Request $request, $id)
+    {
+        try {
+            $status = BoothStatusSetting::findOrFail($id);
+            
+            // Don't allow deleting if it's the only active status
+            $activeCount = BoothStatusSetting::where('is_active', true)->count();
+            if ($status->is_active && $activeCount <= 1) {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Cannot delete the last active status. Please deactivate it instead.'
+                ], 400);
+            }
+
+            $status->delete();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Booth status setting deleted successfully.'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error deleting booth status setting: ' . $e->getMessage());
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error deleting booth status setting: ' . $e->getMessage()
             ], 500);
         }
     }

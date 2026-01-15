@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
+use App\Models\BoothStatusSetting;
 
 class Booth extends Model
 {
@@ -161,10 +162,16 @@ class Booth extends Model
     }
 
     /**
-     * Get status label
+     * Get status label (uses custom settings if available)
      */
     public function getStatusLabel(): string
     {
+        $statusSetting = BoothStatusSetting::getByCode($this->status);
+        if ($statusSetting) {
+            return $statusSetting->status_name;
+        }
+        
+        // Fallback to hardcoded values
         return match($this->status) {
             self::STATUS_AVAILABLE => 'Available',
             self::STATUS_CONFIRMED => 'Confirmed',
@@ -176,10 +183,16 @@ class Booth extends Model
     }
 
     /**
-     * Get status badge color
+     * Get status badge color (uses custom settings if available)
      */
     public function getStatusColor(): string
     {
+        $statusSetting = BoothStatusSetting::getByCode($this->status);
+        if ($statusSetting && $statusSetting->badge_color) {
+            return $statusSetting->badge_color;
+        }
+        
+        // Fallback to hardcoded values
         return match($this->status) {
             self::STATUS_AVAILABLE => 'success',
             self::STATUS_CONFIRMED => 'info',
@@ -187,6 +200,31 @@ class Booth extends Model
             self::STATUS_HIDDEN => 'secondary',
             self::STATUS_PAID => 'primary',
             default => 'secondary',
+        };
+    }
+
+    /**
+     * Get status colors array (background, border, text)
+     */
+    public function getStatusColors(): array
+    {
+        $statusSetting = BoothStatusSetting::getByCode($this->status);
+        if ($statusSetting) {
+            return [
+                'background' => $statusSetting->status_color,
+                'border' => $statusSetting->border_color ?? $statusSetting->status_color,
+                'text' => $statusSetting->text_color,
+            ];
+        }
+        
+        // Fallback to hardcoded values
+        return match($this->status) {
+            self::STATUS_AVAILABLE => ['background' => '#28a745', 'border' => '#28a745', 'text' => '#ffffff'],
+            self::STATUS_CONFIRMED => ['background' => '#0dcaf0', 'border' => '#0dcaf0', 'text' => '#ffffff'],
+            self::STATUS_RESERVED => ['background' => '#ffc107', 'border' => '#ffc107', 'text' => '#333333'],
+            self::STATUS_HIDDEN => ['background' => '#6c757d', 'border' => '#6c757d', 'text' => '#ffffff'],
+            self::STATUS_PAID => ['background' => '#212529', 'border' => '#212529', 'text' => '#ffffff'],
+            default => ['background' => '#6c757d', 'border' => '#6c757d', 'text' => '#ffffff'],
         };
     }
 
