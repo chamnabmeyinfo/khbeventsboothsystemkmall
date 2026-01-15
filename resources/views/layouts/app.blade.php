@@ -149,7 +149,7 @@
         </div>
     </nav>
 
-    <main class="container-fluid py-4" id="main-content">
+    <main class="container-fluid py-4" id="main-content" style="min-height: calc(100vh - 60px);">
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ session('success') }}
@@ -164,7 +164,7 @@
             </div>
         @endif
 
-        @if ($errors->any())
+        @if ($errors->any() && !request()->routeIs('login'))
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <ul class="mb-0">
                     @foreach ($errors->all() as $error)
@@ -237,7 +237,6 @@
         });
     })();
 </script>
-@endif
     
     <!-- Custom Notification System -->
     <script>
@@ -467,9 +466,9 @@
             margin: 0 !important;
         }
         
-        /* Remove main padding */
-        main.container-fluid,
-        #main-content {
+        /* Remove main padding on mobile (except login page) */
+        main.container-fluid:not(:has(.login-container)),
+        #main-content:not(:has(.login-container)) {
             padding: 0 !important;
             margin: 0 !important;
         }
@@ -479,10 +478,21 @@
             overflow-x: hidden !important;
         }
         
-        /* Ensure proper background */
-        html, body {
+        /* Ensure proper background (except login page) */
+        html:not(:has(.login-container)), 
+        body:not(:has(.login-container)) {
             background: #f5f7fa !important;
         }
+    }
+    
+    /* Login page specific - ensure main doesn't interfere */
+    body:has(.login-container) main.container-fluid {
+        padding: 0 !important;
+        margin: 0 !important;
+        min-height: 100vh !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
     </style>
 </body>

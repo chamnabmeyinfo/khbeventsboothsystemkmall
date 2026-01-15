@@ -6,190 +6,346 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('vendor/datatables/css/dataTables.bootstrap5.min.css') }}">
-<link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
+<link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}">
 <style>
+    /* Modern Booth Management Design */
+    @media (min-width: 769px) {
+        body {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%) !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
+        }
+        
+        .container-fluid {
+            max-width: 1400px !important;
+            margin: 0 auto !important;
+            padding: 24px !important;
+        }
+    }
+    
+    /* Modern Page Header */
+    .modern-page-header {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%) !important;
+        border-radius: 24px !important;
+        padding: 32px !important;
+        margin-bottom: 32px !important;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+        color: white !important;
+        position: relative !important;
+        overflow: hidden !important;
+    }
+    
+    .modern-page-header::before {
+        content: '' !important;
+        position: absolute !important;
+        top: -50% !important;
+        right: -20% !important;
+        width: 500px !important;
+        height: 500px !important;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%) !important;
+        border-radius: 50% !important;
+    }
+    
+    .modern-page-header h2 {
+        font-size: 36px !important;
+        font-weight: 800 !important;
+        margin: 0 !important;
+        color: white !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+    
+    .modern-page-header .btn {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        color: white !important;
+        border-radius: 12px !important;
+        padding: 10px 20px !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .modern-page-header .btn:hover {
+        background: rgba(255, 255, 255, 0.3) !important;
+        transform: translateY(-2px) !important;
+    }
+    
     .booth-image-preview {
-        width: 60px;
-        height: 60px;
-        object-fit: cover;
-        border-radius: 8px;
-        border: 2px solid #e2e8f0;
-        cursor: pointer;
-        transition: transform 0.2s;
+        width: 60px !important;
+        height: 60px !important;
+        object-fit: cover !important;
+        border-radius: 12px !important;
+        border: 2px solid #e5e7eb !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
     }
     
     .booth-image-preview:hover {
-        transform: scale(1.1);
-        border-color: #667eea;
+        transform: scale(1.1) !important;
+        border-color: #6366f1 !important;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
     }
     
+    /* Modern Stat Cards - Matching Dashboard */
+    .modern-stat-card {
+        background: white !important;
+        border-radius: 24px !important;
+        padding: 24px !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !important;
+        border: 1px solid #e5e7eb !important;
+        position: relative !important;
+        overflow: hidden !important;
+        transition: all 0.3s ease !important;
+        text-align: center !important;
+    }
+    
+    .modern-stat-card::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 4px !important;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%) !important;
+    }
+    
+    .modern-stat-card:hover {
+        transform: translateY(-8px) scale(1.02) !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+        border-color: #818cf8 !important;
+    }
+    
+    .modern-stat-card.success::before {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    }
+    
+    .modern-stat-card.warning::before {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+    }
+    
+    .modern-stat-card.info::before {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+    }
+    
+    .modern-stat-card.danger::before {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    }
+    
+    .modern-stat-value {
+        font-size: 36px !important;
+        font-weight: 800 !important;
+        color: #111827 !important;
+        margin: 12px 0 !important;
+        line-height: 1 !important;
+    }
+    
+    .modern-stat-label {
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        color: #4b5563 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.1em !important;
+    }
+    
+    /* Legacy stat-card support */
     .stat-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 12px;
-        padding: 20px;
-        text-align: center;
-        transition: transform 0.2s;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+        color: white !important;
+        border-radius: 24px !important;
+        padding: 24px !important;
+        text-align: center !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !important;
+        border: 1px solid #e5e7eb !important;
     }
     
     .stat-card:hover {
-        transform: translateY(-4px);
+        transform: translateY(-8px) scale(1.02) !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
     }
     
     .stat-card.success {
-        background: linear-gradient(135deg, #1cc88a 0%, #17a673 100%);
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
     }
     
     .stat-card.warning {
-        background: linear-gradient(135deg, #f6c23e 0%, #dda20a 100%);
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
     }
     
     .stat-card.info {
-        background: linear-gradient(135deg, #36b9cc 0%, #2c9faf 100%);
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
     }
     
     .stat-card.danger {
-        background: linear-gradient(135deg, #e74a3b 0%, #c23321 100%);
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
     }
     
-    /* Quick Filters */
+    .stat-card > div:first-child {
+        font-size: 36px !important;
+        font-weight: 800 !important;
+    }
+    
+    .stat-card > div:last-child {
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        opacity: 0.95 !important;
+    }
+    
+    /* Modern Quick Filters */
     .quick-filter-btn {
-        font-weight: 600;
-        transition: all 0.3s ease;
-        border-radius: 8px;
-        margin-bottom: 8px;
-        white-space: nowrap;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+        border-radius: 12px !important;
+        margin-bottom: 8px !important;
+        white-space: nowrap !important;
+        padding: 10px 20px !important;
+        border: 2px solid #e5e7eb !important;
+        background: white !important;
     }
     
     .quick-filter-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+        border-color: #6366f1 !important;
     }
     
     .quick-filter-btn.active {
-        font-weight: 700;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        font-weight: 700 !important;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+        color: white !important;
+        border-color: #6366f1 !important;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
     }
     
     /* Mobile Responsive Styles */
     @media (max-width: 768px) {
-        /* Quick Filters - Stack on mobile */
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #ec4899 100%) !important;
+            padding-bottom: 90px !important;
+        }
+        
+        .container-fluid {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        
+        /* Quick Filters - Scrollable horizontal on mobile */
         .btn-group {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
+            display: flex !important;
+            flex-direction: row !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            gap: 8px !important;
+            padding: 0 16px !important;
+            margin-bottom: 16px !important;
         }
         
         .quick-filter-btn {
-            width: 100%;
-            margin-bottom: 8px;
-            font-size: 14px;
-            padding: 10px 15px;
+            min-width: 120px !important;
+            margin-bottom: 0 !important;
+            font-size: 13px !important;
+            padding: 10px 16px !important;
+            white-space: nowrap !important;
         }
         
-        /* Stat Cards - Full width on mobile */
-        .stat-card {
-            margin-bottom: 15px;
-            padding: 15px;
+        /* Filter Bar - Stack inputs on mobile */
+        .filter-bar {
+            margin: 0 16px 16px !important;
+            padding: 16px !important;
+            border-radius: 20px !important;
         }
         
-        .stat-card h3 {
-            font-size: 1.5rem;
-        }
-        
-        .stat-card p {
-            font-size: 0.85rem;
-        }
-        
-        /* Filter Bar - Stack inputs */
         .filter-bar .row {
-            flex-direction: column;
+            flex-direction: column !important;
         }
         
         .filter-bar .col-md-3,
-        .filter-bar .col-md-2 {
-            width: 100%;
-            margin-bottom: 10px;
+        .filter-bar .col-md-2,
+        .filter-bar .col-md-1 {
+            width: 100% !important;
+            margin-bottom: 12px !important;
         }
         
-        /* Table - Make responsive */
+        /* Table - Make scrollable on mobile */
         .table-modern {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+            border-radius: 20px !important;
+            margin: 0 16px !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
         }
         
         .table-modern table {
-            min-width: 800px;
+            min-width: 800px !important;
+            font-size: 13px !important;
         }
         
-        /* Action Buttons - Stack on mobile */
+        .table-modern thead th {
+            padding: 12px 8px !important;
+            font-size: 11px !important;
+        }
+        
+        .table-modern tbody td {
+            padding: 12px 8px !important;
+        }
+        
+        /* Action Buttons - Compact on mobile */
         .action-buttons {
-            flex-direction: column;
-            gap: 4px;
+            gap: 4px !important;
         }
         
         .action-buttons .btn {
-            width: 100%;
-            margin: 2px 0;
+            width: 32px !important;
+            height: 32px !important;
+            padding: 0 !important;
+            font-size: 12px !important;
+        }
+        
+        /* Actions Bar - Stack on mobile */
+        .card-body .d-flex {
+            flex-direction: column !important;
+            gap: 12px !important;
+        }
+        
+        .card-body .btn {
+            width: 100% !important;
+            margin: 0 !important;
         }
         
         /* Modal - Full screen on mobile */
         .modal-dialog {
-            margin: 0;
-            max-width: 100%;
-            height: 100vh;
+            margin: 0 !important;
+            max-width: 100% !important;
+            height: 100vh !important;
         }
         
         .modal-content {
-            height: 100vh;
-            border-radius: 0;
-        }
-        
-        /* Reduce padding on mobile */
-        .container-fluid {
-            padding-left: 10px;
-            padding-right: 10px;
-        }
-        
-        /* Stats section */
-        .row.mb-4 {
-            margin-bottom: 1rem !important;
-        }
-        
-        /* Page header */
-        .d-flex.justify-content-between {
-            flex-direction: column;
-            align-items: flex-start !important;
-        }
-        
-        .d-flex.justify-content-between h2 {
-            margin-bottom: 10px;
-        }
-        
-        .d-flex.justify-content-between .btn {
-            width: 100%;
+            height: 100vh !important;
+            border-radius: 0 !important;
         }
     }
     
     /* Tablet Specific */
     @media (min-width: 769px) and (max-width: 1024px) {
-        .quick-filter-btn {
-            font-size: 12px;
-            padding: 8px 12px;
+        .modern-stat-card {
+            padding: 20px !important;
         }
         
-        .stat-card {
-            padding: 15px;
+        .modern-stat-value {
+            font-size: 28px !important;
+        }
+        
+        .quick-filter-btn {
+            font-size: 13px !important;
+            padding: 10px 16px !important;
         }
         
         .table-modern thead th {
-            font-size: 0.75rem;
-            padding: 12px;
+            font-size: 11px !important;
+            padding: 16px 12px !important;
         }
         
         .table-modern tbody td {
-            font-size: 0.85rem;
-            padding: 10px;
+            font-size: 13px !important;
+            padding: 14px 12px !important;
         }
     }
     
@@ -197,20 +353,20 @@
     @media (hover: none) and (pointer: coarse) {
         /* Increase touch targets */
         .btn, .quick-filter-btn, .action-buttons .btn {
-            min-height: 44px;
-            min-width: 44px;
-        }
-        
-        /* Remove hover effects on touch devices */
-        .quick-filter-btn:hover,
-        .stat-card:hover {
-            transform: none;
+            min-height: 44px !important;
+            min-width: 44px !important;
         }
         
         /* Make checkboxes larger */
         input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
+            width: 20px !important;
+            height: 20px !important;
+        }
+        
+        /* Ensure buttons are touch-friendly */
+        .btn-action {
+            min-width: 44px !important;
+            min-height: 44px !important;
         }
     }
     
@@ -345,58 +501,149 @@
         }
     }
     
+    /* Modern Filter Bar */
     .filter-bar {
-        background: white;
-        padding: 20px;
-        border-radius: 12px;
-        margin-bottom: 24px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        background: white !important;
+        padding: 24px !important;
+        border-radius: 24px !important;
+        margin-bottom: 24px !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !important;
+        border: 1px solid #e5e7eb !important;
     }
     
+    .filter-bar .form-label {
+        font-weight: 600 !important;
+        color: #111827 !important;
+        margin-bottom: 8px !important;
+        font-size: 14px !important;
+    }
+    
+    .filter-bar .form-control,
+    .filter-bar .form-select {
+        border-radius: 12px !important;
+        border: 2px solid #e5e7eb !important;
+        padding: 12px 16px !important;
+        font-size: 14px !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    .filter-bar .form-control:focus,
+    .filter-bar .form-select:focus {
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+    }
+    
+    .filter-bar .btn-primary {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 12px 24px !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .filter-bar .btn-primary:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+    }
+    
+    /* Modern Table */
     .table-modern {
-        background: white;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        background: white !important;
+        border-radius: 24px !important;
+        overflow: hidden !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !important;
+        border: 1px solid #e5e7eb !important;
     }
     
     .table-modern thead {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+        color: white !important;
     }
     
     .table-modern thead th {
-        border: none;
-        padding: 16px;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.85rem;
-        letter-spacing: 0.5px;
+        border: none !important;
+        padding: 20px 16px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        font-size: 12px !important;
+        letter-spacing: 0.1em !important;
     }
     
     .table-modern tbody tr {
-        transition: all 0.2s;
+        transition: all 0.2s ease !important;
+        border-bottom: 1px solid #f3f4f6 !important;
     }
     
     .table-modern tbody tr:hover {
-        background: #f8f9fc;
-        transform: scale(1.01);
+        background: #f8f9fc !important;
+        transform: translateX(4px) !important;
+    }
+    
+    .table-modern tbody tr:last-child {
+        border-bottom: none !important;
     }
     
     .table-modern tbody td {
-        padding: 16px;
-        vertical-align: middle;
+        padding: 16px !important;
+        vertical-align: middle !important;
+        color: #374151 !important;
     }
     
+    /* Modern Action Buttons */
     .action-buttons {
-        display: flex;
-        gap: 8px;
+        display: flex !important;
+        gap: 8px !important;
     }
     
     .btn-action {
-        width: 36px;
-        height: 36px;
-        padding: 0;
+        width: 40px !important;
+        height: 40px !important;
+        padding: 0 !important;
+        border-radius: 12px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: all 0.2s ease !important;
+        font-size: 14px !important;
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    /* Modern Badges */
+    .badge {
+        padding: 6px 12px !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        font-size: 12px !important;
+    }
+    
+    .badge-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        color: white !important;
+    }
+    
+    .badge-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+        color: white !important;
+    }
+    
+    .badge-info {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+        color: white !important;
+    }
+    
+    .badge-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+        color: white !important;
+    }
+    
+    .badge-primary {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+        color: white !important;
     }
     
     /* Modal Form Styles */
@@ -587,40 +834,63 @@
         border-radius: 8px;
     }
     
+    /* Modern Modal Styles */
     .modal-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 12px 12px 0 0;
-        position: sticky;
-        top: 0;
-        z-index: 10;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+        color: white !important;
+        border-radius: 20px 20px 0 0 !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 10 !important;
+        padding: 24px 30px !important;
     }
     
     #boothModal .modal-dialog {
-        max-width: 90%;
-        margin: 1.75rem auto;
+        max-width: 90% !important;
+        margin: 1.75rem auto !important;
     }
     
     #boothModal .modal-content {
-        max-height: 90vh;
-        display: flex;
-        flex-direction: column;
+        max-height: 90vh !important;
+        display: flex !important;
+        flex-direction: column !important;
+        border-radius: 20px !important;
+        border: none !important;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
     }
     
     #boothModal .modal-body {
-        overflow-y: auto;
-        overflow-x: hidden;
-        flex: 1 1 auto;
-        padding: 20px;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        flex: 1 1 auto !important;
+        padding: 30px !important;
     }
     
     #boothModal .modal-footer {
-        position: sticky;
-        bottom: 0;
-        background: white;
-        border-top: 1px solid #dee2e6;
-        z-index: 10;
-        padding: 15px 20px;
+        position: sticky !important;
+        bottom: 0 !important;
+        background: white !important;
+        border-top: 2px solid #f3f4f6 !important;
+        z-index: 10 !important;
+        padding: 20px 30px !important;
+        border-radius: 0 0 20px 20px !important;
+    }
+    
+    #boothModal .modal-footer .btn {
+        border-radius: 12px !important;
+        padding: 10px 24px !important;
+        font-weight: 600 !important;
+    }
+    
+    #boothModal .modal-footer .btn-primary {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+        border: none !important;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+    }
+    
+    #boothModal .modal-footer .btn-primary:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4) !important;
     }
     
     #boothModal .form-group {
@@ -752,82 +1022,125 @@
 
 @section('content')
 <div class="container-fluid">
-    <!-- Page Header with Status Settings Button -->
-    <div class="row mb-3">
-        <div class="col-md-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <h2 class="mb-0"><i class="fas fa-store me-2"></i>Booth Management</h2>
-                <button type="button" class="btn btn-primary" onclick="openStatusSettingsModal()">
-                    <i class="fas fa-tags me-2"></i>Booth Status Settings
+    <!-- Modern Page Header -->
+    <div class="modern-page-header d-none d-md-block">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h2><i class="fas fa-store me-2"></i>Booth Management</h2>
+                <p style="margin: 8px 0 0 0; opacity: 0.95; font-size: 18px;">Manage and organize all your booth listings</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn" onclick="openStatusSettingsModal()">
+                    <i class="fas fa-tags me-2"></i>Status Settings
                 </button>
+                <a href="{{ url('/booths?view=canvas') }}" class="btn">
+                    <i class="fas fa-map me-2"></i>Canvas View
+                </a>
             </div>
         </div>
     </div>
+    
+    <!-- Mobile Header -->
+    <div class="d-md-none" style="padding: 20px 16px;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 style="font-size: 24px; font-weight: 800; margin: 0;"><i class="fas fa-store me-2"></i>Booths</h2>
+            <button type="button" class="btn btn-sm btn-primary" onclick="openStatusSettingsModal()">
+                <i class="fas fa-tags"></i>
+            </button>
+        </div>
+    </div>
 
-    <!-- Statistics Cards -->
-    <div class="row mb-4">
+    <!-- Modern Statistics Cards - Desktop -->
+    <div class="row mb-4 d-none d-md-flex">
         <div class="col-md-2">
-            <div class="stat-card">
-                <div style="font-size: 2rem; font-weight: 700;">{{ $stats['total'] }}</div>
-                <div style="font-size: 0.9rem; opacity: 0.9;">Total Booths</div>
+            <div class="modern-stat-card">
+                <div class="modern-stat-value">{{ number_format($stats['total']) }}</div>
+                <div class="modern-stat-label">Total Booths</div>
             </div>
         </div>
         <div class="col-md-2">
-            <div class="stat-card success">
-                <div style="font-size: 2rem; font-weight: 700;">{{ $stats['available'] }}</div>
-                <div style="font-size: 0.9rem; opacity: 0.9;">Available</div>
+            <div class="modern-stat-card success">
+                <div class="modern-stat-value">{{ number_format($stats['available']) }}</div>
+                <div class="modern-stat-label">Available</div>
             </div>
         </div>
         <div class="col-md-2">
-            <div class="stat-card warning">
-                <div style="font-size: 2rem; font-weight: 700;">{{ $stats['reserved'] }}</div>
-                <div style="font-size: 0.9rem; opacity: 0.9;">Reserved</div>
+            <div class="modern-stat-card warning">
+                <div class="modern-stat-value">{{ number_format($stats['reserved']) }}</div>
+                <div class="modern-stat-label">Reserved</div>
             </div>
         </div>
         <div class="col-md-2">
-            <div class="stat-card info">
-                <div style="font-size: 2rem; font-weight: 700;">{{ $stats['confirmed'] }}</div>
-                <div style="font-size: 0.9rem; opacity: 0.9;">Confirmed</div>
+            <div class="modern-stat-card info">
+                <div class="modern-stat-value">{{ number_format($stats['confirmed']) }}</div>
+                <div class="modern-stat-label">Confirmed</div>
             </div>
         </div>
         <div class="col-md-2">
-            <div class="stat-card danger">
-                <div style="font-size: 2rem; font-weight: 700;">{{ $stats['paid'] }}</div>
-                <div style="font-size: 0.9rem; opacity: 0.9;">Paid</div>
+            <div class="modern-stat-card danger">
+                <div class="modern-stat-value">{{ number_format($stats['paid']) }}</div>
+                <div class="modern-stat-label">Paid</div>
             </div>
         </div>
         <div class="col-md-2">
-            <a href="{{ url('/booths?view=canvas') }}" class="btn btn-lg btn-primary w-100 h-100 d-flex align-items-center justify-content-center" style="border-radius: 12px; text-decoration: none;">
-                <i class="fas fa-map mr-2"></i>Canvas View
+            <a href="{{ url('/booths?view=canvas') }}" class="modern-stat-card" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 140px;">
+                <i class="fas fa-map" style="font-size: 32px; color: #6366f1; margin-bottom: 12px;"></i>
+                <div class="modern-stat-label">Canvas View</div>
             </a>
         </div>
     </div>
+    
+    <!-- Modern Statistics Cards - Mobile -->
+    <div class="d-md-none" style="padding: 0 16px 20px;">
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+            <div class="modern-stat-card">
+                <div class="modern-stat-value" style="font-size: 28px;">{{ number_format($stats['total']) }}</div>
+                <div class="modern-stat-label">Total</div>
+            </div>
+            <div class="modern-stat-card success">
+                <div class="modern-stat-value" style="font-size: 28px;">{{ number_format($stats['available']) }}</div>
+                <div class="modern-stat-label">Available</div>
+            </div>
+            <div class="modern-stat-card warning">
+                <div class="modern-stat-value" style="font-size: 28px;">{{ number_format($stats['reserved']) }}</div>
+                <div class="modern-stat-label">Reserved</div>
+            </div>
+            <div class="modern-stat-card info">
+                <div class="modern-stat-value" style="font-size: 28px;">{{ number_format($stats['confirmed']) }}</div>
+                <div class="modern-stat-label">Confirmed</div>
+            </div>
+            <div class="modern-stat-card danger" style="grid-column: span 2;">
+                <div class="modern-stat-value" style="font-size: 28px;">{{ number_format($stats['paid']) }}</div>
+                <div class="modern-stat-label">Paid</div>
+            </div>
+        </div>
+    </div>
 
-    <!-- Quick Filters -->
-    <div class="mb-3">
-        <div class="btn-group" role="group" aria-label="Quick Filters">
+    <!-- Modern Quick Filters -->
+    <div class="mb-4" style="padding: 0 16px;">
+        <div class="btn-group" role="group" aria-label="Quick Filters" style="display: flex; gap: 8px; flex-wrap: wrap;">
             <button type="button" class="btn btn-outline-primary quick-filter-btn" onclick="applyQuickFilter('all')">
-                <i class="fas fa-list"></i> All Booths
+                <i class="fas fa-list"></i> <span class="d-none d-md-inline">All Booths</span><span class="d-md-none">All</span>
             </button>
             <button type="button" class="btn btn-outline-success quick-filter-btn" onclick="applyQuickFilter('available')">
-                <i class="fas fa-check-circle"></i> Available Only
+                <i class="fas fa-check-circle"></i> <span class="d-none d-md-inline">Available</span><span class="d-md-none">Avail</span>
             </button>
             <button type="button" class="btn btn-outline-info quick-filter-btn" onclick="applyQuickFilter('booked')">
-                <i class="fas fa-bookmark"></i> Booked Only
+                <i class="fas fa-bookmark"></i> <span class="d-none d-md-inline">Booked</span><span class="d-md-none">Book</span>
             </button>
             <button type="button" class="btn btn-outline-warning quick-filter-btn" onclick="applyQuickFilter('paid')">
-                <i class="fas fa-dollar-sign"></i> Paid Only
+                <i class="fas fa-dollar-sign"></i> <span class="d-none d-md-inline">Paid</span>
             </button>
-            <button type="button" class="btn btn-outline-secondary quick-filter-btn" onclick="applyQuickFilter('today')">
-                <i class="fas fa-calendar-day"></i> Booked Today
+            <button type="button" class="btn btn-outline-secondary quick-filter-btn d-none d-md-inline" onclick="applyQuickFilter('today')">
+                <i class="fas fa-calendar-day"></i> Today
             </button>
-            <button type="button" class="btn btn-outline-danger quick-filter-btn" onclick="applyQuickFilter('overdue')">
-                <i class="fas fa-exclamation-triangle"></i> Overdue Payments
+            <button type="button" class="btn btn-outline-danger quick-filter-btn d-none d-md-inline" onclick="applyQuickFilter('overdue')">
+                <i class="fas fa-exclamation-triangle"></i> Overdue
+            </button>
+            <button type="button" class="btn btn-link" onclick="clearAllFilters()" style="color: #6366f1; text-decoration: none; font-weight: 600;">
+                <i class="fas fa-times-circle"></i> Clear
             </button>
         </div>
-        <button type="button" class="btn btn-link float-right" onclick="clearAllFilters()">
-            <i class="fas fa-times-circle"></i> Clear Filters
-        </button>
     </div>
 
     <!-- Filter Bar -->
@@ -892,23 +1205,23 @@
         </form>
     </div>
 
-    <!-- Actions Bar -->
-    <div class="card mb-3">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <button type="button" class="btn btn-success" onclick="openCreateModal()">
+    <!-- Modern Actions Bar -->
+    <div class="card mb-3" style="background: white; border-radius: 24px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); border: 1px solid #e5e7eb;">
+        <div class="card-body" style="padding: 20px;">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="button" class="btn btn-success" onclick="openCreateModal()" style="border-radius: 12px; padding: 10px 20px; font-weight: 600;">
                         <i class="fas fa-plus mr-1"></i>Create New Booth
                     </button>
-                    <button type="button" class="btn btn-warning" onclick="bulkUpdateStatus()">
+                    <button type="button" class="btn btn-warning" onclick="bulkUpdateStatus()" style="border-radius: 12px; padding: 10px 20px; font-weight: 600;">
                         <i class="fas fa-edit mr-1"></i>Bulk Update
                     </button>
-                    <button type="button" class="btn btn-danger" onclick="bulkDelete()">
+                    <button type="button" class="btn btn-danger" onclick="bulkDelete()" style="border-radius: 12px; padding: 10px 20px; font-weight: 600;">
                         <i class="fas fa-trash mr-1"></i>Bulk Delete
                     </button>
                 </div>
                 <div>
-                    <a href="{{ route('booths.index', ['view' => 'table', 'export' => 'csv']) }}" class="btn btn-info">
+                    <a href="{{ route('booths.index', ['view' => 'table', 'export' => 'csv']) }}" class="btn btn-info" style="border-radius: 12px; padding: 10px 20px; font-weight: 600;">
                         <i class="fas fa-download mr-1"></i>Export CSV
                     </a>
                 </div>
@@ -954,7 +1267,7 @@
                             @endif
                         </td>
                         <td>
-                            <strong style="font-size: 1.1rem; color: #2d3748;">{{ $booth->booth_number }}</strong>
+                            <strong style="font-size: 16px; font-weight: 700; color: #111827;">{{ $booth->booth_number }}</strong>
                         </td>
                         <td>
                             <span class="badge badge-info">
@@ -962,13 +1275,13 @@
                             </span>
                         </td>
                         <td>
-                            {{ $booth->floorPlan ? $booth->floorPlan->name : 'N/A' }}
+                            <span style="color: #4b5563; font-weight: 500;">{{ $booth->floorPlan ? $booth->floorPlan->name : 'N/A' }}</span>
                         </td>
                         <td>
-                            {{ $booth->client ? $booth->client->company : 'N/A' }}
+                            <span style="color: #374151; font-weight: 500;">{{ $booth->client ? $booth->client->company : 'N/A' }}</span>
                         </td>
                         <td>
-                            {{ $booth->category ? $booth->category->name : 'N/A' }}
+                            <span style="color: #4b5563; font-weight: 500;">{{ $booth->category ? $booth->category->name : 'N/A' }}</span>
                         </td>
                         <td>
                             <span class="badge badge-{{ $booth->getStatusColor() }}">
@@ -976,7 +1289,7 @@
                             </span>
                         </td>
                         <td>
-                            <strong style="color: #28a745;">${{ number_format($booth->price, 2) }}</strong>
+                            <strong style="color: #10b981; font-size: 15px; font-weight: 700;">${{ number_format($booth->price, 2) }}</strong>
                         </td>
                         <td>
                             {{ $booth->area_sqm ? number_format($booth->area_sqm, 2) . ' m²' : 'N/A' }}

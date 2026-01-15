@@ -298,6 +298,107 @@
                 font-size: 14px;
             }
             
+            /* Modern Mobile Bottom Nav - Always Sticky at Bottom - Mobile (≤768px) */
+            .modern-mobile-nav {
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                background: rgba(255, 255, 255, 0.95) !important;
+                backdrop-filter: blur(20px) !important;
+                -webkit-backdrop-filter: blur(20px) !important;
+                border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+                padding: 12px 16px !important;
+                padding-bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+                z-index: 9999 !important;
+                display: flex !important;
+                justify-content: space-around !important;
+                align-items: center !important;
+                box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1) !important;
+                will-change: transform !important;
+                transform: translateZ(0) !important;
+                margin: 0 !important;
+                box-sizing: border-box !important;
+                /* Ensure it stays at bottom even on scroll */
+                position: -webkit-sticky !important;
+                position: sticky !important;
+            }
+            
+            /* Ensure body has padding at bottom for nav */
+            body {
+                padding-bottom: 80px !important;
+            }
+            
+            /* Ensure content doesn't overlap nav */
+            .content-wrapper,
+            .content,
+            main {
+                padding-bottom: 100px !important;
+            }
+            
+            .modern-mobile-nav-item {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                gap: 4px !important;
+                padding: 8px 12px !important;
+                border-radius: 12px !important;
+                color: #6b7280 !important;
+                text-decoration: none !important;
+                transition: all 0.2s ease !important;
+                min-width: 60px !important;
+                will-change: transform !important;
+                transform: translateZ(0) !important;
+            }
+            
+            .modern-mobile-nav-item i {
+                font-size: 22px !important;
+            }
+            
+            .modern-mobile-nav-item span {
+                font-size: 11px !important;
+                font-weight: 600 !important;
+            }
+            
+            .modern-mobile-nav-item.active {
+                color: #6366f1 !important;
+                background: rgba(99, 102, 241, 0.1) !important;
+            }
+            
+            .modern-mobile-nav-item:active {
+                transform: scale(0.9) translateZ(0) !important;
+            }
+            
+            /* Modern Mobile FAB */
+            .modern-mobile-fab {
+                position: fixed !important;
+                bottom: 100px !important;
+                right: 20px !important;
+                width: 64px !important;
+                height: 64px !important;
+                border-radius: 50% !important;
+                background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+                color: white !important;
+                box-shadow: 0 12px 32px rgba(99, 102, 241, 0.5) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 28px !important;
+                border: none !important;
+                cursor: pointer !important;
+                z-index: 1040 !important;
+                transition: all 0.3s ease !important;
+                will-change: transform, box-shadow !important;
+                transform: translateZ(0) !important;
+            }
+            
+            .modern-mobile-fab:active {
+                transform: scale(0.9) translateZ(0) !important;
+                box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4) !important;
+            }
+            
             .btn-sm {
                 min-height: 38px;
                 padding: 8px 12px;
@@ -443,7 +544,107 @@
         }
         
         /* Tablet specific */
+        /* Tablet - Keep Mobile Nav Sticky (769px-1024px) */
         @media (min-width: 769px) and (max-width: 1024px) {
+            /* Modern Mobile Bottom Nav - Always Sticky at Bottom - Tablet */
+            .modern-mobile-nav {
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                background: rgba(255, 255, 255, 0.98) !important;
+                backdrop-filter: blur(20px) !important;
+                -webkit-backdrop-filter: blur(20px) !important;
+                border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+                padding: 14px 20px !important;
+                padding-bottom: calc(14px + env(safe-area-inset-bottom)) !important;
+                z-index: 9999 !important;
+                display: flex !important;
+                justify-content: space-around !important;
+                align-items: center !important;
+                box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1) !important;
+                will-change: transform !important;
+                transform: translateZ(0) !important;
+                margin: 0 !important;
+                box-sizing: border-box !important;
+            }
+            
+            /* Ensure body has padding at bottom for nav on tablet */
+            body {
+                padding-bottom: 85px !important;
+            }
+            
+            /* Ensure content doesn't overlap nav on tablet */
+            .content-wrapper,
+            .content,
+            main {
+                padding-bottom: 105px !important;
+            }
+            
+            .modern-mobile-nav-item {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                gap: 6px !important;
+                padding: 10px 16px !important;
+                border-radius: 12px !important;
+                color: #6b7280 !important;
+                text-decoration: none !important;
+                transition: all 0.2s ease !important;
+                min-width: 70px !important;
+                will-change: transform !important;
+                transform: translateZ(0) !important;
+            }
+            
+            .modern-mobile-nav-item i {
+                font-size: 24px !important;
+            }
+            
+            .modern-mobile-nav-item span {
+                font-size: 12px !important;
+                font-weight: 600 !important;
+            }
+            
+            .modern-mobile-nav-item.active {
+                color: #6366f1 !important;
+                background: rgba(99, 102, 241, 0.1) !important;
+            }
+            
+            .modern-mobile-nav-item:active {
+                transform: scale(0.95) translateZ(0) !important;
+            }
+            
+            /* Modern Mobile FAB - Tablet */
+            .modern-mobile-fab {
+                position: fixed !important;
+                bottom: 110px !important;
+                right: 24px !important;
+                width: 68px !important;
+                height: 68px !important;
+                border-radius: 50% !important;
+                background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+                color: white !important;
+                box-shadow: 0 12px 32px rgba(99, 102, 241, 0.5) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 30px !important;
+                border: none !important;
+                cursor: pointer !important;
+                z-index: 1040 !important;
+                transition: all 0.3s ease !important;
+                will-change: transform, box-shadow !important;
+                transform: translateZ(0) !important;
+            }
+            
+            .modern-mobile-fab:active {
+                transform: scale(0.9) translateZ(0) !important;
+                box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4) !important;
+            }
+            
+            /* Tablet sidebar adjustments */
             .main-sidebar {
                 width: 200px;
             }
@@ -455,6 +656,25 @@
             .nav-sidebar > .nav-item > .nav-link {
                 padding: 10px 12px;
                 font-size: 14px;
+            }
+        }
+        
+        /* Desktop - Hide Mobile Navigation (≥1025px) */
+        @media (min-width: 1025px) {
+            .modern-mobile-nav,
+            .modern-mobile-fab {
+                display: none !important;
+            }
+            
+            /* Remove padding on desktop */
+            body {
+                padding-bottom: 0 !important;
+            }
+            
+            .content-wrapper,
+            .content,
+            main {
+                padding-bottom: 0 !important;
             }
         }
         
@@ -2043,6 +2263,85 @@ $.widget.bridge('uibutton', $.ui.button);
         if (window.innerWidth > 768) {
             document.body.classList.remove('sidebar-open');
         }
+    });
+})();
+</script>
+
+<!-- Modern Mobile Bottom Navigation - Global (Shows on Mobile & Tablet) -->
+<div class="d-md-none d-lg-none">
+    <div class="modern-mobile-nav">
+        <a href="{{ route('dashboard') }}" class="modern-mobile-nav-item" data-route="dashboard">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="{{ route('booths.index', ['view' => 'table']) }}" class="modern-mobile-nav-item" data-route="booths">
+            <i class="fas fa-store"></i>
+            <span>Booths</span>
+        </a>
+        <a href="{{ route('books.index') }}" class="modern-mobile-nav-item" data-route="books">
+            <i class="fas fa-calendar-check"></i>
+            <span>Bookings</span>
+        </a>
+        <a href="{{ route('clients.index') }}" class="modern-mobile-nav-item" data-route="clients">
+            <i class="fas fa-users"></i>
+            <span>Clients</span>
+        </a>
+        <a href="{{ route('settings.index') }}" class="modern-mobile-nav-item" data-route="settings">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+        </a>
+    </div>
+    
+    <!-- Modern Mobile FAB (Floating Action Button) -->
+    @auth
+    @if(auth()->user()->isAdmin() || auth()->user()->can('create', App\Models\Book::class))
+    <button class="modern-mobile-fab" onclick="window.location.href='{{ route('books.create') }}'" title="New Booking">
+        <i class="fas fa-plus"></i>
+    </button>
+    @endif
+    @endauth
+</div>
+
+<script>
+// Set active state for mobile navigation based on current route
+(function() {
+    'use strict';
+    
+    function setActiveNavItem() {
+        const currentPath = window.location.pathname;
+        const navItems = document.querySelectorAll('.modern-mobile-nav-item');
+        
+        navItems.forEach(function(item) {
+            item.classList.remove('active');
+            const href = item.getAttribute('href');
+            const route = item.getAttribute('data-route');
+            
+            if (href && currentPath) {
+                // Check if current path matches the route
+                if (currentPath === href || currentPath.startsWith(href + '/')) {
+                    item.classList.add('active');
+                } else if (route) {
+                    // Check by route name
+                    if (currentPath.includes('/' + route) || currentPath === '/' + route) {
+                        item.classList.add('active');
+                    }
+                }
+            }
+        });
+    }
+    
+    // Set active on page load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setActiveNavItem);
+    } else {
+        setActiveNavItem();
+    }
+    
+    // Update active state when navigating
+    document.querySelectorAll('.modern-mobile-nav-item').forEach(function(item) {
+        item.addEventListener('click', function() {
+            setTimeout(setActiveNavItem, 100);
+        });
     });
 })();
 </script>
