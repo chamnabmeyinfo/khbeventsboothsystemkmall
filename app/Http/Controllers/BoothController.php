@@ -1833,15 +1833,19 @@ class BoothController extends Controller
                 'booth_ids.*' => 'exists:booth,id',
                 'from' => 'required_if:mode,range|nullable|integer|min:1|max:9999',
                 'to' => 'required_if:mode,range|nullable|integer|min:1|max:9999',
+                'floor_plan_id' => 'required|exists:floor_plans,id',
             ]);
 
             $deletedBooths = [];
             $errors = [];
             $mode = $validated['mode'];
+            $floorPlanId = $validated['floor_plan_id'];
 
             if ($mode === 'all') {
-                // Delete all booths in zone
-                $zoneBooths = Booth::where('booth_number', 'LIKE', $zoneName . '%')->get();
+                // Delete all booths in zone (ONLY in the specified floor plan)
+                $zoneBooths = Booth::where('booth_number', 'LIKE', $zoneName . '%')
+                    ->where('floor_plan_id', $floorPlanId)
+                    ->get();
                 
                 foreach ($zoneBooths as $booth) {
                     try {
@@ -1856,12 +1860,14 @@ class BoothController extends Controller
                     }
                 }
             } elseif ($mode === 'specific') {
-                // Delete specific booths by ID
+                // Delete specific booths by ID (ONLY if they belong to the specified floor plan)
                 $boothIds = $validated['booth_ids'] ?? [];
                 
                 foreach ($boothIds as $boothId) {
                     try {
-                        $booth = Booth::findOrFail($boothId);
+                        $booth = Booth::where('id', $boothId)
+                            ->where('floor_plan_id', $floorPlanId)
+                            ->firstOrFail();
                         $boothNumber = $booth->booth_number;
                         $booth->delete();
                         $deletedBooths[] = $boothNumber;
@@ -1873,7 +1879,7 @@ class BoothController extends Controller
                     }
                 }
             } elseif ($mode === 'range') {
-                // Delete booths in range
+                // Delete booths in range (ONLY in the specified floor plan)
                 $from = $validated['from'];
                 $to = $validated['to'];
                 
@@ -1888,7 +1894,9 @@ class BoothController extends Controller
                 for ($i = $from; $i <= $to; $i++) {
                     for ($format = 2; $format <= 4; $format++) {
                         $boothNumber = $zoneName . str_pad($i, $format, '0', STR_PAD_LEFT);
-                        $booth = Booth::where('booth_number', $boothNumber)->first();
+                        $booth = Booth::where('booth_number', $boothNumber)
+                            ->where('floor_plan_id', $floorPlanId)
+                            ->first();
                         
                         if ($booth) {
                             try {
@@ -1906,7 +1914,10 @@ class BoothController extends Controller
                 }
             }
 
-            $message = count($deletedBooths) . ' booth(s) deleted successfully from Zone ' . $zoneName;
+            $floorPlan = FloorPlan::find($floorPlanId);
+            $floorPlanName = $floorPlan ? $floorPlan->name : 'Floor Plan #' . $floorPlanId;
+            
+            $message = count($deletedBooths) . ' booth(s) deleted successfully from Zone ' . $zoneName . ' in ' . $floorPlanName;
             if (count($errors) > 0) {
                 $message .= '. ' . count($errors) . ' booth(s) failed to delete.';
             }
@@ -1915,7 +1926,9 @@ class BoothController extends Controller
                 'status' => 200,
                 'message' => $message,
                 'deleted' => $deletedBooths,
-                'errors' => $errors
+                'errors' => $errors,
+                'floor_plan_id' => $floorPlanId,
+                'floor_plan_name' => $floorPlanName
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([

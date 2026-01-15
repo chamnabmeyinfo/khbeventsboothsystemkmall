@@ -5856,6 +5856,14 @@ const FloorPlanDesigner = {
             const btn = $(this);
             const originalText = btn.html();
             
+            // Get current floor plan ID
+            const floorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
+            
+            if (!floorPlanId) {
+                customAlert('Floor plan ID is required to delete booths', 'error');
+                return;
+            }
+            
             let requestData = {};
             let confirmMessage = '';
             
@@ -5872,8 +5880,11 @@ const FloorPlanDesigner = {
                     return;
                 }
                 
-                confirmMessage = 'Are you sure you want to delete ALL ' + count + ' booths from Zone ' + zoneName + '? This action cannot be undone!';
-                requestData = { mode: 'all' };
+                confirmMessage = 'Are you sure you want to delete ALL ' + count + ' booths from Zone ' + zoneName + ' in this floor plan? This action cannot be undone!';
+                requestData = { 
+                    mode: 'all',
+                    floor_plan_id: floorPlanId
+                };
                 
             } else if (activeTab === '#delete-specific') {
                 // Delete Specific mode
@@ -5888,7 +5899,8 @@ const FloorPlanDesigner = {
                 confirmMessage = 'Are you sure you want to delete ' + selectedBooths.length + ' selected booth(s)? This action cannot be undone!';
                 requestData = {
                     mode: 'specific',
-                    booth_ids: boothIds
+                    booth_ids: boothIds,
+                    floor_plan_id: floorPlanId
                 };
                 
             } else if (activeTab === '#delete-range') {
@@ -5907,11 +5919,12 @@ const FloorPlanDesigner = {
                 }
                 
                 const count = to - from + 1;
-                confirmMessage = 'Are you sure you want to delete ' + count + ' booths (from ' + zoneName + String(from).padStart(2, '0') + ' to ' + zoneName + String(to).padStart(2, '0') + ')? This action cannot be undone!';
+                confirmMessage = 'Are you sure you want to delete ' + count + ' booths (from ' + zoneName + String(from).padStart(2, '0') + ' to ' + zoneName + String(to).padStart(2, '0') + ') in this floor plan? This action cannot be undone!';
                 requestData = {
                     mode: 'range',
                     from: from,
-                    to: to
+                    to: to,
+                    floor_plan_id: floorPlanId
                 };
             }
             
