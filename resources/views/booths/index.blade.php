@@ -1856,6 +1856,9 @@
                 <button class="toolbar-btn" id="btnPrint" title="Print Floorplan" style="background: rgba(40, 167, 69, 0.3);">
                     <i class="fas fa-print"></i>
                 </button>
+                <button class="toolbar-btn" id="btnPreview" title="Preview Floorplan" style="background: rgba(0, 123, 255, 0.3);">
+                    <i class="fas fa-eye"></i>
+                </button>
                 @if(isset($canEditCanvas) && $canEditCanvas)
                 <button class="toolbar-btn btn-primary" id="btnSave" title="Save Floor Plan">
                     <i class="fas fa-save"></i> Save
@@ -8752,8 +8755,18 @@ const FloorPlanDesigner = {
                     return;
                 }
                 
+                // Ensure all values are properly parsed and validated before saving
+                const validatedWidth = (width !== undefined && !isNaN(width)) ? parseFloat(width) : null;
+                const validatedHeight = (height !== undefined && !isNaN(height)) ? parseFloat(height) : null;
+                const validatedRotation = (rotation !== undefined && !isNaN(rotation)) ? parseFloat(rotation) : 0;
+                const validatedZIndex = (zIndex !== undefined && !isNaN(zIndex)) ? Math.max(1, Math.min(1000, parseInt(zIndex))) : 10;
+                const validatedFontSize = (fontSize !== undefined && !isNaN(fontSize)) ? Math.max(8, Math.min(48, parseInt(fontSize))) : 14;
+                const validatedBorderWidth = (borderWidth !== undefined && !isNaN(borderWidth)) ? Math.max(0, Math.min(10, parseInt(borderWidth))) : 2;
+                const validatedBorderRadius = (borderRadius !== undefined && !isNaN(borderRadius)) ? Math.max(0, Math.min(50, parseInt(borderRadius))) : 6;
+                const validatedOpacity = (opacity !== undefined && !isNaN(opacity)) ? Math.max(0, Math.min(1, parseFloat(opacity))) : 1.00;
+                
                 console.log('Saving booth position:', boothId, 'at', x, y);
-                self.saveBoothPosition(boothId, x, y, width, height, rotation, zIndex, fontSize, borderWidth, borderRadius, opacity)
+                self.saveBoothPosition(boothId, x, y, validatedWidth, validatedHeight, validatedRotation, validatedZIndex, validatedFontSize, validatedBorderWidth, validatedBorderRadius, validatedOpacity)
                     .then(function() {
                         console.log('✅ Booth position saved successfully');
                         // Sync sidebar to remove this booth from sidebar
@@ -11441,11 +11454,35 @@ const FloorPlanDesigner = {
         
         // Get style properties from element if not provided
         if (boothElement) {
-            zIndex = zIndex !== undefined ? zIndex : (parseFloat(boothElement.style.zIndex) || 10);
-            fontSize = fontSize !== undefined ? fontSize : (parseFloat(boothElement.style.fontSize) || 14);
-            borderWidth = borderWidth !== undefined ? borderWidth : (parseFloat(boothElement.style.borderWidth) || 2);
-            borderRadius = borderRadius !== undefined ? borderRadius : (parseFloat(boothElement.style.borderRadius) || 6);
-            opacity = opacity !== undefined ? opacity : (parseFloat(boothElement.style.opacity) || 1.00);
+            // Parse and validate zIndex (must be integer 1-1000)
+            if (zIndex === undefined) {
+                const parsedZ = parseInt(boothElement.style.zIndex) || parseInt(boothElement.getAttribute('data-z-index')) || 10;
+                zIndex = isNaN(parsedZ) ? 10 : Math.max(1, Math.min(1000, parsedZ));
+            }
+            
+            // Parse and validate fontSize (must be integer 8-48)
+            if (fontSize === undefined) {
+                const parsedFS = parseInt(boothElement.style.fontSize) || parseInt(boothElement.getAttribute('data-font-size')) || 14;
+                fontSize = isNaN(parsedFS) ? 14 : Math.max(8, Math.min(48, parsedFS));
+            }
+            
+            // Parse and validate borderWidth (must be integer 0-10)
+            if (borderWidth === undefined) {
+                const parsedBW = parseInt(boothElement.style.borderWidth) || parseInt(boothElement.getAttribute('data-border-width')) || 2;
+                borderWidth = isNaN(parsedBW) ? 2 : Math.max(0, Math.min(10, parsedBW));
+            }
+            
+            // Parse and validate borderRadius (must be integer 0-50)
+            if (borderRadius === undefined) {
+                const parsedBR = parseInt(boothElement.style.borderRadius) || parseInt(boothElement.getAttribute('data-border-radius')) || 6;
+                borderRadius = isNaN(parsedBR) ? 6 : Math.max(0, Math.min(50, parsedBR));
+            }
+            
+            // Parse and validate opacity (must be numeric 0-1)
+            if (opacity === undefined) {
+                const parsedOp = parseFloat(boothElement.style.opacity) || parseFloat(boothElement.getAttribute('data-opacity')) || 1.00;
+                opacity = isNaN(parsedOp) ? 1.00 : Math.max(0, Math.min(1, parsedOp));
+            }
             
             // Get appearance properties from element if not provided
             backgroundColor = backgroundColor !== undefined ? backgroundColor : (boothElement.style.backgroundColor || boothElement.getAttribute('data-background-color') || this.defaultBackgroundColor);
@@ -11456,11 +11493,12 @@ const FloorPlanDesigner = {
             textAlign = textAlign !== undefined ? textAlign : (boothElement.style.textAlign || boothElement.getAttribute('data-text-align') || this.defaultTextAlign);
             boxShadow = boxShadow !== undefined ? boxShadow : (boothElement.style.boxShadow || boothElement.getAttribute('data-box-shadow') || this.defaultBoxShadow);
         } else {
-            zIndex = zIndex || 10;
-            fontSize = fontSize || 14;
-            borderWidth = borderWidth || 2;
-            borderRadius = borderRadius || 6;
-            opacity = opacity !== undefined ? opacity : 1.00;
+            // Ensure values are properly validated and within ranges
+            zIndex = (zIndex !== undefined && !isNaN(zIndex)) ? Math.max(1, Math.min(1000, parseInt(zIndex))) : 10;
+            fontSize = (fontSize !== undefined && !isNaN(fontSize)) ? Math.max(8, Math.min(48, parseInt(fontSize))) : 14;
+            borderWidth = (borderWidth !== undefined && !isNaN(borderWidth)) ? Math.max(0, Math.min(10, parseInt(borderWidth))) : 2;
+            borderRadius = (borderRadius !== undefined && !isNaN(borderRadius)) ? Math.max(0, Math.min(50, parseInt(borderRadius))) : 6;
+            opacity = (opacity !== undefined && !isNaN(opacity)) ? Math.max(0, Math.min(1, parseFloat(opacity))) : 1.00;
             backgroundColor = backgroundColor || this.defaultBackgroundColor;
             borderColor = borderColor || this.defaultBorderColor;
             textColor = textColor || this.defaultTextColor;
@@ -11470,17 +11508,18 @@ const FloorPlanDesigner = {
             boxShadow = boxShadow || this.defaultBoxShadow;
         }
         
+        // Ensure all numeric values are properly converted and validated
         const payload = {
-            position_x: x,
-            position_y: y,
-            width: width || null,
-            height: height || null,
-            rotation: rotation || 0,
-            z_index: zIndex,
-            font_size: fontSize,
-            border_width: borderWidth,
-            border_radius: borderRadius,
-            opacity: opacity
+            position_x: (x !== undefined && !isNaN(x)) ? parseFloat(x) : null,
+            position_y: (y !== undefined && !isNaN(y)) ? parseFloat(y) : null,
+            width: (width !== undefined && !isNaN(width)) ? parseFloat(width) : null,
+            height: (height !== undefined && !isNaN(height)) ? parseFloat(height) : null,
+            rotation: (rotation !== undefined && !isNaN(rotation)) ? parseFloat(rotation) : 0,
+            z_index: parseInt(zIndex), // Already validated above
+            font_size: parseInt(fontSize), // Already validated above
+            border_width: parseInt(borderWidth), // Already validated above
+            border_radius: parseInt(borderRadius), // Already validated above
+            opacity: parseFloat(opacity) // Already validated above
         };
         
         // Add price if provided
@@ -15672,6 +15711,25 @@ $(document).ready(function() {
         fetch('http://127.0.0.1:7244/ingest/32c840ca-dc83-4c7d-be79-34d96940ebef',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'booths/index.blade.php:10033',message:'Print button clicked',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
         // #endregion
         FloorPlanDesigner.printFloorplan();
+    });
+    
+    // Preview button handler - opens public view in new tab
+    $('#btnPreview').on('click', function() {
+        @if(isset($currentFloorPlan) && $currentFloorPlan)
+            const floorPlanId = {{ $currentFloorPlan->id }};
+        @elseif(isset($floorPlanId) && $floorPlanId)
+            const floorPlanId = {{ $floorPlanId }};
+        @else
+            const floorPlanId = null;
+        @endif
+        
+        if (!floorPlanId) {
+            alert('Please select a floor plan first.');
+            return;
+        }
+        
+        const previewUrl = '{{ route("floor-plans.public", ":id") }}'.replace(':id', floorPlanId);
+        window.open(previewUrl, '_blank');
     });
     
     console.log('✅ Floor Plan Designer ready!');

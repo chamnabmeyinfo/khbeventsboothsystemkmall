@@ -958,6 +958,15 @@ class BoothController extends Controller
     public function savePosition(Request $request, $id)
     {
         try {
+            // Clean up request data - convert empty strings to null and ensure proper types
+            $data = $request->all();
+            foreach ($data as $key => $value) {
+                if ($value === '' || $value === 'null' || $value === 'undefined') {
+                    $data[$key] = null;
+                }
+            }
+            $request->merge($data);
+            
             // Validate with proper nullable handling
             $validated = $request->validate([
                 'position_x' => 'nullable|numeric',
@@ -970,6 +979,23 @@ class BoothController extends Controller
                 'border_width' => 'nullable|integer|min:0|max:10',
                 'border_radius' => 'nullable|integer|min:0|max:50',
                 'opacity' => 'nullable|numeric|min:0|max:1',
+                // Allow empty strings to be converted to null
+            ], [
+                'z_index.integer' => 'Z-index must be an integer between 1 and 1000.',
+                'z_index.min' => 'Z-index must be at least 1.',
+                'z_index.max' => 'Z-index must not exceed 1000.',
+                'font_size.integer' => 'Font size must be an integer between 8 and 48.',
+                'font_size.min' => 'Font size must be at least 8.',
+                'font_size.max' => 'Font size must not exceed 48.',
+                'border_width.integer' => 'Border width must be an integer between 0 and 10.',
+                'border_width.min' => 'Border width must be at least 0.',
+                'border_width.max' => 'Border width must not exceed 10.',
+                'border_radius.integer' => 'Border radius must be an integer between 0 and 50.',
+                'border_radius.min' => 'Border radius must be at least 0.',
+                'border_radius.max' => 'Border radius must not exceed 50.',
+                'opacity.numeric' => 'Opacity must be a number between 0 and 1.',
+                'opacity.min' => 'Opacity must be at least 0.',
+                'opacity.max' => 'Opacity must not exceed 1.',
                 'price' => 'nullable|numeric|min:0',
                 // Appearance properties
                 'background_color' => 'nullable|string|max:50',
@@ -984,16 +1010,17 @@ class BoothController extends Controller
             $booth = Booth::findOrFail($id);
             
             // Save position, size, rotation, and style properties
-            $booth->position_x = $validated['position_x'] ?? null;
-            $booth->position_y = $validated['position_y'] ?? null;
-            $booth->width = $validated['width'] ?? null;
-            $booth->height = $validated['height'] ?? null;
-            $booth->rotation = $validated['rotation'] ?? 0;
-            $booth->z_index = $validated['z_index'] ?? 10;
-            $booth->font_size = $validated['font_size'] ?? 14;
-            $booth->border_width = $validated['border_width'] ?? 2;
-            $booth->border_radius = $validated['border_radius'] ?? 6;
-            $booth->opacity = $validated['opacity'] ?? 1.00;
+            // Ensure numeric values are properly cast
+            $booth->position_x = isset($validated['position_x']) && $validated['position_x'] !== null ? (float)$validated['position_x'] : null;
+            $booth->position_y = isset($validated['position_y']) && $validated['position_y'] !== null ? (float)$validated['position_y'] : null;
+            $booth->width = isset($validated['width']) && $validated['width'] !== null ? (float)$validated['width'] : null;
+            $booth->height = isset($validated['height']) && $validated['height'] !== null ? (float)$validated['height'] : null;
+            $booth->rotation = isset($validated['rotation']) && $validated['rotation'] !== null ? (float)$validated['rotation'] : 0;
+            $booth->z_index = isset($validated['z_index']) && $validated['z_index'] !== null ? (int)$validated['z_index'] : 10;
+            $booth->font_size = isset($validated['font_size']) && $validated['font_size'] !== null ? (int)$validated['font_size'] : 14;
+            $booth->border_width = isset($validated['border_width']) && $validated['border_width'] !== null ? (int)$validated['border_width'] : 2;
+            $booth->border_radius = isset($validated['border_radius']) && $validated['border_radius'] !== null ? (int)$validated['border_radius'] : 6;
+            $booth->opacity = isset($validated['opacity']) && $validated['opacity'] !== null ? (float)$validated['opacity'] : 1.00;
             
             // Save appearance properties
             if (isset($validated['background_color'])) {

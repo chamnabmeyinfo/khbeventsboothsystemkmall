@@ -1682,6 +1682,8 @@ $('#btnSaveStatusSettings').on('click', function() {
         const row = $(this);
         const statusId = row.data('status-id');
         
+        const floorPlanId = row.find('.status-floor-plan').val();
+        
         statuses.push({
             id: statusId || null,
             status_code: parseInt(row.find('.status-code').val()) || 1,
@@ -1691,7 +1693,7 @@ $('#btnSaveStatusSettings').on('click', function() {
             text_color: row.find('.status-text-color-text').val() || '#ffffff',
             badge_color: row.find('.status-badge-color').val() || 'success',
             description: row.find('.status-description').val() || '',
-            floor_plan_id: row.find('.status-floor-plan').val() || null,
+            floor_plan_id: (floorPlanId && floorPlanId !== '') ? parseInt(floorPlanId) : null,
             is_active: row.find('.status-is-active').is(':checked'),
             sort_order: parseInt(row.find('.status-sort-order').val()) || 0,
             is_default: row.find('.status-is-default').is(':checked')

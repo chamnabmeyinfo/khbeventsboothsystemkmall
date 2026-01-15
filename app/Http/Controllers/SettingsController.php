@@ -774,6 +774,29 @@ class SettingsController extends Controller
     public function saveBoothStatusSettings(Request $request)
     {
         try {
+            // Pre-process the request data to handle empty strings and convert boolean strings
+            $statuses = $request->input('statuses', []);
+            foreach ($statuses as &$status) {
+                // Convert empty string floor_plan_id to null
+                if (!isset($status['floor_plan_id']) || $status['floor_plan_id'] === '' || $status['floor_plan_id'] === null) {
+                    $status['floor_plan_id'] = null;
+                } else {
+                    // Convert floor_plan_id to integer if it's a string number
+                    $status['floor_plan_id'] = (int) $status['floor_plan_id'];
+                }
+                // Convert string booleans to actual booleans
+                if (isset($status['is_active'])) {
+                    $status['is_active'] = filter_var($status['is_active'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                }
+                if (isset($status['is_default'])) {
+                    $status['is_default'] = filter_var($status['is_default'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                }
+            }
+            unset($status);
+            
+            // Replace the request input with processed data
+            $request->merge(['statuses' => $statuses]);
+            
             $validated = $request->validate([
                 'statuses' => 'required|array',
                 'statuses.*.id' => 'nullable|integer|exists:booth_status_settings,id',
@@ -795,8 +818,8 @@ class SettingsController extends Controller
 
             foreach ($validated['statuses'] as $statusData) {
                 try {
-                    // Handle floor_plan_id (can be null for global, or empty string should be null)
-                    if (isset($statusData['floor_plan_id']) && $statusData['floor_plan_id'] === '') {
+                    // Ensure floor_plan_id is null if not set or empty
+                    if (!isset($statusData['floor_plan_id']) || $statusData['floor_plan_id'] === '') {
                         $statusData['floor_plan_id'] = null;
                     }
                     
@@ -826,11 +849,6 @@ class SettingsController extends Controller
                     
                     if ($existingStatus) {
                         throw new \Exception('Status code ' . $statusData['status_code'] . ' already exists for this floor plan assignment.');
-                    }
-
-                    // Handle floor_plan_id (can be null for global, or empty string should be null)
-                    if (isset($statusData['floor_plan_id']) && $statusData['floor_plan_id'] === '') {
-                        $statusData['floor_plan_id'] = null;
                     }
                     
                     if (isset($statusData['id']) && $statusData['id']) {
