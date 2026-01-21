@@ -1788,7 +1788,7 @@
     cursor: grabbing !important;
     z-index: 1000 !important;
     box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-    transform: scale(1.02) !important;
+    /* transform is handled in JavaScript to preserve rotation */
     transition: none !important;
     user-select: none !important;
 }
@@ -1849,11 +1849,12 @@
     flex-shrink: 0;
 }
 
-/* Status colors matching legend - these override custom background colors */
+/* Status colors matching legend - these apply unless booth has custom colors */
 /* Dynamic status colors from database */
 @if(isset($statusSettings) && $statusSettings->count() > 0)
                 @foreach($statusSettings as $status)
-                    .dropped-booth.status-{{ $status->status_code }} { 
+                    /* Status colors - only apply if booth doesn't have custom colors */
+                    .dropped-booth.status-{{ $status->status_code }}:not(.has-custom-colors) { 
                         background: {{ $status->status_color }} !important; 
                         border-color: {{ $status->border_color ?? $status->status_color }} !important; 
                         border-width: {{ $status->border_width ?? 2 }}px !important;
@@ -1864,12 +1865,17 @@
                 @endforeach
 @else
     {{-- Fallback to defaults if no custom statuses --}}
-.dropped-booth.status-1 { background: #28a745 !important; border-color: #28a745 !important; color: #ffffff !important; }
-.dropped-booth.status-2 { background: #0dcaf0 !important; border-color: #0dcaf0 !important; color: #ffffff !important; }
-.dropped-booth.status-3 { background: #ffc107 !important; border-color: #ffc107 !important; color: #333333 !important; }
-.dropped-booth.status-4 { background: #6c757d !important; border-color: #6c757d !important; color: #ffffff !important; }
-.dropped-booth.status-5 { background: #212529 !important; border-color: #212529 !important; color: #ffffff !important; }
+.dropped-booth.status-1:not(.has-custom-colors) { background: #28a745 !important; border-color: #28a745 !important; color: #ffffff !important; }
+.dropped-booth.status-2:not(.has-custom-colors) { background: #0dcaf0 !important; border-color: #0dcaf0 !important; color: #ffffff !important; }
+.dropped-booth.status-3:not(.has-custom-colors) { background: #ffc107 !important; border-color: #ffc107 !important; color: #333333 !important; }
+.dropped-booth.status-4:not(.has-custom-colors) { background: #6c757d !important; border-color: #6c757d !important; color: #ffffff !important; }
+.dropped-booth.status-5:not(.has-custom-colors) { background: #212529 !important; border-color: #212529 !important; color: #ffffff !important; }
 @endif
+
+/* Custom colors override - when booth has custom colors, they take priority */
+.dropped-booth.has-custom-colors {
+    /* Custom colors are applied via inline styles with !important */
+}
 
 /* Context menu for booths (right-click) */
 .booth-context-menu {
@@ -9776,12 +9782,31 @@ const FloorPlanDesigner = {
         const textAlign = boothData.text_align || effectiveSettings.text_align || this.defaultTextAlign || 'center';
         const boxShadow = boothData.box_shadow || effectiveSettings.box_shadow || this.defaultBoxShadow || '0 2px 8px rgba(0,0,0,0.2)';
         
-        div.style.backgroundColor = backgroundColor;
-        div.style.borderColor = borderColor;
+        // Apply colors - use !important if custom colors are set to override status colors
+        if (customBgColor) {
+            div.style.setProperty('background-color', backgroundColor, 'important');
+            div.classList.add('has-custom-colors');
+        } else {
+            div.style.backgroundColor = backgroundColor;
+        }
+        
+        if (customBorderColor) {
+            div.style.setProperty('border-color', borderColor, 'important');
+            div.classList.add('has-custom-colors');
+        } else {
+            div.style.borderColor = borderColor;
+        }
+        
         div.style.borderWidth = borderWidth + 'px';
         div.style.borderStyle = borderStyle;
         div.style.borderRadius = borderRadius + 'px';
-        div.style.color = textColor;
+        
+        if (customTextColor) {
+            div.style.setProperty('color', textColor, 'important');
+            div.classList.add('has-custom-colors');
+        } else {
+            div.style.color = textColor;
+        }
         div.style.fontWeight = fontWeight;
         div.style.fontFamily = fontFamily;
         div.style.textAlign = textAlign;
@@ -10409,19 +10434,40 @@ const FloorPlanDesigner = {
             let selectedBoothsInitialPositions = [];
             if (isMultiSelect) {
                 self.selectedBooths.forEach(function(selectedBooth) {
+                    // Get current rotation to preserve it during drag
+                    const currentRotation = parseFloat(selectedBooth.getAttribute('data-rotation')) || 
+                                          parseFloat(selectedBooth.style.transform.match(/rotate\(([^)]+)\)/)?.[1]) || 0;
+                    
                     selectedBoothsInitialPositions.push({
                         element: selectedBooth,
                         initialX: parseFloat(selectedBooth.style.left) || 0,
-                        initialY: parseFloat(selectedBooth.style.top) || 0
+                        initialY: parseFloat(selectedBooth.style.top) || 0,
+                        rotation: currentRotation
                     });
                     selectedBooth.style.cursor = 'grabbing';
                     selectedBooth.style.userSelect = 'none';
+                    // Preserve rotation when adding dragging class
+                    if (currentRotation !== 0) {
+                        selectedBooth.style.transform = 'rotate(' + currentRotation + 'deg) scale(1.02)';
+                    } else {
+                        selectedBooth.style.transform = 'scale(1.02)';
+                    }
                     selectedBooth.classList.add('dragging');
                 });
             } else {
-            element.style.cursor = 'grabbing';
-            element.style.userSelect = 'none';
-            element.classList.add('dragging');
+                // Get current rotation to preserve it during drag
+                const currentRotation = parseFloat(element.getAttribute('data-rotation')) || 
+                                      parseFloat(element.style.transform.match(/rotate\(([^)]+)\)/)?.[1]) || 0;
+                
+                element.style.cursor = 'grabbing';
+                element.style.userSelect = 'none';
+                // Preserve rotation when adding dragging class
+                if (currentRotation !== 0) {
+                    element.style.transform = 'rotate(' + currentRotation + 'deg) scale(1.02)';
+                } else {
+                    element.style.transform = 'scale(1.02)';
+                }
+                element.classList.add('dragging');
             }
             
             // Store initial positions for multi-select
@@ -10511,6 +10557,14 @@ const FloorPlanDesigner = {
                     boothElement.style.top = newY + 'px';
                     boothElement.setAttribute('data-x', newX);
                     boothElement.setAttribute('data-y', newY);
+                    
+                    // Preserve rotation during drag (combine with scale)
+                    const rotation = boothData.rotation || parseFloat(boothElement.getAttribute('data-rotation')) || 0;
+                    if (rotation !== 0) {
+                        boothElement.style.transform = 'rotate(' + rotation + 'deg) scale(1.02)';
+                    } else {
+                        boothElement.style.transform = 'scale(1.02)';
+                    }
                 });
                 
                 // Update bounding box during drag
@@ -10559,6 +10613,15 @@ const FloorPlanDesigner = {
             element.style.top = newY + 'px';
             element.setAttribute('data-x', newX);
             element.setAttribute('data-y', newY);
+            
+            // Preserve rotation during drag (combine with scale)
+            const currentRotation = parseFloat(element.getAttribute('data-rotation')) || 
+                                  parseFloat(element.style.transform.match(/rotate\(([^)]+)\)/)?.[1]) || 0;
+            if (currentRotation !== 0) {
+                element.style.transform = 'rotate(' + currentRotation + 'deg) scale(1.02)';
+            } else {
+                element.style.transform = 'scale(1.02)';
+            }
             
             // Update info toolbar in real-time during drag (throttled for performance)
             // Only update if booth is selected and toolbar is not in edit mode
@@ -10623,28 +10686,45 @@ const FloorPlanDesigner = {
                     boothElement.setAttribute('data-x', snappedX);
                     boothElement.setAttribute('data-y', snappedY);
                     
+                    // Restore rotation transform (remove scale, keep rotation)
+                    const rotation = boothData.rotation || parseFloat(boothElement.getAttribute('data-rotation')) || 0;
+                    if (rotation !== 0) {
+                        boothElement.style.transform = 'rotate(' + rotation + 'deg)';
+                    } else {
+                        boothElement.style.transform = '';
+                    }
+                    
                     boothElement.style.cursor = 'move';
                     boothElement.style.userSelect = '';
                     boothElement.classList.remove('dragging');
                 });
             } else {
-            element.style.cursor = 'move';
-            element.style.userSelect = '';
-            element.classList.remove('dragging');
-            
-                // Final snap to grid (if snap is enabled)
+            // Final snap to grid (if snap is enabled)
             const currentX = parseFloat(element.style.left) || 0;
             const currentY = parseFloat(element.style.top) || 0;
-                let snappedX = currentX;
-                let snappedY = currentY;
-                
-                if (self.snapEnabled) {
-                    snappedX = Math.round(currentX / self.gridSize) * self.gridSize;
-                    snappedY = Math.round(currentY / self.gridSize) * self.gridSize;
-                }
+            let snappedX = currentX;
+            let snappedY = currentY;
+            
+            if (self.snapEnabled) {
+                snappedX = Math.round(currentX / self.gridSize) * self.gridSize;
+                snappedY = Math.round(currentY / self.gridSize) * self.gridSize;
+            }
             
             element.style.left = snappedX + 'px';
             element.style.top = snappedY + 'px';
+            
+            // Restore rotation transform (remove scale, keep rotation)
+            const rotation = parseFloat(element.getAttribute('data-rotation')) || 
+                           parseFloat(element.style.transform.match(/rotate\(([^)]+)\)/)?.[1]) || 0;
+            if (rotation !== 0) {
+                element.style.transform = 'rotate(' + rotation + 'deg)';
+            } else {
+                element.style.transform = '';
+            }
+            
+            element.style.cursor = 'move';
+            element.style.userSelect = '';
+            element.classList.remove('dragging');
             element.setAttribute('data-x', snappedX);
             element.setAttribute('data-y', snappedY);
             }
@@ -13770,28 +13850,38 @@ const FloorPlanDesigner = {
                     const customTextColor = booth.text_color;
                     
                     // Apply colors: custom colors take priority over status colors
+                    // Use !important for custom colors to override status color CSS
                     if (customBgColor) {
-                        existingBooth.style.backgroundColor = customBgColor;
+                        existingBooth.style.setProperty('background-color', customBgColor, 'important');
                         existingBooth.setAttribute('data-background-color', customBgColor);
+                        existingBooth.classList.add('has-custom-colors');
                     } else {
                         existingBooth.style.backgroundColor = statusColor.background || statusColor.bg;
                         existingBooth.setAttribute('data-background-color', statusColor.background || statusColor.bg);
+                        // Don't remove has-custom-colors here - check all colors first
                     }
                     
                     if (customBorderColor) {
-                        existingBooth.style.borderColor = customBorderColor;
+                        existingBooth.style.setProperty('border-color', customBorderColor, 'important');
                         existingBooth.setAttribute('data-border-color', customBorderColor);
+                        existingBooth.classList.add('has-custom-colors');
                     } else {
                         existingBooth.style.borderColor = statusColor.border;
                         existingBooth.setAttribute('data-border-color', statusColor.border);
                     }
                     
                     if (customTextColor) {
-                        existingBooth.style.color = customTextColor;
+                        existingBooth.style.setProperty('color', customTextColor, 'important');
                         existingBooth.setAttribute('data-text-color', customTextColor);
+                        existingBooth.classList.add('has-custom-colors');
                     } else {
                         existingBooth.style.color = statusColor.text;
                         existingBooth.setAttribute('data-text-color', statusColor.text);
+                    }
+                    
+                    // Remove has-custom-colors class if no custom colors are set
+                    if (!customBgColor && !customBorderColor && !customTextColor) {
+                        existingBooth.classList.remove('has-custom-colors');
                     }
                     
                     existingBooth.style.borderWidth = (statusColor.border_width || 2) + 'px';
@@ -13938,28 +14028,37 @@ const FloorPlanDesigner = {
                 const customTextColor = booth.text_color;
                 
                 // Apply colors: custom colors take priority over status colors
+                // Use !important for custom colors to override status color CSS
                 if (customBgColor) {
-                    boothElement.style.backgroundColor = customBgColor;
+                    boothElement.style.setProperty('background-color', customBgColor, 'important');
                     boothElement.setAttribute('data-background-color', customBgColor);
+                    boothElement.classList.add('has-custom-colors');
                 } else {
                     boothElement.style.backgroundColor = statusColor.background || statusColor.bg;
                     boothElement.setAttribute('data-background-color', statusColor.background || statusColor.bg);
                 }
                 
                 if (customBorderColor) {
-                    boothElement.style.borderColor = customBorderColor;
+                    boothElement.style.setProperty('border-color', customBorderColor, 'important');
                     boothElement.setAttribute('data-border-color', customBorderColor);
+                    boothElement.classList.add('has-custom-colors');
                 } else {
                     boothElement.style.borderColor = statusColor.border;
                     boothElement.setAttribute('data-border-color', statusColor.border);
                 }
                 
                 if (customTextColor) {
-                    boothElement.style.color = customTextColor;
+                    boothElement.style.setProperty('color', customTextColor, 'important');
                     boothElement.setAttribute('data-text-color', customTextColor);
+                    boothElement.classList.add('has-custom-colors');
                 } else {
                     boothElement.style.color = statusColor.text;
                     boothElement.setAttribute('data-text-color', statusColor.text);
+                }
+                
+                // Remove has-custom-colors class if no custom colors are set
+                if (!customBgColor && !customBorderColor && !customTextColor) {
+                    boothElement.classList.remove('has-custom-colors');
                 }
                 
                 boothElement.style.borderWidth = (statusColor.border_width || 2) + 'px';
@@ -16731,17 +16830,39 @@ const FloorPlanDesigner = {
         const opacity = parseFloat(boothElement.style.opacity) || 1.0;
         
         // Update booth element colors immediately (visual feedback)
-        if (backgroundColor && backgroundColor !== '') {
-            boothElement.style.backgroundColor = backgroundColor;
+        // Use !important to override status color CSS rules
+        if (backgroundColor && backgroundColor !== '' && backgroundColor !== null) {
+            boothElement.style.setProperty('background-color', backgroundColor, 'important');
             boothElement.setAttribute('data-background-color', backgroundColor);
+            boothElement.classList.add('has-custom-colors');
+        } else {
+            boothElement.style.removeProperty('background-color');
+            boothElement.removeAttribute('data-background-color');
         }
-        if (borderColor && borderColor !== '') {
-            boothElement.style.borderColor = borderColor;
+        
+        if (borderColor && borderColor !== '' && borderColor !== null) {
+            boothElement.style.setProperty('border-color', borderColor, 'important');
             boothElement.setAttribute('data-border-color', borderColor);
+            boothElement.classList.add('has-custom-colors');
+        } else {
+            boothElement.style.removeProperty('border-color');
+            boothElement.removeAttribute('data-border-color');
         }
-        if (textColor && textColor !== '') {
-            boothElement.style.color = textColor;
+        
+        if (textColor && textColor !== '' && textColor !== null) {
+            boothElement.style.setProperty('color', textColor, 'important');
             boothElement.setAttribute('data-text-color', textColor);
+            boothElement.classList.add('has-custom-colors');
+        } else {
+            boothElement.style.removeProperty('color');
+            boothElement.removeAttribute('data-text-color');
+        }
+        
+        // If all colors are cleared, remove the custom colors class
+        if ((!backgroundColor || backgroundColor === '' || backgroundColor === null) && 
+            (!borderColor || borderColor === '' || borderColor === null) && 
+            (!textColor || textColor === '' || textColor === null)) {
+            boothElement.classList.remove('has-custom-colors');
         }
         
         // Save to database
@@ -16859,6 +16980,35 @@ $(document).ready(function() {
         $('#boothBorderColorText').val(borderColor);
         $('#boothTextColor').val(textColor);
         $('#boothTextColorText').val(textColor);
+        
+        // Save with null values to clear custom colors (will use status colors)
+        const btn = $(this);
+        btn.prop('disabled', true);
+        btn.html('<i class="fas fa-spinner fa-spin"></i> Resetting...');
+        
+        FloorPlanDesigner.saveBoothColors(boothId, null, null, null)
+            .then(function() {
+                // Remove custom colors class and let status colors apply
+                boothElement.classList.remove('has-custom-colors');
+                boothElement.removeAttribute('data-background-color');
+                boothElement.removeAttribute('data-border-color');
+                boothElement.removeAttribute('data-text-color');
+                
+                // Reload the page or refresh booth to apply status colors
+                showNotification('Booth colors reset to status colors!', 'success');
+                $('#boothColorPickerModal').modal('hide');
+                
+                // Reload booth from database to get status colors
+                location.reload();
+            })
+            .catch(function(error) {
+                console.error('Error resetting booth colors:', error);
+                showNotification('Failed to reset booth colors: ' + (error.message || 'Unknown error'), 'error');
+            })
+            .finally(function() {
+                btn.prop('disabled', false);
+                btn.html('<i class="fas fa-undo"></i> Reset to Status Colors');
+            });
     });
     
     // Save booth colors

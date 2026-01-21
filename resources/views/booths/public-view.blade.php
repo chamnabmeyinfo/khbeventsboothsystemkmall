@@ -1168,11 +1168,27 @@
                 if (booth.border_radius) boothElement.style.borderRadius = booth.border_radius + 'px';
                 if (booth.opacity !== null) boothElement.style.opacity = booth.opacity;
                 
-                // Status labels and colors from database
+                // Status labels, descriptions, and colors from database
                 @php
                     $statusLabelsArray = isset($statusSettings) && $statusSettings->count() > 0 
                         ? $statusSettings->pluck('status_name', 'status_code')->toArray() 
                         : [1 => 'Available', 2 => 'Confirmed', 3 => 'Reserved', 4 => 'Hidden', 5 => 'Paid'];
+                    
+                    $statusDescriptionsArray = [];
+                    if (isset($statusSettings) && $statusSettings->count() > 0) {
+                        foreach ($statusSettings as $status) {
+                            $statusDescriptionsArray[$status->status_code] = $status->description ?? '';
+                        }
+                    } else {
+                        // Fallback defaults
+                        $statusDescriptionsArray = [
+                            1 => 'This booth is available for booking',
+                            2 => 'This booth has been confirmed',
+                            3 => 'This booth is reserved',
+                            4 => 'This booth is hidden',
+                            5 => 'Payment has been received for this booth'
+                        ];
+                    }
                     
                     // Convert statusColors from nested array format to simple color strings
                     $statusColorsArray = [];
@@ -1186,6 +1202,7 @@
                     }
                 @endphp
                 const statusLabels = @json($statusLabelsArray);
+                const statusDescriptions = @json($statusDescriptionsArray);
                 const statusColors = @json($statusColorsArray);
                 
                 // Enhanced tooltip on hover
@@ -1243,8 +1260,12 @@
                         tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label"><i class="fas fa-tag mr-1"></i>Type:</span><span class="tooltip-value"><strong>' + booth.booth_type + '</strong></span></div>';
                     }
                     
-                    // Status
+                    // Status with description
+                    const statusDescription = statusDescriptions[booth.status] || '';
                     tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label"><i class="fas fa-info-circle mr-1"></i>Status:</span><span class="tooltip-value"><span class="tooltip-status" style="background: ' + statusColor + '">' + statusLabel + '</span></span></div>';
+                    if (statusDescription) {
+                        tooltipHTML += '<div style="margin-top: 4px; padding-left: 20px; font-size: 0.85rem; color: rgba(255,255,255,0.85); font-style: italic;">' + statusDescription + '</div>';
+                    }
                     
                     // Price removed from public view
                     
@@ -1347,10 +1368,19 @@
                     tooltip.style.transform = 'none';
                 }
                 
+                // Add title attribute for native browser tooltip with status text
+                const statusLabel = statusLabels[booth.status] || 'Unknown';
+                const statusDescription = statusDescriptions[booth.status] || '';
+                if (statusDescription) {
+                    boothElement.setAttribute('title', statusLabel + ': ' + statusDescription);
+                } else {
+                    boothElement.setAttribute('title', statusLabel);
+                }
+                
                 // Click to show detailed modal
                 boothElement.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    showBoothModal(booth, statusLabels, statusColors);
+                    showBoothModal(booth, statusLabels, statusColors, statusDescriptions);
                 });
                 
                 canvas.appendChild(boothElement);
@@ -1610,7 +1640,7 @@
         });
         
         // Show booth detail modal
-        function showBoothModal(booth, statusLabels, statusColors) {
+        function showBoothModal(booth, statusLabels, statusColors, statusDescriptions) {
             const modal = document.getElementById('boothModal');
             const modalBody = document.getElementById('modalBody');
             const modalBoothNumber = document.getElementById('modalBoothNumber');
@@ -1619,6 +1649,7 @@
             
             const statusLabel = statusLabels[booth.status] || 'Unknown';
             const statusColor = statusColors[booth.status] || '#6c757d';
+            const statusDescription = (statusDescriptions && statusDescriptions[booth.status]) ? statusDescriptions[booth.status] : '';
             
             let html = '';
             
@@ -1649,6 +1680,13 @@
             html += '<span class="booth-detail-label"><i class="fas fa-info-circle"></i> Status:</span>';
             html += '<span class="booth-detail-value status-badge" style="background: ' + statusColor + '">' + statusLabel + '</span>';
             html += '</div>';
+            
+            if (statusDescription) {
+                html += '<div class="booth-detail-row" style="margin-top: 8px;">';
+                html += '<span class="booth-detail-label"></span>';
+                html += '<span class="booth-detail-value" style="font-size: 0.9rem; color: #6c757d; font-style: italic;">' + statusDescription + '</span>';
+                html += '</div>';
+            }
             
             html += '</div>';
             
