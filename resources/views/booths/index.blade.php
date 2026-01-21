@@ -1832,6 +1832,7 @@
                 @endforeach
 @else
     {{-- Fallback to defaults if no custom statuses --}}
+/* Status 1 (Available) - custom colors can override */
 .dropped-booth.status-1:not(.has-custom-colors) { background: #28a745 !important; border-color: #28a745 !important; color: #ffffff !important; }
 .dropped-booth.status-2:not(.has-custom-colors) { background: #0dcaf0 !important; border-color: #0dcaf0 !important; color: #ffffff !important; }
 .dropped-booth.status-3:not(.has-custom-colors) { background: #ffc107 !important; border-color: #ffc107 !important; color: #333333 !important; }
@@ -9770,33 +9771,35 @@ const FloorPlanDesigner = {
         
         // Check if booth has custom colors (individual booth colors override status colors)
         // Custom colors are stored in boothData or will be loaded from database
-        const customBgColor = boothData.background_color;
-        const customBorderColor = boothData.border_color;
-        const customTextColor = boothData.text_color;
+        // IMPORTANT: Custom colors ONLY apply when status is "Available" (status code 1)
+        const isAvailable = (boothStatus === '1' || boothStatus === 1);
+        const customBgColor = isAvailable ? boothData.background_color : null;
+        const customBorderColor = isAvailable ? boothData.border_color : null;
+        const customTextColor = isAvailable ? boothData.text_color : null;
         
         // Apply appearance settings (use zone settings if available, otherwise booth data, then defaults)
-        // Custom booth colors take priority over status colors, then status colors, then defaults
-        const backgroundColor = customBgColor || (statusColor.background || statusColor.bg); // Custom color takes priority
-        const borderColor = customBorderColor || statusColor.border; // Custom color takes priority
+        // Custom booth colors take priority over status colors ONLY for Available status, then status colors, then defaults
+        const backgroundColor = customBgColor || (statusColor.background || statusColor.bg); // Custom color takes priority only if Available
+        const borderColor = customBorderColor || statusColor.border; // Custom color takes priority only if Available
         // Override borderWidth and borderRadius with status color values if available
         borderWidth = statusColor.border_width !== undefined ? statusColor.border_width : borderWidth;
         const borderStyle = statusColor.border_style || 'solid';
         borderRadius = statusColor.border_radius !== undefined ? statusColor.border_radius : borderRadius;
-        const textColor = customTextColor || statusColor.text; // Custom color takes priority
+        const textColor = customTextColor || statusColor.text; // Custom color takes priority only if Available
         const fontWeight = boothData.font_weight || effectiveSettings.font_weight || this.defaultFontWeight || 'bold';
         const fontFamily = boothData.font_family || effectiveSettings.font_family || this.defaultFontFamily || 'Arial, sans-serif';
         const textAlign = boothData.text_align || effectiveSettings.text_align || this.defaultTextAlign || 'center';
         const boxShadow = boothData.box_shadow || effectiveSettings.box_shadow || this.defaultBoxShadow || '0 2px 8px rgba(0,0,0,0.2)';
         
-        // Apply colors - use !important if custom colors are set to override status colors
-        if (customBgColor) {
+        // Apply colors - use !important if custom colors are set to override status colors (ONLY for Available status)
+        if (customBgColor && isAvailable) {
             div.style.setProperty('background-color', backgroundColor, 'important');
             div.classList.add('has-custom-colors');
         } else {
             div.style.backgroundColor = backgroundColor;
         }
         
-        if (customBorderColor) {
+        if (customBorderColor && isAvailable) {
             div.style.setProperty('border-color', borderColor, 'important');
             div.classList.add('has-custom-colors');
         } else {
@@ -9807,7 +9810,7 @@ const FloorPlanDesigner = {
         div.style.borderStyle = borderStyle;
         div.style.borderRadius = borderRadius + 'px';
         
-        if (customTextColor) {
+        if (customTextColor && isAvailable) {
             div.style.setProperty('color', textColor, 'important');
             div.classList.add('has-custom-colors');
         } else {
@@ -13890,10 +13893,16 @@ const FloorPlanDesigner = {
                     const customTextColor = booth.text_color;
                     
                     // Apply colors: custom colors take priority over status colors
-                    // Use !important for custom colors to override status color CSS
-                    if (customBgColor) {
-                        existingBooth.style.setProperty('background-color', customBgColor, 'important');
-                        existingBooth.setAttribute('data-background-color', customBgColor);
+                    // IMPORTANT: Custom colors ONLY apply when status is "Available" (status code 1)
+                    const isAvailable = (boothStatus === '1' || boothStatus === 1);
+                    const effectiveCustomBgColor = isAvailable ? customBgColor : null;
+                    const effectiveCustomBorderColor = isAvailable ? customBorderColor : null;
+                    const effectiveCustomTextColor = isAvailable ? customTextColor : null;
+                    
+                    // Use !important for custom colors to override status color CSS (ONLY for Available status)
+                    if (effectiveCustomBgColor && isAvailable) {
+                        existingBooth.style.setProperty('background-color', effectiveCustomBgColor, 'important');
+                        existingBooth.setAttribute('data-background-color', effectiveCustomBgColor);
                         existingBooth.classList.add('has-custom-colors');
                     } else {
                         existingBooth.style.backgroundColor = statusColor.background || statusColor.bg;
@@ -13901,26 +13910,26 @@ const FloorPlanDesigner = {
                         // Don't remove has-custom-colors here - check all colors first
                     }
                     
-                    if (customBorderColor) {
-                        existingBooth.style.setProperty('border-color', customBorderColor, 'important');
-                        existingBooth.setAttribute('data-border-color', customBorderColor);
+                    if (effectiveCustomBorderColor && isAvailable) {
+                        existingBooth.style.setProperty('border-color', effectiveCustomBorderColor, 'important');
+                        existingBooth.setAttribute('data-border-color', effectiveCustomBorderColor);
                         existingBooth.classList.add('has-custom-colors');
                     } else {
                         existingBooth.style.borderColor = statusColor.border;
                         existingBooth.setAttribute('data-border-color', statusColor.border);
                     }
                     
-                    if (customTextColor) {
-                        existingBooth.style.setProperty('color', customTextColor, 'important');
-                        existingBooth.setAttribute('data-text-color', customTextColor);
+                    if (effectiveCustomTextColor && isAvailable) {
+                        existingBooth.style.setProperty('color', effectiveCustomTextColor, 'important');
+                        existingBooth.setAttribute('data-text-color', effectiveCustomTextColor);
                         existingBooth.classList.add('has-custom-colors');
                     } else {
                         existingBooth.style.color = statusColor.text;
                         existingBooth.setAttribute('data-text-color', statusColor.text);
                     }
                     
-                    // Remove has-custom-colors class if no custom colors are set
-                    if (!customBgColor && !customBorderColor && !customTextColor) {
+                    // Remove has-custom-colors class if no custom colors are set or status is not Available
+                    if (!effectiveCustomBgColor && !effectiveCustomBorderColor && !effectiveCustomTextColor) {
                         existingBooth.classList.remove('has-custom-colors');
                     }
                     
@@ -14063,13 +14072,15 @@ const FloorPlanDesigner = {
                 const statusColor = statusColors[boothStatus] || statusColors[1] || { background: '#28a745', border: '#28a745', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 };
                 
                 // Check if booth has custom colors (individual booth colors override status colors)
-                const customBgColor = booth.background_color;
-                const customBorderColor = booth.border_color;
-                const customTextColor = booth.text_color;
+                // IMPORTANT: Custom colors ONLY apply when status is "Available" (status code 1)
+                const isAvailable = (boothStatus === '1' || boothStatus === 1);
+                const customBgColor = isAvailable ? booth.background_color : null;
+                const customBorderColor = isAvailable ? booth.border_color : null;
+                const customTextColor = isAvailable ? booth.text_color : null;
                 
-                // Apply colors: custom colors take priority over status colors
+                // Apply colors: custom colors take priority over status colors ONLY for Available status
                 // Use !important for custom colors to override status color CSS
-                if (customBgColor) {
+                if (customBgColor && isAvailable) {
                     boothElement.style.setProperty('background-color', customBgColor, 'important');
                     boothElement.setAttribute('data-background-color', customBgColor);
                     boothElement.classList.add('has-custom-colors');
@@ -14078,7 +14089,7 @@ const FloorPlanDesigner = {
                     boothElement.setAttribute('data-background-color', statusColor.background || statusColor.bg);
                 }
                 
-                if (customBorderColor) {
+                if (customBorderColor && isAvailable) {
                     boothElement.style.setProperty('border-color', customBorderColor, 'important');
                     boothElement.setAttribute('data-border-color', customBorderColor);
                     boothElement.classList.add('has-custom-colors');
@@ -14087,7 +14098,7 @@ const FloorPlanDesigner = {
                     boothElement.setAttribute('data-border-color', statusColor.border);
                 }
                 
-                if (customTextColor) {
+                if (customTextColor && isAvailable) {
                     boothElement.style.setProperty('color', customTextColor, 'important');
                     boothElement.setAttribute('data-text-color', customTextColor);
                     boothElement.classList.add('has-custom-colors');
@@ -14096,7 +14107,7 @@ const FloorPlanDesigner = {
                     boothElement.setAttribute('data-text-color', statusColor.text);
                 }
                 
-                // Remove has-custom-colors class if no custom colors are set
+                // Remove has-custom-colors class if no custom colors are set or status is not Available
                 if (!customBgColor && !customBorderColor && !customTextColor) {
                     boothElement.classList.remove('has-custom-colors');
                 }

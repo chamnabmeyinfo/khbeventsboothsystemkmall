@@ -1166,21 +1166,23 @@
                 if (booth.z_index) boothElement.style.zIndex = booth.z_index;
                 
                 // Set appearance - custom colors override status colors
-                // Check if booth has custom colors (individual booth colors override status colors)
-                const hasCustomColors = booth.background_color || booth.border_color || booth.text_color;
+                // IMPORTANT: Custom colors ONLY apply when status is "Available" (status code 1)
+                const boothStatus = booth.status || '1';
+                const isAvailable = (boothStatus === '1' || boothStatus === 1);
+                const hasCustomColors = isAvailable && (booth.background_color || booth.border_color || booth.text_color);
                 
                 if (hasCustomColors) {
                     boothElement.classList.add('has-custom-colors');
                 }
                 
-                // Apply custom colors with !important to override status color CSS
-                if (booth.background_color) {
+                // Apply custom colors with !important to override status color CSS (ONLY for Available status)
+                if (booth.background_color && isAvailable) {
                     boothElement.style.setProperty('background-color', booth.background_color, 'important');
                 }
-                if (booth.border_color) {
+                if (booth.border_color && isAvailable) {
                     boothElement.style.setProperty('border-color', booth.border_color, 'important');
                 }
-                if (booth.text_color) {
+                if (booth.text_color && isAvailable) {
                     boothElement.style.setProperty('color', booth.text_color, 'important');
                 }
                 
