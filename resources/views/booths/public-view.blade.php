@@ -1741,7 +1741,6 @@
             
             html += '<div class="booth-detail-row">';
             html += '<span class="booth-detail-label"><i class="fas fa-info-circle"></i> Status:</span>';
-            const contrastColor = getContrastColor(statusColor);
             html += '<span class="booth-detail-value status-badge" style="background: ' + statusColor + '; color: ' + contrastColor + ';">' + statusLabel + '</span>';
             html += '</div>';
             
