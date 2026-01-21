@@ -1748,6 +1748,41 @@
     outline-offset: 2px;
 }
 
+.dropped-booth.selected .booth-color-picker-btn {
+    display: block !important;
+}
+
+/* Individual Booth Color Picker Button */
+.booth-color-picker-btn {
+    position: absolute;
+    top: -12px;
+    right: -12px;
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: 2px solid white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1001;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.booth-color-picker-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+    background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+}
+
+.booth-color-picker-btn:active {
+    transform: scale(0.95);
+}
+
 .dropped-booth.dragging {
     opacity: 0.85;
     cursor: grabbing !important;
@@ -3395,6 +3430,98 @@
                 </button>
                 <button type="button" class="btn btn-primary" id="btnBookBoothSubmit">
                     <i class="fas fa-save"></i> Save Booking
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Individual Booth Color Picker Modal -->
+<div class="modal fade" id="boothColorPickerModal" tabindex="-1" role="dialog" aria-labelledby="boothColorPickerModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h5 class="modal-title" id="boothColorPickerModalLabel">
+                    <i class="fas fa-palette"></i> Set Colors for Booth: <span id="colorPickerBoothNumber"></span>
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="boothColorPickerForm">
+                    <input type="hidden" id="colorPickerBoothId" value="">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> <strong>Note:</strong> These colors are specific to this individual booth and are separate from Zone Area settings. Custom colors will override status-based colors for this booth only.
+                    </div>
+                    
+                    <hr class="my-4" style="border-color: #dee2e6;">
+                    <h6 class="mb-3" style="color: #495057; font-weight: 600;">
+                        <i class="fas fa-palette"></i> Individual Booth Colors
+                    </h6>
+                    
+                    <div class="form-group">
+                        <label for="boothBackgroundColor">
+                            <i class="fas fa-fill"></i> Background Color
+                        </label>
+                        <div class="input-group">
+                            <input type="color" class="form-control form-control-color" id="boothBackgroundColor" value="#ffffff" title="Choose background color">
+                            <input type="text" class="form-control" id="boothBackgroundColorText" value="#ffffff" placeholder="#ffffff" maxlength="7">
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-outline-secondary" id="clearBoothBackgroundColor" title="Clear (use status color)">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">Background color for this specific booth</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="boothBorderColor">
+                            <i class="fas fa-border-all"></i> Border Color
+                        </label>
+                        <div class="input-group">
+                            <input type="color" class="form-control form-control-color" id="boothBorderColor" value="#007bff" title="Choose border color">
+                            <input type="text" class="form-control" id="boothBorderColorText" value="#007bff" placeholder="#007bff" maxlength="7">
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-outline-secondary" id="clearBoothBorderColor" title="Clear (use status color)">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">Border color for this specific booth</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="boothTextColor">
+                            <i class="fas fa-font"></i> Text Color
+                        </label>
+                        <div class="input-group">
+                            <input type="color" class="form-control form-control-color" id="boothTextColor" value="#000000" title="Choose text color">
+                            <input type="text" class="form-control" id="boothTextColorText" value="#000000" placeholder="#000000" maxlength="7">
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-outline-secondary" id="clearBoothTextColor" title="Clear (use status color)">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">Text color for booth number</small>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> <strong>Warning:</strong> Custom colors will override status-based colors. If you clear a color, the booth will use its status color instead.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-warning" id="resetBoothColors">
+                    <i class="fas fa-undo"></i> Reset to Status Colors
+                </button>
+                <button type="button" class="btn btn-primary" id="saveBoothColors">
+                    <i class="fas fa-save"></i> Save Colors
                 </button>
             </div>
         </div>
@@ -9629,15 +9756,21 @@ const FloorPlanDesigner = {
         // boothStatus already declared at the top of createBoothElement function
         const statusColor = statusColors[boothStatus] || statusColors[1] || { bg: '#28a745', border: '#28a745', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 };
         
+        // Check if booth has custom colors (individual booth colors override status colors)
+        // Custom colors are stored in boothData or will be loaded from database
+        const customBgColor = boothData.background_color;
+        const customBorderColor = boothData.border_color;
+        const customTextColor = boothData.text_color;
+        
         // Apply appearance settings (use zone settings if available, otherwise booth data, then defaults)
-        // BUT: Status colors will override background and border colors
-        const backgroundColor = statusColor.background || statusColor.bg; // Status color takes priority
-        const borderColor = statusColor.border; // Status color takes priority
+        // Custom booth colors take priority over status colors, then status colors, then defaults
+        const backgroundColor = customBgColor || (statusColor.background || statusColor.bg); // Custom color takes priority
+        const borderColor = customBorderColor || statusColor.border; // Custom color takes priority
         // Override borderWidth and borderRadius with status color values if available
         borderWidth = statusColor.border_width !== undefined ? statusColor.border_width : borderWidth;
         const borderStyle = statusColor.border_style || 'solid';
         borderRadius = statusColor.border_radius !== undefined ? statusColor.border_radius : borderRadius;
-        const textColor = statusColor.text; // Status color takes priority for text too
+        const textColor = customTextColor || statusColor.text; // Custom color takes priority
         const fontWeight = boothData.font_weight || effectiveSettings.font_weight || this.defaultFontWeight || 'bold';
         const fontFamily = boothData.font_family || effectiveSettings.font_family || this.defaultFontFamily || 'Arial, sans-serif';
         const textAlign = boothData.text_align || effectiveSettings.text_align || this.defaultTextAlign || 'center';
@@ -9707,6 +9840,19 @@ const FloorPlanDesigner = {
                                       '<div class="control-group"><label>R:</label><span class="transform-r">' + rotation + '</span></div>';
         transformControls.style.display = 'none';
         div.appendChild(transformControls);
+        
+        // Add individual booth color picker button (separate from zone settings)
+        const colorPickerBtn = document.createElement('div');
+        colorPickerBtn.className = 'booth-color-picker-btn';
+        colorPickerBtn.innerHTML = '<i class="fas fa-palette"></i>';
+        colorPickerBtn.title = 'Set Individual Booth Colors';
+        colorPickerBtn.style.display = 'none'; // Hidden by default, shown when selected
+        colorPickerBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            self.openBoothColorPicker(boothData.id, boothData.number, div);
+        });
+        div.appendChild(colorPickerBtn);
         
         // Add right-click context menu handler
         div.addEventListener('contextmenu', function(e) {
@@ -9940,6 +10086,11 @@ const FloorPlanDesigner = {
                 // Single select - deselect all others
             document.querySelectorAll('.dropped-booth').forEach(function(booth) {
                 booth.classList.remove('selected');
+                // Hide color picker button when deselected
+                const colorPickerBtn = booth.querySelector('.booth-color-picker-btn');
+                if (colorPickerBtn) {
+                    colorPickerBtn.style.display = 'none';
+                }
                 const ctrl = booth.querySelector('.transform-controls');
                 if (ctrl) {
                     ctrl.style.display = 'none';
@@ -9956,6 +10107,11 @@ const FloorPlanDesigner = {
                     const index = self.selectedBooths.indexOf(element);
                     if (index > -1) {
                         self.selectedBooths.splice(index, 1);
+                    }
+                    // Hide color picker button when deselected
+                    const colorPickerBtn = element.querySelector('.booth-color-picker-btn');
+                    if (colorPickerBtn) {
+                        colorPickerBtn.style.display = 'none';
                     }
                     const handles = element.querySelectorAll('.resize-handle');
                     handles.forEach(function(handle) {
@@ -9980,6 +10136,12 @@ const FloorPlanDesigner = {
             // Add to selection
             element.classList.add('selected');
             const controls = element.querySelector('.transform-controls');
+            
+            // Show color picker button when booth is selected
+            const colorPickerBtn = element.querySelector('.booth-color-picker-btn');
+            if (colorPickerBtn) {
+                colorPickerBtn.style.display = 'block';
+            }
             
             // Update information toolbar with booth data first (but don't update if in edit mode)
             // Check if toolbar is already in edit mode - if so, skip update to preserve inputs
@@ -13599,21 +13761,42 @@ const FloorPlanDesigner = {
                     // Get status colors from cache (loaded from database)
                     const statusColors = self.getStatusColors();
                     
-                    // Apply status-based colors (these override custom background/border colors)
+                    // Apply status-based colors (custom booth colors override status colors)
                     const statusColor = statusColors[boothStatus] || statusColors[1] || { background: '#28a745', border: '#28a745', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 };
                     
-                    // Status colors take priority over custom colors
-                    existingBooth.style.backgroundColor = statusColor.background || statusColor.bg;
-                    existingBooth.style.borderColor = statusColor.border;
+                    // Check if booth has custom colors (individual booth colors override status colors)
+                    const customBgColor = booth.background_color;
+                    const customBorderColor = booth.border_color;
+                    const customTextColor = booth.text_color;
+                    
+                    // Apply colors: custom colors take priority over status colors
+                    if (customBgColor) {
+                        existingBooth.style.backgroundColor = customBgColor;
+                        existingBooth.setAttribute('data-background-color', customBgColor);
+                    } else {
+                        existingBooth.style.backgroundColor = statusColor.background || statusColor.bg;
+                        existingBooth.setAttribute('data-background-color', statusColor.background || statusColor.bg);
+                    }
+                    
+                    if (customBorderColor) {
+                        existingBooth.style.borderColor = customBorderColor;
+                        existingBooth.setAttribute('data-border-color', customBorderColor);
+                    } else {
+                        existingBooth.style.borderColor = statusColor.border;
+                        existingBooth.setAttribute('data-border-color', statusColor.border);
+                    }
+                    
+                    if (customTextColor) {
+                        existingBooth.style.color = customTextColor;
+                        existingBooth.setAttribute('data-text-color', customTextColor);
+                    } else {
+                        existingBooth.style.color = statusColor.text;
+                        existingBooth.setAttribute('data-text-color', statusColor.text);
+                    }
+                    
                     existingBooth.style.borderWidth = (statusColor.border_width || 2) + 'px';
                     existingBooth.style.borderStyle = statusColor.border_style || 'solid';
                     existingBooth.style.borderRadius = (statusColor.border_radius || 4) + 'px';
-                    existingBooth.style.color = statusColor.text;
-                    
-                    // Store status colors in data attributes
-                    existingBooth.setAttribute('data-background-color', statusColor.bg);
-                    existingBooth.setAttribute('data-border-color', statusColor.border);
-                    existingBooth.setAttribute('data-text-color', statusColor.text);
                     
                     // Update status class
                     existingBooth.className = existingBooth.className.replace(/status-\d+/, 'status-' + boothStatus);
@@ -13691,7 +13874,11 @@ const FloorPlanDesigner = {
                     height: booth.height || 50,
                     rotation: booth.rotation || 0,
                     x: booth.position_x,
-                    y: booth.position_y
+                    y: booth.position_y,
+                    // Include custom colors if they exist
+                    background_color: booth.background_color || null,
+                    border_color: booth.border_color || null,
+                    text_color: booth.text_color || null
                 };
                 const boothElement = self.createBoothElement(extendedBoothData);
                 
@@ -13745,13 +13932,39 @@ const FloorPlanDesigner = {
                 // boothStatus already declared at the top of the forEach loop
                 const statusColor = statusColors[boothStatus] || statusColors[1] || { background: '#28a745', border: '#28a745', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 };
                 
-                // Status colors take priority over custom colors
-                boothElement.style.backgroundColor = statusColor.background || statusColor.bg;
-                boothElement.style.borderColor = statusColor.border;
+                // Check if booth has custom colors (individual booth colors override status colors)
+                const customBgColor = booth.background_color;
+                const customBorderColor = booth.border_color;
+                const customTextColor = booth.text_color;
+                
+                // Apply colors: custom colors take priority over status colors
+                if (customBgColor) {
+                    boothElement.style.backgroundColor = customBgColor;
+                    boothElement.setAttribute('data-background-color', customBgColor);
+                } else {
+                    boothElement.style.backgroundColor = statusColor.background || statusColor.bg;
+                    boothElement.setAttribute('data-background-color', statusColor.background || statusColor.bg);
+                }
+                
+                if (customBorderColor) {
+                    boothElement.style.borderColor = customBorderColor;
+                    boothElement.setAttribute('data-border-color', customBorderColor);
+                } else {
+                    boothElement.style.borderColor = statusColor.border;
+                    boothElement.setAttribute('data-border-color', statusColor.border);
+                }
+                
+                if (customTextColor) {
+                    boothElement.style.color = customTextColor;
+                    boothElement.setAttribute('data-text-color', customTextColor);
+                } else {
+                    boothElement.style.color = statusColor.text;
+                    boothElement.setAttribute('data-text-color', statusColor.text);
+                }
+                
                 boothElement.style.borderWidth = (statusColor.border_width || 2) + 'px';
                 boothElement.style.borderStyle = statusColor.border_style || 'solid';
                 boothElement.style.borderRadius = (statusColor.border_radius || 4) + 'px';
-                boothElement.style.color = statusColor.text;
                 
                     // Store status colors in data attributes
                     boothElement.setAttribute('data-background-color', statusColor.bg);
@@ -16016,17 +16229,41 @@ const FloorPlanDesigner = {
         canvas.addEventListener('mousedown', function(e) {
             if (e.button === 1) { // Middle mouse button
                 e.preventDefault();
+                
+                // Check if panzoom instance exists and has required methods
+                if (!self.panzoomInstance) {
+                    return;
+                }
+                
                 canvas.style.cursor = 'grabbing';
                 let startX = e.clientX;
                 let startY = e.clientY;
-                const transform = self.panzoomInstance.getTransform();
-                let startPanX = transform.x;
-                let startPanY = transform.y;
+                
+                // Safely get transform - check if method exists first
+                let startPanX = 0;
+                let startPanY = 0;
+                if (self.panzoomInstance.getTransform) {
+                    const transform = self.panzoomInstance.getTransform();
+                    startPanX = transform.x || 0;
+                    startPanY = transform.y || 0;
+                } else if (self.panzoomInstance.getPan) {
+                    // Fallback: try getPan method if available
+                    const pan = self.panzoomInstance.getPan();
+                    if (pan) {
+                        startPanX = pan.x || 0;
+                        startPanY = pan.y || 0;
+                    }
+                }
                 
                 const onMove = function(e) {
+                    if (!self.panzoomInstance) {
+                        return;
+                    }
                     const deltaX = e.clientX - startX;
                     const deltaY = e.clientY - startY;
-                    self.panzoomInstance.pan(startPanX + deltaX, startPanY + deltaY, { relative: false });
+                    if (self.panzoomInstance.pan) {
+                        self.panzoomInstance.pan(startPanX + deltaX, startPanY + deltaY, { relative: false });
+                    }
                 };
                 
                 const onUp = function() {
@@ -16399,6 +16636,131 @@ const FloorPlanDesigner = {
                 booth.style.top = savedState.y + 'px';
             }
         });
+    },
+    
+    // Open individual booth color picker modal
+    openBoothColorPicker: function(boothId, boothNumber, boothElement) {
+        const self = this;
+        const canvas = document.getElementById('print');
+        if (!canvas || !boothElement) return;
+        
+        // Get current colors from booth element
+        // Check data attributes first (these contain the actual saved colors)
+        let currentBgColor = boothElement.getAttribute('data-background-color') || boothElement.style.backgroundColor || '#ffffff';
+        let currentBorderColor = boothElement.getAttribute('data-border-color') || boothElement.style.borderColor || '#007bff';
+        let currentTextColor = boothElement.getAttribute('data-text-color') || boothElement.style.color || '#000000';
+        
+        // Convert RGB to hex if needed
+        if (currentBgColor && currentBgColor.startsWith('rgb')) {
+            currentBgColor = self.rgbToHex(currentBgColor);
+        }
+        if (currentBorderColor && currentBorderColor.startsWith('rgb')) {
+            currentBorderColor = self.rgbToHex(currentBorderColor);
+        }
+        if (currentTextColor && currentTextColor.startsWith('rgb')) {
+            currentTextColor = self.rgbToHex(currentTextColor);
+        }
+        
+        // Ensure hex format
+        if (!currentBgColor.startsWith('#')) {
+            currentBgColor = '#ffffff';
+        }
+        if (!currentBorderColor.startsWith('#')) {
+            currentBorderColor = '#007bff';
+        }
+        if (!currentTextColor.startsWith('#')) {
+            currentTextColor = '#000000';
+        }
+        
+        // Set modal values
+        $('#colorPickerBoothId').val(boothId);
+        $('#colorPickerBoothNumber').text(boothNumber);
+        $('#boothBackgroundColor').val(currentBgColor);
+        $('#boothBackgroundColorText').val(currentBgColor);
+        $('#boothBorderColor').val(currentBorderColor);
+        $('#boothBorderColorText').val(currentBorderColor);
+        $('#boothTextColor').val(currentTextColor);
+        $('#boothTextColorText').val(currentTextColor);
+        
+        // Store booth element reference
+        $('#boothColorPickerModal').data('booth-element', boothElement);
+        
+        // Show modal
+        $('#boothColorPickerModal').modal('show');
+    },
+    
+    // Helper: Convert RGB to Hex
+    rgbToHex: function(rgb) {
+        if (!rgb || rgb === 'transparent') return '#ffffff';
+        if (rgb.startsWith('#')) return rgb;
+        
+        const result = rgb.match(/\d+/g);
+        if (!result || result.length < 3) return '#ffffff';
+        
+        const r = parseInt(result[0]);
+        const g = parseInt(result[1]);
+        const b = parseInt(result[2]);
+        
+        return '#' + [r, g, b].map(x => {
+            const hex = x.toString(16);
+            return hex.length === 1 ? '0' + hex : hex;
+        }).join('');
+    },
+    
+    // Save individual booth colors
+    saveBoothColors: function(boothId, backgroundColor, borderColor, textColor) {
+        const self = this;
+        const canvas = document.getElementById('print');
+        const boothElement = canvas ? canvas.querySelector('[data-booth-id="' + boothId + '"]') : null;
+        
+        if (!boothElement) {
+            showNotification('Booth element not found on canvas', 'error');
+            return Promise.reject('Booth element not found');
+        }
+        
+        // Get current booth properties
+        const x = parseFloat(boothElement.style.left) || 0;
+        const y = parseFloat(boothElement.style.top) || 0;
+        const width = parseFloat(boothElement.style.width) || 80;
+        const height = parseFloat(boothElement.style.height) || 50;
+        const rotation = parseFloat(boothElement.getAttribute('data-rotation')) || 0;
+        const zIndex = parseFloat(boothElement.style.zIndex) || 10;
+        const fontSize = parseFloat(boothElement.style.fontSize) || 14;
+        const borderWidth = parseFloat(boothElement.style.borderWidth) || 2;
+        const borderRadius = parseFloat(boothElement.style.borderRadius) || 6;
+        const opacity = parseFloat(boothElement.style.opacity) || 1.0;
+        
+        // Update booth element colors immediately (visual feedback)
+        if (backgroundColor && backgroundColor !== '') {
+            boothElement.style.backgroundColor = backgroundColor;
+            boothElement.setAttribute('data-background-color', backgroundColor);
+        }
+        if (borderColor && borderColor !== '') {
+            boothElement.style.borderColor = borderColor;
+            boothElement.setAttribute('data-border-color', borderColor);
+        }
+        if (textColor && textColor !== '') {
+            boothElement.style.color = textColor;
+            boothElement.setAttribute('data-text-color', textColor);
+        }
+        
+        // Save to database
+        return self.saveBoothPosition(
+            boothId, 
+            x, 
+            y, 
+            width, 
+            height, 
+            rotation, 
+            zIndex, 
+            fontSize, 
+            borderWidth, 
+            borderRadius, 
+            opacity, 
+            backgroundColor || null, 
+            borderColor || null, 
+            textColor || null
+        );
     }
 };
 
@@ -16423,6 +16785,112 @@ function showNotification(message, type) {
 // Global error handler
 window.addEventListener('error', function(e) {
     console.error('JavaScript Error:', e);
+});
+
+// Individual Booth Color Picker Modal Handlers
+$(document).ready(function() {
+    // Sync color picker inputs
+    $('#boothBackgroundColor').on('input', function() {
+        $('#boothBackgroundColorText').val($(this).val());
+    });
+    $('#boothBackgroundColorText').on('input', function() {
+        const val = $(this).val();
+        if (/^#[0-9A-F]{6}$/i.test(val)) {
+            $('#boothBackgroundColor').val(val);
+        }
+    });
+    
+    $('#boothBorderColor').on('input', function() {
+        $('#boothBorderColorText').val($(this).val());
+    });
+    $('#boothBorderColorText').on('input', function() {
+        const val = $(this).val();
+        if (/^#[0-9A-F]{6}$/i.test(val)) {
+            $('#boothBorderColor').val(val);
+        }
+    });
+    
+    $('#boothTextColor').on('input', function() {
+        $('#boothTextColorText').val($(this).val());
+    });
+    $('#boothTextColorText').on('input', function() {
+        const val = $(this).val();
+        if (/^#[0-9A-F]{6}$/i.test(val)) {
+            $('#boothTextColor').val(val);
+        }
+    });
+    
+    // Clear color buttons
+    $('#clearBoothBackgroundColor').on('click', function() {
+        $('#boothBackgroundColor').val('#ffffff');
+        $('#boothBackgroundColorText').val('#ffffff');
+    });
+    
+    $('#clearBoothBorderColor').on('click', function() {
+        $('#boothBorderColor').val('#007bff');
+        $('#boothBorderColorText').val('#007bff');
+    });
+    
+    $('#clearBoothTextColor').on('click', function() {
+        $('#boothTextColor').val('#000000');
+        $('#boothTextColorText').val('#000000');
+    });
+    
+    // Reset to status colors
+    $('#resetBoothColors').on('click', function() {
+        const boothId = $('#colorPickerBoothId').val();
+        const boothElement = $('#boothColorPickerModal').data('booth-element');
+        
+        if (!boothElement) return;
+        
+        // Get status colors
+        const statusColors = FloorPlanDesigner.getStatusColors();
+        const boothStatus = boothElement.getAttribute('data-booth-status') || '1';
+        const statusColor = statusColors[boothStatus] || statusColors[1] || { bg: '#28a745', border: '#28a745', text: '#ffffff' };
+        
+        const bgColor = statusColor.background || statusColor.bg || '#28a745';
+        const borderColor = statusColor.border || '#28a745';
+        const textColor = statusColor.text || '#ffffff';
+        
+        // Update inputs
+        $('#boothBackgroundColor').val(bgColor);
+        $('#boothBackgroundColorText').val(bgColor);
+        $('#boothBorderColor').val(borderColor);
+        $('#boothBorderColorText').val(borderColor);
+        $('#boothTextColor').val(textColor);
+        $('#boothTextColorText').val(textColor);
+    });
+    
+    // Save booth colors
+    $('#saveBoothColors').on('click', function() {
+        const boothId = $('#colorPickerBoothId').val();
+        const backgroundColor = $('#boothBackgroundColor').val();
+        const borderColor = $('#boothBorderColor').val();
+        const textColor = $('#boothTextColor').val();
+        
+        if (!boothId) {
+            showNotification('Booth ID is missing', 'error');
+            return;
+        }
+        
+        const btn = $(this);
+        btn.prop('disabled', true);
+        btn.html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+        
+        FloorPlanDesigner.saveBoothColors(boothId, backgroundColor, borderColor, textColor)
+            .then(function() {
+                showNotification('Booth colors saved successfully!', 'success');
+                $('#boothColorPickerModal').modal('hide');
+            })
+            .catch(function(error) {
+                console.error('Error saving booth colors:', error);
+                showNotification('Failed to save booth colors: ' + (error.message || 'Unknown error'), 'error');
+            })
+            .finally(function() {
+                btn.prop('disabled', false);
+                btn.html('<i class="fas fa-save"></i> Save Colors');
+            });
+    });
 });
 
 // CRITICAL: Load floor plan image IMMEDIATELY when DOM is ready (before FloorPlanDesigner.init)
