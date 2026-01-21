@@ -52,7 +52,6 @@ Route::prefix('client-portal')->name('client-portal.')->group(function () {
 // Public Routes (No Authentication Required)
 Route::get('/floor-plans/{id}/public', [\App\Http\Controllers\BoothController::class, 'publicView'])->name('floor-plans.public');
 Route::get('/floor-plans', [FloorPlanController::class, 'index'])->name('floor-plans.index');
-Route::get('/floor-plans/{floorPlan}', [FloorPlanController::class, 'show'])->name('floor-plans.show');
 
 // Protected Routes
 Route::middleware(['auth'])->group(function () {
@@ -60,6 +59,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Floor Plans (Floor Plan Management - Create, Edit, Delete require auth)
+    // IMPORTANT: Define specific routes (like /create) BEFORE parameterized routes to avoid route conflicts
     Route::get('/floor-plans/create', [FloorPlanController::class, 'create'])->name('floor-plans.create');
     Route::post('/floor-plans', [FloorPlanController::class, 'store'])->name('floor-plans.store');
     Route::get('/floor-plans/{floorPlan}/edit', [FloorPlanController::class, 'edit'])->name('floor-plans.edit');
@@ -68,7 +68,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/floor-plans/{id}/set-default', [FloorPlanController::class, 'setDefault'])->name('floor-plans.set-default');
     Route::post('/floor-plans/{id}/duplicate', [FloorPlanController::class, 'duplicate'])->name('floor-plans.duplicate');
     Route::post('/floor-plans/{id}/affiliate-link', [FloorPlanController::class, 'generateAffiliateLink'])->name('floor-plans.generate-affiliate-link');
-    
+});
+
+// Public Floor Plan Show Route (must be after protected routes to avoid conflicts)
+Route::get('/floor-plans/{floorPlan}', [FloorPlanController::class, 'show'])->name('floor-plans.show');
+
+// Protected Routes (continued)
+Route::middleware(['auth'])->group(function () {
     // Affiliate Management
     Route::get('/affiliates', [\App\Http\Controllers\AffiliateController::class, 'index'])->name('affiliates.index');
     Route::get('/affiliates/statistics/data', [\App\Http\Controllers\AffiliateController::class, 'statistics'])->name('affiliates.statistics');
