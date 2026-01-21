@@ -56,7 +56,7 @@ class ClientPortalController extends Controller
 
         $client = Client::findOrFail($clientId);
         // Note: 'booths' is not a relationship, it's a method that returns a Collection
-        $bookings = Book::where('clientid', $clientId)->latest()->get();
+        $bookings = Book::where('clientid', $clientId)->orderBy('date_book', 'desc')->orderBy('id', 'desc')->get();
         $payments = Payment::where('client_id', $clientId)->latest()->get();
 
         return view('client-portal.dashboard', compact('client', 'bookings', 'payments'));

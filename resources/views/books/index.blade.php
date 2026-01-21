@@ -1066,6 +1066,8 @@
                         <th style="width: 120px;">Booths</th>
                         <th style="width: 150px;">Date & Time</th>
                         <th style="width: 120px;">Type</th>
+                        <th style="width: 100px;">Status</th>
+                        <th style="width: 150px;">Amount</th>
                         <th style="width: 150px;">Booked By</th>
                         <th style="width: 140px;">Actions</th>
                     </tr>
@@ -1147,6 +1149,39 @@
                             </span>
                         </td>
                         <td>
+                            @php
+                                $statusSetting = $book->statusSetting ?? \App\Models\BookingStatusSetting::getByCode($book->status ?? 1);
+                                $statusColor = $statusSetting ? $statusSetting->status_color : '#6c757d';
+                                $statusTextColor = $statusSetting && $statusSetting->text_color ? $statusSetting->text_color : '#ffffff';
+                                $statusName = $statusSetting ? $statusSetting->status_name : 'Pending';
+                            @endphp
+                            <span class="badge-modern" style="background-color: {{ $statusColor }}; color: {{ $statusTextColor }};">
+                                {{ $statusName }}
+                            </span>
+                        </td>
+                        <td>
+                            @php
+                                $totalAmount = $book->total_amount ?? \App\Models\Booth::whereIn('id', $boothIds)->sum('price');
+                                $paidAmount = $book->paid_amount ?? 0;
+                                $balanceAmount = $book->balance_amount ?? ($totalAmount - $paidAmount);
+                            @endphp
+                            <div>
+                                <div class="font-weight-700 text-success" style="font-size: 0.9375rem;">
+                                    ${{ number_format($totalAmount, 2) }}
+                                </div>
+                                @if($paidAmount > 0)
+                                <div class="text-muted" style="font-size: 0.8125rem;">
+                                    Paid: ${{ number_format($paidAmount, 2) }}
+                                </div>
+                                @endif
+                                @if($balanceAmount > 0)
+                                <div class="text-warning" style="font-size: 0.8125rem;">
+                                    Balance: ${{ number_format($balanceAmount, 2) }}
+                                </div>
+                                @endif
+                            </div>
+                        </td>
+                        <td>
                             <div class="d-flex align-items-center">
                                 @if($book->user)
                                     <x-avatar 
@@ -1178,7 +1213,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="text-center">
+                        <td colspan="9" class="text-center">
                             <div class="empty-state">
                                 <div class="empty-state-icon">
                                     <i class="fas fa-calendar-times"></i>

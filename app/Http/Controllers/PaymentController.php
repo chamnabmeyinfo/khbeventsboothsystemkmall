@@ -89,8 +89,12 @@ class PaymentController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $booking = Book::findOrFail($request->booking_id);
-        $totalAmount = $booking->booths()->sum('price');
+        $booking = Book::with(['client', 'statusSetting'])->findOrFail($request->booking_id);
+        
+        // Calculate total booking amount if not set
+        if (!$booking->total_amount) {
+            $booking->total_amount = $booking->calculateTotalAmount();
+        }
 
         $payment = Payment::create([
             'booking_id' => $request->booking_id,
@@ -103,25 +107,68 @@ class PaymentController extends Controller
             'user_id' => Auth::id(),
         ]);
 
-        // Update booth status to paid and send notifications
-        // Use lockForUpdate to prevent race conditions
+        // Update booking payment amounts and status
+        $booking->updatePaymentAmounts();
+
+        // Update booth payment amounts based on payment
+        // Distribute payment proportionally across booths
         $boothIds = json_decode($booking->boothid, true) ?? [];
         if (!empty($boothIds)) {
             $booths = Booth::whereIn('id', $boothIds)->lockForUpdate()->get();
+            $totalBoothPrice = $booths->sum('price');
             
             foreach ($booths as $booth) {
-                $oldStatus = $booth->status;
-                
-                // Only update if not already paid (idempotent)
-                if ($oldStatus != Booth::STATUS_PAID) {
-                    $booth->update(['status' => Booth::STATUS_PAID]);
+                if ($totalBoothPrice > 0) {
+                    // Calculate proportional payment for this booth
+                    $boothProportion = ($booth->price / $totalBoothPrice);
+                    $boothPaymentAmount = $request->amount * $boothProportion;
+                    
+                    // Update booth payment amounts
+                    $currentDepositPaid = (float) ($booth->deposit_paid ?? 0);
+                    $currentBalancePaid = (float) ($booth->balance_paid ?? 0);
+                    $boothTotalPaid = $currentDepositPaid + $currentBalancePaid;
+                    
+                    // Determine if this should be deposit or balance payment
+                    $depositAmount = (float) ($booth->deposit_amount ?? 0);
+                    $remainingDeposit = max(0, $depositAmount - $currentDepositPaid);
+                    
+                    if ($remainingDeposit > 0) {
+                        // Apply to deposit first
+                        $depositPayment = min($boothPaymentAmount, $remainingDeposit);
+                        $booth->deposit_paid = $currentDepositPaid + $depositPayment;
+                        $booth->deposit_paid_date = now();
+                        $boothPaymentAmount -= $depositPayment;
+                    }
+                    
+                    // Apply remaining to balance
+                    if ($boothPaymentAmount > 0) {
+                        $booth->balance_paid = $currentBalancePaid + $boothPaymentAmount;
+                        $booth->balance_paid_date = now();
+                    }
+                    
+                    // Update booth status based on payment
+                    $oldStatus = $booth->status;
+                    $newTotalPaid = (float) ($booth->deposit_paid ?? 0) + (float) ($booth->balance_paid ?? 0);
+                    
+                    if ($newTotalPaid >= $booth->price) {
+                        $booth->status = Booth::STATUS_PAID;
+                    } elseif ($newTotalPaid > 0) {
+                        // Partially paid - keep as confirmed or reserved
+                        if ($booth->status == Booth::STATUS_AVAILABLE) {
+                            $booth->status = Booth::STATUS_CONFIRMED;
+                        }
+                    }
+                    
+                    $booth->save();
                     
                     // Send notification about payment and status change
-                    try {
-                        \App\Services\NotificationService::notifyPaymentReceived($booth, $booth->price ?? 0);
-                        \App\Services\NotificationService::notifyBoothStatusChange($booth, $oldStatus, Booth::STATUS_PAID);
-                    } catch (\Exception $e) {
-                        \Log::error('Failed to send payment notification: ' . $e->getMessage());
+                    if ($oldStatus != $booth->status) {
+                        try {
+                            \App\Services\NotificationService::notifyPaymentReceived($booth, $boothPaymentAmount);
+                            \App\Services\NotificationService::notifyBoothStatusChange($booth, $oldStatus, $booth->status);
+                        } catch (\Exception $e) {
+                            \Log::error('Failed to send payment notification: ' . $e->getMessage());
+                        }
                     }
                 }
             }
@@ -147,7 +194,7 @@ class PaymentController extends Controller
     public function create(Request $request)
     {
         $bookingId = $request->input('booking_id');
-        $booking = $bookingId ? Book::with('booths')->findOrFail($bookingId) : null;
+        $booking = $bookingId ? Book::with(['client', 'statusSetting'])->findOrFail($bookingId) : null;
         
         return view('payments.create', compact('booking'));
     }
@@ -157,7 +204,7 @@ class PaymentController extends Controller
      */
     public function refund(Request $request, $id)
     {
-        $payment = Payment::with(['booking', 'booking.booths'])->findOrFail($id);
+        $payment = Payment::with(['booking', 'booking.client', 'booking.statusSetting'])->findOrFail($id);
 
         // Validate payment can be refunded
         if ($payment->status === Payment::STATUS_REFUNDED) {
@@ -219,7 +266,7 @@ class PaymentController extends Controller
      */
     public function void(Request $request, $id)
     {
-        $payment = Payment::with(['booking', 'booking.booths'])->findOrFail($id);
+        $payment = Payment::with(['booking', 'booking.client', 'booking.statusSetting'])->findOrFail($id);
 
         // Validate payment can be voided
         if ($payment->status === Payment::STATUS_REFUNDED) {

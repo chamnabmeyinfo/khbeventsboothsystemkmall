@@ -281,6 +281,14 @@ class BookController extends Controller
                 }
             }
             
+            // Calculate total amount from booths
+            $booths = Booth::whereIn('id', $validated['booth_ids'])->get();
+            $totalAmount = $booths->sum('price');
+            
+            // Get default booking status
+            $defaultStatus = \App\Models\BookingStatusSetting::getDefault();
+            $bookingStatus = $defaultStatus ? $defaultStatus->status_code : Book::STATUS_PENDING;
+            
             // Create booking with project/floor plan tracking
             $book = Book::create([
                 'event_id' => $eventId,
@@ -291,6 +299,10 @@ class BookController extends Controller
                 'userid' => auth()->user()->id,
                 'affiliate_user_id' => $affiliateUserId, // Track which sales person's link was used
                 'type' => $bookingType,
+                'status' => $bookingStatus,
+                'total_amount' => $totalAmount,
+                'paid_amount' => 0,
+                'balance_amount' => $totalAmount,
             ]);
 
             // Update booths status - use lockForUpdate to prevent race conditions
@@ -363,14 +375,67 @@ class BookController extends Controller
      */
     public function show(Book $book)
     {
-        $book->load(['client', 'user']);
+        $book->load(['client', 'user', 'payments', 'statusSetting']);
+        
+        // Calculate amounts if not set
+        if (!$book->total_amount) {
+            $book->total_amount = $book->calculateTotalAmount();
+            $book->save();
+        }
+        if (!$book->paid_amount) {
+            $book->paid_amount = $book->calculatePaidAmount();
+            $book->balance_amount = $book->total_amount - $book->paid_amount;
+            $book->save();
+        }
+        
         $boothIds = json_decode($book->boothid, true) ?? [];
         $booths = !empty($boothIds) ? Booth::whereIn('id', $boothIds)->get() : collect([]);
         
-        // Get related payment if exists
-        $payment = \App\Models\Payment::where('booking_id', $book->id)->first();
+        // Get all payments for this booking
+        $payments = $book->payments()->with('user')->latest('paid_at')->get();
         
-        return view('books.show', compact('book', 'booths', 'payment'));
+        // Get booking status settings
+        $statusSettings = \App\Models\BookingStatusSetting::getActiveStatuses();
+        
+        return view('books.show', compact('book', 'booths', 'payments', 'statusSettings'));
+    }
+
+    /**
+     * Update booking status
+     */
+    public function updateStatus(Request $request, Book $book)
+    {
+        $request->validate([
+            'status' => 'required|integer|exists:booking_status_settings,status_code',
+        ]);
+
+        $oldStatus = $book->status;
+        $book->status = $request->status;
+        $book->save();
+
+        // Create timeline entry
+        try {
+            $boothIds = json_decode($book->boothid, true) ?? [];
+            foreach ($boothIds as $boothId) {
+                \App\Models\BookingTimeline::create([
+                    'booking_id' => $book->id,
+                    'booth_id' => $boothId,
+                    'action' => 'status_changed',
+                    'old_status' => $oldStatus,
+                    'new_status' => $request->status,
+                    'user_id' => auth()->id(),
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to create timeline entry: ' . $e->getMessage());
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Booking status updated successfully',
+            'status' => $book->status,
+            'status_label' => $book->status_label,
+        ]);
     }
 
     /**
@@ -400,6 +465,9 @@ class BookController extends Controller
             'booth_ids.*' => 'exists:booth,id',
             'date_book' => 'required|date',
             'type' => 'nullable|integer|in:1,2,3',
+            'status' => 'nullable|integer',
+            'payment_due_date' => 'nullable|date',
+            'notes' => 'nullable|string',
         ]);
 
         try {
@@ -491,8 +559,14 @@ class BookController extends Controller
                 'clientid' => $validated['clientid'],
                 'boothid' => json_encode($newBoothIds),
                 'date_book' => $validated['date_book'],
-                'type' => $validated['type'] ?? 1,
+                'type' => $validated['type'] ?? $book->type,
+                'status' => $validated['status'] ?? $book->status,
+                'payment_due_date' => $validated['payment_due_date'] ?? $book->payment_due_date,
+                'notes' => $validated['notes'] ?? $book->notes,
             ]);
+            
+            // Recalculate amounts after booth changes
+            $book->updatePaymentAmounts();
 
             DB::commit();
 
@@ -895,6 +969,13 @@ class BookController extends Controller
             }
             
             // Create booking with project/floor plan tracking
+            // Calculate total amount from booths
+            $totalAmount = $booths->sum('price');
+            
+            // Get default booking status
+            $defaultStatus = \App\Models\BookingStatusSetting::getDefault();
+            $bookingStatus = $defaultStatus ? $defaultStatus->status_code : Book::STATUS_PENDING;
+            
             $book = Book::create([
                 'event_id' => $eventId,
                 'floor_plan_id' => $floorPlanId,
@@ -904,6 +985,10 @@ class BookController extends Controller
                 'boothid' => json_encode($data['booth']),
                 'date_book' => now(),
                 'affiliate_user_id' => $affiliateUserId, // Track which sales person's link was used
+                'status' => $bookingStatus,
+                'total_amount' => $totalAmount,
+                'paid_amount' => 0,
+                'balance_amount' => $totalAmount,
             ]);
             
             $bookID = $book->id;

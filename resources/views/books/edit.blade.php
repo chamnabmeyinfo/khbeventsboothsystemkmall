@@ -163,6 +163,57 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="status" class="form-label">Booking Status</label>
+                                @php
+                                    $statusSettings = \App\Models\BookingStatusSetting::getActiveStatuses();
+                                @endphp
+                                <select class="form-control @error('status') is-invalid @enderror" id="status" name="status">
+                                    @foreach($statusSettings as $status)
+                                        <option value="{{ $status->status_code }}" 
+                                            {{ old('status', $book->status ?? 1) == $status->status_code ? 'selected' : '' }}>
+                                            {{ $status->status_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('status')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">Current status of this booking</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="payment_due_date" class="form-label">Payment Due Date</label>
+                                <input type="date" 
+                                       class="form-control @error('payment_due_date') is-invalid @enderror" 
+                                       id="payment_due_date" 
+                                       name="payment_due_date" 
+                                       value="{{ old('payment_due_date', $book->payment_due_date ? $book->payment_due_date->format('Y-m-d') : '') }}">
+                                @error('payment_due_date')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">When payment is due for this booking</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label for="notes" class="form-label">Notes</label>
+                                <textarea class="form-control @error('notes') is-invalid @enderror" 
+                                          id="notes" 
+                                          name="notes" 
+                                          rows="3" 
+                                          placeholder="Add any additional notes about this booking...">{{ old('notes', $book->notes ?? '') }}</textarea>
+                                @error('notes')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Booth Selection -->

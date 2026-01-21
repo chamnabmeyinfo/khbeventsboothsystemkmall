@@ -33,11 +33,30 @@ class Book extends Model
         'userid',
         'affiliate_user_id',
         'type',
+        'status',
+        'total_amount',
+        'paid_amount',
+        'balance_amount',
+        'payment_due_date',
+        'notes',
     ];
 
     protected $casts = [
         'date_book' => 'datetime',
+        'payment_due_date' => 'date',
+        'total_amount' => 'decimal:2',
+        'paid_amount' => 'decimal:2',
+        'balance_amount' => 'decimal:2',
+        'status' => 'integer',
     ];
+
+    // Status constants
+    const STATUS_PENDING = 1;
+    const STATUS_CONFIRMED = 2;
+    const STATUS_RESERVED = 3;
+    const STATUS_PAID = 4;
+    const STATUS_PARTIALLY_PAID = 5;
+    const STATUS_CANCELLED = 6;
 
     /**
      * Get the client
@@ -97,5 +116,79 @@ class Book extends Model
             }
         }
         return null;
+    }
+
+    /**
+     * Get payments for this booking
+     */
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'booking_id');
+    }
+
+    /**
+     * Get booking status setting
+     */
+    public function statusSetting()
+    {
+        return $this->belongsTo(BookingStatusSetting::class, 'status', 'status_code');
+    }
+
+    /**
+     * Get status label
+     */
+    public function getStatusLabelAttribute()
+    {
+        $statusSetting = $this->statusSetting;
+        if ($statusSetting) {
+            return $statusSetting->status_name;
+        }
+        
+        return match($this->status) {
+            self::STATUS_PENDING => 'Pending',
+            self::STATUS_CONFIRMED => 'Confirmed',
+            self::STATUS_RESERVED => 'Reserved',
+            self::STATUS_PAID => 'Paid',
+            self::STATUS_PARTIALLY_PAID => 'Partially Paid',
+            self::STATUS_CANCELLED => 'Cancelled',
+            default => 'Unknown',
+        };
+    }
+
+    /**
+     * Calculate total amount from booths
+     */
+    public function calculateTotalAmount()
+    {
+        return $this->booths()->sum('price');
+    }
+
+    /**
+     * Calculate paid amount from payments
+     */
+    public function calculatePaidAmount()
+    {
+        return $this->payments()
+            ->where('status', Payment::STATUS_COMPLETED)
+            ->sum('amount');
+    }
+
+    /**
+     * Update payment amounts
+     */
+    public function updatePaymentAmounts()
+    {
+        $this->total_amount = $this->calculateTotalAmount();
+        $this->paid_amount = $this->calculatePaidAmount();
+        $this->balance_amount = $this->total_amount - $this->paid_amount;
+        
+        // Auto-update status based on payment
+        if ($this->balance_amount <= 0 && $this->total_amount > 0) {
+            $this->status = self::STATUS_PAID;
+        } elseif ($this->paid_amount > 0 && $this->balance_amount > 0) {
+            $this->status = self::STATUS_PARTIALLY_PAID;
+        }
+        
+        $this->save();
     }
 }

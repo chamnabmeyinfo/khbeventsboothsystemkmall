@@ -134,9 +134,53 @@
                     <div class="info-row">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="text-muted"><i class="fas fa-dollar-sign mr-2"></i>Total Amount:</span>
-                            <strong class="text-success">${{ number_format($booths->sum('price') ?? 0, 2) }}</strong>
+                            <strong class="text-success">${{ number_format($book->total_amount ?? $booths->sum('price') ?? 0, 2) }}</strong>
                         </div>
                     </div>
+                    <div class="info-row">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted"><i class="fas fa-check-circle mr-2"></i>Paid Amount:</span>
+                            <strong class="text-info">${{ number_format($book->paid_amount ?? 0, 2) }}</strong>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted"><i class="fas fa-balance-scale mr-2"></i>Balance:</span>
+                            <strong class="{{ ($book->balance_amount ?? 0) > 0 ? 'text-warning' : 'text-success' }}">
+                                ${{ number_format($book->balance_amount ?? ($book->total_amount ?? 0) - ($book->paid_amount ?? 0), 2) }}
+                            </strong>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted"><i class="fas fa-info-circle mr-2"></i>Status:</span>
+                            @php
+                                $statusSetting = $book->statusSetting ?? \App\Models\BookingStatusSetting::getByCode($book->status ?? 1);
+                                $statusColor = $statusSetting ? $statusSetting->status_color : '#6c757d';
+                                $statusName = $statusSetting ? $statusSetting->status_name : 'Pending';
+                            @endphp
+                            <span class="badge" style="background-color: {{ $statusColor }}; color: {{ $statusSetting && $statusSetting->text_color ? $statusSetting->text_color : '#ffffff' }};">
+                                {{ $statusName }}
+                            </span>
+                        </div>
+                    </div>
+                    @if(auth()->user()->isAdmin())
+                    <div class="info-row">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted"><i class="fas fa-edit mr-2"></i>Change Status:</span>
+                            <select id="bookingStatusSelect" class="form-control form-control-sm" style="max-width: 200px; display: inline-block;">
+                                @foreach($statusSettings as $status)
+                                    <option value="{{ $status->status_code }}" 
+                                        {{ ($book->status ?? 1) == $status->status_code ? 'selected' : '' }}
+                                        data-color="{{ $status->status_color }}"
+                                        data-text-color="{{ $status->text_color }}">
+                                        {{ $status->status_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -251,11 +295,163 @@
             </div>
         </div>
     </div>
+
+    <!-- Payment Information -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card detail-card success">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-money-bill-wave mr-2"></i>Payment Information
+                    </h5>
+                    <a href="{{ route('finance.payments.create', ['booking_id' => $book->id]) }}" class="btn btn-sm btn-light">
+                        <i class="fas fa-plus mr-1"></i>Record Payment
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="text-muted mb-1">Total Amount</div>
+                                <h4 class="text-success mb-0">${{ number_format($book->total_amount ?? 0, 2) }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="text-muted mb-1">Paid Amount</div>
+                                <h4 class="text-info mb-0">${{ number_format($book->paid_amount ?? 0, 2) }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="text-muted mb-1">Balance</div>
+                                <h4 class="{{ ($book->balance_amount ?? 0) > 0 ? 'text-warning' : 'text-success' }} mb-0">
+                                    ${{ number_format($book->balance_amount ?? 0, 2) }}
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if($payments && $payments->count() > 0)
+                    <h6 class="mb-3"><i class="fas fa-history mr-2"></i>Payment History</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Method</th>
+                                    <th>Status</th>
+                                    <th>Recorded By</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($payments as $payment)
+                                <tr>
+                                    <td>{{ $payment->paid_at->format('M d, Y h:i A') }}</td>
+                                    <td class="text-success font-weight-bold">${{ number_format($payment->amount, 2) }}</td>
+                                    <td>
+                                        <span class="badge badge-info">
+                                            {{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{{ $payment->status == 'completed' ? 'success' : ($payment->status == 'pending' ? 'warning' : 'danger') }}">
+                                            {{ ucfirst($payment->status) }}
+                                        </span>
+                                    </td>
+                                    <td>{{ $payment->user->username ?? 'System' }}</td>
+                                    <td>{{ $payment->notes ?? '-' }}</td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @else
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-money-bill-wave fa-3x mb-3"></i>
+                        <p>No payments recorded yet</p>
+                        <a href="{{ route('finance.payments.create', ['booking_id' => $book->id]) }}" class="btn btn-success">
+                            <i class="fas fa-plus mr-1"></i>Record First Payment
+                        </a>
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
 @push('scripts')
 <script>
+@if(auth()->user()->isAdmin())
+// Update booking status
+document.getElementById('bookingStatusSelect')?.addEventListener('change', function() {
+    const status = this.value;
+    const selectedOption = this.options[this.selectedIndex];
+    const statusColor = selectedOption.getAttribute('data-color');
+    const statusTextColor = selectedOption.getAttribute('data-text-color');
+    
+    Swal.fire({
+        title: 'Update Booking Status?',
+        text: 'Are you sure you want to change the booking status?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: statusColor,
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, update it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`{{ route('books.update-status', $book->id) }}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ status: status })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update badge display
+                    const statusBadge = document.querySelector('.info-row:has(#bookingStatusSelect)').previousElementSibling?.querySelector('.badge');
+                    if (statusBadge) {
+                        statusBadge.textContent = data.status_label;
+                        statusBadge.style.backgroundColor = statusColor;
+                        statusBadge.style.color = statusTextColor;
+                    }
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Status Updated!',
+                        text: data.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    // Revert selection
+                    this.value = '{{ $book->status ?? 1 }}';
+                    Swal.fire('Error!', data.message || 'Failed to update status.', 'error');
+                }
+            })
+            .catch(error => {
+                // Revert selection
+                this.value = '{{ $book->status ?? 1 }}';
+                Swal.fire('Error!', 'An error occurred while updating status.', 'error');
+                console.error('Error:', error);
+            });
+        } else {
+            // Revert selection if cancelled
+            this.value = '{{ $book->status ?? 1 }}';
+        }
+    });
+});
+@endif
+
 function deleteBooking(id) {
     Swal.fire({
         title: 'Delete Booking?',
