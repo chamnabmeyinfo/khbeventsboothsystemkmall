@@ -244,7 +244,18 @@ class BookController extends Controller
             }
 
             // Get floor plan and event from first booth (all booths should be from same floor plan)
-            $firstBooth = Booth::whereIn('id', $validated['booth_ids'])->first();
+            $booths = Booth::whereIn('id', $validated['booth_ids'])->get();
+            
+            // Verify all booths are from the same floor plan
+            $floorPlanIds = $booths->pluck('floor_plan_id')->unique()->filter();
+            if ($floorPlanIds->count() > 1) {
+                DB::rollBack();
+                return back()->withErrors([
+                    'booth_ids' => 'All booths must be from the same floor plan.'
+                ])->withInput();
+            }
+            
+            $firstBooth = $booths->first();
             $floorPlanId = $firstBooth ? $firstBooth->floor_plan_id : null;
             $eventId = null;
             
@@ -778,20 +789,39 @@ class BookController extends Controller
         try {
             DB::beginTransaction();
             
-            // Check if all booths are available
-            $unavailableBooths = [];
-            foreach ($data['booth'] as $boothId) {
-                $booth = Booth::find($boothId);
-                if (!$booth || ($booth->status != Booth::STATUS_AVAILABLE && $booth->status != Booth::STATUS_HIDDEN)) {
-                    $unavailableBooths[] = $booth ? $booth->booth_number : $boothId;
-                }
+            // Check if all booths are available (with lock to prevent race conditions)
+            $unavailableBooths = Booth::whereIn('id', $data['booth'])
+                ->whereNotIn('status', [Booth::STATUS_AVAILABLE, Booth::STATUS_HIDDEN])
+                ->lockForUpdate()
+                ->get();
+            
+            if ($unavailableBooths->count() > 0) {
+                DB::rollBack();
+                $boothNumbers = $unavailableBooths->pluck('booth_number')->implode(', ');
+                return response()->json([
+                    'status' => 403,
+                    'message' => 'Booth(s) not available: ' . $boothNumbers
+                ], 403);
             }
             
-            if (!empty($unavailableBooths)) {
+            // Verify all booths exist
+            $boothsCount = Booth::whereIn('id', $data['booth'])->count();
+            if ($boothsCount !== count($data['booth'])) {
                 DB::rollBack();
                 return response()->json([
                     'status' => 403,
-                    'message' => 'Booth(s) not available: ' . implode(', ', $unavailableBooths)
+                    'message' => 'One or more selected booths do not exist.'
+                ], 403);
+            }
+            
+            // Verify all booths are from the same floor plan
+            $booths = Booth::whereIn('id', $data['booth'])->get();
+            $floorPlanIds = $booths->pluck('floor_plan_id')->unique()->filter();
+            if ($floorPlanIds->count() > 1) {
+                DB::rollBack();
+                return response()->json([
+                    'status' => 403,
+                    'message' => 'All booths must be from the same floor plan.'
                 ], 403);
             }
             
@@ -832,7 +862,19 @@ class BookController extends Controller
             $boothStatus = ($bookingType == 2) ? Booth::STATUS_CONFIRMED : Booth::STATUS_RESERVED;
             
             // Get floor plan and event from first booth (all booths should be from same floor plan)
-            $firstBooth = Booth::whereIn('id', $data['booth'])->first();
+            $booths = Booth::whereIn('id', $data['booth'])->get();
+            
+            // Verify all booths are from the same floor plan
+            $floorPlanIds = $booths->pluck('floor_plan_id')->unique()->filter();
+            if ($floorPlanIds->count() > 1) {
+                DB::rollBack();
+                return response()->json([
+                    'status' => 403,
+                    'message' => 'All booths must be from the same floor plan.'
+                ], 403);
+            }
+            
+            $firstBooth = $booths->first();
             $floorPlanId = $firstBooth ? $firstBooth->floor_plan_id : null;
             $eventId = null;
             
@@ -985,15 +1027,21 @@ class BookController extends Controller
             $bookingType = $data['book'] ?? 3;
             $boothStatus = ($bookingType == 2) ? Booth::STATUS_CONFIRMED : Booth::STATUS_RESERVED;
             
-            // Check availability of new booths
-            $newBooths = array_diff($getBoothRqs, $getBoothDB);
-            if (!empty($newBooths)) {
-                $unavailableBooths = Booth::whereIn('id', $newBooths)
+            // Find booths to release (in current but not in new)
+            $boothsToRelease = array_diff($getBoothDB, $getBoothRqs);
+            
+            // Find booths to reserve (in new but not in current)
+            $boothsToReserve = array_diff($getBoothRqs, $getBoothDB);
+            
+            // Check if new booths are available (with lock to prevent race conditions)
+            if (!empty($boothsToReserve)) {
+                $unavailableBooths = Booth::whereIn('id', $boothsToReserve)
                     ->whereNotIn('status', [Booth::STATUS_AVAILABLE, Booth::STATUS_HIDDEN])
                     ->where(function($query) use ($book) {
                         $query->where('bookid', '!=', $book->id)
                               ->orWhereNull('bookid');
                     })
+                    ->lockForUpdate()
                     ->get();
                 
                 if ($unavailableBooths->count() > 0) {
@@ -1005,34 +1053,89 @@ class BookController extends Controller
                 }
             }
             
-            // Update booths
-            foreach ($getBoothRqs as $boothId) {
-                $booth = Booth::find($boothId);
-                if ($booth) {
-                    // Only update if available or already in this booking
-                    if ($booth->status == Booth::STATUS_AVAILABLE || 
-                        $booth->status == Booth::STATUS_HIDDEN || 
-                        $booth->bookid == $book->id) {
+            // Release old booths - but NOT if they are PAID
+            if (!empty($boothsToRelease)) {
+                $boothsToReleaseModels = Booth::whereIn('id', $boothsToRelease)->lockForUpdate()->get();
+                $paidBooths = [];
+                
+                foreach ($boothsToReleaseModels as $booth) {
+                    if ($booth->status === Booth::STATUS_PAID) {
+                        $paidBooths[] = $booth->booth_number;
+                        // Keep paid booths as-is, just remove booking reference
                         $booth->update([
-                            'status' => $boothStatus,
-                            'client_id' => $data['companyID'],
-                            'userid' => $userid,
-                            'bookid' => $book->id,
-                            'booth_type_id' => $data['inputBoothType'],
-                            'asset_id' => $data['inputAsset'],
-                            'category_id' => $data['inputCategory'],
-                            'sub_category_id' => $data['inputSubCategory'],
+                            'bookid' => null,
+                        ]);
+                    } else {
+                        // Only release non-paid booths
+                        $booth->update([
+                            'status' => Booth::STATUS_AVAILABLE,
+                            'client_id' => null,
+                            'userid' => null,
+                            'bookid' => null,
                         ]);
                     }
                 }
-                // Add to booth array
-                if (!in_array($boothId, $getBoothDB)) {
-                    $getBoothDB[] = $boothId;
+                
+                if (!empty($paidBooths)) {
+                    DB::rollBack();
+                    return response()->json([
+                        'status' => 403,
+                        'message' => 'Cannot remove paid booths from booking: ' . implode(', ', $paidBooths) . '. Please refund payment first.'
+                    ], 403);
                 }
             }
             
+            // Reserve new booths - use lock to prevent race conditions
+            if (!empty($boothsToReserve)) {
+                $updated = Booth::whereIn('id', $boothsToReserve)
+                    ->whereIn('status', [Booth::STATUS_AVAILABLE, Booth::STATUS_HIDDEN])
+                    ->lockForUpdate()
+                    ->update([
+                        'status' => $boothStatus,
+                        'client_id' => $data['companyID'],
+                        'userid' => $userid,
+                        'bookid' => $book->id,
+                        'booth_type_id' => $data['inputBoothType'] ?? null,
+                        'asset_id' => $data['inputAsset'] ?? null,
+                        'category_id' => $data['inputCategory'] ?? null,
+                        'sub_category_id' => $data['inputSubCategory'] ?? null,
+                    ]);
+                
+                // Verify all booths were updated
+                if ($updated !== count($boothsToReserve)) {
+                    DB::rollBack();
+                    return response()->json([
+                        'status' => 403,
+                        'message' => 'Some booths became unavailable during update. Please try again.'
+                    ], 403);
+                }
+            }
+            
+            // Update existing booths with new client if client changed
+            $boothsToKeep = array_intersect($getBoothDB, $getBoothRqs);
+            if (!empty($boothsToKeep) && $book->clientid != $data['companyID']) {
+                Booth::whereIn('id', $boothsToKeep)
+                    ->where('status', '!=', Booth::STATUS_PAID) // Don't update paid booths
+                    ->update([
+                        'client_id' => $data['companyID'],
+                        'booth_type_id' => $data['inputBoothType'] ?? null,
+                        'asset_id' => $data['inputAsset'] ?? null,
+                        'category_id' => $data['inputCategory'] ?? null,
+                        'sub_category_id' => $data['inputSubCategory'] ?? null,
+                    ]);
+            }
+            
+            // Update existing booths status if booking type changed (but not if PAID)
+            if (!empty($boothsToKeep)) {
+                Booth::whereIn('id', $boothsToKeep)
+                    ->where('status', '!=', Booth::STATUS_PAID)
+                    ->update([
+                        'status' => $boothStatus,
+                    ]);
+            }
+            
             // Update book
-            $book->boothid = json_encode($getBoothDB);
+            $book->boothid = json_encode($getBoothRqs);
             $book->type = $bookingType;
             $book->save();
             

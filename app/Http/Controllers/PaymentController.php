@@ -104,18 +104,26 @@ class PaymentController extends Controller
         ]);
 
         // Update booth status to paid and send notifications
-        foreach ($booking->booths() as $booth) {
-            $oldStatus = $booth->status;
-            $booth->update(['status' => Booth::STATUS_PAID]);
+        // Use lockForUpdate to prevent race conditions
+        $boothIds = json_decode($booking->boothid, true) ?? [];
+        if (!empty($boothIds)) {
+            $booths = Booth::whereIn('id', $boothIds)->lockForUpdate()->get();
             
-            // Send notification about payment and status change
-            try {
-                \App\Services\NotificationService::notifyPaymentReceived($booth, $booth->price ?? 0);
+            foreach ($booths as $booth) {
+                $oldStatus = $booth->status;
+                
+                // Only update if not already paid (idempotent)
                 if ($oldStatus != Booth::STATUS_PAID) {
-                    \App\Services\NotificationService::notifyBoothStatusChange($booth, $oldStatus, Booth::STATUS_PAID);
+                    $booth->update(['status' => Booth::STATUS_PAID]);
+                    
+                    // Send notification about payment and status change
+                    try {
+                        \App\Services\NotificationService::notifyPaymentReceived($booth, $booth->price ?? 0);
+                        \App\Services\NotificationService::notifyBoothStatusChange($booth, $oldStatus, Booth::STATUS_PAID);
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to send payment notification: ' . $e->getMessage());
+                    }
                 }
-            } catch (\Exception $e) {
-                \Log::error('Failed to send payment notification: ' . $e->getMessage());
             }
         }
 
@@ -183,12 +191,16 @@ class PaymentController extends Controller
             ]);
 
             // Revert booth status from paid to confirmed (or reserved if no confirmation)
+            // Use lock to prevent race conditions
             if ($payment->booking) {
                 $boothIds = json_decode($payment->booking->boothid, true) ?? [];
                 if (!empty($boothIds)) {
-                    Booth::whereIn('id', $boothIds)->update([
-                        'status' => Booth::STATUS_CONFIRMED, // Revert to confirmed, not available
-                    ]);
+                    Booth::whereIn('id', $boothIds)
+                        ->where('status', Booth::STATUS_PAID)
+                        ->lockForUpdate()
+                        ->update([
+                            'status' => Booth::STATUS_CONFIRMED, // Revert to confirmed, not available
+                        ]);
                 }
             }
 
@@ -221,12 +233,6 @@ class PaymentController extends Controller
         try {
             \DB::beginTransaction();
 
-            // Update payment status to failed (voided)
-            $payment->update([
-                'status' => Payment::STATUS_FAILED,
-                'notes' => ($payment->notes ? $payment->notes . ' | ' : '') . 'VOIDED on ' . now()->format('Y-m-d H:i:s') . ($request->notes ? ': ' . $request->notes : ''),
-            ]);
-
             // Store original status before update
             $originalStatus = $payment->status;
             
@@ -236,13 +242,16 @@ class PaymentController extends Controller
                 'notes' => ($payment->notes ? $payment->notes . ' | ' : '') . 'VOIDED on ' . now()->format('Y-m-d H:i:s') . ($request->notes ? ': ' . $request->notes : ''),
             ]);
 
-            // Revert booth status if payment was completed
+            // Revert booth status if payment was completed (use lock to prevent race conditions)
             if ($originalStatus === Payment::STATUS_COMPLETED && $payment->booking) {
                 $boothIds = json_decode($payment->booking->boothid, true) ?? [];
                 if (!empty($boothIds)) {
-                    Booth::whereIn('id', $boothIds)->update([
-                        'status' => Booth::STATUS_CONFIRMED, // Revert to confirmed
-                    ]);
+                    Booth::whereIn('id', $boothIds)
+                        ->where('status', Booth::STATUS_PAID)
+                        ->lockForUpdate()
+                        ->update([
+                            'status' => Booth::STATUS_CONFIRMED, // Revert to confirmed
+                        ]);
                 }
             }
 
