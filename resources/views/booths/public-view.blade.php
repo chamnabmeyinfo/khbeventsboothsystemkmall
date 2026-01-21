@@ -1100,6 +1100,24 @@
     </div>
     
     <script>
+        // Function to calculate contrasting text color (black or white) based on background
+        // This function is used globally for status badges in tooltips and modals
+        function getContrastColor(hexColor) {
+            // Remove # if present
+            hexColor = hexColor.replace('#', '');
+            
+            // Convert to RGB
+            const r = parseInt(hexColor.substr(0, 2), 16);
+            const g = parseInt(hexColor.substr(2, 2), 16);
+            const b = parseInt(hexColor.substr(4, 2), 16);
+            
+            // Calculate luminance (relative brightness)
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            
+            // Return black for light colors, white for dark colors
+            return luminance > 0.5 ? '#000000' : '#ffffff';
+        }
+        
         let panzoomInstance;
         let zoomLevel = 1;
         const canvas = document.getElementById('print');
@@ -1235,24 +1253,6 @@
                 const statusLabels = @json($statusLabelsArray);
                 const statusDescriptions = @json($statusDescriptionsArray);
                 const statusColors = @json($statusColorsArray);
-                
-                // Function to calculate contrasting text color (black or white) based on background
-                // This function is used globally for status badges
-                function getContrastColor(hexColor) {
-                    // Remove # if present
-                    hexColor = hexColor.replace('#', '');
-                    
-                    // Convert to RGB
-                    const r = parseInt(hexColor.substr(0, 2), 16);
-                    const g = parseInt(hexColor.substr(2, 2), 16);
-                    const b = parseInt(hexColor.substr(4, 2), 16);
-                    
-                    // Calculate luminance (relative brightness)
-                    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-                    
-                    // Return black for light colors, white for dark colors
-                    return luminance > 0.5 ? '#000000' : '#ffffff';
-                }
                 
                 // Enhanced tooltip on hover
                 const tooltip = document.getElementById('boothTooltip');
