@@ -158,10 +158,48 @@ class BookController extends Controller
         
         $categories = Category::where('status', 1)->orderBy('name')->get();
         
+        // Group booths by category for tab/icon interface
+        $boothsByCategory = [];
+        $uncategorizedBooths = collect();
+        
+        foreach ($booths as $booth) {
+            if ($booth->category_id && $booth->category) {
+                $categoryId = $booth->category_id;
+                if (!isset($boothsByCategory[$categoryId])) {
+                    $boothsByCategory[$categoryId] = [
+                        'category' => $booth->category,
+                        'booths' => collect()
+                    ];
+                }
+                $boothsByCategory[$categoryId]['booths']->push($booth);
+            } else {
+                $uncategorizedBooths->push($booth);
+            }
+        }
+        
+        // If we have categorized booths, add uncategorized as separate tab
+        // Otherwise, show all booths in "All Booths" tab
+        if (count($boothsByCategory) > 0 && $uncategorizedBooths->count() > 0) {
+            $boothsByCategory['uncategorized'] = [
+                'category' => (object)['id' => 'uncategorized', 'name' => 'Other', 'avatar' => null],
+                'booths' => $uncategorizedBooths
+            ];
+        } elseif (count($boothsByCategory) == 0 && $booths->count() > 0) {
+            // No categories at all - show all booths in one tab
+            $boothsByCategory['all'] = [
+                'category' => (object)['id' => 'all', 'name' => 'All Booths', 'avatar' => null],
+                'booths' => $booths
+            ];
+        }
+        
         // Get current floor plan if specified
         $currentFloorPlan = $floorPlanId ? \App\Models\FloorPlan::find($floorPlanId) : null;
         
-        return view('books.create', compact('clients', 'booths', 'categories', 'floorPlans', 'floorPlanId', 'currentFloorPlan'));
+        // Detect device type and serve appropriate view
+        $device = \App\Helpers\DeviceDetector::detect($request);
+        $viewName = \App\Helpers\DeviceDetector::getViewName('books.create', $request);
+        
+        return view($viewName, compact('clients', 'booths', 'categories', 'floorPlans', 'floorPlanId', 'currentFloorPlan', 'device', 'boothsByCategory'));
     }
 
     /**

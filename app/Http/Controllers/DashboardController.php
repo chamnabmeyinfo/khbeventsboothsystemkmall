@@ -11,6 +11,7 @@ use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\DebugLogger;
+use App\Helpers\DeviceDetector;
 
 class DashboardController extends Controller
 {
@@ -258,6 +259,23 @@ class DashboardController extends Controller
                 }
             } catch (\Exception $e) {
                 $bookingData = collect([]);
+            }
+            
+            // Prepare recentBookings for views (convert bookingData to Book models)
+            $recentBookings = collect([]);
+            try {
+                if (!empty($bookingData)) {
+                    $bookingIds = collect($bookingData)->pluck('book_id')->filter()->unique()->toArray();
+                    if (!empty($bookingIds)) {
+                        $recentBookings = Book::with(['client', 'user'])
+                            ->whereIn('id', $bookingIds)
+                            ->orderBy('date_book', 'desc')
+                            ->limit(10)
+                            ->get();
+                    }
+                }
+            } catch (\Exception $e) {
+                $recentBookings = collect([]);
             }
             
             // #region agent log
@@ -533,11 +551,15 @@ class DashboardController extends Controller
             $stats['occupancy_rate'] = round($occupancyRate, 1);
             $stats['available_rate'] = round(100 - $occupancyRate, 1);
             
+            // Detect device type
+            $device = DeviceDetector::detect($request);
+            $viewName = DeviceDetector::getViewName('dashboard.index', $request);
+            
             // #region agent log
-            DebugLogger::log(['has_stats'=>!empty($stats),'has_userStats'=>!empty($userStats),'has_clientData'=>!empty($clientData)], 'DashboardController.php:320', 'Returning AdminLTE view');
+            DebugLogger::log(['device'=>$device, 'viewName'=>$viewName, 'has_stats'=>!empty($stats),'has_userStats'=>!empty($userStats),'has_clientData'=>!empty($clientData)], 'DashboardController.php:320', 'Returning view based on device');
             // #endregion
             
-            return view('dashboard.index-adminlte', compact(
+            return view($viewName, compact(
                 'stats', 
                 'userStats', 
                 'clientData', 
@@ -548,7 +570,9 @@ class DashboardController extends Controller
                 'recentNotifications',
                 'recentActivities',
                 'topUsers',
-                'days'
+                'days',
+                'recentBookings',
+                'device'
             ));
         } catch (\Illuminate\Database\QueryException $e) {
             // Table doesn't exist - need to run migrations or import SQL

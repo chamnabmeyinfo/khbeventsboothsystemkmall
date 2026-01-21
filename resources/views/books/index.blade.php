@@ -946,9 +946,9 @@
         <div class="row align-items-center">
             <div class="col-md-8">
                 <div class="d-flex flex-wrap gap-3">
-                    <button type="button" class="btn btn-modern btn-modern-primary" onclick="showCreateBookingModal()">
+                    <a href="{{ route('books.create') }}" class="btn btn-modern btn-modern-primary">
                         <i class="fas fa-plus mr-2"></i>New Booking
-                    </button>
+                    </a>
                     <a href="{{ route('export.bookings') }}" class="btn btn-modern btn-modern-success">
                         <i class="fas fa-file-csv mr-2"></i>Export CSV
                     </a>
@@ -1392,7 +1392,8 @@
     </div>
 </div>
 
-@include('books.modal-create')
+{{-- Modal removed - direct navigation to create page instead --}}
+{{-- @include('books.modal-create') --}}
 
 <!-- Delete All Records Modal -->
 <div class="modal fade" id="deleteAllModal" tabindex="-1" role="dialog" aria-labelledby="deleteAllModalLabel" aria-hidden="true">
@@ -1757,7 +1758,8 @@ $('#deleteAllPassword').on('keypress', function(e) {
     }
 });
 
-// Show Create Booking Modal
+// Show Create Booking Modal - REMOVED: Now using direct navigation to books.create route
+/*
 function showCreateBookingModal() {
     $('#createBookingModal').modal('show');
     $('#createBookingForm')[0].reset();
@@ -1779,6 +1781,7 @@ function showCreateBookingModal() {
         filterBoothsInModal(floorPlanId);
     });
 }
+*/
 
 // Filter booths in modal by floor plan
 function filterBoothsInModal(floorPlanId) {
@@ -1939,8 +1942,9 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if (response.success) {
-                    // Close modal
-                    $('#createBookingModal').modal('hide');
+                    // Modal removed - redirect to bookings page instead
+                    // $('#createBookingModal').modal('hide');
+                    window.location.href = '{{ route("books.index") }}';
                     form[0].reset();
                     errorDiv.hide();
                     
@@ -2149,7 +2153,8 @@ $(document).ready(function() {
         }
     });
     
-    // Reset forms when modals are closed
+    // Reset forms when modals are closed - MODAL REMOVED
+    /*
     $('#createBookingModal').on('hidden.bs.modal', function() {
         $('#createBookingForm')[0].reset();
         $('#createBookingError').hide();
@@ -2157,6 +2162,7 @@ $(document).ready(function() {
         modalUpdateSelection();
         // Client selection is reset in the modal client search section above
     });
+    */
     
     $('#createClientModalInBooking').on('hidden.bs.modal', function() {
         $('#createClientFormInBooking')[0].reset();
@@ -2177,10 +2183,12 @@ $(document).ready(function() {
         modalUpdateSelection();
     });
     
-    // Initialize selection when modal is shown
+    // Initialize selection when modal is shown - MODAL REMOVED
+    /*
     $('#createBookingModal').on('shown.bs.modal', function() {
         modalUpdateSelection();
     });
+    */
     
     // ============================================
     // MODAL CLIENT SEARCH FUNCTIONALITY
@@ -2511,7 +2519,8 @@ $(document).ready(function() {
         }
     });
     
-    // Reset modal client selection when modal closes
+    // Reset modal client selection when modal closes - MODAL REMOVED
+    /*
     $('#createBookingModal').on('hidden.bs.modal', function() {
         modalSelectedClient = null;
         $('#modal_clientid').val('');
@@ -2519,6 +2528,8 @@ $(document).ready(function() {
         $('#modalClientSearchContainer').show();
         $('#modalClientSearchInline').val('');
         $('#modalInlineClientResults').hide();
+    });
+    */
     });
 });
 </script>

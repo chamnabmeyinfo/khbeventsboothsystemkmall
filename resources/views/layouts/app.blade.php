@@ -83,6 +83,72 @@
     @stack('styles')
 </head>
 <body>
+<script>
+// Send screen width to server for device detection
+(function() {
+    const screenWidth = window.innerWidth || screen.width;
+    const isMobile = screenWidth <= 768;
+    const isTablet = screenWidth > 768 && screenWidth <= 1024;
+    
+    // Store in sessionStorage for subsequent requests
+    sessionStorage.setItem('screen_width', screenWidth);
+    sessionStorage.setItem('is_mobile', isMobile);
+    sessionStorage.setItem('is_tablet', isTablet);
+    
+    // Set cookie for server-side detection (expires in 1 hour)
+    const expires = new Date();
+    expires.setTime(expires.getTime() + (60 * 60 * 1000)); // 1 hour
+    document.cookie = 'screen_width=' + screenWidth + ';expires=' + expires.toUTCString() + ';path=/';
+    
+    // If on mobile and not already on mobile view, redirect with screen_width parameter
+    if (isMobile && !window.location.search.includes('screen_width') && !window.location.search.includes('mobile_view')) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('screen_width', screenWidth);
+        url.searchParams.set('mobile_view', '1');
+        // Only redirect if we're not already on a mobile view route
+        if (!url.pathname.includes('-mobile') && !document.querySelector('.modern-mobile-header')) {
+            // Don't redirect immediately - let the page load first, then check
+            setTimeout(function() {
+                if (!document.querySelector('.modern-mobile-header') && !document.querySelector('.mobile-booking-container')) {
+                    window.location.href = url.toString();
+                }
+            }, 100);
+        }
+    }
+    
+    // Intercept fetch requests to add header
+    if (window.fetch) {
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            if (!args[1]) args[1] = {};
+            args[1].headers = args[1].headers || {};
+            if (typeof args[1].headers === 'object' && !(args[1].headers instanceof Headers)) {
+                args[1].headers['X-Screen-Width'] = screenWidth;
+            }
+            return originalFetch.apply(this, args);
+        };
+    }
+    
+    // Also intercept XMLHttpRequest
+    if (window.XMLHttpRequest) {
+        const originalOpen = XMLHttpRequest.prototype.open;
+        const originalSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
+        XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+            this._url = url;
+            return originalOpen.apply(this, [method, url, ...rest]);
+        };
+        XMLHttpRequest.prototype.setRequestHeader = function(name, value) {
+            if (this._url && !this._screenWidthSent) {
+                try {
+                    originalSetRequestHeader.call(this, 'X-Screen-Width', screenWidth);
+                    this._screenWidthSent = true;
+                } catch(e) {}
+            }
+            return originalSetRequestHeader.apply(this, arguments);
+        };
+    }
+})();
+</script>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary d-none d-md-block">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ route('dashboard') }}">
@@ -453,36 +519,68 @@
     @stack('scripts')
     
     <style>
-    /* Mobile Overrides - Force Mobile App Design */
+    /* Mobile Overrides - Force Mobile App Design - COMPLETE OLD UI REMOVAL */
     @media (max-width: 768px) {
-        /* Hide navbar completely on mobile */
+        /* COMPLETELY HIDE navbar on mobile */
         nav.navbar,
         .navbar,
-        .navbar-expand-lg {
+        .navbar-expand-lg,
+        .navbar-brand,
+        .navbar-nav,
+        .navbar-toggler,
+        .navbar-collapse {
             display: none !important;
             visibility: hidden !important;
             height: 0 !important;
             padding: 0 !important;
             margin: 0 !important;
+            opacity: 0 !important;
+            position: absolute !important;
+            left: -9999px !important;
+            width: 0 !important;
         }
         
-        /* Remove main padding on mobile (except login page) */
+        /* Remove ALL main padding on mobile (except login page) */
         main.container-fluid:not(:has(.login-container)),
-        #main-content:not(:has(.login-container)) {
+        #main-content:not(:has(.login-container)),
+        main:not(:has(.login-container)) {
             padding: 0 !important;
             margin: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
         }
         
         /* Full width content */
         body {
             overflow-x: hidden !important;
+            width: 100% !important;
+            max-width: 100% !important;
         }
         
-        /* Ensure proper background (except login page) */
-        html:not(:has(.login-container)), 
-        body:not(:has(.login-container)) {
-            background: #f5f7fa !important;
+        /* Hide any desktop-specific elements */
+        .sidebar,
+        .content-wrapper,
+        .main-sidebar,
+        .content-header,
+        .breadcrumb,
+        .page-header {
+            display: none !important;
+            visibility: hidden !important;
         }
+    }
+    
+    /* Additional mobile view detection - hide old UI when mobile view class exists */
+    html.mobile-view nav.navbar,
+    html.mobile-view .navbar,
+    body.mobile-view nav.navbar,
+    body.mobile-view .navbar,
+    .mobile-view nav.navbar,
+    .mobile-view .navbar {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
     }
     
     /* Login page specific - ensure main doesn't interfere */
