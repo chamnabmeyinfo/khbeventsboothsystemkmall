@@ -636,8 +636,9 @@
         }
         
         /* Dynamic status colors - will be generated from database settings */
+        /* Status colors only apply if booth doesn't have custom colors */
         @foreach($statusSettings ?? [] as $status)
-        .dropped-booth.status-{{ $status->status_code }} {
+        .dropped-booth.status-{{ $status->status_code }}:not(.has-custom-colors) {
             background: {{ $status->status_color }} !important;
             border-color: {{ $status->border_color ?? $status->status_color }} !important;
             border-width: {{ $status->border_width ?? 2 }}px !important;
@@ -647,33 +648,38 @@
         }
         @endforeach
         
-        /* Fallback colors if no custom statuses */
+        /* Custom colors override - when booth has custom colors, they take priority */
+        .dropped-booth.has-custom-colors {
+            /* Custom colors are applied via inline styles with !important */
+        }
+        
+        /* Fallback colors if no custom statuses - only apply if booth doesn't have custom colors */
         @if(empty($statusSettings))
-        .dropped-booth.status-1 {
+        .dropped-booth.status-1:not(.has-custom-colors) {
             background: rgba(40, 167, 69, 0.9);
             border-color: #28a745;
             color: white;
         }
         
-        .dropped-booth.status-2 {
+        .dropped-booth.status-2:not(.has-custom-colors) {
             background: rgba(13, 202, 240, 0.9);
             border-color: #0dcaf0;
             color: white;
         }
         
-        .dropped-booth.status-3 {
+        .dropped-booth.status-3:not(.has-custom-colors) {
             background: rgba(255, 193, 7, 0.9);
             border-color: #ffc107;
             color: #333;
         }
         
-        .dropped-booth.status-4 {
+        .dropped-booth.status-4:not(.has-custom-colors) {
             background: rgba(108, 117, 125, 0.7);
             border-color: #6c757d;
             color: white;
         }
         
-        .dropped-booth.status-5 {
+        .dropped-booth.status-5:not(.has-custom-colors) {
             background: rgba(33, 37, 41, 0.9);
             border-color: #212529;
             color: white;
@@ -1159,10 +1165,26 @@
                 // Set z-index
                 if (booth.z_index) boothElement.style.zIndex = booth.z_index;
                 
-                // Set appearance
-                if (booth.background_color) boothElement.style.backgroundColor = booth.background_color;
-                if (booth.border_color) boothElement.style.borderColor = booth.border_color;
-                if (booth.text_color) boothElement.style.color = booth.text_color;
+                // Set appearance - custom colors override status colors
+                // Check if booth has custom colors (individual booth colors override status colors)
+                const hasCustomColors = booth.background_color || booth.border_color || booth.text_color;
+                
+                if (hasCustomColors) {
+                    boothElement.classList.add('has-custom-colors');
+                }
+                
+                // Apply custom colors with !important to override status color CSS
+                if (booth.background_color) {
+                    boothElement.style.setProperty('background-color', booth.background_color, 'important');
+                }
+                if (booth.border_color) {
+                    boothElement.style.setProperty('border-color', booth.border_color, 'important');
+                }
+                if (booth.text_color) {
+                    boothElement.style.setProperty('color', booth.text_color, 'important');
+                }
+                
+                // Apply other appearance properties
                 if (booth.font_size) boothElement.style.fontSize = booth.font_size + 'px';
                 if (booth.border_width) boothElement.style.borderWidth = booth.border_width + 'px';
                 if (booth.border_radius) boothElement.style.borderRadius = booth.border_radius + 'px';
@@ -1247,8 +1269,12 @@
                     
                     let tooltipHTML = '<div class="tooltip-title"><i class="fas fa-store mr-1"></i>Booth ' + booth.booth_number + '</div>';
                     
-                    // Show booth image if available
-                    if (booth.booth_image) {
+                    // Show client logo if available (prioritize over booth image)
+                    if (booth.client_logo) {
+                        tooltipHTML += '<div style="margin-bottom: 10px; text-align: center;"><img src="' + booth.client_logo + '" alt="' + (booth.company || 'Client Logo') + '" style="max-width: 100%; max-height: 120px; border-radius: 6px; object-fit: contain; box-shadow: 0 2px 6px rgba(0,0,0,0.2); background: rgba(255,255,255,0.1); padding: 8px;"></div>';
+                    }
+                    // Show booth image if available (and no client logo)
+                    else if (booth.booth_image) {
                         tooltipHTML += '<div style="margin-bottom: 10px; text-align: center;"><img src="' + booth.booth_image + '" alt="Booth Preview" style="max-width: 100%; max-height: 140px; border-radius: 6px; object-fit: cover; box-shadow: 0 2px 6px rgba(0,0,0,0.2);"></div>';
                     }
                     
@@ -1297,6 +1323,8 @@
                         if (booth.company) {
                             tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label"><i class="fas fa-building mr-1"></i>Company:</span><span class="tooltip-value">' + booth.company + '</span></div>';
                         }
+                        
+                        // Client logo shown above if available, so no need to show again here
                         
                         if (booth.category) {
                             tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label"><i class="fas fa-folder mr-1"></i>Category:</span><span class="tooltip-value">' + booth.category + '</span></div>';
@@ -1653,8 +1681,14 @@
             
             let html = '';
             
-            // Booth Image Preview
-            if (booth.booth_image) {
+            // Client Logo Preview (prioritize over booth image)
+            if (booth.client_logo) {
+                html += '<div class="booth-detail-section" style="margin-bottom: 25px; text-align: center;">';
+                html += '<img src="' + booth.client_logo + '" alt="' + (booth.company || 'Client Logo') + '" style="max-width: 100%; max-height: 200px; border-radius: 12px; object-fit: contain; box-shadow: 0 4px 16px rgba(0,0,0,0.15); background: rgba(255,255,255,0.05); padding: 20px;">';
+                html += '</div>';
+            }
+            // Booth Image Preview (if no client logo)
+            else if (booth.booth_image) {
                 html += '<div class="booth-detail-section" style="margin-bottom: 25px;">';
                 html += '<img src="' + booth.booth_image + '" alt="Booth Preview" style="width: 100%; max-height: 350px; object-fit: cover; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);">';
                 html += '</div>';
@@ -1742,10 +1776,18 @@
                 html += '<div class="booth-detail-section">';
                 html += '<div class="booth-detail-section-title"><i class="fas fa-building"></i> Company & Category</div>';
                 
+                // Client logo shown at top if available, so we can show it here too if needed
                 if (booth.company) {
                     html += '<div class="booth-detail-row">';
                     html += '<span class="booth-detail-label"><i class="fas fa-building"></i> Company:</span>';
                     html += '<span class="booth-detail-value">' + booth.company + '</span>';
+                    html += '</div>';
+                }
+                
+                // Show client logo in company section if not shown at top
+                if (booth.client_logo && !booth.booth_image) {
+                    html += '<div class="booth-detail-row" style="margin-top: 15px; text-align: center;">';
+                    html += '<img src="' + booth.client_logo + '" alt="' + (booth.company || 'Client Logo') + '" style="max-width: 200px; max-height: 150px; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: rgba(0,0,0,0.02); padding: 15px;">';
                     html += '</div>';
                 }
                 

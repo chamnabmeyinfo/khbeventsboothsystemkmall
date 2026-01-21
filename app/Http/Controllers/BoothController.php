@@ -2489,10 +2489,21 @@ class BoothController extends Controller
         
         // Prepare booth data for JavaScript
         $boothsForJS = $booths->map(function($booth) {
+            // Get client logo (avatar or cover_image)
+            $clientLogo = null;
+            if ($booth->client) {
+                if ($booth->client->avatar) {
+                    $clientLogo = asset($booth->client->avatar);
+                } elseif ($booth->client->cover_image) {
+                    $clientLogo = asset($booth->client->cover_image);
+                }
+            }
+            
             return [
                 'id' => $booth->id,
                 'booth_number' => $booth->booth_number,
                 'company' => $booth->client ? $booth->client->company : '',
+                'client_logo' => $clientLogo,
                 'category' => $booth->category ? $booth->category->name : '',
                 'sub_category' => $booth->subCategory ? $booth->subCategory->name : '',
                 'status' => $booth->status,
