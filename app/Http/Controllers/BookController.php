@@ -158,37 +158,41 @@ class BookController extends Controller
         
         $categories = Category::where('status', 1)->orderBy('name')->get();
         
-        // Group booths by category for tab/icon interface
-        $boothsByCategory = [];
-        $uncategorizedBooths = collect();
+        // Group booths by first letter (A-Z) for tab view
+        $boothsByLetter = [];
         
         foreach ($booths as $booth) {
-            if ($booth->category_id && $booth->category) {
-                $categoryId = $booth->category_id;
-                if (!isset($boothsByCategory[$categoryId])) {
-                    $boothsByCategory[$categoryId] = [
-                        'category' => $booth->category,
-                        'booths' => collect()
-                    ];
-                }
-                $boothsByCategory[$categoryId]['booths']->push($booth);
-            } else {
-                $uncategorizedBooths->push($booth);
+            // Get first character of booth number (uppercase)
+            $firstChar = strtoupper(substr(trim($booth->booth_number), 0, 1));
+            
+            // If first character is not a letter, put it in "#" group
+            if (!ctype_alpha($firstChar)) {
+                $firstChar = '#';
             }
+            
+            if (!isset($boothsByLetter[$firstChar])) {
+                $boothsByLetter[$firstChar] = collect();
+            }
+            
+            $boothsByLetter[$firstChar]->push($booth);
         }
         
-        // If we have categorized booths, add uncategorized as separate tab
-        // Otherwise, show all booths in "All Booths" tab
-        if (count($boothsByCategory) > 0 && $uncategorizedBooths->count() > 0) {
-            $boothsByCategory['uncategorized'] = [
-                'category' => (object)['id' => 'uncategorized', 'name' => 'Other', 'avatar' => null],
-                'booths' => $uncategorizedBooths
-            ];
-        } elseif (count($boothsByCategory) == 0 && $booths->count() > 0) {
-            // No categories at all - show all booths in one tab
-            $boothsByCategory['all'] = [
-                'category' => (object)['id' => 'all', 'name' => 'All Booths', 'avatar' => null],
-                'booths' => $booths
+        // Sort by letter (A-Z, then #)
+        ksort($boothsByLetter);
+        
+        // Move # to the end if it exists
+        if (isset($boothsByLetter['#'])) {
+            $numbersGroup = $boothsByLetter['#'];
+            unset($boothsByLetter['#']);
+            $boothsByLetter['#'] = $numbersGroup;
+        }
+        
+        // Convert to format expected by view
+        $boothsByCategory = [];
+        foreach ($boothsByLetter as $letter => $boothCollection) {
+            $boothsByCategory[$letter] = [
+                'category' => (object)['id' => $letter, 'name' => $letter, 'avatar' => null],
+                'booths' => $boothCollection
             ];
         }
         

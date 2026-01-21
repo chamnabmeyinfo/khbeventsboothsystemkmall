@@ -64,6 +64,28 @@ html, body {
     min-height: 100vh !important;
 }
 
+/* Global fix for icon alignment */
+i[class^="fas"], i[class^="far"], i[class^="fab"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+/* Prevent layout shifts */
+button, a, input, select, textarea {
+    box-sizing: border-box;
+}
+
+/* Fix for flex containers to prevent gaps */
+.mobile-form-section,
+.mobile-action-buttons,
+.client-search-input-wrapper,
+.selected-booth-item-mobile {
+    box-sizing: border-box;
+}
+
 /* Force all mobile elements visible - NO EXCEPTIONS */
 .modern-mobile-header *,
 .mobile-booking-container *,
@@ -219,21 +241,85 @@ main.container-fluid,
     /* Allow modal buttons and specific mobile buttons */
 }
 
-/* Progress Step Styles */
+/* Progress Step Styles - Enhanced */
 .progress-step {
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
 }
 
 .progress-step.active {
     background: #667eea !important;
     color: white !important;
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    transform: scale(1.15);
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+    animation: pulseActive 2s ease-in-out infinite;
 }
 
 .progress-step.completed {
     background: #22c55e !important;
     color: white !important;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.progress-step.completed::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    border: 2px solid #22c55e;
+    opacity: 0;
+    animation: ripple 1.5s ease-out;
+}
+
+@keyframes pulseActive {
+    0%, 100% {
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+    }
+    50% {
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.6);
+    }
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0.8);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.3);
+        opacity: 0;
+    }
+}
+
+/* Animated Progress Line */
+.progress-line {
+    position: relative;
+    height: 2px;
+    background: #e5e7eb;
+    border-radius: 1px;
+    overflow: hidden;
+}
+
+.progress-line::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 1px;
+}
+
+.progress-line.completed {
+    background: #22c55e;
+}
+
+.progress-line.completed::after {
+    width: 100%;
+    background: #22c55e;
 }
 
 /* Media query to ensure this only applies on mobile */
@@ -291,6 +377,8 @@ main.container-fluid,
 .app-header-btn {
     width: 44px;
     height: 44px;
+    min-width: 44px;
+    min-height: 44px;
     border-radius: 12px;
     background: transparent;
     border: none;
@@ -299,9 +387,21 @@ main.container-fluid,
     justify-content: center;
     color: #667eea;
     font-size: 20px;
+    line-height: 1;
     transition: all 0.2s ease;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.app-header-btn i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    vertical-align: middle;
 }
 
 .app-header-btn:active {
@@ -324,11 +424,12 @@ main.container-fluid,
 /* Safe area support for notched devices */
 @supports (padding: max(0px)) {
     .mobile-booking-container {
-        padding-bottom: max(120px, env(safe-area-inset-bottom) + 100px);
+        padding-bottom: max(100px, env(safe-area-inset-bottom) + 90px);
     }
     
     .mobile-action-buttons {
-        padding-bottom: max(12px, env(safe-area-inset-bottom) + 12px);
+        padding-bottom: max(14px, env(safe-area-inset-bottom) + 14px);
+        min-height: max(70px, env(safe-area-inset-bottom) + 56px);
     }
 }
 
@@ -354,9 +455,20 @@ main.container-fluid,
         0 0.5px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* Section completion indicator */
+/* Section completion indicator - Enhanced */
 .mobile-form-section.completed {
     border-left: 4px solid #22c55e;
+    background: linear-gradient(to right, rgba(34, 197, 94, 0.03) 0%, #ffffff 4%);
+    animation: slideInCompletion 0.4s ease;
+}
+
+.mobile-form-section.completed .mobile-form-section-title {
+    color: #22c55e;
+}
+
+.mobile-form-section.completed .mobile-form-section-title i {
+    color: #22c55e;
+    animation: checkmarkPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .mobile-form-section.completed .mobile-form-section-title::after {
@@ -364,6 +476,32 @@ main.container-fluid,
     color: #22c55e;
     font-weight: 700;
     margin-left: 8px;
+    animation: checkmarkPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes slideInCompletion {
+    from {
+        border-left-width: 0;
+        background: #ffffff;
+    }
+    to {
+        border-left-width: 4px;
+        background: linear-gradient(to right, rgba(34, 197, 94, 0.03) 0%, #ffffff 4%);
+    }
+}
+
+@keyframes checkmarkPop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .mobile-form-section-title {
@@ -381,16 +519,157 @@ main.container-fluid,
     color: #667eea;
     font-size: 20px;
     width: 24px;
+    min-width: 24px;
     text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    flex-shrink: 0;
 }
 
-/* Form Controls - Modern iOS Style */
+/* Form Controls - Modern iOS Style with Expand/Collapse */
 .mobile-form-group {
     margin-bottom: 24px;
+    position: relative;
 }
 
 .mobile-form-group:last-child {
     margin-bottom: 0;
+}
+
+/* Collapsible Form Group */
+.mobile-form-group.collapsible {
+    border: 1.5px solid rgba(102, 126, 234, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    background: #fafbfc;
+    transition: all 0.3s ease;
+}
+
+.mobile-form-group.collapsible.collapsed {
+    padding: 16px;
+    background: #ffffff;
+}
+
+.mobile-form-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    padding: 0;
+    margin: 0 0 12px 0;
+    min-height: 24px;
+}
+
+.mobile-form-group-header .mobile-form-label {
+    margin-bottom: 0 !important;
+    flex: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.mobile-form-group-header .mobile-form-label i {
+    color: #667eea;
+    font-size: 16px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.mobile-form-group-header .mobile-form-label .required {
+    color: #ef4444;
+    margin-left: 2px;
+}
+
+.mobile-form-group-toggle {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    border-radius: 8px;
+    background: rgba(102, 126, 234, 0.1);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    color: #667eea;
+    font-size: 14px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-form-group-toggle:hover {
+    background: rgba(102, 126, 234, 0.15);
+}
+
+.mobile-form-group-toggle:active {
+    transform: scale(0.9);
+}
+
+.mobile-form-group-toggle i {
+    transition: transform 0.3s ease;
+    line-height: 1;
+}
+
+.mobile-form-group.collapsed .mobile-form-group-toggle i {
+    transform: rotate(-90deg);
+}
+
+.mobile-form-group-content {
+    max-height: 1000px;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin 0.3s ease, padding 0.3s ease;
+    opacity: 1;
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.mobile-form-group.collapsed .mobile-form-group-content {
+    max-height: 0 !important;
+    opacity: 0;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    overflow: hidden;
+    border: none;
+}
+
+/* Ensure labels in collapsed groups are still visible */
+.mobile-form-group.collapsible .mobile-form-group-header {
+    margin-bottom: 0;
+}
+
+.mobile-form-group.collapsible:not(.collapsed) .mobile-form-group-header {
+    margin-bottom: 12px;
+}
+
+/* Auto-expand if has error or required field is focused */
+.mobile-form-group.collapsible:has(.mobile-form-input:focus),
+.mobile-form-group.collapsible:has(.mobile-form-select:focus),
+.mobile-form-group.collapsible:has([class*="error"]),
+.mobile-form-group.collapsible:has([style*="color: #ef4444"]) {
+    border-color: rgba(102, 126, 234, 0.2);
+}
+
+.mobile-form-group.collapsible:has(.mobile-form-input:focus) .mobile-form-group-content,
+.mobile-form-group.collapsible:has(.mobile-form-select:focus) .mobile-form-group-content {
+    max-height: 1000px !important;
+    opacity: 1;
+}
+
+.mobile-form-group.collapsible:has(.mobile-form-input:focus),
+.mobile-form-group.collapsible:has(.mobile-form-select:focus) {
+    border-color: #667eea;
+    background: #ffffff;
 }
 
 .mobile-form-label {
@@ -420,6 +699,10 @@ main.container-fluid,
     -webkit-appearance: none;
     appearance: none;
     font-weight: 400;
+    box-sizing: border-box;
+    margin: 0;
+    line-height: 1.5;
+    vertical-align: middle;
 }
 
 .mobile-form-input:focus,
@@ -443,43 +726,470 @@ main.container-fluid,
     padding-right: 44px;
 }
 
+/* Booking Type Selector - Multi-View Styles */
+.booking-type-view-switcher {
+    display: flex;
+    gap: 6px;
+    background: #f3f4f6;
+    padding: 4px;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.view-switch-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+}
+
+.view-switch-btn:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+}
+
+.view-switch-btn.active {
+    background: #667eea;
+    color: white;
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+}
+
+.view-switch-btn:active {
+    transform: scale(0.95);
+}
+
+.booking-type-view {
+    display: none;
+}
+
+.booking-type-view.active {
+    display: block;
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Icon View Styles */
+.booking-type-options-icon {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.booking-type-option-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 12px;
+    background: #ffffff;
+    border: 2px solid #e5e7eb;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.booking-type-option-icon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.booking-type-option-icon:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.booking-type-option-icon:hover::before {
+    opacity: 1;
+}
+
+.booking-type-option-icon.selected {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+}
+
+.booking-type-icon-wrapper {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.booking-type-option-icon.selected .booking-type-icon-wrapper {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.booking-type-option-icon[data-value="2"] .booking-type-icon-wrapper {
+    background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.booking-type-option-icon[data-value="2"].selected .booking-type-icon-wrapper {
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+}
+
+.booking-type-option-icon[data-value="3"] .booking-type-icon-wrapper {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.booking-type-option-icon[data-value="3"].selected .booking-type-icon-wrapper {
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.booking-type-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    text-align: center;
+    margin-top: 4px;
+}
+
+.booking-type-option-icon.selected .booking-type-label {
+    color: #667eea;
+    font-weight: 700;
+}
+
+/* List View Styles */
+.booking-type-options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.booking-type-option-list {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    background: #ffffff;
+    border: 2px solid #e5e7eb;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-tap-highlight-color: transparent;
+    gap: 14px;
+    position: relative;
+}
+
+.booking-type-option-list:hover {
+    border-color: #667eea;
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+}
+
+.booking-type-option-list.selected {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
+}
+
+.booking-type-list-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.25);
+}
+
+.booking-type-option-list[data-value="2"] .booking-type-list-icon {
+    background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);
+}
+
+.booking-type-option-list[data-value="3"] .booking-type-list-icon {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+.booking-type-list-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.booking-type-list-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 4px;
+}
+
+.booking-type-list-desc {
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+.booking-type-list-check {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    font-size: 14px;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.booking-type-option-list.selected .booking-type-list-check {
+    background: #667eea;
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Card View Styles */
+.booking-type-options-card {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.booking-type-option-card {
+    padding: 20px;
+    background: #ffffff;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.booking-type-option-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.03) 0%, rgba(118, 75, 162, 0.03) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.booking-type-option-card:hover {
+    border-color: #667eea;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+}
+
+.booking-type-option-card:hover::before {
+    opacity: 1;
+}
+
+.booking-type-option-card.selected {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+    box-shadow: 0 8px 28px rgba(102, 126, 234, 0.2);
+}
+
+.booking-type-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.booking-type-card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.booking-type-option-card[data-value="2"] .booking-type-card-icon {
+    background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.booking-type-option-card[data-value="3"] .booking-type-card-icon {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.booking-type-card-badge {
+    padding: 6px 12px;
+    background: #e5e7eb;
+    color: #6b7280;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.booking-type-card-badge.premium {
+    background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+    color: white;
+}
+
+.booking-type-card-badge.temp {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.booking-type-card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+}
+
+.booking-type-card-desc {
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+.booking-type-card-check {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    font-size: 14px;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.3s ease;
+}
+
+.booking-type-option-card.selected .booking-type-card-check {
+    opacity: 1;
+    transform: scale(1);
+    background: #667eea;
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
 /* Client Search - Modern App Style */
+/* Modern Client Search Wrapper - Redesigned */
 .client-search-wrapper-mobile {
     position: relative;
     z-index: 100;
+    width: 100%;
 }
 
 .client-search-input-wrapper {
     position: relative;
     display: flex;
     align-items: center;
-    background: #f9fafb;
-    border-radius: 12px;
-    border: 1.5px solid #e5e7eb;
+    background: #ffffff;
+    border-radius: 14px;
+    border: 2px solid #e5e7eb;
     overflow: hidden;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    min-height: 56px;
+    gap: 0;
 }
 
 .client-search-input-wrapper:focus-within {
     border-color: #667eea;
     background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    box-shadow: 
+        0 0 0 4px rgba(102, 126, 234, 0.08),
+        0 4px 12px rgba(102, 126, 234, 0.12);
+    transform: translateY(-1px);
 }
 
 .client-search-icon {
-    padding: 0 16px;
-    color: #9ca3af;
+    padding: 0 18px;
+    color: #6b7280;
     font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: color 0.2s ease;
+}
+
+.client-search-input-wrapper:focus-within .client-search-icon {
+    color: #667eea;
+}
+
+.client-search-icon i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
 }
 
 .client-search-input {
     flex: 1;
-    padding: 16px 0;
+    padding: 18px 0;
     border: none;
     background: transparent;
     font-size: 16px;
-    color: #1a1a1a;
+    color: #111827;
     font-weight: 400;
+    margin: 0;
+    box-sizing: border-box;
+    min-width: 0;
+    letter-spacing: -0.01em;
 }
 
 .client-search-input:focus {
@@ -488,42 +1198,79 @@ main.container-fluid,
 
 .client-search-input::placeholder {
     color: #9ca3af;
+    font-weight: 400;
 }
 
 .client-search-btn {
-    padding: 16px 20px;
-    background: #667eea;
+    padding: 0 20px;
+    height: 100%;
+    min-height: 56px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     -webkit-tap-highlight-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    white-space: nowrap;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    margin: 0;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.3px;
+}
+
+.client-search-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.client-search-btn:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #6a3d8f 100%);
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .client-search-btn:active {
-    opacity: 0.85;
     transform: scale(0.98);
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.2);
 }
 
-/* Client Results Dropdown - Modern Bottom Sheet Style */
+.client-search-btn:hover::before {
+    left: 100%;
+}
+
+/* Client Results Dropdown - Modern Bottom Sheet Style - Enhanced */
 .client-results-dropdown-mobile {
     position: absolute;
-    top: calc(100% + 8px);
+    top: calc(100% + 10px);
     left: 0;
     right: 0;
     z-index: 9999;
     background: #ffffff;
     border-radius: 16px;
     box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.12),
-        0 2px 8px rgba(0, 0, 0, 0.08);
-    border: 0.5px solid rgba(0, 0, 0, 0.08);
-    max-height: 400px;
+        0 12px 40px rgba(0, 0, 0, 0.15),
+        0 4px 12px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    max-height: 420px;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    animation: slideDown 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
 }
 
 @keyframes slideDown {
@@ -575,6 +1322,12 @@ main.container-fluid,
 .client-result-name-mobile i {
     color: #667eea;
     font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    flex-shrink: 0;
+    vertical-align: middle;
 }
 
 .client-result-details-mobile {
@@ -586,6 +1339,15 @@ main.container-fluid,
 }
 
 .client-result-details-mobile i {
+    margin-right: 6px;
+    width: 14px;
+    min-width: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    flex-shrink: 0;
+    vertical-align: middle;
     margin-right: 6px;
     width: 14px;
 }
@@ -642,6 +1404,12 @@ main.container-fluid,
 .selected-client-name-mobile i {
     color: #22c55e;
     font-size: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    flex-shrink: 0;
+    vertical-align: middle;
 }
 
 .selected-client-details-mobile {
@@ -660,6 +1428,22 @@ main.container-fluid,
     cursor: pointer;
     transition: all 0.2s ease;
     -webkit-tap-highlight-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    line-height: 1;
+    white-space: nowrap;
+    box-sizing: border-box;
+    margin: 0;
+}
+
+.change-client-btn-mobile i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    flex-shrink: 0;
 }
 
 .change-client-btn-mobile:active {
@@ -833,6 +1617,10 @@ main.container-fluid,
     font-size: 14px;
     background: #f9fafb;
     transition: all 0.2s ease;
+    box-sizing: border-box;
+    margin: 0;
+    line-height: 1.5;
+    vertical-align: middle;
 }
 
 .booth-search-filter input:focus {
@@ -849,36 +1637,42 @@ main.container-fluid,
     transform: translateY(-50%);
     color: #9ca3af;
     font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    pointer-events: none;
 }
 
 .booth-search-filter-wrapper {
     position: relative;
 }
 
-/* Category Tabs/Icon Navigation */
-.booth-category-tabs {
+/* A-Z Letter Tabs Navigation - Modern Design */
+.booth-letter-tabs {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     margin-bottom: 16px;
     overflow-x: auto;
     padding-bottom: 8px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    scroll-padding: 0 16px;
 }
 
-.booth-category-tabs::-webkit-scrollbar {
+.booth-letter-tabs::-webkit-scrollbar {
     display: none;
 }
 
-.booth-category-tab {
+.booth-letter-tab {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 4px;
-    padding: 10px 14px;
-    min-width: 80px;
+    gap: 2px;
+    padding: 10px 16px;
+    min-width: 56px;
     background: #f9fafb;
     border: 1.5px solid rgba(102, 126, 234, 0.12);
     border-radius: 12px;
@@ -886,72 +1680,70 @@ main.container-fluid,
     transition: all 0.2s ease;
     flex-shrink: 0;
     position: relative;
+    box-sizing: border-box;
 }
 
-.booth-category-tab i {
-    font-size: 20px;
+.booth-letter-tab .letter-tab-label {
+    font-size: 18px;
+    font-weight: 700;
     color: #667eea;
-    transition: all 0.2s ease;
-}
-
-.booth-category-tab .category-icon-img {
-    width: 24px;
-    height: 24px;
-    object-fit: cover;
-    border-radius: 6px;
-}
-
-.booth-category-tab .category-tab-name {
-    font-size: 11px;
-    font-weight: 600;
-    color: #6b7280;
     text-align: center;
-    line-height: 1.2;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    line-height: 1;
+    display: block;
+    letter-spacing: -0.3px;
 }
 
-.booth-category-tab .category-tab-count {
+.booth-letter-tab .letter-tab-count {
     font-size: 10px;
     color: #9ca3af;
-    font-weight: 500;
+    font-weight: 600;
+    line-height: 1;
+    display: block;
+    margin-top: 2px;
 }
 
-.booth-category-tab.active {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+.booth-letter-tab.active {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
     border-color: #667eea;
     border-width: 2px;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
-    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+    transform: translateY(-2px);
+    animation: letterTabActive 0.3s ease;
 }
 
-.booth-category-tab.active i {
+.booth-letter-tab.active .letter-tab-label {
     color: #667eea;
     transform: scale(1.1);
 }
 
-.booth-category-tab.active .category-tab-name {
+.booth-letter-tab.active .letter-tab-count {
     color: #667eea;
     font-weight: 700;
 }
 
-.booth-category-tab.active .category-tab-count {
-    color: #667eea;
+@keyframes letterTabActive {
+    0% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(-2px) scale(1.05);
+    }
+    100% {
+        transform: translateY(-2px) scale(1);
+    }
 }
 
-.booth-category-tab:active {
+.booth-letter-tab:active {
     transform: scale(0.95);
 }
 
-/* Category Content Sections */
-.booth-category-content {
+/* Letter Content Sections */
+.booth-letter-content {
     display: none;
     animation: fadeInUp 0.3s ease;
 }
 
-.booth-category-content.active {
+.booth-letter-content.active {
     display: block;
 }
 
@@ -966,16 +1758,29 @@ main.container-fluid,
     }
 }
 
-/* Selected Booths Summary - Modern Card */
+/* Selected Booths Summary - Modern Card - Enhanced */
 .selected-booths-summary-mobile {
-    background: #ffffff;
+    background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
     border-radius: 16px;
     padding: 20px;
     margin-bottom: 16px;
     box-shadow: 
-        0 2px 8px rgba(0, 0, 0, 0.04),
-        0 1px 3px rgba(0, 0, 0, 0.08);
-    border: 0.5px solid rgba(0, 0, 0, 0.06);
+        0 4px 12px rgba(0, 0, 0, 0.06),
+        0 2px 4px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.selected-booths-summary-mobile::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    opacity: 0.6;
 }
 
 .selected-booths-title-mobile {
@@ -1000,12 +1805,22 @@ main.container-fluid,
     justify-content: space-between;
     align-items: center;
     padding: 12px 14px;
-    background: #f9fafb;
+    background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
     border-radius: 10px;
     margin-bottom: 8px;
-    animation: slideInRight 0.25s ease-out;
+    animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     transition: all 0.2s ease;
-    border: 1px solid #f3f4f6;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-sizing: border-box;
+    gap: 12px;
+    min-height: 48px;
+}
+
+.selected-booth-item-mobile:hover {
+    transform: translateX(2px);
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.15);
+    border-color: rgba(102, 126, 234, 0.2);
 }
 
 @keyframes slideInRight {
@@ -1030,11 +1845,20 @@ main.container-fluid,
     font-weight: 600;
     color: #1a1a1a;
     font-size: 15px;
+    line-height: 1.4;
+    flex: 1;
+    min-width: 0;
 }
 
 .selected-booth-info-mobile i {
     color: #667eea;
     font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    flex-shrink: 0;
+    vertical-align: middle;
 }
 
 .selected-booth-price-mobile {
@@ -1042,6 +1866,9 @@ main.container-fluid,
     color: #22c55e;
     font-size: 16px;
     letter-spacing: -0.2px;
+    line-height: 1.4;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .summary-total-mobile {
@@ -1062,10 +1889,24 @@ main.container-fluid,
     font-size: 26px;
     transition: all 0.3s ease;
     letter-spacing: -0.5px;
+    position: relative;
 }
 
 .summary-total-value-mobile.updated {
-    animation: pulse 0.5s ease;
+    animation: numberPop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes numberPop {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.15);
+        color: #16a34a;
+    }
+    100% {
+        transform: scale(1);
+    }
 }
 
 @keyframes pulse {
@@ -1077,39 +1918,171 @@ main.container-fluid,
     }
 }
 
-/* Action Buttons - Modern iOS Style Bottom Bar */
+/* Action Buttons - Modern iOS Style Bottom Bar - Flexible & Sticky */
 .mobile-action-buttons {
-    position: fixed;
+    position: sticky;
+    position: -webkit-sticky;
     bottom: 0;
     left: 0;
     right: 0;
+    width: 100%;
     z-index: 999;
-    background: #ffffff;
+    background: rgba(255, 255, 255, 0.98);
     border-top: 0.5px solid rgba(0, 0, 0, 0.1);
-    padding: 12px 16px;
-    padding-bottom: calc(12px + env(safe-area-inset-bottom));
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    padding: 14px 16px;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom));
+    box-shadow: 
+        0 -4px 20px rgba(0, 0, 0, 0.08),
+        0 -2px 8px rgba(0, 0, 0, 0.04);
     display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 12px;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-sizing: border-box;
+    flex-wrap: nowrap;
+    min-height: 70px;
+    max-width: 100%;
+    margin: 0;
+}
+
+/* Ensure sticky works on all browsers */
+@supports (position: sticky) {
+    .mobile-action-buttons {
+        position: sticky;
+    }
+}
+
+/* Fallback for older browsers */
+@supports not (position: sticky) {
+    .mobile-action-buttons {
+        position: fixed;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 360px) {
+    .mobile-action-buttons {
+        padding: 10px 10px;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom));
+        gap: 8px;
+        min-height: 64px;
+    }
+    
+    .mobile-action-buttons .mobile-btn {
+        padding: 12px 14px;
+        font-size: 13px;
+    }
+    
+    .mobile-action-buttons .mobile-btn span {
+        display: none;
+    }
+    
+    .mobile-action-buttons .mobile-btn i {
+        margin: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .mobile-action-buttons {
+        padding: 12px 12px;
+        padding-bottom: calc(12px + env(safe-area-inset-bottom));
+        gap: 10px;
+        min-height: 66px;
+    }
+}
+
+@media (min-width: 481px) and (max-width: 767px) {
+    .mobile-action-buttons {
+        padding: 14px 20px;
+        padding-bottom: calc(14px + env(safe-area-inset-bottom));
+        gap: 14px;
+    }
+}
+
+@media (min-width: 768px) {
+    .mobile-action-buttons {
+        max-width: 768px;
+        margin: 0 auto;
+        left: auto;
+        right: auto;
+        padding: 16px 24px;
+        padding-bottom: calc(16px + env(safe-area-inset-bottom));
+        gap: 16px;
+    }
 }
 
 .mobile-btn {
-    flex: 1;
-    padding: 16px;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 16px 20px;
     border-radius: 12px;
     border: none;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     -webkit-tap-highlight-color: transparent;
     letter-spacing: -0.2px;
+    box-sizing: border-box;
+    margin: 0;
+    line-height: 1.4;
+    white-space: nowrap;
+    min-height: 52px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+}
+
+/* Responsive button sizing */
+@media (max-width: 360px) {
+    .mobile-btn {
+        padding: 14px 16px;
+        font-size: 14px;
+        gap: 6px;
+        min-height: 48px;
+    }
+    
+    .mobile-btn i {
+        font-size: 14px;
+    }
+}
+
+@media (min-width: 481px) {
+    .mobile-btn {
+        padding: 16px 24px;
+        font-size: 16px;
+    }
+}
+
+.mobile-btn i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    vertical-align: middle;
+    flex-shrink: 0;
+    font-size: inherit;
+}
+
+.mobile-btn span {
+    display: inline-block;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Ensure icons and text align properly */
+.mobile-action-buttons .mobile-btn {
+    word-break: keep-all;
+    overflow-wrap: normal;
 }
 
 .mobile-btn:active {
@@ -1162,11 +2135,39 @@ main.container-fluid,
     background: #f3f4f6;
     color: #6b7280;
     border: 1.5px solid #e5e7eb;
+    flex: 0 1 auto;
+    min-width: 120px;
+}
+
+.mobile-btn-secondary:hover {
+    background: #e5e7eb;
+    border-color: #d1d5db;
 }
 
 .mobile-btn-secondary:active {
     background: #e5e7eb;
     transform: scale(0.96);
+    border-color: #d1d5db;
+}
+
+.mobile-btn-primary {
+    flex: 1 1 auto;
+    min-width: 140px;
+}
+
+/* Button text and icon alignment */
+.mobile-action-buttons .mobile-btn {
+    flex-shrink: 1;
+}
+
+.mobile-action-buttons .mobile-btn-secondary {
+    flex: 0 0 auto;
+    min-width: min(120px, 40%);
+}
+
+.mobile-action-buttons .mobile-btn-primary {
+    flex: 1 1 auto;
+    min-width: min(140px, 60%);
 }
 
 /* Loading Overlay */
@@ -1450,27 +2451,27 @@ main.container-fluid,
 
 <!-- Main Content -->
 <div class="mobile-booking-container" style="display: block !important; visibility: visible !important; opacity: 1 !important; padding: 16px !important; padding-bottom: 120px !important;">
-    <!-- Progress Indicator -->
-    <div style="background: #ffffff; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); border: 0.5px solid rgba(0, 0, 0, 0.06);">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+    <!-- Progress Indicator - Enhanced -->
+    <div style="background: #ffffff; border-radius: 16px; padding: 18px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06); border: 0.5px solid rgba(0, 0, 0, 0.06);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
             <div style="flex: 1; display: flex; align-items: center; gap: 8px;">
-                <div id="progressStep1" class="progress-step" style="width: 32px; height: 32px; border-radius: 50%; background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; flex-shrink: 0;">
+                <div id="progressStep1" class="progress-step" style="width: 36px; height: 36px; border-radius: 50%; background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; flex-shrink: 0; z-index: 2;">
                     <i class="fas fa-user"></i>
                 </div>
-                <div style="flex: 1; height: 2px; background: #e5e7eb; border-radius: 1px; margin: 0 8px;"></div>
-                <div id="progressStep2" class="progress-step" style="width: 32px; height: 32px; border-radius: 50%; background: #e5e7eb; color: #9ca3af; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; flex-shrink: 0;">
+                <div id="progressLine1" class="progress-line" style="flex: 1; height: 3px; margin: 0 8px; border-radius: 2px;"></div>
+                <div id="progressStep2" class="progress-step" style="width: 36px; height: 36px; border-radius: 50%; background: #e5e7eb; color: #9ca3af; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; flex-shrink: 0; z-index: 2;">
                     <i class="fas fa-calendar"></i>
                 </div>
-                <div style="flex: 1; height: 2px; background: #e5e7eb; border-radius: 1px; margin: 0 8px;"></div>
-                <div id="progressStep3" class="progress-step" style="width: 32px; height: 32px; border-radius: 50%; background: #e5e7eb; color: #9ca3af; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; flex-shrink: 0;">
+                <div id="progressLine2" class="progress-line" style="flex: 1; height: 3px; margin: 0 8px; border-radius: 2px;"></div>
+                <div id="progressStep3" class="progress-step" style="width: 36px; height: 36px; border-radius: 50%; background: #e5e7eb; color: #9ca3af; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; flex-shrink: 0; z-index: 2;">
                     <i class="fas fa-cube"></i>
                 </div>
             </div>
         </div>
-        <div style="display: flex; justify-content: space-between; font-size: 11px; color: #9ca3af; font-weight: 500;">
-            <span>Client</span>
-            <span>Details</span>
-            <span>Booths</span>
+        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #6b7280; font-weight: 500; padding: 0 4px; line-height: 1.4;">
+            <span style="flex: 1; text-align: center; min-width: 0;">Client</span>
+            <span style="flex: 1; text-align: center; min-width: 0;">Details</span>
+            <span style="flex: 1; text-align: center; min-width: 0;">Booths</span>
         </div>
     </div>
 
@@ -1500,8 +2501,17 @@ main.container-fluid,
                 <i class="fas fa-filter"></i>
                 <span>Filter by Floor Plan</span>
             </div>
-            <div class="mobile-form-group">
-                <label for="floor_plan_filter" class="mobile-form-label">Select Floor Plan</label>
+            <div class="mobile-form-group collapsible collapsed">
+                <div class="mobile-form-group-header" onclick="toggleFormGroup(this)">
+                    <label for="floor_plan_filter" class="mobile-form-label">
+                        <i class="fas fa-map"></i>
+                        <span>Select Floor Plan</span>
+                    </label>
+                    <button type="button" class="mobile-form-group-toggle" aria-label="Toggle section">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="mobile-form-group-content">
                 <select class="mobile-form-select" id="floor_plan_filter" name="floor_plan_filter" onchange="filterByFloorPlan(this.value)">
                     <option value="">All Floor Plans</option>
                     @foreach($floorPlans as $fp)
@@ -1512,9 +2522,11 @@ main.container-fluid,
                         </option>
                     @endforeach
                 </select>
-                <small style="display: block; color: #9ca3af; font-size: 12px; margin-top: 6px;">
-                    <i class="fas fa-info-circle" style="font-size: 11px; margin-right: 4px;"></i>Filter booths by specific floor plan
+                <small style="display: flex; align-items: center; color: #9ca3af; font-size: 12px; margin-top: 6px; gap: 4px; line-height: 1.4;">
+                    <i class="fas fa-info-circle" style="font-size: 11px; line-height: 1; flex-shrink: 0;"></i>
+                    <span>Filter booths by specific floor plan</span>
                 </small>
+                </div>
             </div>
         </div>
         @endif
@@ -1556,10 +2568,12 @@ main.container-fluid,
                             <input type="text" 
                                    class="client-search-input" 
                                    id="clientSearchInline" 
-                                   placeholder="Type client name, company, email, or phone..." 
-                                   autocomplete="off">
-                            <button type="button" class="client-search-btn" id="btnSearchSelectClient" data-toggle="modal" data-target="#searchClientModal">
-                                Search
+                                   placeholder="Search by name, company, email, or phone..." 
+                                   autocomplete="off"
+                                   spellcheck="false">
+                            <button type="button" class="client-search-btn" id="btnSearchSelectClient" data-toggle="modal" data-target="#searchClientModal" aria-label="Open advanced search">
+                                <i class="fas fa-sliders-h" style="margin-right: 6px; font-size: 13px;"></i>
+                                <span>Filter</span>
                             </button>
                         </div>
                         
@@ -1569,16 +2583,17 @@ main.container-fluid,
                         </div>
                     </div>
             @error('clientid')
-                <div style="color: #ef4444; font-size: 13px; margin-top: 8px; display: flex; align-items: center; gap: 6px;">
-                    <i class="fas fa-exclamation-circle" style="font-size: 12px;"></i>
+                <div style="color: #ef4444; font-size: 13px; margin-top: 8px; display: flex; align-items: center; gap: 6px; line-height: 1.4;">
+                    <i class="fas fa-exclamation-circle" style="font-size: 12px; line-height: 1; flex-shrink: 0;"></i>
                     <span>{{ $message }}</span>
                 </div>
             @enderror
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; flex-wrap: wrap; gap: 8px;">
-                        <small style="color: #9ca3af; font-size: 13px; flex: 1; min-width: 200px;">
-                            <i class="fas fa-info-circle" style="margin-right: 4px;"></i> Start typing to see suggestions
+                        <small style="color: #9ca3af; font-size: 13px; flex: 1; min-width: 200px; display: flex; align-items: center; gap: 4px;">
+                            <i class="fas fa-info-circle" style="font-size: 12px; line-height: 1; flex-shrink: 0;"></i> 
+                            <span>Start typing to see suggestions</span>
                         </small>
-                        <button type="button" class="mobile-btn mobile-btn-secondary" style="padding: 12px 18px; font-size: 14px; font-weight: 600; white-space: nowrap;" data-toggle="modal" data-target="#createClientModal">
+                        <button type="button" class="mobile-btn mobile-btn-secondary" style="padding: 12px 18px; font-size: 14px; font-weight: 600; white-space: nowrap; flex-shrink: 0;" data-toggle="modal" data-target="#createClientModal">
                             <i class="fas fa-plus" style="margin-right: 6px;"></i> New Client
                         </button>
                     </div>
@@ -1603,24 +2618,152 @@ main.container-fluid,
                        value="{{ old('date_book', now()->format('Y-m-d\TH:i')) }}" 
                        required
                        min="{{ now()->format('Y-m-d\TH:i') }}">
-                <small style="display: block; color: #9ca3af; font-size: 12px; margin-top: 6px;">
-                    <i class="fas fa-info-circle" style="font-size: 11px; margin-right: 4px;"></i>Select date and time for this booking
+                <small style="display: flex; align-items: center; color: #9ca3af; font-size: 12px; margin-top: 6px; gap: 4px; line-height: 1.4;">
+                    <i class="fas fa-info-circle" style="font-size: 11px; line-height: 1; flex-shrink: 0;"></i>
+                    <span>Select date and time for this booking</span>
                 </small>
                 @error('date_book')
-                    <div style="color: #ef4444; font-size: 13px; margin-top: 8px; display: flex; align-items: center; gap: 6px;">
-                        <i class="fas fa-exclamation-circle" style="font-size: 12px;"></i>
+                    <div style="color: #ef4444; font-size: 13px; margin-top: 8px; display: flex; align-items: center; gap: 6px; line-height: 1.4;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 12px; line-height: 1; flex-shrink: 0;"></i>
                         <span>{{ $message }}</span>
                     </div>
                 @enderror
             </div>
             <div class="mobile-form-group">
-                <label for="type" class="mobile-form-label">Booking Type</label>
-                <select class="mobile-form-select" id="type" name="type">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <label for="type" class="mobile-form-label" style="margin-bottom: 0;">Booking Type</label>
+                    <div class="booking-type-view-switcher">
+                        <button type="button" class="view-switch-btn active" data-view="icon" aria-label="Icon view">
+                            <i class="fas fa-th-large"></i>
+                        </button>
+                        <button type="button" class="view-switch-btn" data-view="list" aria-label="List view">
+                            <i class="fas fa-list"></i>
+                        </button>
+                        <button type="button" class="view-switch-btn" data-view="card" aria-label="Card view">
+                            <i class="fas fa-th"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Hidden select for form submission -->
+                <select class="mobile-form-select" id="type" name="type" style="display: none;">
                     <option value="1" {{ old('type', 1) == 1 ? 'selected' : '' }}>Regular Booking</option>
                     <option value="2" {{ old('type') == 2 ? 'selected' : '' }}>Special Booking</option>
                     <option value="3" {{ old('type') == 3 ? 'selected' : '' }}>Temporary Booking</option>
                 </select>
-                <small style="display: block; color: #9ca3af; font-size: 12px; margin-top: 6px;">
+                
+                <!-- Icon View -->
+                <div class="booking-type-view booking-type-icon-view active" data-view="icon">
+                    <div class="booking-type-options-icon">
+                        <div class="booking-type-option-icon {{ old('type', 1) == 1 ? 'selected' : '' }}" data-value="1">
+                            <div class="booking-type-icon-wrapper">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <span class="booking-type-label">Regular</span>
+                        </div>
+                        <div class="booking-type-option-icon {{ old('type') == 2 ? 'selected' : '' }}" data-value="2">
+                            <div class="booking-type-icon-wrapper">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="booking-type-label">Special</span>
+                        </div>
+                        <div class="booking-type-option-icon {{ old('type') == 3 ? 'selected' : '' }}" data-value="3">
+                            <div class="booking-type-icon-wrapper">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <span class="booking-type-label">Temporary</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- List View -->
+                <div class="booking-type-view booking-type-list-view" data-view="list">
+                    <div class="booking-type-options-list">
+                        <div class="booking-type-option-list {{ old('type', 1) == 1 ? 'selected' : '' }}" data-value="1">
+                            <div class="booking-type-list-icon">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="booking-type-list-content">
+                                <div class="booking-type-list-title">Regular Booking</div>
+                                <div class="booking-type-list-desc">Standard booking with full access</div>
+                            </div>
+                            <div class="booking-type-list-check">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+                        <div class="booking-type-option-list {{ old('type') == 2 ? 'selected' : '' }}" data-value="2">
+                            <div class="booking-type-list-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="booking-type-list-content">
+                                <div class="booking-type-list-title">Special Booking</div>
+                                <div class="booking-type-list-desc">Premium booking with special privileges</div>
+                            </div>
+                            <div class="booking-type-list-check">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+                        <div class="booking-type-option-list {{ old('type') == 3 ? 'selected' : '' }}" data-value="3">
+                            <div class="booking-type-list-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="booking-type-list-content">
+                                <div class="booking-type-list-title">Temporary Booking</div>
+                                <div class="booking-type-list-desc">Short-term booking arrangement</div>
+                            </div>
+                            <div class="booking-type-list-check">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Card View -->
+                <div class="booking-type-view booking-type-card-view" data-view="card">
+                    <div class="booking-type-options-card">
+                        <div class="booking-type-option-card {{ old('type', 1) == 1 ? 'selected' : '' }}" data-value="1">
+                            <div class="booking-type-card-header">
+                                <div class="booking-type-card-icon">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <div class="booking-type-card-badge">Standard</div>
+                            </div>
+                            <div class="booking-type-card-title">Regular Booking</div>
+                            <div class="booking-type-card-desc">Standard booking with full access to all features</div>
+                            <div class="booking-type-card-check">
+                                <i class="fas fa-check"></i>
+                            </div>
+                        </div>
+                        <div class="booking-type-option-card {{ old('type') == 2 ? 'selected' : '' }}" data-value="2">
+                            <div class="booking-type-card-header">
+                                <div class="booking-type-card-icon">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <div class="booking-type-card-badge premium">Premium</div>
+                            </div>
+                            <div class="booking-type-card-title">Special Booking</div>
+                            <div class="booking-type-card-desc">Premium booking with special privileges and benefits</div>
+                            <div class="booking-type-card-check">
+                                <i class="fas fa-check"></i>
+                            </div>
+                        </div>
+                        <div class="booking-type-option-card {{ old('type') == 3 ? 'selected' : '' }}" data-value="3">
+                            <div class="booking-type-card-header">
+                                <div class="booking-type-card-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="booking-type-card-badge temp">Temporary</div>
+                            </div>
+                            <div class="booking-type-card-title">Temporary Booking</div>
+                            <div class="booking-type-card-desc">Short-term booking arrangement for limited time</div>
+                            <div class="booking-type-card-check">
+                                <i class="fas fa-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <small style="display: block; color: #9ca3af; font-size: 12px; margin-top: 12px;">
                     <i class="fas fa-info-circle" style="font-size: 11px; margin-right: 4px;"></i>Select the type of booking
                 </small>
                 @error('type')
@@ -1639,11 +2782,11 @@ main.container-fluid,
                     <i class="fas fa-cube"></i>
                     <span>Select Booths <span class="required">*</span></span>
                 </div>
-                <div style="display: flex; gap: 6px;">
-                    <button type="button" class="mobile-btn mobile-btn-secondary" style="padding: 8px 12px; font-size: 13px; font-weight: 600;" onclick="selectAllBooths()">
+                <div style="display: flex; gap: 6px; flex-shrink: 0;">
+                    <button type="button" class="mobile-btn mobile-btn-secondary" style="padding: 8px 12px; font-size: 13px; font-weight: 600; white-space: nowrap; min-width: auto; flex: 0 0 auto;" onclick="selectAllBooths()">
                         <i class="fas fa-check-double" style="margin-right: 4px; font-size: 11px;"></i> All
                     </button>
-                    <button type="button" class="mobile-btn mobile-btn-secondary" style="padding: 8px 12px; font-size: 13px; font-weight: 600;" onclick="clearSelection()">
+                    <button type="button" class="mobile-btn mobile-btn-secondary" style="padding: 8px 12px; font-size: 13px; font-weight: 600; white-space: nowrap; min-width: auto; flex: 0 0 auto;" onclick="clearSelection()">
                         <i class="fas fa-times" style="margin-right: 4px; font-size: 11px;"></i> Clear
                     </button>
                 </div>
@@ -1662,43 +2805,36 @@ main.container-fluid,
                 </div>
             </div>
             
-            <!-- Category Tabs/Icon Navigation -->
-            <div class="booth-category-tabs" id="boothCategoryTabs">
-                @foreach($boothsByCategory as $categoryId => $categoryData)
+            <!-- A-Z Letter Tabs Navigation -->
+            <div class="booth-letter-tabs" id="boothLetterTabs">
+                @foreach($boothsByCategory as $letter => $letterData)
                 <button type="button" 
-                        class="booth-category-tab {{ $loop->first ? 'active' : '' }}" 
-                        data-category-id="{{ $categoryId }}"
-                        onclick="switchBoothCategory('{{ $categoryId }}')">
-                    @if($categoryId === 'uncategorized')
-                        <i class="fas fa-th"></i>
-                    @elseif($categoryData['category']->avatar)
-                        <img src="{{ asset('storage/' . $categoryData['category']->avatar) }}" alt="{{ $categoryData['category']->name }}" class="category-icon-img">
-                    @else
-                        <i class="fas fa-folder"></i>
-                    @endif
-                    <span class="category-tab-name">{{ $categoryData['category']->name }}</span>
-                    <span class="category-tab-count">({{ $categoryData['booths']->count() }})</span>
+                        class="booth-letter-tab {{ $loop->first ? 'active' : '' }}" 
+                        data-letter="{{ $letter }}"
+                        onclick="switchBoothLetter('{{ $letter }}')">
+                    <span class="letter-tab-label">{{ $letter === '#' ? '#' : $letter }}</span>
+                    <span class="letter-tab-count">{{ $letterData['booths']->count() }}</span>
                 </button>
                 @endforeach
             </div>
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
-                <small style="color: #9ca3af; font-size: 11px; display: flex; align-items: center; gap: 4px;">
-                    <i class="fas fa-info-circle" style="font-size: 10px;"></i>
+                <small style="color: #9ca3af; font-size: 11px; display: flex; align-items: center; gap: 4px; line-height: 1.4;">
+                    <i class="fas fa-info-circle" style="font-size: 10px; line-height: 1; flex-shrink: 0;"></i>
                     <span id="boothCount">{{ $booths->count() }}</span> booths available
                 </small>
-                <small style="color: #9ca3af; font-size: 11px; display: none;" id="filteredBoothCount">
+                <small style="color: #9ca3af; font-size: 11px; display: none; line-height: 1.4;" id="filteredBoothCount">
                     <span id="filteredCount">0</span> matching booths
                 </small>
             </div>
             
-            <!-- Booth Grids by Category -->
-            @foreach($boothsByCategory as $categoryId => $categoryData)
-            <div class="booth-category-content {{ $loop->first ? 'active' : '' }}" 
-                 id="categoryContent_{{ $categoryId }}" 
-                 data-category-id="{{ $categoryId }}">
-                <div class="booth-grid-mobile" id="boothSelector_{{ $categoryId }}">
-                    @foreach($categoryData['booths'] as $booth)
+            <!-- Booth Grids by Letter (A-Z) -->
+            @foreach($boothsByCategory as $letter => $letterData)
+            <div class="booth-letter-content {{ $loop->first ? 'active' : '' }}" 
+                 id="letterContent_{{ $letter }}" 
+                 data-letter="{{ $letter }}">
+                <div class="booth-grid-mobile" id="boothSelector_{{ $letter }}">
+                    @foreach($letterData['booths'] as $booth)
                     <div class="booth-card-mobile {{ in_array($booth->id, old('booth_ids', [])) ? 'selected' : '' }}" 
                          data-booth-id="{{ $booth->id }}" 
                          data-price="{{ $booth->price }}"
@@ -1779,8 +2915,8 @@ main.container-fluid,
             </div>
             @endif
             @error('booth_ids')
-                <div style="color: #ef4444; font-size: 13px; margin-top: 12px; display: flex; align-items: center; gap: 6px;">
-                    <i class="fas fa-exclamation-circle" style="font-size: 12px;"></i>
+                <div style="color: #ef4444; font-size: 13px; margin-top: 12px; display: flex; align-items: center; gap: 6px; line-height: 1.4;">
+                    <i class="fas fa-exclamation-circle" style="font-size: 12px; line-height: 1; flex-shrink: 0;"></i>
                     <span>{{ $message }}</span>
                 </div>
             @enderror
@@ -1788,9 +2924,9 @@ main.container-fluid,
 
         <!-- Selected Booths Summary -->
         <div class="selected-booths-summary-mobile">
-            <div class="selected-booths-title-mobile">
-                <i class="fas fa-list"></i>
-                <span>Selected Booths</span>
+            <div class="selected-booths-title-mobile" style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-list" style="line-height: 1; flex-shrink: 0;"></i>
+                <span style="line-height: 1.4;">Selected Booths</span>
             </div>
             <div id="selectedBoothsList" class="selected-booths-list-mobile">
                 <div class="empty-state-mobile" style="padding: 20px;">
@@ -1799,11 +2935,11 @@ main.container-fluid,
             </div>
             <div class="summary-total-mobile" style="padding-top: 16px; border-top: 1px solid #f3f4f6; margin-top: 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <div class="summary-total-label-mobile" style="display: flex; align-items: center; gap: 6px;">
-                        <i class="fas fa-cube" style="font-size: 14px; color: #6b7280;"></i> 
+                    <div class="summary-total-label-mobile" style="display: flex; align-items: center; gap: 6px; line-height: 1.4;">
+                        <i class="fas fa-cube" style="font-size: 14px; color: #6b7280; line-height: 1; flex-shrink: 0;"></i> 
                         <span>Total Booths:</span>
                     </div>
-                    <span id="totalBooths" style="font-weight: 700; font-size: 18px; color: #667eea;">0</span>
+                    <span id="totalBooths" style="font-weight: 700; font-size: 18px; color: #667eea; line-height: 1; flex-shrink: 0;">0</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div class="summary-total-label-mobile" style="font-size: 17px;">
@@ -1818,13 +2954,15 @@ main.container-fluid,
     </form>
 </div>
 
-<!-- Action Buttons (Fixed Bottom) - Modern iOS Style -->
+<!-- Action Buttons (Sticky Bottom) - Flexible & Responsive -->
 <div class="mobile-action-buttons">
-    <button type="button" class="mobile-btn mobile-btn-secondary" onclick="window.location.href='{{ route('books.index') }}'">
-        <i class="fas fa-times" style="margin-right: 6px;"></i> Cancel
+    <button type="button" class="mobile-btn mobile-btn-secondary" onclick="window.location.href='{{ route('books.index') }}'" aria-label="Cancel booking">
+        <i class="fas fa-times"></i>
+        <span>Cancel</span>
     </button>
-    <button type="submit" form="bookingForm" class="mobile-btn mobile-btn-primary" id="submitBtn" disabled>
-        <i class="fas fa-check" style="margin-right: 6px;"></i> Create Booking
+    <button type="submit" form="bookingForm" class="mobile-btn mobile-btn-primary" id="submitBtn" disabled aria-label="Create booking">
+        <i class="fas fa-check"></i>
+        <span>Create Booking</span>
     </button>
 </div>
 
@@ -2282,27 +3420,152 @@ function toggleBooth(element, boothId) {
     updateSelection();
 }
 
-// Switch between booth categories
-function switchBoothCategory(categoryId) {
+// Booking Type Selector - View Switching and Selection
+$(document).ready(function() {
+    // View switcher functionality
+    $('.view-switch-btn').on('click', function() {
+        const view = $(this).data('view');
+        
+        // Update active button
+        $('.view-switch-btn').removeClass('active');
+        $(this).addClass('active');
+        
+        // Switch views
+        $('.booking-type-view').removeClass('active');
+        $(`.booking-type-view[data-view="${view}"]`).addClass('active');
+    });
+    
+    // Handle booking type selection
+    function selectBookingType(value) {
+        // Update hidden select
+        $('#type').val(value);
+        
+        // Update all view options
+        $('.booking-type-option-icon, .booking-type-option-list, .booking-type-option-card').removeClass('selected');
+        $(`.booking-type-option-icon[data-value="${value}"], .booking-type-option-list[data-value="${value}"], .booking-type-option-card[data-value="${value}"]`).addClass('selected');
+    }
+    
+    // Icon view selection
+    $('.booking-type-option-icon').on('click', function() {
+        const value = $(this).data('value');
+        selectBookingType(value);
+    });
+    
+    // List view selection
+    $('.booking-type-option-list').on('click', function() {
+        const value = $(this).data('value');
+        selectBookingType(value);
+    });
+    
+    // Card view selection
+    $('.booking-type-option-card').on('click', function() {
+        const value = $(this).data('value');
+        selectBookingType(value);
+    });
+    
+    // Initialize with default selected value
+    const defaultValue = $('#type').val();
+    if (defaultValue) {
+        selectBookingType(defaultValue);
+    }
+});
+
+// Toggle form group expand/collapse
+function toggleFormGroup(header) {
+    const formGroup = header.closest('.mobile-form-group');
+    if (!formGroup) return;
+    
+    const isCollapsed = formGroup.classList.contains('collapsed');
+    const content = formGroup.querySelector('.mobile-form-group-content');
+    const toggleIcon = header.querySelector('.mobile-form-group-toggle i');
+    
+    if (isCollapsed) {
+        // Expand
+        formGroup.classList.remove('collapsed');
+        if (content) {
+            // Set max-height to actual content height
+            const scrollHeight = content.scrollHeight;
+            content.style.maxHeight = scrollHeight + 'px';
+            // After transition, set to auto for dynamic content
+            setTimeout(function() {
+                if (!formGroup.classList.contains('collapsed')) {
+                    content.style.maxHeight = 'none';
+                }
+            }, 400);
+        }
+        if (toggleIcon) {
+            toggleIcon.style.transform = 'rotate(0deg)';
+        }
+    } else {
+        // Collapse
+        if (content) {
+            // Get current height before collapsing
+            const currentHeight = content.scrollHeight;
+            content.style.maxHeight = currentHeight + 'px';
+            // Force reflow
+            content.offsetHeight;
+            // Then collapse
+            formGroup.classList.add('collapsed');
+            content.style.maxHeight = '0';
+        } else {
+            formGroup.classList.add('collapsed');
+        }
+        if (toggleIcon) {
+            toggleIcon.style.transform = 'rotate(-90deg)';
+        }
+    }
+}
+
+// Auto-expand form groups on focus
+$(document).ready(function() {
+    // Auto-expand when input/select is focused
+    $(document).on('focus', '.mobile-form-group.collapsible .mobile-form-input, .mobile-form-group.collapsible .mobile-form-select', function() {
+        const formGroup = $(this).closest('.mobile-form-group.collapsible');
+        if (formGroup.hasClass('collapsed')) {
+            const header = formGroup.find('.mobile-form-group-header');
+            if (header.length) {
+                toggleFormGroup(header[0]);
+            }
+        }
+    });
+    
+    // Auto-expand if form group has errors
+    $('.mobile-form-group.collapsible').each(function() {
+        const $group = $(this);
+        if ($group.find('[style*="color: #ef4444"], .text-danger, [class*="error"]').length > 0) {
+            if ($group.hasClass('collapsed')) {
+                const header = $group.find('.mobile-form-group-header');
+                if (header.length) {
+                    toggleFormGroup(header[0]);
+                }
+            }
+        }
+    });
+});
+
+// Switch between booth letters (A-Z)
+function switchBoothLetter(letter) {
     // Update tabs
-    document.querySelectorAll('.booth-category-tab').forEach(function(tab) {
+    document.querySelectorAll('.booth-letter-tab').forEach(function(tab) {
         tab.classList.remove('active');
     });
-    const activeTab = document.querySelector('.booth-category-tab[data-category-id="' + categoryId + '"]');
+    const activeTab = document.querySelector('.booth-letter-tab[data-letter="' + letter + '"]');
     if (activeTab) {
         activeTab.classList.add('active');
+        // Scroll active tab into view
+        activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
     
     // Update content sections
-    document.querySelectorAll('.booth-category-content').forEach(function(content) {
+    document.querySelectorAll('.booth-letter-content').forEach(function(content) {
         content.classList.remove('active');
     });
-    const activeContent = document.getElementById('categoryContent_' + categoryId);
+    const activeContent = document.getElementById('letterContent_' + letter);
     if (activeContent) {
         activeContent.classList.add('active');
     }
     
-    // Clear search when switching categories
+    // Clear search when switching letters
     const searchInput = document.getElementById('boothSearchInput');
     if (searchInput) {
         searchInput.value = '';
@@ -2436,10 +3699,10 @@ function updateSelection() {
 }
 
 function selectAllBooths() {
-    // Only select visible booths in the active category
-    const activeCategory = document.querySelector('.booth-category-content.active');
-    if (activeCategory) {
-        activeCategory.querySelectorAll('.booth-card-mobile').forEach(function(card) {
+    // Only select visible booths in the active letter tab
+    const activeLetter = document.querySelector('.booth-letter-content.active');
+    if (activeLetter) {
+        activeLetter.querySelectorAll('.booth-card-mobile').forEach(function(card) {
             const checkbox = card.querySelector('.booth-checkbox-mobile');
             if (card.style.display !== 'none' && !card.classList.contains('disabled') && checkbox) {
                 checkbox.checked = true;
@@ -3022,7 +4285,7 @@ $(document).ready(function() {
         return false;
     });
     
-    // Progress Indicator Updates
+    // Progress Indicator Updates - Enhanced with animated lines
     function updateProgress() {
         const clientId = $('#clientid').val();
         const hasBooths = $('.booth-checkbox-mobile:checked').length > 0;
@@ -3030,30 +4293,45 @@ $(document).ready(function() {
         
         // Step 1: Client
         if (clientId && clientId !== '') {
-            $('#progressStep1').addClass('completed').html('<i class="fas fa-check"></i>');
+            $('#progressStep1').addClass('completed').removeClass('active').html('<i class="fas fa-check"></i>');
             $('#clientSection').addClass('completed');
+            // Animate progress line 1
+            setTimeout(function() {
+                $('#progressLine1').addClass('completed');
+            }, 200);
         } else {
             $('#progressStep1').addClass('active').removeClass('completed').html('<i class="fas fa-user"></i>');
             $('#clientSection').removeClass('completed');
+            $('#progressLine1').removeClass('completed');
         }
         
         // Step 2: Details (active after client, completed when date is set)
         if (clientId && clientId !== '') {
             if (hasDate) {
-                $('#progressStep2').addClass('completed').html('<i class="fas fa-check"></i>');
+                $('#progressStep2').addClass('completed').removeClass('active').html('<i class="fas fa-check"></i>');
+                // Animate progress line 2
+                setTimeout(function() {
+                    $('#progressLine2').addClass('completed');
+                }, 200);
             } else {
                 $('#progressStep2').addClass('active').removeClass('completed').html('<i class="fas fa-calendar"></i>');
+                $('#progressLine2').removeClass('completed');
             }
         } else {
             $('#progressStep2').removeClass('active').removeClass('completed').html('<i class="fas fa-calendar"></i>');
+            $('#progressLine2').removeClass('completed');
         }
         
         // Step 3: Booths
         if (hasBooths) {
-            $('#progressStep3').addClass('completed').html('<i class="fas fa-check"></i>');
+            $('#progressStep3').addClass('completed').removeClass('active').html('<i class="fas fa-check"></i>');
             $('#boothSection').addClass('completed');
         } else {
-            $('#progressStep3').removeClass('completed').addClass('active').html('<i class="fas fa-cube"></i>');
+            if (clientId && hasDate) {
+                $('#progressStep3').addClass('active').removeClass('completed').html('<i class="fas fa-cube"></i>');
+            } else {
+                $('#progressStep3').removeClass('active').removeClass('completed').html('<i class="fas fa-cube"></i>');
+            }
             $('#boothSection').removeClass('completed');
         }
     }
