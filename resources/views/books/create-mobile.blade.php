@@ -207,7 +207,7 @@ main.container-fluid,
     width: 100% !important;
     max-width: 100% !important;
     padding: 16px !important;
-    padding-bottom: 120px !important;
+    padding-bottom: 16px !important;
     margin: 0 !important;
     position: relative !important;
     z-index: 1 !important;
@@ -355,15 +355,69 @@ main.container-fluid,
 /* Booking Progress Container */
 .booking-progress-container {
     position: relative;
+    transition: all 0.3s ease;
+}
+
+/* Booking Progress Header */
+.booking-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 10;
+}
+
+.booking-progress-toggle {
+    background: transparent;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: #667eea;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.booking-progress-toggle:hover {
+    background: rgba(102, 126, 234, 0.1);
+    border-color: rgba(102, 126, 234, 0.3);
+    transform: translateY(-1px);
+}
+
+.booking-progress-toggle:active {
+    transform: translateY(0);
+}
+
+.booking-progress-toggle i {
+    transition: transform 0.3s ease;
+}
+
+.booking-progress-container.collapsed .booking-progress-toggle i {
+    transform: rotate(180deg);
+}
+
+/* Booking Progress Content */
+.booking-progress-content {
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    max-height: 1000px;
+    opacity: 1;
+}
+
+.booking-progress-container.collapsed .booking-progress-content {
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
 }
 
 .current-step-highlight {
     animation: fadeInUp 0.3s ease;
-}
-
-/* Minimal Progress Container */
-.booking-progress-container {
-    transition: all 0.3s ease;
 }
 
 .progress-steps-wrapper {
@@ -622,7 +676,7 @@ main.container-fluid,
 /* Main Content Container - Modern App Style */
 .mobile-booking-container {
     padding: 16px !important;
-    padding-bottom: 120px !important;
+    padding-bottom: 16px !important;
     max-width: 100% !important;
     position: relative !important;
     z-index: 1 !important;
@@ -1952,10 +2006,12 @@ main.container-fluid,
 
 /* Client Search - Modern App Style */
 /* Modern Client Search Wrapper - Redesigned */
+/* Client Search Wrapper - Clean Modern Design */
 .client-search-wrapper-mobile {
     position: relative;
     z-index: 100;
     width: 100%;
+    margin-bottom: 0;
 }
 
 .client-search-input-wrapper {
@@ -1963,12 +2019,12 @@ main.container-fluid,
     display: flex;
     align-items: center;
     background: #ffffff;
-    border-radius: 14px;
-    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    border: 1.5px solid #e5e7eb;
     overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    min-height: 56px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    min-height: 52px;
     gap: 0;
 }
 
@@ -1976,15 +2032,14 @@ main.container-fluid,
     border-color: #667eea;
     background: #ffffff;
     box-shadow: 
-        0 0 0 4px rgba(102, 126, 234, 0.08),
-        0 4px 12px rgba(102, 126, 234, 0.12);
-    transform: translateY(-1px);
+        0 0 0 3px rgba(102, 126, 234, 0.1),
+        0 2px 8px rgba(102, 126, 234, 0.08);
 }
 
 .client-search-icon {
-    padding: 0 18px;
-    color: #6b7280;
-    font-size: 18px;
+    padding: 0 14px;
+    color: #9ca3af;
+    font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2006,10 +2061,10 @@ main.container-fluid,
 
 .client-search-input {
     flex: 1;
-    padding: 18px 0;
+    padding: 16px 0;
     border: none;
     background: transparent;
-    font-size: 16px;
+    font-size: 15px;
     color: #111827;
     font-weight: 400;
     margin: 0;
@@ -2025,19 +2080,20 @@ main.container-fluid,
 .client-search-input::placeholder {
     color: #9ca3af;
     font-weight: 400;
+    font-size: 15px;
 }
 
 .client-search-btn {
-    padding: 0 20px;
+    padding: 0 16px;
     height: 100%;
-    min-height: 56px;
+    min-height: 52px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     -webkit-tap-highlight-color: transparent;
     display: flex;
     align-items: center;
@@ -2049,7 +2105,8 @@ main.container-fluid,
     margin: 0;
     position: relative;
     overflow: hidden;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.2px;
+    gap: 6px;
 }
 
 .client-search-btn::before {
@@ -2059,23 +2116,32 @@ main.container-fluid,
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s ease;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    transition: left 0.4s ease;
 }
 
 .client-search-btn:hover {
     background: linear-gradient(135deg, #5568d3 0%, #6a3d8f 100%);
-    transform: scale(1.02);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.25);
 }
 
 .client-search-btn:active {
     transform: scale(0.98);
-    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.2);
+    box-shadow: 0 1px 3px rgba(102, 126, 234, 0.2);
 }
 
 .client-search-btn:hover::before {
     left: 100%;
+}
+
+.client-search-btn i {
+    font-size: 12px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.client-search-btn span {
+    line-height: 1;
 }
 
 /* Client Results Dropdown - Modern Bottom Sheet Style - Enhanced */
@@ -2694,7 +2760,7 @@ main.container-fluid,
     gap: 6px;
     margin-bottom: 16px;
     overflow-x: auto;
-    padding-bottom: 8px;
+    padding: 8px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -2858,8 +2924,189 @@ main.container-fluid,
     margin-bottom: 16px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 10px;
     letter-spacing: -0.2px;
+}
+
+/* Selected Booths View Toggle */
+.selected-booths-view-toggle {
+    display: flex;
+    gap: 4px;
+    background: #f3f4f6;
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.booth-view-btn {
+    padding: 6px 10px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    color: #6b7280;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 600;
+}
+
+.booth-view-btn:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+}
+
+.booth-view-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+}
+
+/* Selected Booths View Styles */
+.selected-booths-list-mobile.view-list {
+    display: block;
+}
+
+.selected-booths-list-mobile.view-card {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.selected-booths-list-mobile.view-mincard {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+}
+
+/* Card View Styles */
+.selected-booth-card-view {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1.5px solid rgba(102, 126, 234, 0.15);
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.selected-booth-card-view::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    opacity: 0.8;
+}
+
+.selected-booth-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.selected-booth-card-number {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #374151;
+}
+
+.selected-booth-card-number i {
+    color: #667eea;
+    font-size: 13px;
+}
+
+.selected-booth-card-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: #667eea;
+}
+
+.selected-booth-card-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.selected-booth-card-detail {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.selected-booth-card-detail i {
+    font-size: 9px;
+    color: #9ca3af;
+    width: 12px;
+}
+
+/* Minimal Card View Styles */
+.selected-booth-mincard-view {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid rgba(102, 126, 234, 0.15);
+    border-radius: 8px;
+    padding: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.selected-booth-mincard-view::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    opacity: 0.6;
+}
+
+.selected-booth-mincard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.selected-booth-mincard-number {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #374151;
+}
+
+.selected-booth-mincard-number i {
+    color: #667eea;
+    font-size: 11px;
+}
+
+.selected-booth-mincard-price {
+    font-size: 13px;
+    font-weight: 700;
+    color: #667eea;
+}
+
+.selected-booth-mincard-status {
+    font-size: 10px;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .selected-booths-list-mobile {
@@ -3524,8 +3771,9 @@ main.container-fluid,
     border-radius: 14px;
     margin-bottom: 16px;
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
+    flex-direction: column;
+    gap: 0;
+    transition: all 0.3s ease;
 }
 
 .mobile-alert-info {
@@ -3534,10 +3782,62 @@ main.container-fluid,
     color: #1e40af;
 }
 
+.mobile-alert-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    width: 100%;
+}
+
+.mobile-alert-toggle {
+    background: transparent;
+    border: none;
+    color: #1e40af;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-alert-toggle:hover {
+    background: rgba(30, 64, 175, 0.1);
+}
+
+.mobile-alert-toggle i {
+    transition: transform 0.3s ease;
+}
+
+.mobile-alert.collapsed .mobile-alert-toggle i {
+    transform: rotate(0deg);
+}
+
+.mobile-alert:not(.collapsed) .mobile-alert-toggle i {
+    transform: rotate(180deg);
+}
+
+.mobile-alert-content {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+    padding: 0;
+}
+
+.mobile-alert:not(.collapsed) .mobile-alert-content {
+    max-height: 500px;
+    opacity: 1;
+    padding-top: 12px;
+}
+
 .mobile-alert i {
     font-size: 20px;
     color: #3b82f6;
     margin-top: 2px;
+    flex-shrink: 0;
 }
 
 /* Empty State - Modern Style */
@@ -3869,9 +4169,23 @@ main.container-fluid,
 </div>
 
 <!-- Main Content -->
-<div class="mobile-booking-container" style="display: block !important; visibility: visible !important; opacity: 1 !important; padding: 16px !important; padding-bottom: 120px !important;">
+<div class="mobile-booking-container" style="display: block !important; visibility: visible !important; opacity: 1 !important; padding: 16px !important; padding-bottom: 16px !important;">
     <!-- Progress Indicator - Enhanced with Step Info -->
-    <div class="booking-progress-container" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); border: 1px solid rgba(102, 126, 234, 0.1);">
+    <div class="booking-progress-container" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); border: 1px solid rgba(102, 126, 234, 0.1); position: relative;">
+        <!-- Progress Header with Expand/Collapse -->
+        <div class="booking-progress-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h6 style="margin: 0; font-size: 14px; font-weight: 700; color: #374151; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-tasks" style="color: #667eea;"></i>
+                <span>Booking Progress</span>
+            </h6>
+            <button type="button" class="booking-progress-toggle" id="bookingProgressToggle" onclick="toggleBookingProgress()" aria-label="Toggle progress display" style="background: transparent; border: 1px solid rgba(102, 126, 234, 0.2); border-radius: 6px; padding: 6px 10px; color: #667eea; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 4px; font-size: 12px;">
+                <i class="fas fa-chevron-up" id="bookingProgressToggleIcon"></i>
+                <span id="bookingProgressToggleText">Collapse</span>
+            </button>
+        </div>
+        
+        <!-- Progress Content (Collapsible) -->
+        <div class="booking-progress-content" id="bookingProgressContent">
         <!-- Progress Steps Visual -->
         <div class="progress-steps-wrapper" style="position: relative; margin-bottom: 24px;">
             <div style="display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1;">
@@ -3930,13 +4244,32 @@ main.container-fluid,
                 </div>
             </div>
         </div>
+        </div>
+        <!-- End Progress Content -->
     </div>
 
     <!-- Selected Booths Summary - Sticky Below Progress -->
     <div class="selected-booths-summary-mobile">
-        <div class="selected-booths-title-mobile" style="display: flex; align-items: center; gap: 10px;">
-            <i class="fas fa-list" style="line-height: 1; flex-shrink: 0;"></i>
-            <span style="line-height: 1.4;">Selected Booths</span>
+        <div class="selected-booths-title-mobile" style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-list" style="line-height: 1; flex-shrink: 0;"></i>
+                <span style="line-height: 1.4;">Selected Booths</span>
+            </div>
+            <!-- View Toggle Buttons -->
+            <div class="selected-booths-view-toggle" style="display: flex; gap: 4px; background: #f3f4f6; padding: 4px; border-radius: 8px;">
+                <button type="button" class="booth-view-btn active" data-view="list" onclick="switchBoothView('list')" aria-label="List view" style="padding: 6px 10px; border: none; background: transparent; border-radius: 6px; cursor: pointer; font-size: 11px; color: #6b7280; transition: all 0.2s ease; display: flex; align-items: center; gap: 4px;">
+                    <i class="fas fa-list"></i>
+                    <span>List</span>
+                </button>
+                <button type="button" class="booth-view-btn" data-view="card" onclick="switchBoothView('card')" aria-label="Card view" style="padding: 6px 10px; border: none; background: transparent; border-radius: 6px; cursor: pointer; font-size: 11px; color: #6b7280; transition: all 0.2s ease; display: flex; align-items: center; gap: 4px;">
+                    <i class="fas fa-th-large"></i>
+                    <span>Card</span>
+                </button>
+                <button type="button" class="booth-view-btn" data-view="mincard" onclick="switchBoothView('mincard')" aria-label="Minimal card view" style="padding: 6px 10px; border: none; background: transparent; border-radius: 6px; cursor: pointer; font-size: 11px; color: #6b7280; transition: all 0.2s ease; display: flex; align-items: center; gap: 4px;">
+                    <i class="fas fa-th"></i>
+                    <span>Min</span>
+                </button>
+            </div>
         </div>
         <div id="selectedBoothsList" class="selected-booths-list-mobile">
             <div class="empty-state-mobile" style="padding: 20px;">
@@ -3962,21 +4295,33 @@ main.container-fluid,
         </div>
     </div>
 
+    <!-- Booking Summary Detail (Updated on Create Booking click) -->
+    <div id="bookingSummaryDetail" style="display: none;"></div>
+
     <form action="{{ route('books.store') }}" method="POST" id="bookingForm">
         @csrf
-        <input type="hidden" id="clientid" name="clientid" value="{{ old('clientid') }}" required>
+        <input type="hidden" id="clientid" name="clientid" value="{{ old('clientid') }}">
 
         @if(isset($currentFloorPlan) && $currentFloorPlan)
-        <div class="mobile-alert mobile-alert-info" style="margin-bottom: 16px;">
-            <i class="fas fa-map"></i>
-            <div style="flex: 1;">
-                <div style="font-weight: 600; color: #1e40af; margin-bottom: 4px; font-size: 14px;">Floor Plan: {{ $currentFloorPlan->name }}</div>
-                @if($currentFloorPlan->event)
-                <div style="font-size: 13px; color: #3b82f6; margin-bottom: 8px;">{{ $currentFloorPlan->event->title }}</div>
-                @endif
-                <a href="{{ route('books.create') }}" style="color: #3b82f6; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
-                    <i class="fas fa-times" style="font-size: 11px;"></i> Clear Filter
-                </a>
+        <div class="mobile-alert mobile-alert-info collapsed" id="floorPlanAlert" style="margin-bottom: 16px;">
+            <div class="mobile-alert-header" onclick="toggleFloorPlanAlert()" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+                <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                    <i class="fas fa-map"></i>
+                    <div style="font-weight: 600; color: #1e40af; font-size: 14px;">Floor Plan: {{ $currentFloorPlan->name }}</div>
+                </div>
+                <button type="button" class="mobile-alert-toggle" aria-label="Toggle floor plan info" style="background: transparent; border: none; color: #1e40af; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.2s ease;">
+                    <i class="fas fa-chevron-down" id="floorPlanAlertIcon"></i>
+                </button>
+            </div>
+            <div class="mobile-alert-content" style="overflow: hidden; max-height: 0; opacity: 0; transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;">
+                <div style="padding-top: 12px;">
+                    @if($currentFloorPlan->event)
+                    <div style="font-size: 13px; color: #3b82f6; margin-bottom: 8px;">{{ $currentFloorPlan->event->title }}</div>
+                    @endif
+                    <a href="{{ route('books.create') }}" style="color: #3b82f6; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                        <i class="fas fa-times" style="font-size: 11px;"></i> Clear Filter
+                    </a>
+                </div>
             </div>
         </div>
         @endif
@@ -4102,7 +4447,7 @@ main.container-fluid,
             <div id="clientSearchContainer">
                 <div class="mobile-form-group">
                     <label for="clientSearchInline" class="mobile-form-label">
-                        Search Client <span class="required">*</span>
+                        Search Client
                     </label>
                     <div class="client-search-wrapper-mobile">
                         <div class="client-search-input-wrapper">
@@ -4116,7 +4461,7 @@ main.container-fluid,
                                    autocomplete="off"
                                    spellcheck="false">
                             <button type="button" class="client-search-btn" id="btnSearchSelectClient" data-toggle="modal" data-target="#searchClientModal" aria-label="Open advanced search">
-                                <i class="fas fa-sliders-h" style="margin-right: 6px; font-size: 13px;"></i>
+                                <i class="fas fa-sliders-h"></i>
                                 <span>Filter</span>
                             </button>
                         </div>
@@ -4153,14 +4498,13 @@ main.container-fluid,
             </div>
             <div class="mobile-form-group">
                 <label for="date_book" class="mobile-form-label">
-                    Booking Date & Time <span class="required">*</span>
+                    Booking Date & Time
                 </label>
                 <input type="datetime-local" 
                        class="mobile-form-input" 
                        id="date_book" 
                        name="date_book" 
                        value="{{ old('date_book', now()->format('Y-m-d\TH:i')) }}" 
-                       required
                        min="{{ now()->format('Y-m-d\TH:i') }}">
                 <small style="display: flex; align-items: center; color: #9ca3af; font-size: 12px; margin-top: 6px; gap: 4px; line-height: 1.4;">
                     <i class="fas fa-info-circle" style="font-size: 11px; line-height: 1; flex-shrink: 0;"></i>
@@ -4819,7 +5163,7 @@ main.container-fluid,
         // Ensure mobile container is visible
         const mobileContainer = document.querySelector('.mobile-booking-container');
         if (mobileContainer) {
-            mobileContainer.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; padding: 16px !important; padding-bottom: 120px !important;';
+            mobileContainer.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; padding: 16px !important; padding-bottom: 16px !important;';
         }
         
         // Ensure mobile header is visible
@@ -4873,7 +5217,7 @@ main.container-fluid,
         }
         
         if (mobileContainer) {
-            mobileContainer.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; padding: 16px !important; padding-bottom: 120px !important; width: 100% !important;';
+            mobileContainer.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; padding: 16px !important; padding-bottom: 16px !important; width: 100% !important;';
         }
         
         if (main) {
@@ -5210,11 +5554,31 @@ function toggleBooth(element, boothId) {
     const checkbox = element.querySelector('.booth-checkbox-mobile');
     checkbox.checked = !checkbox.checked;
     element.classList.toggle('selected', checkbox.checked);
+    
+    // Save to localStorage immediately
+    setTimeout(function() {
+        saveBookingToStorage();
+    }, 100);
+    
+    // Update selection display
     updateSelection();
 }
 
 // Booking Type Selector - View Switching and Selection
 $(document).ready(function() {
+    // Restore selected booths view mode preference
+    const savedBoothView = getFromLocalStorage('selected_booths_view', 'list');
+    if (savedBoothView) {
+        currentBoothView = savedBoothView;
+        document.querySelectorAll('.booth-view-btn').forEach(function(btn) {
+            btn.classList.remove('active');
+        });
+        const activeBtn = document.querySelector('.booth-view-btn[data-view="' + savedBoothView + '"]');
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+        }
+    }
+    
     // Restore booking type view mode preference
     const savedBookingTypeView = getFromLocalStorage('booking_type_view', 'icon');
     $(`.view-switch-btn[data-view="${savedBookingTypeView}"]`).click();
@@ -5368,6 +5732,54 @@ function toggleBoothHelp() {
     }
 }
 
+// Toggle Booking Progress Container
+function toggleBookingProgress() {
+    const container = document.querySelector('.booking-progress-container');
+    const toggleBtn = document.getElementById('bookingProgressToggle');
+    const toggleIcon = document.getElementById('bookingProgressToggleIcon');
+    const toggleText = document.getElementById('bookingProgressToggleText');
+    
+    if (container && toggleBtn && toggleIcon && toggleText) {
+        const isCollapsed = container.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            // Expand
+            container.classList.remove('collapsed');
+            toggleIcon.classList.remove('fa-chevron-down');
+            toggleIcon.classList.add('fa-chevron-up');
+            toggleText.textContent = 'Collapse';
+        } else {
+            // Collapse
+            container.classList.add('collapsed');
+            toggleIcon.classList.remove('fa-chevron-up');
+            toggleIcon.classList.add('fa-chevron-down');
+            toggleText.textContent = 'Expand';
+        }
+    }
+}
+
+// Toggle Floor Plan Alert
+function toggleFloorPlanAlert() {
+    const alert = document.getElementById('floorPlanAlert');
+    const icon = document.getElementById('floorPlanAlertIcon');
+    
+    if (alert && icon) {
+        const isCollapsed = alert.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            // Expand
+            alert.classList.remove('collapsed');
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        } else {
+            // Collapse
+            alert.classList.add('collapsed');
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
+}
+
 // Switch between booth letters (A-Z)
 function switchBoothLetter(letter) {
     // Update tabs
@@ -5397,6 +5809,11 @@ function switchBoothLetter(letter) {
         filterBooths('');
     }
     
+    // Restore selected booths in the newly visible tab
+    setTimeout(function() {
+        restoreSelectedBooths();
+    }, 100);
+    
     // Scroll to top of booth section
     const boothSection = document.getElementById('boothSection');
     if (boothSection) {
@@ -5407,6 +5824,11 @@ function switchBoothLetter(letter) {
 // Filter booths by search term (works across all categories)
 function filterBooths(searchTerm) {
     const searchLower = searchTerm.toLowerCase().trim();
+    
+    // Restore selected booths after filtering (in case they were hidden)
+    setTimeout(function() {
+        restoreSelectedBooths();
+    }, 100);
     const boothCards = document.querySelectorAll('.booth-card-mobile');
     let visibleCount = 0;
     
@@ -5554,6 +5976,10 @@ $(document).ready(function() {
     // Update when switching letter tabs
     $(document).on('click', '.booth-letter-tab', function() {
         setTimeout(updateBoothVisibleCount, 100);
+        // Restore selected booths when switching tabs
+        setTimeout(function() {
+            restoreSelectedBooths();
+        }, 200);
     });
     
     // Update on window resize
@@ -5654,6 +6080,9 @@ function loadMoreBooths(gridId) {
     }, 300);
 }
 
+// Global variable to store current booth view
+let currentBoothView = getFromLocalStorage('selected_booths_view', 'list');
+
 function updateSelection() {
     const selected = [];
     let totalAmount = 0;
@@ -5680,54 +6109,8 @@ function updateSelection() {
         totalAmount += price;
     });
     
-    // Update selected list
-    const listContainer = document.getElementById('selectedBoothsList');
-    if (selected.length > 0) {
-        let html = '';
-        selected.forEach(function(booth) {
-            // Determine status class
-            const statusLower = booth.status.toLowerCase();
-            let statusClass = 'other';
-            if (statusLower.includes('available') || statusLower.includes('free')) {
-                statusClass = 'available';
-            } else if (statusLower.includes('reserved')) {
-                statusClass = 'reserved';
-            } else if (statusLower.includes('booked') || statusLower.includes('occupied')) {
-                statusClass = 'booked';
-            }
-            
-            html += '<div class="selected-booth-info-mobile">';
-            html += '<div class="selected-booth-header">';
-            html += '<div class="selected-booth-main-info">';
-            html += '<div class="selected-booth-number">';
-            html += '<i class="fas fa-cube"></i>';
-            html += '<span>' + booth.number + '</span>';
-            html += '</div>';
-            html += '</div>';
-            html += '<div class="selected-booth-price-mobile">$' + booth.price.toFixed(2) + '</div>';
-            html += '</div>';
-            html += '<div class="selected-booth-details">';
-            html += '<div class="selected-booth-detail-item">';
-            html += '<i class="fas fa-hashtag"></i>';
-            html += '<span class="detail-label">ID:</span>';
-            html += '<span class="detail-value">' + booth.id + '</span>';
-            html += '</div>';
-            html += '<div class="selected-booth-detail-item">';
-            html += '<i class="fas fa-tag"></i>';
-            html += '<span class="detail-label">Category:</span>';
-            html += '<span class="detail-value">' + (booth.category !== 'n/a' ? booth.category.charAt(0).toUpperCase() + booth.category.slice(1) : 'N/A') + '</span>';
-            html += '</div>';
-            html += '<div class="selected-booth-status ' + statusClass + '">';
-            html += '<i class="fas fa-circle" style="font-size: 6px;"></i>';
-            html += '<span>' + booth.status + '</span>';
-            html += '</div>';
-            html += '</div>';
-            html += '</div>';
-        });
-        listContainer.innerHTML = html;
-    } else {
-        listContainer.innerHTML = '<div class="empty-state-mobile" style="padding: 24px 20px;"><i class="fas fa-hand-pointer" style="font-size: 32px; color: #d1d5db; margin-bottom: 12px; opacity: 0.6;"></i><p style="font-size: 14px; color: #9ca3af; font-weight: 500;">No booths selected</p><p style="font-size: 12px; color: #d1d5db; margin-top: 4px;">Tap on booths below to select them</p></div>';
-    }
+    // Update selected list based on current view
+    renderSelectedBooths(selected, currentBoothView);
     
     // Update summary with animation
     const totalBoothsEl = document.getElementById('totalBooths');
@@ -5775,6 +6158,274 @@ function updateSelection() {
     if (typeof updateProgress === 'function') {
         updateProgress();
     }
+}
+
+// Update Booking Summary Detail - Shows complete booking information
+function updateBookingSummaryDetail() {
+    // Get all booking information
+    const clientId = $('#clientid').val();
+    const clientName = $('#selectedClientName').text() || $('#selectedClientInfo .selected-client-name-mobile span').text() || 'N/A';
+    const clientDetails = $('#selectedClientDetails').text() || '';
+    const date = $('#date_book').val() || 'Not set';
+    const bookingType = $('#type').val();
+    const bookingTypeText = bookingType === '1' ? 'Regular' : (bookingType === '2' ? 'Special' : (bookingType === '3' ? 'Temporary' : 'Not selected'));
+    const floorPlanId = $('#floor_plan_id').val() || $('#floor_plan_filter').val() || '';
+    const floorPlanName = $('#selectedFloorPlanNameText').text() || 'All Floor Plans';
+    
+    // Get selected booths
+    const selectedBooths = [];
+    let totalAmount = 0;
+    $('.booth-checkbox-mobile:checked').each(function() {
+        const boothCard = $(this).closest('.booth-card-mobile');
+        const boothId = $(this).val();
+        const boothNumber = boothCard.find('.booth-number-mobile').text();
+        const price = parseFloat(boothCard.data('price')) || 0;
+        const category = boothCard.data('category') || 'N/A';
+        const status = boothCard.find('.booth-status-mobile').text() || 'N/A';
+        
+        selectedBooths.push({
+            id: boothId,
+            number: boothNumber,
+            price: price,
+            category: category,
+            status: status
+        });
+        totalAmount += price;
+    });
+    
+    // Update summary totals
+    $('#totalBooths').text(selectedBooths.length);
+    $('#totalAmount').text(totalAmount.toFixed(2));
+    
+    // Create detailed summary HTML
+    let summaryHTML = '<div class="booking-summary-detail" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); border: 1px solid rgba(102, 126, 234, 0.1);">';
+    summaryHTML += '<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid rgba(102, 126, 234, 0.1);">';
+    summaryHTML += '<h5 style="margin: 0; font-size: 18px; font-weight: 700; color: #374151; display: flex; align-items: center; gap: 10px;">';
+    summaryHTML += '<i class="fas fa-clipboard-list" style="color: #667eea;"></i>';
+    summaryHTML += '<span>Booking Summary</span>';
+    summaryHTML += '</h5>';
+    summaryHTML += '<div style="font-size: 12px; color: #9ca3af; font-weight: 600;">Review Details</div>';
+    summaryHTML += '</div>';
+    
+    // Client Information
+    summaryHTML += '<div class="summary-detail-section" style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #f3f4f6;">';
+    summaryHTML += '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">';
+    summaryHTML += '<i class="fas fa-user" style="color: #667eea; font-size: 14px; width: 20px;"></i>';
+    summaryHTML += '<span style="font-weight: 600; color: #6b7280; font-size: 13px;">Client:</span>';
+    summaryHTML += '</div>';
+    summaryHTML += '<div style="padding-left: 28px;">';
+    summaryHTML += '<div style="font-size: 15px; font-weight: 700; color: #374151; margin-bottom: 4px;">' + (clientName || 'Not selected') + '</div>';
+    if (clientDetails) {
+        summaryHTML += '<div style="font-size: 13px; color: #6b7280;">' + clientDetails + '</div>';
+    }
+    summaryHTML += '</div>';
+    summaryHTML += '</div>';
+    
+    // Booking Details
+    summaryHTML += '<div class="summary-detail-section" style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #f3f4f6;">';
+    summaryHTML += '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">';
+    summaryHTML += '<i class="fas fa-calendar-alt" style="color: #667eea; font-size: 14px; width: 20px;"></i>';
+    summaryHTML += '<span style="font-weight: 600; color: #6b7280; font-size: 13px;">Date & Type:</span>';
+    summaryHTML += '</div>';
+    summaryHTML += '<div style="padding-left: 28px;">';
+    summaryHTML += '<div style="font-size: 14px; color: #374151; margin-bottom: 4px;"><strong>Date:</strong> ' + (date !== 'Not set' ? new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not set') + '</div>';
+    summaryHTML += '<div style="font-size: 14px; color: #374151;"><strong>Type:</strong> ' + bookingTypeText + '</div>';
+    summaryHTML += '</div>';
+    summaryHTML += '</div>';
+    
+    // Floor Plan
+    if (floorPlanId && floorPlanId !== '') {
+        summaryHTML += '<div class="summary-detail-section" style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #f3f4f6;">';
+        summaryHTML += '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">';
+        summaryHTML += '<i class="fas fa-map" style="color: #667eea; font-size: 14px; width: 20px;"></i>';
+        summaryHTML += '<span style="font-weight: 600; color: #6b7280; font-size: 13px;">Floor Plan:</span>';
+        summaryHTML += '</div>';
+        summaryHTML += '<div style="padding-left: 28px; font-size: 14px; color: #374151;">' + floorPlanName + '</div>';
+        summaryHTML += '</div>';
+    }
+    
+    // Selected Booths
+    summaryHTML += '<div class="summary-detail-section" style="margin-bottom: 16px;">';
+    summaryHTML += '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">';
+    summaryHTML += '<i class="fas fa-cube" style="color: #667eea; font-size: 14px; width: 20px;"></i>';
+    summaryHTML += '<span style="font-weight: 600; color: #6b7280; font-size: 13px;">Selected Booths (' + selectedBooths.length + '):</span>';
+    summaryHTML += '</div>';
+    summaryHTML += '<div style="padding-left: 28px;">';
+    if (selectedBooths.length > 0) {
+        summaryHTML += '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; max-height: 200px; overflow-y: auto; padding: 8px; background: #f9fafb; border-radius: 8px;">';
+        selectedBooths.forEach(function(booth) {
+            summaryHTML += '<div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px; text-align: center;">';
+            summaryHTML += '<div style="font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 4px;">' + booth.number + '</div>';
+            summaryHTML += '<div style="font-size: 11px; color: #667eea; font-weight: 600;">$' + booth.price.toFixed(2) + '</div>';
+            summaryHTML += '</div>';
+        });
+        summaryHTML += '</div>';
+    } else {
+        summaryHTML += '<div style="font-size: 13px; color: #9ca3af; font-style: italic;">No booths selected</div>';
+    }
+    summaryHTML += '</div>';
+    summaryHTML += '</div>';
+    
+    // Total Summary
+    summaryHTML += '<div class="summary-total-section" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%); border-radius: 12px; padding: 16px; margin-top: 16px; border: 1px solid rgba(102, 126, 234, 0.15);">';
+    summaryHTML += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">';
+    summaryHTML += '<div style="font-size: 15px; font-weight: 600; color: #374151;">Total Booths:</div>';
+    summaryHTML += '<div style="font-size: 18px; font-weight: 700; color: #667eea;">' + selectedBooths.length + '</div>';
+    summaryHTML += '</div>';
+    summaryHTML += '<div style="display: flex; justify-content: space-between; align-items: center;">';
+    summaryHTML += '<div style="font-size: 16px; font-weight: 700; color: #374151;">Total Amount:</div>';
+    summaryHTML += '<div style="font-size: 22px; font-weight: 700; color: #667eea;">$' + totalAmount.toFixed(2) + '</div>';
+    summaryHTML += '</div>';
+    summaryHTML += '</div>';
+    summaryHTML += '</div>';
+    
+    // Update or create summary detail container
+    let summaryContainer = $('#bookingSummaryDetail');
+    if (summaryContainer.length === 0) {
+        // Create container if it doesn't exist (insert before form)
+        summaryContainer = $('<div id="bookingSummaryDetail"></div>');
+        $('#bookingForm').before(summaryContainer);
+    }
+    
+    summaryContainer.html(summaryHTML).hide();
+    
+    // Scroll to summary after showing
+    setTimeout(function() {
+        summaryContainer[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+}
+
+// Render selected booths based on view mode
+function renderSelectedBooths(selected, view) {
+    const listContainer = document.getElementById('selectedBoothsList');
+    
+    // Update container class for view styling
+    listContainer.className = 'selected-booths-list-mobile view-' + view;
+    
+    if (selected.length > 0) {
+        let html = '';
+        selected.forEach(function(booth) {
+            // Determine status class
+            const statusLower = booth.status.toLowerCase();
+            let statusClass = 'other';
+            if (statusLower.includes('available') || statusLower.includes('free')) {
+                statusClass = 'available';
+            } else if (statusLower.includes('reserved')) {
+                statusClass = 'reserved';
+            } else if (statusLower.includes('booked') || statusLower.includes('occupied')) {
+                statusClass = 'booked';
+            }
+            
+            if (view === 'list') {
+                // List View (Original)
+                html += '<div class="selected-booth-info-mobile">';
+                html += '<div class="selected-booth-header">';
+                html += '<div class="selected-booth-main-info">';
+                html += '<div class="selected-booth-number">';
+                html += '<i class="fas fa-cube"></i>';
+                html += '<span>' + booth.number + '</span>';
+                html += '</div>';
+                html += '</div>';
+                html += '<div class="selected-booth-price-mobile">$' + booth.price.toFixed(2) + '</div>';
+                html += '</div>';
+                html += '<div class="selected-booth-details">';
+                html += '<div class="selected-booth-detail-item">';
+                html += '<i class="fas fa-hashtag"></i>';
+                html += '<span class="detail-label">ID:</span>';
+                html += '<span class="detail-value">' + booth.id + '</span>';
+                html += '</div>';
+                html += '<div class="selected-booth-detail-item">';
+                html += '<i class="fas fa-tag"></i>';
+                html += '<span class="detail-label">Category:</span>';
+                html += '<span class="detail-value">' + (booth.category !== 'n/a' ? booth.category.charAt(0).toUpperCase() + booth.category.slice(1) : 'N/A') + '</span>';
+                html += '</div>';
+                html += '<div class="selected-booth-status ' + statusClass + '">';
+                html += '<i class="fas fa-circle" style="font-size: 6px;"></i>';
+                html += '<span>' + booth.status + '</span>';
+                html += '</div>';
+                html += '</div>';
+                html += '</div>';
+            } else if (view === 'card') {
+                // Card View
+                html += '<div class="selected-booth-card-view">';
+                html += '<div class="selected-booth-card-header">';
+                html += '<div class="selected-booth-card-number">';
+                html += '<i class="fas fa-cube"></i>';
+                html += '<span>' + booth.number + '</span>';
+                html += '</div>';
+                html += '<div class="selected-booth-card-price">$' + booth.price.toFixed(2) + '</div>';
+                html += '</div>';
+                html += '<div class="selected-booth-card-details">';
+                html += '<div class="selected-booth-card-detail">';
+                html += '<i class="fas fa-hashtag"></i>';
+                html += '<span>ID: ' + booth.id + '</span>';
+                html += '</div>';
+                html += '<div class="selected-booth-card-detail">';
+                html += '<i class="fas fa-tag"></i>';
+                html += '<span>Category: ' + (booth.category !== 'n/a' ? booth.category.charAt(0).toUpperCase() + booth.category.slice(1) : 'N/A') + '</span>';
+                html += '</div>';
+                html += '<div class="selected-booth-card-detail">';
+                html += '<i class="fas fa-circle" style="font-size: 6px;"></i>';
+                html += '<span class="selected-booth-status ' + statusClass + '">' + booth.status + '</span>';
+                html += '</div>';
+                html += '</div>';
+                html += '</div>';
+            } else if (view === 'mincard') {
+                // Minimal Card View
+                html += '<div class="selected-booth-mincard-view">';
+                html += '<div class="selected-booth-mincard-header">';
+                html += '<div class="selected-booth-mincard-number">';
+                html += '<i class="fas fa-cube"></i>';
+                html += '<span>' + booth.number + '</span>';
+                html += '</div>';
+                html += '<div class="selected-booth-mincard-price">$' + booth.price.toFixed(2) + '</div>';
+                html += '</div>';
+                html += '<div class="selected-booth-mincard-status">';
+                html += '<i class="fas fa-circle" style="font-size: 5px;"></i>';
+                html += '<span>' + booth.status + '</span>';
+                html += '</div>';
+                html += '</div>';
+            }
+        });
+        listContainer.innerHTML = html;
+    } else {
+        listContainer.innerHTML = '<div class="empty-state-mobile" style="padding: 24px 20px;"><i class="fas fa-hand-pointer" style="font-size: 32px; color: #d1d5db; margin-bottom: 12px; opacity: 0.6;"></i><p style="font-size: 14px; color: #9ca3af; font-weight: 500;">No booths selected</p><p style="font-size: 12px; color: #d1d5db; margin-top: 4px;">Tap on booths below to select them</p></div>';
+    }
+}
+
+// Switch booth view mode
+function switchBoothView(view) {
+    currentBoothView = view;
+    saveToLocalStorage('selected_booths_view', view);
+    
+    // Update active button
+    document.querySelectorAll('.booth-view-btn').forEach(function(btn) {
+        btn.classList.remove('active');
+    });
+    document.querySelector('.booth-view-btn[data-view="' + view + '"]').classList.add('active');
+    
+    // Re-render booths with new view
+    const selected = [];
+    document.querySelectorAll('.booth-checkbox-mobile:checked').forEach(function(checkbox) {
+        const boothCard = checkbox.closest('.booth-card-mobile');
+        const boothId = checkbox.value;
+        const boothNumber = boothCard.querySelector('.booth-number-mobile').textContent;
+        const price = parseFloat(boothCard.dataset.price) || 0;
+        const category = boothCard.dataset.category || 'N/A';
+        const status = boothCard.dataset.status || 'N/A';
+        const statusBadge = boothCard.querySelector('.booth-status-mobile');
+        const statusLabel = statusBadge ? statusBadge.textContent.trim() : status;
+        
+        selected.push({ 
+            id: boothId, 
+            number: boothNumber, 
+            price: price,
+            category: category,
+            status: statusLabel
+        });
+    });
+    
+    renderSelectedBooths(selected, view);
 }
 
 function selectAllBooths() {
@@ -5921,21 +6572,31 @@ function loadBookingFromStorage() {
         
         // Restore booths (after a short delay to ensure DOM is ready)
         if (bookingData.boothIds && bookingData.boothIds.length > 0) {
+            // Store booth IDs globally for restoration
+            window.savedBoothIds = bookingData.boothIds;
+            
+            // Try to restore immediately
+            restoreSelectedBooths();
+            
+            // Also try after delays to catch dynamically loaded content
             setTimeout(function() {
-                bookingData.boothIds.forEach(function(boothId) {
-                    const checkbox = $('.booth-checkbox-mobile[value="' + boothId + '"]');
-                    if (checkbox.length) {
-                        checkbox.prop('checked', true);
-                        checkbox.closest('.booth-card-mobile').addClass('selected');
-                    }
-                });
+                restoreSelectedBooths();
+            }, 300);
+            
+            setTimeout(function() {
+                restoreSelectedBooths();
+            }, 800);
+            
+            setTimeout(function() {
+                restoreSelectedBooths();
                 if (typeof updateSelection === 'function') {
                     updateSelection();
                 }
                 if (typeof updateProgress === 'function') {
                     updateProgress();
                 }
-            }, 500);
+            }, 1200);
+            
             hasData = true;
         }
         
@@ -5954,9 +6615,62 @@ function loadBookingFromStorage() {
     }
 }
 
+// Function to restore selected booths from saved IDs
+function restoreSelectedBooths() {
+    if (!window.savedBoothIds || window.savedBoothIds.length === 0) {
+        // Try to get from localStorage
+        try {
+            const savedData = localStorage.getItem('booking_draft');
+            if (savedData) {
+                const bookingData = JSON.parse(savedData);
+                if (bookingData.boothIds && bookingData.boothIds.length > 0) {
+                    window.savedBoothIds = bookingData.boothIds;
+                } else {
+                    return;
+                }
+            } else {
+                return;
+            }
+        } catch (e) {
+            return;
+        }
+    }
+    
+    if (window.savedBoothIds && window.savedBoothIds.length > 0) {
+        let restored = false;
+        window.savedBoothIds.forEach(function(boothId) {
+            const checkbox = $('.booth-checkbox-mobile[value="' + boothId + '"]');
+            if (checkbox.length) {
+                if (!checkbox.prop('checked')) {
+                    checkbox.prop('checked', true);
+                    const boothCard = checkbox.closest('.booth-card-mobile');
+                    if (boothCard.length) {
+                        boothCard.addClass('selected');
+                        restored = true;
+                    }
+                }
+            }
+        });
+        
+        if (restored) {
+            if (typeof updateSelection === 'function') {
+                updateSelection();
+            }
+            if (typeof updateProgress === 'function') {
+                updateProgress();
+            }
+            // Save again to ensure persistence
+            if (typeof saveBookingToStorage === 'function') {
+                saveBookingToStorage();
+            }
+        }
+    }
+}
+
 function clearBookingData() {
     // Clear localStorage
     localStorage.removeItem('booking_draft');
+    window.savedBoothIds = [];
     
     // Clear form
     $('#clientid').val('');
@@ -6000,8 +6714,26 @@ $(document).ready(function() {
             if (typeof updateSelection === 'function') {
                 updateSelection();
             }
+            // Restore booths after a longer delay to ensure DOM is ready
+            restoreSelectedBooths();
         }, 300);
+        
+        // Also restore booths multiple times to catch dynamically loaded content
+        setTimeout(function() {
+            restoreSelectedBooths();
+        }, 1000);
+        
+        setTimeout(function() {
+            restoreSelectedBooths();
+        }, 2000);
     }
+    
+    // Also restore booths when page is fully loaded
+    $(window).on('load', function() {
+        setTimeout(function() {
+            restoreSelectedBooths();
+        }, 500);
+    });
     
     // Save booking data on form changes
     $('#clientid, #date_book, #type, #floor_plan_id').on('change', function() {
@@ -6010,9 +6742,17 @@ $(document).ready(function() {
     
     // Save when booths are selected/deselected
     $(document).on('change', '.booth-checkbox-mobile', function() {
+        // Save immediately when booth selection changes
         setTimeout(function() {
             saveBookingToStorage();
         }, 100);
+        
+        // Update selection display
+        if (typeof updateSelection === 'function') {
+            setTimeout(function() {
+                updateSelection();
+            }, 150);
+        }
     });
     
     // Clear Booking Button
@@ -6550,43 +7290,75 @@ $(document).ready(function() {
     $('#bookingForm').on('submit', function(e) {
         e.preventDefault();
         
+        // Check conditions and collect missing items
         const clientId = $('#clientid').val();
+        const selectedCount = $('.booth-checkbox-mobile:checked').length;
+        const date = $('#date_book').val();
+        const bookingType = $('#type').val();
+        
+        const missingConditions = [];
         if (!clientId || clientId === '' || clientId === null) {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Client Required',
-                    text: 'Please select a client before submitting the booking.',
-                    confirmButtonColor: '#667eea'
-                });
-            } else {
-                alert('Please select a client before submitting the booking.');
-            }
-            if ($('#clientSearchContainer').is(':hidden')) {
-                $('#selectedClientInfo').hide();
-                $('#clientSearchContainer').show();
-            }
-            setTimeout(function() {
-                $('#clientSearchInline').focus();
-            }, 100);
-            return false;
+            missingConditions.push('Client not selected');
+        }
+        if (selectedCount === 0) {
+            missingConditions.push('No booths selected');
+        }
+        if (!date || date === '') {
+            missingConditions.push('Booking date not set');
+        }
+        if (!bookingType || bookingType === '') {
+            missingConditions.push('Booking type not selected');
         }
         
-        const selectedCount = $('.booth-checkbox-mobile:checked').length;
-        if (selectedCount === 0) {
+        // If there are missing conditions, show confirmation dialog
+        if (missingConditions.length > 0) {
+            const missingList = missingConditions.map(function(item, index) {
+                return '<div style="text-align: left; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.1);"><i class="fas fa-exclamation-triangle" style="color: #f59e0b; margin-right: 8px;"></i>' + item + '</div>';
+            }).join('');
+            
             if (typeof Swal !== 'undefined') {
                 Swal.fire({
                     icon: 'warning',
-                    title: 'No Booths Selected',
-                    text: 'Please select at least one booth for this booking.',
-                    confirmButtonColor: '#667eea'
+                    title: 'Missing Information',
+                    html: '<div style="text-align: left; margin: 16px 0;"><strong>Please review the following:</strong></div>' + 
+                          '<div style="max-height: 200px; overflow-y: auto; margin: 16px 0;">' + missingList + '</div>' +
+                          '<div style="margin-top: 16px; padding: 12px; background: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b; text-align: left; font-size: 13px; color: #92400e;">' +
+                          '<i class="fas fa-info-circle" style="margin-right: 6px;"></i>' +
+                          'You can still create the booking, but some information may be missing.</div>',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fas fa-check"></i> Force Create',
+                    cancelButtonText: '<i class="fas fa-times"></i> Cancel',
+                    confirmButtonColor: '#667eea',
+                    cancelButtonColor: '#6b7280',
+                    reverseButtons: true,
+                    focusConfirm: false,
+                    allowOutsideClick: false
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        // User chose to force create - proceed with submission
+                        proceedWithSubmission();
+                    } else {
+                        // User cancelled - restore button state
+                        const submitBtn = $('#submitBtn');
+                        submitBtn.prop('disabled', false);
+                    }
                 });
             } else {
-                alert('Please select at least one booth for this booking.');
+                // Fallback if SweetAlert is not available
+                const proceed = confirm('Missing information detected:\n\n' + missingConditions.join('\n') + '\n\nDo you want to proceed anyway?');
+                if (proceed) {
+                    proceedWithSubmission();
+                }
             }
             return false;
         }
         
+        // All conditions met - proceed normally
+        proceedWithSubmission();
+    });
+    
+    // Function to proceed with form submission
+    function proceedWithSubmission() {
         // Show loading state
         const submitBtn = $('#submitBtn');
         const originalText = submitBtn.html();
@@ -6604,6 +7376,10 @@ $(document).ready(function() {
             updateProgress();
         }
         
+        // Update and show summary details before submission
+        updateBookingSummaryDetail();
+        $('#bookingSummaryDetail').slideDown(300);
+        
         // Submit via AJAX for better UX
         $.ajax({
             url: $('#bookingForm').attr('action'),
@@ -6618,6 +7394,52 @@ $(document).ready(function() {
                 if (response.success) {
                     // Clear saved booking data on successful submission
                     localStorage.removeItem('booking_draft');
+                    window.savedBoothIds = [];
+                    
+                    // Update summary with success state and booking details
+                    const summaryContainer = $('#bookingSummaryDetail');
+                    if (summaryContainer.length) {
+                        // Get final booking details
+                        const clientName = $('#selectedClientName').text() || $('#selectedClientInfo .selected-client-name-mobile span').text() || 'N/A';
+                        const selectedCount = $('.booth-checkbox-mobile:checked').length;
+                        const totalAmount = $('#totalAmount').text() || '0.00';
+                        const date = $('#date_book').val() || 'Not set';
+                        const bookingType = $('#type').val();
+                        const bookingTypeText = bookingType === '1' ? 'Regular' : (bookingType === '2' ? 'Special' : (bookingType === '3' ? 'Temporary' : 'Not selected'));
+                        
+                        let successHTML = '<div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3); border: 1px solid rgba(16, 185, 129, 0.2); color: white;">';
+                        successHTML += '<div style="text-align: center; margin-bottom: 20px;">';
+                        successHTML += '<i class="fas fa-check-circle" style="font-size: 56px; margin-bottom: 16px; display: block; opacity: 0.95;"></i>';
+                        successHTML += '<h4 style="margin: 0 0 8px 0; font-size: 22px; font-weight: 700;">Booking Created Successfully!</h4>';
+                        successHTML += '<p style="margin: 0; font-size: 15px; opacity: 0.95;">' + (response.message || 'Your booking has been created successfully.') + '</p>';
+                        successHTML += '</div>';
+                        
+                        // Booking Details Summary
+                        successHTML += '<div style="background: rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 16px; margin-top: 20px; backdrop-filter: blur(10px);">';
+                        successHTML += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">';
+                        successHTML += '<div><div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Client</div><div style="font-size: 14px; font-weight: 600;">' + clientName + '</div></div>';
+                        successHTML += '<div><div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Date</div><div style="font-size: 14px; font-weight: 600;">' + (date !== 'Not set' ? new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Not set') + '</div></div>';
+                        successHTML += '</div>';
+                        successHTML += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">';
+                        successHTML += '<div><div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Type</div><div style="font-size: 14px; font-weight: 600;">' + bookingTypeText + '</div></div>';
+                        successHTML += '<div><div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">Booths</div><div style="font-size: 14px; font-weight: 600;">' + selectedCount + ' selected</div></div>';
+                        successHTML += '</div>';
+                        successHTML += '<div style="border-top: 1px solid rgba(255, 255, 255, 0.2); padding-top: 12px; margin-top: 12px;">';
+                        successHTML += '<div style="display: flex; justify-content: space-between; align-items: center;">';
+                        successHTML += '<div style="font-size: 16px; font-weight: 700;">Total Amount:</div>';
+                        successHTML += '<div style="font-size: 24px; font-weight: 700;">$' + totalAmount + '</div>';
+                        successHTML += '</div>';
+                        successHTML += '</div>';
+                        successHTML += '</div>';
+                        successHTML += '</div>';
+                        
+                        summaryContainer.html(successHTML).slideDown(300);
+                        
+                        // Scroll to summary
+                        setTimeout(function() {
+                            summaryContainer[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }, 350);
+                    }
                     
                     if (typeof Swal !== 'undefined') {
                         Swal.fire({
@@ -6625,14 +7447,16 @@ $(document).ready(function() {
                             title: 'Booking Created!',
                             text: response.message || 'Booking has been created successfully.',
                             confirmButtonColor: '#667eea',
-                            timer: 2000,
+                            timer: 3000,
                             showConfirmButton: true
                         }).then(function() {
                             window.location.href = '{{ route("books.index") }}';
                         });
                     } else {
-                        alert('Booking created successfully!');
-                        window.location.href = '{{ route("books.index") }}';
+                        setTimeout(function() {
+                            alert('Booking created successfully!');
+                            window.location.href = '{{ route("books.index") }}';
+                        }, 2000);
                     }
                 } else {
                     // Handle error response
@@ -6720,11 +7544,16 @@ $(document).ready(function() {
                 
                 submitBtn.prop('disabled', false);
                 submitBtn.html(originalText);
+            },
+            complete: function() {
+                // Re-enable button if request completes (success or error)
+                // Note: Success handler already redirects, so this mainly handles errors
+                if (loadingOverlay.hasClass('active')) {
+                    loadingOverlay.removeClass('active');
+                }
             }
         });
-        
-        return false;
-    });
+    }
     
     // Progress Indicator Updates - Enhanced with step info
     function updateProgress() {

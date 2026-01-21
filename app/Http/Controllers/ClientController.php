@@ -409,26 +409,33 @@ class ClientController extends Controller
             $query = $request->input('q', '');
             $clientId = $request->input('id', null);
             
-            // If specific ID is requested, return that client
+            // If specific ID is requested, return that client (only if valid)
             if ($clientId) {
                 $client = Client::find($clientId);
                 if ($client) {
-                    return response()->json([[
-                        'id' => $client->id,
-                        'name' => $client->name ?? '',
-                        'company' => $client->company ?? '',
-                        'email' => property_exists($client, 'email') ? ($client->email ?? null) : null,
-                        'phone_number' => $client->phone_number ?? '',
-                        'address' => property_exists($client, 'address') ? ($client->address ?? null) : null,
-                        'position' => $client->position ?? '',
-                        'sex' => $client->sex ?? null,
-                        'tax_id' => property_exists($client, 'tax_id') ? ($client->tax_id ?? null) : null,
-                        'website' => property_exists($client, 'website') ? ($client->website ?? null) : null,
-                        'notes' => property_exists($client, 'notes') ? ($client->notes ?? null) : null,
-                        'display_text' => ($client->company ?? $client->name ?? 'N/A') . 
-                            (property_exists($client, 'email') && $client->email ? ' (' . $client->email . ')' : '') . 
-                            ($client->phone_number ? ' | ' . $client->phone_number : '')
-                    ]]);
+                    // Validate client has at least name or company
+                    $name = trim($client->name ?? '');
+                    $company = trim($client->company ?? '');
+                    
+                    // Only return if client is valid (has name or company)
+                    if (!empty($name) || !empty($company)) {
+                        return response()->json([[
+                            'id' => $client->id,
+                            'name' => $client->name ?? '',
+                            'company' => $client->company ?? '',
+                            'email' => property_exists($client, 'email') ? ($client->email ?? null) : null,
+                            'phone_number' => $client->phone_number ?? '',
+                            'address' => property_exists($client, 'address') ? ($client->address ?? null) : null,
+                            'position' => $client->position ?? '',
+                            'sex' => $client->sex ?? null,
+                            'tax_id' => property_exists($client, 'tax_id') ? ($client->tax_id ?? null) : null,
+                            'website' => property_exists($client, 'website') ? ($client->website ?? null) : null,
+                            'notes' => property_exists($client, 'notes') ? ($client->notes ?? null) : null,
+                            'display_text' => ($client->company ?? $client->name ?? 'N/A') . 
+                                (property_exists($client, 'email') && $client->email ? ' (' . $client->email . ')' : '') . 
+                                ($client->phone_number ? ' | ' . $client->phone_number : '')
+                        ]]);
+                    }
                 }
                 return response()->json([]);
             }
@@ -440,16 +447,38 @@ class ClientController extends Controller
             }, $columns);
             
             // Build query - if query is empty, load all clients (at least 150)
+            // Filter to only include valid clients (must have at least name or company)
             if (empty($query)) {
-                // Load all clients, ordered by company then name
-                $clients = Client::orderByRaw('CASE WHEN company IS NULL OR company = "" THEN 1 ELSE 0 END')
+                // Load all clients with valid info, ordered by company then name
+                $clients = Client::where(function($q) {
+                        $q->where(function($subQ) {
+                            // Client must have at least a name or company (not both empty)
+                            $subQ->whereNotNull('name')
+                                ->where('name', '!=', '');
+                        })->orWhere(function($subQ) {
+                            $subQ->whereNotNull('company')
+                                ->where('company', '!=', '');
+                        });
+                    })
+                    ->orderByRaw('CASE WHEN company IS NULL OR company = "" THEN 1 ELSE 0 END')
                     ->orderBy('company')
                     ->orderBy('name')
                     ->limit(150)
                     ->get();
             } else {
                 // Build search query with only existing columns
-                $clients = Client::where(function($q) use ($query, $columnNames) {
+                // Filter to only include valid clients (must have at least name or company)
+                $clients = Client::where(function($q) {
+                        // Valid client filter - must have at least name or company
+                        $q->where(function($subQ) {
+                            $subQ->whereNotNull('name')
+                                ->where('name', '!=', '');
+                        })->orWhere(function($subQ) {
+                            $subQ->whereNotNull('company')
+                                ->where('company', '!=', '');
+                        });
+                    })
+                    ->where(function($q) use ($query, $columnNames) {
                         $q->where('name', 'like', "%{$query}%")
                           ->orWhere('company', 'like', "%{$query}%")
                           ->orWhere('phone_number', 'like', "%{$query}%");
@@ -468,7 +497,13 @@ class ClientController extends Controller
                     ->get();
             }
             
-            $results = $clients->map(function ($client) use ($columnNames) {
+            // Filter and map results - ensure only valid clients are returned
+            $results = $clients->filter(function ($client) {
+                // Additional validation: ensure client has at least name or company
+                $name = trim($client->name ?? '');
+                $company = trim($client->company ?? '');
+                return !empty($name) || !empty($company);
+            })->map(function ($client) use ($columnNames) {
                 return [
                     'id' => $client->id,
                     'name' => $client->name ?? '',
