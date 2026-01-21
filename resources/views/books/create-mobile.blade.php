@@ -20,7 +20,8 @@ nav.navbar,
 .mobile-booking-container,
 .mobile-form-section,
 .mobile-action-buttons,
-.selected-booths-summary-mobile {
+.selected-booths-summary-mobile,
+.modern-mobile-nav {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
@@ -90,7 +91,8 @@ button, a, input, select, textarea {
 .modern-mobile-header *,
 .mobile-booking-container *,
 .mobile-form-section *,
-.mobile-action-buttons * {
+.mobile-action-buttons *,
+.modern-mobile-nav * {
     visibility: visible !important;
 }
 
@@ -217,7 +219,8 @@ main.container-fluid,
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
-    position: relative !important;
+    position: sticky !important;
+    top: 0 !important;
     z-index: 1000 !important;
 }
 
@@ -241,43 +244,49 @@ main.container-fluid,
     /* Allow modal buttons and specific mobile buttons */
 }
 
-/* Progress Step Styles - Enhanced */
+/* Progress Step Styles - Minimal */
 .progress-step {
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
 }
 
 .progress-step.active {
-    background: #667eea !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     color: white !important;
-    transform: scale(1.15);
-    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
-    animation: pulseActive 2s ease-in-out infinite;
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 .progress-step.completed {
-    background: #22c55e !important;
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
     color: white !important;
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    transform: scale(1.02);
+    box-shadow: 0 2px 6px rgba(34, 197, 94, 0.3);
 }
 
 .progress-step.completed::after {
     content: '';
     position: absolute;
-    inset: -2px;
+    inset: -3px;
     border-radius: 50%;
     border: 2px solid #22c55e;
     opacity: 0;
     animation: ripple 1.5s ease-out;
 }
 
+.progress-step.pending {
+    background: #e5e7eb !important;
+    color: #9ca3af !important;
+}
+
 @keyframes pulseActive {
     0%, 100% {
-        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        transform: scale(1.05);
     }
     50% {
-        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.6);
+        box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+        transform: scale(1.06);
     }
 }
 
@@ -287,12 +296,12 @@ main.container-fluid,
         opacity: 1;
     }
     100% {
-        transform: scale(1.3);
+        transform: scale(1.4);
         opacity: 0;
     }
 }
 
-/* Animated Progress Line */
+/* Animated Progress Line - Minimal */
 .progress-line {
     position: relative;
     height: 2px;
@@ -301,8 +310,11 @@ main.container-fluid,
     overflow: hidden;
 }
 
-.progress-line::after {
-    content: '';
+.progress-line.completed .progress-line-fill {
+    width: 100% !important;
+}
+
+.progress-line-fill {
     position: absolute;
     top: 0;
     left: 0;
@@ -322,6 +334,161 @@ main.container-fluid,
     background: #22c55e;
 }
 
+/* Step Info Styling */
+.step-info {
+    transition: all 0.3s ease;
+}
+
+.step-title {
+    transition: color 0.3s ease;
+}
+
+.step-status {
+    transition: color 0.3s ease;
+}
+
+/* Progress Step Container */
+.progress-step-container {
+    position: relative;
+}
+
+/* Booking Progress Container */
+.booking-progress-container {
+    position: relative;
+}
+
+.current-step-highlight {
+    animation: fadeInUp 0.3s ease;
+}
+
+/* Minimal Progress Container */
+.booking-progress-container {
+    transition: all 0.3s ease;
+}
+
+.progress-steps-wrapper {
+    min-height: 50px;
+}
+
+/* Booth Help Button */
+.booth-help-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    border-radius: 8px;
+    color: #667eea;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 1px 3px rgba(102, 126, 234, 0.1);
+    line-height: 1.4;
+}
+
+.booth-help-btn:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+    border-color: rgba(102, 126, 234, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.15);
+}
+
+.booth-help-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(102, 126, 234, 0.1);
+}
+
+.booth-help-btn i {
+    font-size: 14px;
+    line-height: 1;
+}
+
+.booth-help-btn .help-btn-text {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.booth-help-btn.active {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+    border-color: rgba(102, 126, 234, 0.4);
+    color: #5568d3;
+}
+
+/* Booth Grid Info - Hidden by default, shown on click */
+.booth-grid-info {
+    display: none;
+    flex-direction: column;
+    animation: slideDown 0.3s ease;
+}
+
+.booth-grid-info.show {
+    display: flex;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive help button */
+@media (max-width: 480px) {
+    .booth-help-btn {
+        padding: 6px 12px;
+        font-size: 11px;
+    }
+    
+    .booth-help-btn .help-btn-text {
+        font-size: 11px;
+    }
+    
+    .booth-help-btn i {
+        font-size: 13px;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive adjustments for progress steps */
+@media (max-width: 480px) {
+    .progress-step {
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 16px !important;
+    }
+    
+    .step-info {
+        max-width: 80px !important;
+    }
+    
+    .step-title {
+        font-size: 12px !important;
+    }
+    
+    .step-status {
+        font-size: 10px !important;
+    }
+}
+
 /* Media query to ensure this only applies on mobile */
 @media (min-width: 769px) {
     /* On desktop, show normal elements (but this view shouldn't load on desktop) */
@@ -331,10 +498,13 @@ main.container-fluid,
     }
 }
 
-/* Modern Mobile Header - iOS/Android Style */
+/* Modern Mobile Header - iOS/Android Style - Always Sticky at Top - FORCED */
 .modern-mobile-header {
     position: sticky !important;
+    position: -webkit-sticky !important;
     top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
     z-index: 1000 !important;
     background: #ffffff !important;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
@@ -346,6 +516,46 @@ main.container-fluid,
     visibility: visible !important;
     opacity: 1 !important;
     width: 100% !important;
+    min-height: 68px !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+}
+
+/* Force sticky on all browsers */
+.modern-mobile-header,
+#mobileHeader {
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 1000 !important;
+}
+
+/* Fallback for older browsers - use fixed */
+@supports not (position: sticky) {
+    .modern-mobile-header,
+    #mobileHeader {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+    }
+    
+    body {
+        padding-top: 68px !important;
+    }
+}
+
+/* Additional force rules for sticky header */
+.modern-mobile-header,
+#mobileHeader {
+    will-change: transform !important;
+    transform: translateZ(0) !important;
+    -webkit-transform: translateZ(0) !important;
 }
 
 .modern-mobile-header-content {
@@ -425,6 +635,7 @@ main.container-fluid,
 @supports (padding: max(0px)) {
     .mobile-booking-container {
         padding-bottom: max(100px, env(safe-area-inset-bottom) + 90px);
+        padding-top: 16px; /* Normal top padding since buttons are at top */
     }
     
     .mobile-action-buttons {
@@ -526,6 +737,37 @@ main.container-fluid,
     justify-content: center;
     line-height: 1;
     flex-shrink: 0;
+}
+
+/* Selected Floor Plan Name Display */
+.floor-plan-selected-name {
+    margin-top: 6px;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #667eea;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    animation: fadeInUp 0.3s ease;
+}
+
+.floor-plan-selected-name i {
+    color: #667eea;
+    font-size: 12px;
+    width: auto;
+    min-width: auto;
+    flex-shrink: 0;
+}
+
+.floor-plan-selected-name span {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* Form Controls - Modern iOS Style with Expand/Collapse */
@@ -1124,6 +1366,590 @@ main.container-fluid,
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
+/* Floor Plan Image Display */
+/* Floor Plan Image Display - Minimal */
+.floor-plan-image-display {
+    margin-bottom: 12px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    animation: fadeInUp 0.3s ease;
+}
+
+/* Floor Plan Image Wrapper - Minimal */
+.floor-plan-image-wrapper {
+    position: relative;
+    width: 100%;
+    min-height: 120px;
+    max-height: 250px;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.floor-plan-image-wrapper.no-image {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+}
+
+.floor-plan-image {
+    width: 100%;
+    height: auto;
+    max-height: 250px;
+    object-fit: contain;
+    display: block;
+    background: transparent;
+}
+
+.floor-plan-image[src=""],
+.floor-plan-image:not([src]) {
+    display: none;
+}
+
+/* Floor Plan Image Overlay - Minimal */
+.floor-plan-image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0%, transparent 40%, transparent 60%, rgba(0, 0, 0, 0.3) 100%);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 12px;
+    pointer-events: none;
+}
+
+.floor-plan-image-wrapper.no-image .floor-plan-image-overlay {
+    background: transparent;
+    position: relative;
+    padding: 16px;
+    pointer-events: auto;
+}
+
+.floor-plan-image-info {
+    pointer-events: auto;
+    color: white;
+    flex: 1;
+}
+
+/* Floor Plan Image Info - Minimal */
+.floor-plan-image-info h4 {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0 0 3px 0;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.floor-plan-image-wrapper.no-image .floor-plan-image-info h4 {
+    color: #374151;
+    text-shadow: none;
+    font-size: 16px;
+}
+
+.floor-plan-image-wrapper.no-image .floor-plan-image-info p {
+    color: #6b7280;
+    text-shadow: none;
+}
+
+.floor-plan-image-info p {
+    font-size: 13px;
+    margin: 0;
+    opacity: 0.95;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.floor-plan-image-close {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    pointer-events: auto;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.floor-plan-image-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.floor-plan-image-close:active {
+    transform: scale(0.95);
+}
+
+/* Floor Plan View Switcher (reuse booking type styles) */
+.floor-plan-view-switcher {
+    display: flex;
+    gap: 6px;
+    background: #f3f4f6;
+    padding: 4px;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+/* Floor Plan Views (similar to booking type) */
+.floor-plan-view {
+    display: none;
+}
+
+.floor-plan-view.active {
+    display: block;
+    animation: fadeInUp 0.3s ease;
+}
+
+/* Floor Plan Icon View */
+/* Floor Plan Minimal Container */
+.floor-plan-minimal-container {
+    margin-bottom: 16px;
+}
+
+/* Floor Plan Options Icon - Ultra Minimal */
+.floor-plan-options-icon {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    gap: 6px;
+}
+
+/* Floor Plan Option Icon - Ultra Minimal */
+.floor-plan-option-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 6px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    overflow: hidden;
+    min-height: 60px;
+}
+
+/* Remove ::before overlay for minimal design */
+.floor-plan-option-icon::before {
+    display: none;
+}
+
+/* Floor Plan Option Hover & Selected - Minimal */
+.floor-plan-option-icon:hover {
+    border-color: rgba(102, 126, 234, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.1);
+}
+
+.floor-plan-option-icon:hover::before {
+    opacity: 0.5;
+}
+
+.floor-plan-option-icon.selected {
+    border-color: #667eea;
+    border-width: 2px;
+    background: rgba(102, 126, 234, 0.05);
+    box-shadow: 0 1px 3px rgba(102, 126, 234, 0.15);
+}
+
+/* Floor Plan Icon Wrapper - Ultra Minimal */
+.floor-plan-icon-wrapper {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #667eea;
+    font-size: 14px;
+    margin-bottom: 4px;
+    transition: all 0.2s ease;
+}
+
+.floor-plan-option-icon.selected .floor-plan-icon-wrapper {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.25);
+}
+
+/* Floor Plan Label - Ultra Minimal */
+.floor-plan-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #6b7280;
+    text-align: center;
+    margin-top: 2px;
+    line-height: 1.2;
+    word-break: break-word;
+    max-width: 100%;
+}
+
+.floor-plan-option-icon.selected .floor-plan-label {
+    color: #667eea;
+    font-weight: 700;
+}
+
+/* Floor Plan Badge - Ultra Minimal */
+.floor-plan-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    padding: 2px 4px;
+    background: #f59e0b;
+    color: white;
+    border-radius: 4px;
+    font-size: 7px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1.2;
+}
+
+/* Floor Plan List View */
+.floor-plan-options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.floor-plan-option-list {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    background: #ffffff;
+    border: 2px solid #e5e7eb;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-tap-highlight-color: transparent;
+    gap: 14px;
+}
+
+.floor-plan-option-list:hover {
+    border-color: #667eea;
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+}
+
+.floor-plan-option-list.selected {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
+}
+
+.floor-plan-list-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.25);
+}
+
+.floor-plan-list-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.floor-plan-list-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 4px;
+}
+
+.floor-plan-list-desc {
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+.floor-plan-badge-inline {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #f59e0b;
+    color: white;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-left: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.floor-plan-list-check {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    font-size: 14px;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.floor-plan-option-list.selected .floor-plan-list-check {
+    background: #667eea;
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Floor Plan Card View */
+.floor-plan-options-card {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.floor-plan-option-card {
+    padding: 20px;
+    background: #ffffff;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.floor-plan-option-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.03) 0%, rgba(118, 75, 162, 0.03) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.floor-plan-option-card:hover {
+    border-color: #667eea;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+}
+
+.floor-plan-option-card:hover::before {
+    opacity: 1;
+}
+
+.floor-plan-option-card.selected {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+    box-shadow: 0 8px 28px rgba(102, 126, 234, 0.2);
+}
+
+.floor-plan-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.floor-plan-card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.floor-plan-card-badge {
+    padding: 6px 12px;
+    background: #f59e0b;
+    color: white;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.floor-plan-card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+}
+
+.floor-plan-card-desc {
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+.floor-plan-card-check {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    font-size: 14px;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.3s ease;
+}
+
+.floor-plan-option-card.selected .floor-plan-card-check {
+    opacity: 1;
+    transform: scale(1);
+    background: #667eea;
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* Modern Mobile Bottom Navigation - Always Sticky at Bottom */
+.modern-mobile-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+    padding: 10px 8px !important;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+    z-index: 10000 !important; /* Above action buttons */
+    display: flex !important;
+    justify-content: space-around !important;
+    align-items: center !important;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1) !important;
+    will-change: transform !important;
+    transform: translateZ(0) !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    min-height: 70px;
+}
+
+.modern-mobile-nav-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    padding: 8px 12px !important;
+    border-radius: 12px !important;
+    color: #6b7280 !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+    min-width: 60px !important;
+    max-width: 80px !important;
+    flex: 1 !important;
+    -webkit-tap-highlight-color: transparent !important;
+    position: relative !important;
+}
+
+.modern-mobile-nav-item i {
+    font-size: 22px !important;
+    line-height: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.modern-mobile-nav-item span {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+}
+
+.modern-mobile-nav-item.active {
+    color: #667eea !important;
+    background: rgba(102, 126, 234, 0.1) !important;
+}
+
+.modern-mobile-nav-item:active {
+    transform: scale(0.95) !important;
+    background: rgba(102, 126, 234, 0.15) !important;
+}
+
+/* Adjust action buttons to be above navigation */
+.mobile-action-buttons {
+    bottom: 70px !important; /* Position above navigation */
+    z-index: 9999 !important; /* Below navigation */
+}
+
+/* Add padding to content to prevent overlap with navigation */
+.mobile-booking-container {
+    padding-bottom: calc(180px + env(safe-area-inset-bottom)) !important; /* Action buttons + Navigation + spacing */
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .modern-mobile-nav {
+        padding: 8px 4px !important;
+        padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important;
+        min-height: 66px;
+    }
+    
+    .modern-mobile-nav-item {
+        padding: 6px 8px !important;
+        min-width: 50px !important;
+        max-width: 70px !important;
+    }
+    
+    .modern-mobile-nav-item i {
+        font-size: 20px !important;
+    }
+    
+    .modern-mobile-nav-item span {
+        font-size: 10px !important;
+    }
+    
+    .mobile-action-buttons {
+        bottom: 66px !important;
+    }
+    
+    .mobile-booking-container {
+        padding-bottom: calc(170px + env(safe-area-inset-bottom)) !important;
+    }
+}
+
 /* Client Search - Modern App Style */
 /* Modern Client Search Wrapper - Redesigned */
 .client-search-wrapper-mobile {
@@ -1451,18 +2277,232 @@ main.container-fluid,
     background: #fef2f2;
 }
 
-/* Booth Selection - Compact & Minimal Design */
-.booth-grid-mobile {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+/* Booth Selection - Compact & Minimal Design with Horizontal Scroll */
+.booth-grid-wrapper {
+    position: relative;
     margin-bottom: 20px;
+}
+
+.booth-grid-mobile {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    padding: 8px 4px 8px 4px;
+    margin-bottom: 12px;
+    gap: 0;
+    /* Hide scrollbar but keep functionality */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    /* Enable momentum scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
+    /* Snap scrolling for better UX - snap by row groups */
+    scroll-snap-type: x mandatory;
+    position: relative;
+    width: 100%;
+}
+
+.booth-grid-mobile::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+/* Group booths into 5-row slides */
+.booth-row-group {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(5, auto);
+    gap: 8px;
+    min-width: 100%;
+    width: 100%;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    padding: 0 2px;
+    box-sizing: border-box;
+    /* Ensure all slides are visible and accessible */
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.booth-card-mobile {
+    scroll-snap-align: none;
+    min-width: 0;
+    width: 100%;
+}
+
+/* Scroll indicators */
+.booth-grid-wrapper::before,
+.booth-grid-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 30px;
+    pointer-events: none;
+    z-index: 1;
+    transition: opacity 0.3s ease;
+}
+
+.booth-grid-wrapper::before {
+    left: 0;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.95), transparent);
+    opacity: 0;
+}
+
+.booth-grid-wrapper::after {
+    right: 0;
+    background: linear-gradient(to left, rgba(255, 255, 255, 0.95), transparent);
+    opacity: 1;
+}
+
+.booth-grid-wrapper.scrolled-left::before {
+    opacity: 1;
+}
+
+.booth-grid-wrapper.scrolled-right::after {
+    opacity: 0;
+}
+
+.booth-grid-wrapper.scrolled-both::before,
+.booth-grid-wrapper.scrolled-both::after {
+    opacity: 1;
+}
+
+/* Scroll buttons */
+.booth-scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(102, 126, 234, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    transition: all 0.2s ease;
+    opacity: 0.8;
+    pointer-events: auto;
+    font-size: 14px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Show scroll buttons on mobile by default, hide on desktop hover */
+@media (max-width: 768px) {
+    .booth-scroll-btn {
+        opacity: 0.9;
+    }
+}
+
+@media (min-width: 769px) {
+    .booth-scroll-btn {
+        opacity: 0;
+    }
+    
+    .booth-grid-wrapper:hover .booth-scroll-btn {
+        opacity: 0.9;
+    }
+}
+
+.booth-scroll-btn:hover {
+    background: rgba(102, 126, 234, 1);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.booth-scroll-btn:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.booth-scroll-btn-left {
+    left: 8px;
+}
+
+.booth-scroll-btn-right {
+    right: 8px;
+}
+
+.booth-scroll-btn.hidden {
+    display: none;
+}
+
+/* Lazy Loading Styles */
+.booth-lazy-hidden {
+    display: none !important;
+}
+
+.booth-load-more-container {
+    margin-top: 16px;
+    margin-bottom: 16px;
+}
+
+.booth-load-more-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.booth-load-more-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.booth-load-more-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.booth-load-more-btn i {
+    transition: transform 0.3s ease;
+}
+
+.booth-load-more-btn.loading i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.booth-load-more-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
 }
 
 @media (max-width: 360px) {
     .booth-grid-mobile {
-        grid-template-columns: repeat(2, 1fr);
+        grid-auto-columns: minmax(90px, 1fr);
     }
+    
+    .booth-card-mobile {
+        min-width: 90px;
+    }
+}
+
+/* Ensure booth cards maintain minimum width for horizontal scroll */
+.booth-card-mobile {
+    min-width: 100px;
+    flex-shrink: 0;
 }
 
 .booth-card-mobile {
@@ -1758,7 +2798,7 @@ main.container-fluid,
     }
 }
 
-/* Selected Booths Summary - Modern Card - Enhanced */
+/* Selected Booths Summary - Modern Card - Enhanced - Sticky Below Progress */
 .selected-booths-summary-mobile {
     background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
     border-radius: 16px;
@@ -1768,8 +2808,36 @@ main.container-fluid,
         0 4px 12px rgba(0, 0, 0, 0.06),
         0 2px 4px rgba(0, 0, 0, 0.08);
     border: 1px solid rgba(102, 126, 234, 0.1);
-    position: relative;
+    position: sticky;
+    position: -webkit-sticky;
+    top: calc(68px + 70px + 20px); /* Header + Action buttons + spacing */
+    z-index: 997; /* Below action buttons (999) but above content */
     overflow: hidden;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Ensure sticky works on all browsers */
+@supports (position: sticky) {
+    .selected-booths-summary-mobile {
+        position: sticky;
+        top: calc(68px + 70px + 20px);
+    }
+}
+
+/* Fallback for older browsers */
+@supports not (position: sticky) {
+    .selected-booths-summary-mobile {
+        position: relative;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .selected-booths-summary-mobile {
+        top: calc(64px + 66px + 16px); /* Smaller header and buttons on mobile */
+        padding: 16px;
+    }
 }
 
 .selected-booths-summary-mobile::before {
@@ -1795,9 +2863,29 @@ main.container-fluid,
 }
 
 .selected-booths-list-mobile {
-    max-height: 200px;
+    max-height: 400px;
     overflow-y: auto;
     margin-bottom: 16px;
+    padding-right: 4px;
+}
+
+/* Custom scrollbar for selected booths list */
+.selected-booths-list-mobile::-webkit-scrollbar {
+    width: 6px;
+}
+
+.selected-booths-list-mobile::-webkit-scrollbar-track {
+    background: rgba(102, 126, 234, 0.05);
+    border-radius: 10px;
+}
+
+.selected-booths-list-mobile::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.3);
+    border-radius: 10px;
+}
+
+.selected-booths-list-mobile::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 126, 234, 0.5);
 }
 
 .selected-booth-item-mobile {
@@ -1838,37 +2926,157 @@ main.container-fluid,
     margin-bottom: 0;
 }
 
+/* Selected Booth Info Box Design */
 .selected-booth-info-mobile {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1.5px solid rgba(102, 126, 234, 0.15);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.04),
+        0 1px 3px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.selected-booth-info-mobile::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    opacity: 0.8;
+}
+
+.selected-booth-info-mobile:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 4px 12px rgba(102, 126, 234, 0.12),
+        0 2px 6px rgba(0, 0, 0, 0.08);
+    border-color: rgba(102, 126, 234, 0.25);
+}
+
+/* Booth Header Section */
+.selected-booth-header {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-    color: #1a1a1a;
-    font-size: 15px;
-    line-height: 1.4;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    gap: 12px;
+}
+
+.selected-booth-main-info {
     flex: 1;
     min-width: 0;
 }
 
-.selected-booth-info-mobile i {
+.selected-booth-number {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-weight: 700;
+    font-size: 16px;
+    color: #1a1a1a;
+    line-height: 1.3;
+}
+
+.selected-booth-number i {
     color: #667eea;
     font-size: 16px;
+    flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    line-height: 1;
-    flex-shrink: 0;
-    vertical-align: middle;
 }
 
 .selected-booth-price-mobile {
     font-weight: 700;
     color: #22c55e;
-    font-size: 16px;
-    letter-spacing: -0.2px;
-    line-height: 1.4;
+    font-size: 18px;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
     flex-shrink: 0;
     white-space: nowrap;
+    text-align: right;
+}
+
+/* Booth Details Section */
+.selected-booth-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(102, 126, 234, 0.08);
+}
+
+.selected-booth-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #6b7280;
+    background: rgba(102, 126, 234, 0.05);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+.selected-booth-detail-item i {
+    font-size: 10px;
+    color: #667eea;
+    flex-shrink: 0;
+}
+
+.selected-booth-detail-item .detail-label {
+    font-weight: 600;
+    color: #4b5563;
+    margin-right: 2px;
+}
+
+.selected-booth-detail-item .detail-value {
+    color: #1f2937;
+    font-weight: 600;
+}
+
+/* Status Badge */
+.selected-booth-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1.2;
+}
+
+.selected-booth-status.available {
+    background: linear-gradient(135deg, rgba(28, 200, 138, 0.15) 0%, rgba(23, 166, 115, 0.15) 100%);
+    color: #17a673;
+}
+
+.selected-booth-status.reserved {
+    background: linear-gradient(135deg, rgba(246, 194, 62, 0.15) 0%, rgba(221, 162, 10, 0.15) 100%);
+    color: #dda20a;
+}
+
+.selected-booth-status.booked {
+    background: linear-gradient(135deg, rgba(231, 74, 59, 0.15) 0%, rgba(194, 51, 33, 0.15) 100%);
+    color: #c23321;
+}
+
+.selected-booth-status.other {
+    background: linear-gradient(135deg, rgba(54, 185, 204, 0.15) 0%, rgba(44, 159, 175, 0.15) 100%);
+    color: #2c9faf;
 }
 
 .summary-total-mobile {
@@ -1918,39 +3126,62 @@ main.container-fluid,
     }
 }
 
-/* Action Buttons - Modern iOS Style Bottom Bar - Flexible & Sticky */
+/* Action Buttons - Sticky Below Header - Flexible & Responsive */
 .mobile-action-buttons {
     position: sticky;
     position: -webkit-sticky;
-    bottom: 0;
+    top: 68px; /* Height of modern-mobile-header */
     left: 0;
     right: 0;
     width: 100%;
-    z-index: 999;
+    z-index: 998; /* Below header (1000) but above content */
     background: rgba(255, 255, 255, 0.98);
     border-top: 0.5px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
     padding: 14px 16px;
     padding-bottom: calc(14px + env(safe-area-inset-bottom));
     box-shadow: 
-        0 -4px 20px rgba(0, 0, 0, 0.08),
-        0 -2px 8px rgba(0, 0, 0, 0.04);
+        0 2px 12px rgba(0, 0, 0, 0.06),
+        0 1px 4px rgba(0, 0, 0, 0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-sizing: border-box;
+    min-height: 70px;
+    max-width: 100%;
+    margin: 0;
+}
+
+.mobile-action-buttons-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    width: 100%;
+    max-width: 100%;
     box-sizing: border-box;
     flex-wrap: nowrap;
-    min-height: 70px;
-    max-width: 100%;
-    margin: 0;
+}
+
+/* Calculate top position dynamically based on header height */
+@media (max-width: 480px) {
+    .modern-mobile-header {
+        min-height: 64px;
+        padding: 10px 16px !important;
+    }
+    
+    .mobile-action-buttons {
+        top: 64px; /* Smaller header on mobile */
+    }
 }
 
 /* Ensure sticky works on all browsers */
 @supports (position: sticky) {
     .mobile-action-buttons {
         position: sticky;
+        top: 68px;
     }
 }
 
@@ -1958,38 +3189,65 @@ main.container-fluid,
 @supports not (position: sticky) {
     .mobile-action-buttons {
         position: fixed;
+        top: 68px;
     }
 }
+
 
 /* Responsive adjustments */
 @media (max-width: 360px) {
     .mobile-action-buttons {
-        padding: 10px 10px;
+        padding: 10px 12px;
         padding-bottom: calc(10px + env(safe-area-inset-bottom));
-        gap: 8px;
         min-height: 64px;
     }
     
-    .mobile-action-buttons .mobile-btn {
-        padding: 12px 14px;
-        font-size: 13px;
+    .mobile-action-buttons-container {
+        gap: 8px;
     }
     
-    .mobile-action-buttons .mobile-btn span {
+    .mobile-action-buttons-container .mobile-btn {
+        padding: 12px 14px;
+        font-size: 13px;
+        min-height: 48px;
+    }
+    
+    .mobile-action-buttons-container .mobile-btn .btn-text {
         display: none;
     }
     
-    .mobile-action-buttons .mobile-btn i {
+    .mobile-action-buttons-container .mobile-btn i {
         margin: 0;
+        font-size: 18px;
+    }
+    
+    .mobile-action-buttons-container .mobile-btn-secondary {
+        min-width: 48px;
+        max-width: 48px;
+        flex: 0 0 48px;
+    }
+    
+    .mobile-action-buttons-container .mobile-btn-primary {
+        flex: 1;
+        min-width: 0;
     }
 }
 
 @media (max-width: 480px) {
     .mobile-action-buttons {
-        padding: 12px 12px;
+        padding: 12px 14px;
         padding-bottom: calc(12px + env(safe-area-inset-bottom));
-        gap: 10px;
         min-height: 66px;
+    }
+    
+    .mobile-action-buttons-container {
+        gap: 10px;
+    }
+    
+    .mobile-action-buttons-container .mobile-btn {
+        padding: 14px 16px;
+        font-size: 14px;
+        min-height: 50px;
     }
 }
 
@@ -1997,7 +3255,14 @@ main.container-fluid,
     .mobile-action-buttons {
         padding: 14px 20px;
         padding-bottom: calc(14px + env(safe-area-inset-bottom));
+    }
+    
+    .mobile-action-buttons-container {
         gap: 14px;
+    }
+    
+    .mobile-action-buttons-container .mobile-btn {
+        padding: 16px 20px;
     }
 }
 
@@ -2009,15 +3274,52 @@ main.container-fluid,
         right: auto;
         padding: 16px 24px;
         padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    }
+    
+    .mobile-action-buttons-container {
         gap: 16px;
+        max-width: 100%;
+    }
+    
+    .mobile-action-buttons-container .mobile-btn {
+        padding: 16px 24px;
     }
 }
 
 .mobile-btn {
-    flex: 1 1 auto;
-    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     padding: 16px 20px;
     border-radius: 12px;
+    border: none;
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    text-align: center;
+    box-sizing: border-box;
+    min-height: 52px;
+}
+
+.mobile-btn i {
+    font-size: 16px;
+    line-height: 1;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-btn .btn-text {
+    line-height: 1.4;
+    white-space: nowrap;
+}
     border: none;
     font-size: 15px;
     font-weight: 600;
@@ -2080,9 +3382,10 @@ main.container-fluid,
 }
 
 /* Ensure icons and text align properly */
-.mobile-action-buttons .mobile-btn {
+.mobile-action-buttons-container .mobile-btn {
     word-break: keep-all;
     overflow-wrap: normal;
+    flex-shrink: 1;
 }
 
 .mobile-btn:active {
@@ -2156,18 +3459,25 @@ main.container-fluid,
 }
 
 /* Button text and icon alignment */
-.mobile-action-buttons .mobile-btn {
-    flex-shrink: 1;
+/* Button hover and active states */
+.mobile-btn:hover {
+    transform: translateY(-1px);
 }
 
-.mobile-action-buttons .mobile-btn-secondary {
+.mobile-btn:active {
+    transform: scale(0.97) translateY(0);
+}
+
+.mobile-action-buttons-container .mobile-btn-secondary {
     flex: 0 0 auto;
-    min-width: min(120px, 40%);
+    min-width: min(120px, 35%);
+    max-width: 40%;
 }
 
-.mobile-action-buttons .mobile-btn-primary {
+.mobile-action-buttons-container .mobile-btn-primary {
     flex: 1 1 auto;
-    min-width: min(140px, 60%);
+    min-width: min(160px, 60%);
+    max-width: 65%;
 }
 
 /* Loading Overlay */
@@ -2390,6 +3700,98 @@ main.container-fluid,
         -webkit-overflow-scrolling: touch;
     }
     
+    /* Client Card View Styles */
+    .client-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .client-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        border-color: rgba(102, 126, 234, 0.3);
+    }
+    
+    .client-card-details {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #f3f4f6;
+    }
+    
+    .select-client-card-btn {
+        margin-top: 12px;
+        width: 100%;
+        padding: 10px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .select-client-card-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+    }
+    
+    .select-client-card-btn:active {
+        transform: translateY(0);
+    }
+    
+    /* View Toggle Button Styles */
+    .view-toggle-btn {
+        padding: 6px 12px;
+        border: none;
+        background: transparent;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        color: #6b7280;
+        transition: all 0.2s ease;
+    }
+    
+    .view-toggle-btn:hover {
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+    }
+    
+    .view-toggle-btn.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-weight: 600;
+    }
+    
+    /* Client Cards Container */
+    .client-cards-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+        max-height: calc(100vh - 350px);
+        overflow-y: auto;
+        padding: 0.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .client-cards-container {
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 12px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .client-cards-container {
+            grid-template-columns: 1fr;
+        }
+    }
+    
     .client-search-result {
         padding: 14px;
         margin-bottom: 10px;
@@ -2440,6 +3842,9 @@ main.container-fluid,
             <h1>New Booking</h1>
         </div>
         <div class="modern-mobile-header-actions">
+            <button type="button" class="app-header-btn" id="clearBookingBtn" title="Clear Booking" aria-label="Clear booking and start fresh" style="color: #ef4444;">
+                <i class="fas fa-undo"></i>
+            </button>
             @if(isset($currentFloorPlan) && $currentFloorPlan)
             <a href="{{ route('booths.index', ['view' => 'canvas', 'floor_plan_id' => $currentFloorPlan->id]) }}" class="app-header-btn" title="View Floor Plan" aria-label="View floor plan canvas">
                 <i class="fas fa-map-marked-alt"></i>
@@ -2449,29 +3854,111 @@ main.container-fluid,
     </div>
 </div>
 
+<!-- Action Buttons (Sticky Below Header) - Well Organized -->
+<div class="mobile-action-buttons">
+    <div class="mobile-action-buttons-container">
+        <button type="button" class="mobile-btn mobile-btn-secondary" onclick="window.location.href='{{ route('books.index') }}'" aria-label="Cancel booking">
+            <i class="fas fa-times"></i>
+            <span class="btn-text">Cancel</span>
+        </button>
+        <button type="submit" form="bookingForm" class="mobile-btn mobile-btn-primary" id="submitBtn" disabled aria-label="Create booking">
+            <i class="fas fa-check"></i>
+            <span class="btn-text">Create Booking</span>
+        </button>
+    </div>
+</div>
+
 <!-- Main Content -->
 <div class="mobile-booking-container" style="display: block !important; visibility: visible !important; opacity: 1 !important; padding: 16px !important; padding-bottom: 120px !important;">
-    <!-- Progress Indicator - Enhanced -->
-    <div style="background: #ffffff; border-radius: 16px; padding: 18px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06); border: 0.5px solid rgba(0, 0, 0, 0.06);">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
-            <div style="flex: 1; display: flex; align-items: center; gap: 8px;">
-                <div id="progressStep1" class="progress-step" style="width: 36px; height: 36px; border-radius: 50%; background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; flex-shrink: 0; z-index: 2;">
-                    <i class="fas fa-user"></i>
+    <!-- Progress Indicator - Enhanced with Step Info -->
+    <div class="booking-progress-container" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); border: 1px solid rgba(102, 126, 234, 0.1);">
+        <!-- Progress Steps Visual -->
+        <div class="progress-steps-wrapper" style="position: relative; margin-bottom: 24px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1;">
+                <!-- Step 1: Client -->
+                <div class="progress-step-container" style="flex: 1; display: flex; flex-direction: column; align-items: center; position: relative;">
+                    <div id="progressStep1" class="progress-step" style="width: 44px; height: 44px; border-radius: 50%; background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 18px; flex-shrink: 0; z-index: 2; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); transition: all 0.3s ease;">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="step-info" id="stepInfo1" style="margin-top: 10px; text-align: center; max-width: 100px;">
+                        <div class="step-title" style="font-size: 13px; font-weight: 700; color: #667eea; margin-bottom: 4px; line-height: 1.3;">Client</div>
+                        <div class="step-status" style="font-size: 11px; color: #9ca3af; line-height: 1.3;">Select client</div>
+                    </div>
                 </div>
-                <div id="progressLine1" class="progress-line" style="flex: 1; height: 3px; margin: 0 8px; border-radius: 2px;"></div>
-                <div id="progressStep2" class="progress-step" style="width: 36px; height: 36px; border-radius: 50%; background: #e5e7eb; color: #9ca3af; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; flex-shrink: 0; z-index: 2;">
-                    <i class="fas fa-calendar"></i>
+                
+                <!-- Progress Line 1 -->
+                <div id="progressLine1" class="progress-line" style="flex: 1; height: 4px; margin: 0 8px; border-radius: 2px; background: #e5e7eb; position: relative; overflow: hidden; margin-top: -30px;">
+                    <div class="progress-line-fill" style="position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); border-radius: 2px; transition: width 0.5s ease;"></div>
                 </div>
-                <div id="progressLine2" class="progress-line" style="flex: 1; height: 3px; margin: 0 8px; border-radius: 2px;"></div>
-                <div id="progressStep3" class="progress-step" style="width: 36px; height: 36px; border-radius: 50%; background: #e5e7eb; color: #9ca3af; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; flex-shrink: 0; z-index: 2;">
-                    <i class="fas fa-cube"></i>
+                
+                <!-- Step 2: Details -->
+                <div class="progress-step-container" style="flex: 1; display: flex; flex-direction: column; align-items: center; position: relative;">
+                    <div id="progressStep2" class="progress-step" style="width: 44px; height: 44px; border-radius: 50%; background: #e5e7eb; color: #9ca3af; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 18px; flex-shrink: 0; z-index: 2; transition: all 0.3s ease;">
+                        <i class="fas fa-calendar"></i>
+                    </div>
+                    <div class="step-info" id="stepInfo2" style="margin-top: 10px; text-align: center; max-width: 100px;">
+                        <div class="step-title" style="font-size: 13px; font-weight: 700; color: #9ca3af; margin-bottom: 4px; line-height: 1.3;">Details</div>
+                        <div class="step-status" style="font-size: 11px; color: #d1d5db; line-height: 1.3;">Set date</div>
+                    </div>
+                </div>
+                
+                <!-- Progress Line 2 -->
+                <div id="progressLine2" class="progress-line" style="flex: 1; height: 4px; margin: 0 8px; border-radius: 2px; background: #e5e7eb; position: relative; overflow: hidden; margin-top: -30px;">
+                    <div class="progress-line-fill" style="position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); border-radius: 2px; transition: width 0.5s ease;"></div>
+                </div>
+                
+                <!-- Step 3: Booths -->
+                <div class="progress-step-container" style="flex: 1; display: flex; flex-direction: column; align-items: center; position: relative;">
+                    <div id="progressStep3" class="progress-step" style="width: 44px; height: 44px; border-radius: 50%; background: #e5e7eb; color: #9ca3af; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 18px; flex-shrink: 0; z-index: 2; transition: all 0.3s ease;">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                    <div class="step-info" id="stepInfo3" style="margin-top: 10px; text-align: center; max-width: 100px;">
+                        <div class="step-title" style="font-size: 13px; font-weight: 700; color: #9ca3af; margin-bottom: 4px; line-height: 1.3;">Booths</div>
+                        <div class="step-status" style="font-size: 11px; color: #d1d5db; line-height: 1.3;">Select booths</div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #6b7280; font-weight: 500; padding: 0 4px; line-height: 1.4;">
-            <span style="flex: 1; text-align: center; min-width: 0;">Client</span>
-            <span style="flex: 1; text-align: center; min-width: 0;">Details</span>
-            <span style="flex: 1; text-align: center; min-width: 0;">Booths</span>
+        
+        <!-- Current Step Highlight -->
+        <div id="currentStepHighlight" class="current-step-highlight" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%); border-radius: 12px; padding: 12px 16px; border-left: 4px solid #667eea; margin-top: 8px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-info-circle" style="color: #667eea; font-size: 16px; flex-shrink: 0;"></i>
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 2px; line-height: 1.3;">Current Step</div>
+                    <div id="currentStepMessage" style="font-size: 12px; color: #6b7280; line-height: 1.4;">Please select a client to begin</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Selected Booths Summary - Sticky Below Progress -->
+    <div class="selected-booths-summary-mobile">
+        <div class="selected-booths-title-mobile" style="display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-list" style="line-height: 1; flex-shrink: 0;"></i>
+            <span style="line-height: 1.4;">Selected Booths</span>
+        </div>
+        <div id="selectedBoothsList" class="selected-booths-list-mobile">
+            <div class="empty-state-mobile" style="padding: 20px;">
+                <p style="font-size: 14px; color: #9ca3af;">No booths selected</p>
+            </div>
+        </div>
+        <div class="summary-total-mobile" style="padding-top: 16px; border-top: 1px solid #f3f4f6; margin-top: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div class="summary-total-label-mobile" style="display: flex; align-items: center; gap: 6px; line-height: 1.4;">
+                    <i class="fas fa-cube" style="font-size: 14px; color: #6b7280; line-height: 1; flex-shrink: 0;"></i> 
+                    <span>Total Booths:</span>
+                </div>
+                <span id="totalBooths" style="font-weight: 700; font-size: 18px; color: #667eea; line-height: 1; flex-shrink: 0;">0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="summary-total-label-mobile" style="font-size: 17px;">
+                    Total Amount:
+                </div>
+                <div class="summary-total-value-mobile">
+                    $<span id="totalAmount">0.00</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -2499,33 +3986,88 @@ main.container-fluid,
         <div class="mobile-form-section">
             <div class="mobile-form-section-title">
                 <i class="fas fa-filter"></i>
-                <span>Filter by Floor Plan</span>
-            </div>
-            <div class="mobile-form-group collapsible collapsed">
-                <div class="mobile-form-group-header" onclick="toggleFormGroup(this)">
-                    <label for="floor_plan_filter" class="mobile-form-label">
-                        <i class="fas fa-map"></i>
-                        <span>Select Floor Plan</span>
-                    </label>
-                    <button type="button" class="mobile-form-group-toggle" aria-label="Toggle section">
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
+                <div style="flex: 1;">
+                    <span>Filter by Floor Plan</span>
+                    <div id="selectedFloorPlanName" class="floor-plan-selected-name" style="display: {{ isset($currentFloorPlan) && $currentFloorPlan ? 'block' : 'none' }};">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span id="selectedFloorPlanNameText">
+                            @if(isset($currentFloorPlan) && $currentFloorPlan)
+                                {{ $currentFloorPlan->name }}
+                            @endif
+                        </span>
+                    </div>
                 </div>
-                <div class="mobile-form-group-content">
-                <select class="mobile-form-select" id="floor_plan_filter" name="floor_plan_filter" onchange="filterByFloorPlan(this.value)">
+            </div>
+            
+            <!-- Floor Plan Image Display (always shown when selected) -->
+            <div id="floorPlanImageDisplay" class="floor-plan-image-display" style="display: {{ isset($currentFloorPlan) && $currentFloorPlan ? 'block' : 'none' }};">
+                <div class="floor-plan-image-wrapper">
+                    <img src="{{ isset($currentFloorPlan) && $currentFloorPlan && $currentFloorPlan->floor_image ? asset($currentFloorPlan->floor_image) : '' }}" 
+                         alt="{{ isset($currentFloorPlan) && $currentFloorPlan ? $currentFloorPlan->name : '' }}" 
+                         class="floor-plan-image"
+                         id="floorPlanImage"
+                         onerror="this.style.display='none'; this.closest('.floor-plan-image-wrapper').classList.add('no-image');">
+                    <div class="floor-plan-image-overlay">
+                        <div class="floor-plan-image-info">
+                            <h4 id="floorPlanImageName">{{ isset($currentFloorPlan) && $currentFloorPlan ? $currentFloorPlan->name : '' }}</h4>
+                            <p id="floorPlanImageDesc">{{ isset($currentFloorPlan) && $currentFloorPlan && $currentFloorPlan->description ? $currentFloorPlan->description : (isset($currentFloorPlan) && $currentFloorPlan ? 'No description available' : '') }}</p>
+                        </div>
+                        <button type="button" class="floor-plan-image-close" onclick="closeFloorPlanImage()" aria-label="Close image">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Floor Plan Selection - Minimal Design -->
+            <div class="floor-plan-minimal-container">
+                <!-- Hidden select for form submission -->
+                <select class="mobile-form-select" id="floor_plan_filter" name="floor_plan_filter" style="display: none;">
                     <option value="">All Floor Plans</option>
                     @foreach($floorPlans as $fp)
-                        <option value="{{ $fp->id }}" {{ (isset($floorPlanId) && $floorPlanId == $fp->id) ? 'selected' : '' }}>
+                        <option value="{{ $fp->id }}" 
+                                data-image="{{ $fp->floor_image ? asset($fp->floor_image) : '' }}"
+                                data-name="{{ $fp->name }}"
+                                data-description="{{ $fp->description ?? '' }}"
+                                {{ (isset($floorPlanId) && $floorPlanId == $fp->id) ? 'selected' : '' }}>
                             {{ $fp->name }}
                             @if($fp->is_default) (Default) @endif
                             @if($fp->event) - {{ $fp->event->title }} @endif
                         </option>
                     @endforeach
                 </select>
-                <small style="display: flex; align-items: center; color: #9ca3af; font-size: 12px; margin-top: 6px; gap: 4px; line-height: 1.4;">
-                    <i class="fas fa-info-circle" style="font-size: 11px; line-height: 1; flex-shrink: 0;"></i>
-                    <span>Filter booths by specific floor plan</span>
-                </small>
+                
+                <!-- Icon View - Minimal -->
+                <div class="floor-plan-view floor-plan-icon-view active" data-view="icon">
+                        <div class="floor-plan-options-icon">
+                            <div class="floor-plan-option-icon {{ (isset($floorPlanId) && $floorPlanId == '') ? 'selected' : '' }}" data-value="" data-image="" data-name="All Floor Plans" data-description="">
+                                <div class="floor-plan-icon-wrapper">
+                                    <i class="fas fa-layer-group"></i>
+                                </div>
+                                <span class="floor-plan-label">All</span>
+                            </div>
+                            @foreach($floorPlans as $fp)
+                            <div class="floor-plan-option-icon {{ (isset($floorPlanId) && $floorPlanId == $fp->id) ? 'selected' : '' }}" 
+                                 data-value="{{ $fp->id }}" 
+                                 data-image="{{ $fp->floor_image ? asset($fp->floor_image) : '' }}"
+                                 data-name="{{ $fp->name }}"
+                                 data-description="{{ $fp->description ?? '' }}">
+                                <div class="floor-plan-icon-wrapper">
+                                    <i class="fas fa-map"></i>
+                                </div>
+                                <span class="floor-plan-label">{{ $fp->name }}</span>
+                                @if($fp->is_default)
+                                    <span class="floor-plan-badge">Default</span>
+                                @endif
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    
+                    <small style="display: flex; align-items: center; color: #9ca3af; font-size: 12px; margin-top: 12px; gap: 4px; line-height: 1.4;">
+                        <i class="fas fa-info-circle" style="font-size: 11px; line-height: 1; flex-shrink: 0;"></i>
+                        <span>Filter booths by specific floor plan</span>
+                    </small>
                 </div>
             </div>
         </div>
@@ -2542,6 +4084,8 @@ main.container-fluid,
             <div id="selectedClientInfo" style="display: none;">
                 <div class="selected-client-card-mobile">
                     <div class="selected-client-info-mobile">
+                        <div class="client-name" id="selectedClientName" style="display: none;"></div>
+                        <div class="client-company" id="selectedClientCompany" style="display: none;"></div>
                         <div class="selected-client-name-mobile">
                             <i class="fas fa-check-circle"></i>
                             <span id="selectedClientName"></span>
@@ -2828,19 +4372,62 @@ main.container-fluid,
                 </small>
             </div>
             
+            <!-- Help Button & Info Panel -->
+            <div style="margin-bottom: 12px; position: relative;">
+                <button type="button" class="booth-help-btn" id="boothHelpBtn" onclick="toggleBoothHelp()" aria-label="Show booth selection help" title="Click for help">
+                    <i class="fas fa-question-circle"></i>
+                    <span class="help-btn-text">Help</span>
+                </button>
+                <div class="booth-grid-info" id="boothGridInfo" style="display: none; background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%); border: 1px solid rgba(102, 126, 234, 0.15); border-radius: 12px; padding: 12px 16px; margin-top: 8px;">
+                    <div style="display: flex; align-items: flex-start; gap: 10px;">
+                        <div style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 8px; background: rgba(102, 126, 234, 0.15); display: flex; align-items: center; justify-content: center; color: #667eea;">
+                            <i class="fas fa-info-circle" style="font-size: 14px;"></i>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px; line-height: 1.3;">
+                                <i class="fas fa-arrows-alt-h" style="margin-right: 6px; color: #667eea;"></i>
+                                Slide left/right to see more booths (5 rows per slide)
+                            </div>
+                            <div style="font-size: 11px; color: #6b7280; line-height: 1.4;">
+                                All <span id="boothTotalCount">{{ $booths->count() }}</span> booths are loaded. Each slide shows 5 rows (15 booths). Slide right to see more booths.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Booth Grids by Letter (A-Z) -->
             @foreach($boothsByCategory as $letter => $letterData)
             <div class="booth-letter-content {{ $loop->first ? 'active' : '' }}" 
                  id="letterContent_{{ $letter }}" 
                  data-letter="{{ $letter }}">
-                <div class="booth-grid-mobile" id="boothSelector_{{ $letter }}">
-                    @foreach($letterData['booths'] as $booth)
+                <div class="booth-grid-wrapper" id="boothWrapper_{{ $letter }}">
+                    <button type="button" class="booth-scroll-btn booth-scroll-btn-left" onclick="scrollBoothGrid('boothSelector_{{ $letter }}', 'left')" aria-label="Scroll left">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button type="button" class="booth-scroll-btn booth-scroll-btn-right" onclick="scrollBoothGrid('boothSelector_{{ $letter }}', 'right')" aria-label="Scroll right">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div class="booth-grid-mobile" id="boothSelector_{{ $letter }}" data-total="{{ $letterData['booths']->count() }}" data-visible="15">
+                        @php
+                            $rowsPerSlide = 5;
+                            $itemsPerRow = 3;
+                            $itemsPerSlide = $rowsPerSlide * $itemsPerRow; // 15 items per slide (5 rows × 3 columns)
+                            $boothsChunked = $letterData['booths']->chunk($itemsPerSlide);
+                        @endphp
+                        @foreach($boothsChunked as $slideIndex => $slideBooths)
+                        <div class="booth-row-group" data-slide="{{ $slideIndex }}">
+                            @foreach($slideBooths as $index => $booth)
+                            @php
+                                $globalIndex = ($slideIndex * $itemsPerSlide) + $index;
+                            @endphp
                     <div class="booth-card-mobile {{ in_array($booth->id, old('booth_ids', [])) ? 'selected' : '' }}" 
                          data-booth-id="{{ $booth->id }}" 
                          data-price="{{ $booth->price }}"
                          data-booth-number="{{ strtolower($booth->booth_number) }}"
                          data-category="{{ $booth->category ? strtolower($booth->category->name) : '' }}"
                          data-status="{{ strtolower($booth->getStatusLabel()) }}"
+                         data-index="{{ $globalIndex }}"
                          onclick="toggleBooth(this, {{ $booth->id }})">
                         <input type="checkbox" 
                                name="booth_ids[]" 
@@ -2858,7 +4445,11 @@ main.container-fluid,
                         <div class="booth-price-mobile">${{ number_format($booth->price, 2) }}</div>
                     </div>
                     @endforeach
+                        </div>
+                        @endforeach
+                    </div>
                 </div>
+                <!-- All booths are loaded and accessible via horizontal sliding -->
             </div>
             @endforeach
             @elseif($booths->count() > 0)
@@ -2881,14 +4472,33 @@ main.container-fluid,
                 </small>
             </div>
             
-            <div class="booth-grid-mobile" id="boothSelector">
-                @foreach($booths as $booth)
+            <div class="booth-grid-wrapper" id="boothWrapper">
+                <button type="button" class="booth-scroll-btn booth-scroll-btn-left" onclick="scrollBoothGrid('boothSelector', 'left')" aria-label="Scroll left">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button type="button" class="booth-scroll-btn booth-scroll-btn-right" onclick="scrollBoothGrid('boothSelector', 'right')" aria-label="Scroll right">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <div class="booth-grid-mobile" id="boothSelector" data-total="{{ $booths->count() }}" data-visible="15">
+                    @php
+                        $rowsPerSlide = 5;
+                        $itemsPerRow = 3;
+                        $itemsPerSlide = $rowsPerSlide * $itemsPerRow; // 15 items per slide (5 rows × 3 columns)
+                        $boothsChunked = $booths->chunk($itemsPerSlide);
+                    @endphp
+                    @foreach($boothsChunked as $slideIndex => $slideBooths)
+                    <div class="booth-row-group" data-slide="{{ $slideIndex }}">
+                        @foreach($slideBooths as $index => $booth)
+                        @php
+                            $globalIndex = ($slideIndex * $itemsPerSlide) + $index;
+                        @endphp
                 <div class="booth-card-mobile {{ in_array($booth->id, old('booth_ids', [])) ? 'selected' : '' }}" 
                      data-booth-id="{{ $booth->id }}" 
                      data-price="{{ $booth->price }}"
                      data-booth-number="{{ strtolower($booth->booth_number) }}"
                      data-category="{{ $booth->category ? strtolower($booth->category->name) : '' }}"
                      data-status="{{ strtolower($booth->getStatusLabel()) }}"
+                     data-index="{{ $globalIndex }}"
                      onclick="toggleBooth(this, {{ $booth->id }})">
                     <input type="checkbox" 
                            name="booth_ids[]" 
@@ -2906,7 +4516,11 @@ main.container-fluid,
                     <div class="booth-price-mobile">${{ number_format($booth->price, 2) }}</div>
                 </div>
                 @endforeach
+                    </div>
+                    @endforeach
+                </div>
             </div>
+            <!-- All booths are loaded and accessible via horizontal sliding -->
             @else
             <div class="empty-state-mobile" style="padding: 32px 20px;">
                 <i class="fas fa-inbox" style="font-size: 48px; color: #d1d5db; margin-bottom: 16px;"></i>
@@ -2922,48 +4536,7 @@ main.container-fluid,
             @enderror
         </div>
 
-        <!-- Selected Booths Summary -->
-        <div class="selected-booths-summary-mobile">
-            <div class="selected-booths-title-mobile" style="display: flex; align-items: center; gap: 10px;">
-                <i class="fas fa-list" style="line-height: 1; flex-shrink: 0;"></i>
-                <span style="line-height: 1.4;">Selected Booths</span>
-            </div>
-            <div id="selectedBoothsList" class="selected-booths-list-mobile">
-                <div class="empty-state-mobile" style="padding: 20px;">
-                    <p style="font-size: 14px; color: #9ca3af;">No booths selected</p>
-                </div>
-            </div>
-            <div class="summary-total-mobile" style="padding-top: 16px; border-top: 1px solid #f3f4f6; margin-top: 16px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <div class="summary-total-label-mobile" style="display: flex; align-items: center; gap: 6px; line-height: 1.4;">
-                        <i class="fas fa-cube" style="font-size: 14px; color: #6b7280; line-height: 1; flex-shrink: 0;"></i> 
-                        <span>Total Booths:</span>
-                    </div>
-                    <span id="totalBooths" style="font-weight: 700; font-size: 18px; color: #667eea; line-height: 1; flex-shrink: 0;">0</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div class="summary-total-label-mobile" style="font-size: 17px;">
-                        Total Amount:
-                    </div>
-                    <div class="summary-total-value-mobile">
-                        $<span id="totalAmount">0.00</span>
-                    </div>
-                </div>
-            </div>
-        </div>
     </form>
-</div>
-
-<!-- Action Buttons (Sticky Bottom) - Flexible & Responsive -->
-<div class="mobile-action-buttons">
-    <button type="button" class="mobile-btn mobile-btn-secondary" onclick="window.location.href='{{ route('books.index') }}'" aria-label="Cancel booking">
-        <i class="fas fa-times"></i>
-        <span>Cancel</span>
-    </button>
-    <button type="submit" form="bookingForm" class="mobile-btn mobile-btn-primary" id="submitBtn" disabled aria-label="Create booking">
-        <i class="fas fa-check"></i>
-        <span>Create Booking</span>
-    </button>
 </div>
 
 <!-- Loading Overlay -->
@@ -3008,8 +4581,18 @@ main.container-fluid,
                 </div>
                 
                 <div id="clientSearchResults" class="mt-4" style="display: none;">
-                    <h6 class="mb-3 font-weight-bold"><i class="fas fa-list mr-1"></i>Search Results</h6>
-                    <div id="clientSearchResultsList" style="max-height: 450px; overflow-y: auto; padding: 0.75rem;"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h6 class="mb-0 font-weight-bold"><i class="fas fa-users mr-1"></i><span id="clientResultsCount">0</span> Clients</h6>
+                        <div id="clientViewToggle" style="display: flex; gap: 6px; background: #f3f4f6; padding: 4px; border-radius: 8px;">
+                            <button type="button" class="view-toggle-btn active" data-view="card" style="padding: 6px 12px; border: none; background: transparent; border-radius: 6px; cursor: pointer; font-size: 12px; color: #6b7280;">
+                                <i class="fas fa-th-large"></i> Card
+                            </button>
+                            <button type="button" class="view-toggle-btn" data-view="list" style="padding: 6px 12px; border: none; background: transparent; border-radius: 6px; cursor: pointer; font-size: 12px; color: #6b7280;">
+                                <i class="fas fa-list"></i> List
+                            </button>
+                        </div>
+                    </div>
+                    <div id="clientSearchResultsList" class="client-cards-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; max-height: calc(100vh - 350px); overflow-y: auto; padding: 0.5rem;"></div>
                 </div>
                 
                 <div id="noClientResults" class="alert alert-modern alert-modern-info mt-4 text-center" style="display: none;">
@@ -3167,6 +4750,38 @@ main.container-fluid,
 (function() {
     'use strict';
     
+    // Force header to be sticky
+    function forceHeaderSticky() {
+        const header = document.getElementById('mobileHeader');
+        if (header) {
+            header.style.position = '-webkit-sticky';
+            header.style.position = 'sticky';
+            header.style.top = '0';
+            header.style.left = '0';
+            header.style.right = '0';
+            header.style.zIndex = '1000';
+            header.style.width = '100%';
+            header.style.maxWidth = '100%';
+            header.style.boxSizing = 'border-box';
+            header.style.margin = '0';
+            header.style.display = 'block';
+            header.style.visibility = 'visible';
+            header.style.opacity = '1';
+            header.style.background = '#ffffff';
+            header.style.willChange = 'transform';
+            header.style.transform = 'translateZ(0)';
+            header.style.webkitTransform = 'translateZ(0)';
+        }
+    }
+    
+    // Force sticky on load and continuously
+    forceHeaderSticky();
+    setInterval(forceHeaderSticky, 100);
+    
+    // Also force on scroll
+    window.addEventListener('scroll', forceHeaderSticky, { passive: true });
+    window.addEventListener('resize', forceHeaderSticky, { passive: true });
+    
     // Remove old UI elements immediately
     function removeOldUI() {
         const selectors = [
@@ -3254,7 +4869,7 @@ main.container-fluid,
         const main = document.querySelector('main.container-fluid, #main-content, main');
         
         if (mobileHeader) {
-            mobileHeader.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; position: sticky !important; top: 0 !important; z-index: 1000 !important; background: #ffffff !important;';
+            mobileHeader.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; position: -webkit-sticky !important; position: sticky !important; top: 0 !important; left: 0 !important; right: 0 !important; z-index: 1000 !important; background: #ffffff !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; margin: 0 !important; will-change: transform !important; transform: translateZ(0) !important; -webkit-transform: translateZ(0) !important;';
         }
         
         if (mobileContainer) {
@@ -3413,6 +5028,184 @@ function filterByFloorPlan(floorPlanId) {
     }
 }
 
+// LocalStorage Helper Functions
+function saveToLocalStorage(key, value) {
+    try {
+        localStorage.setItem('booking_create_' + key, JSON.stringify(value));
+    } catch(e) {
+        console.warn('Failed to save to localStorage:', e);
+    }
+}
+
+function getFromLocalStorage(key, defaultValue) {
+    try {
+        const item = localStorage.getItem('booking_create_' + key);
+        return item ? JSON.parse(item) : defaultValue;
+    } catch(e) {
+        console.warn('Failed to read from localStorage:', e);
+        return defaultValue;
+    }
+}
+
+// Floor Plan Selector - View Switching and Selection
+$(document).ready(function() {
+    // Restore view mode preference
+    const savedFloorPlanView = getFromLocalStorage('floor_plan_view', 'icon');
+    $(`.floor-plan-view-switcher .view-switch-btn[data-view="${savedFloorPlanView}"]`).click();
+    
+    // View switcher functionality
+    $('.floor-plan-view-switcher .view-switch-btn').on('click', function() {
+        const view = $(this).data('view');
+        
+        // Save view preference
+        saveToLocalStorage('floor_plan_view', view);
+        
+        // Update active button
+        $('.floor-plan-view-switcher .view-switch-btn').removeClass('active');
+        $(this).addClass('active');
+        
+        // Switch views
+        $('.floor-plan-view').removeClass('active');
+        $(`.floor-plan-view[data-view="${view}"]`).addClass('active');
+    });
+    
+    // Handle floor plan selection
+    function selectFloorPlan(value, image, name, description, shouldReload) {
+        // Save to localStorage
+        saveToLocalStorage('floor_plan', {
+            value: value,
+            image: image,
+            name: name,
+            description: description
+        });
+        
+        // Update hidden select
+        $('#floor_plan_filter').val(value);
+        
+        // Update all view options (only icon view now)
+        $('.floor-plan-option-icon').removeClass('selected');
+        $(`.floor-plan-option-icon[data-value="${value}"]`).addClass('selected');
+        
+        // Update selected floor plan name display
+        const selectedNameDisplay = $('#selectedFloorPlanName');
+        const selectedNameText = $('#selectedFloorPlanNameText');
+        
+        if (value && name && name !== 'All Floor Plans') {
+            // Show selected floor plan name
+            selectedNameText.text(name);
+            selectedNameDisplay.slideDown(200);
+        } else {
+            // Hide selected floor plan name
+            selectedNameDisplay.slideUp(200);
+        }
+        
+        // Always show image display when a floor plan is selected
+        const imageDisplay = $('#floorPlanImageDisplay');
+        const imageElement = $('#floorPlanImage');
+        const imageInfo = imageDisplay.find('.floor-plan-image-info');
+        const imageWrapper = imageDisplay.find('.floor-plan-image-wrapper');
+        
+        if (value && value !== '') {
+            // Always show the display when a floor plan is selected
+            if (image) {
+                // Check if image exists
+                const img = new Image();
+                img.onload = function() {
+                    // Image exists, show it
+                    imageElement.attr('src', image);
+                    imageElement.attr('alt', name);
+                    imageElement.show();
+                    imageWrapper.removeClass('no-image');
+                    imageInfo.find('h4').text(name);
+                    imageInfo.find('p').text(description || '');
+                    $('#floorPlanImageName').text(name);
+                    $('#floorPlanImageDesc').text(description || '');
+                    imageDisplay.slideDown(300);
+                };
+                img.onerror = function() {
+                    // Image doesn't exist, but still show display with placeholder
+                    imageElement.attr('src', '');
+                    imageElement.attr('alt', name);
+                    imageInfo.find('h4').text(name);
+                    imageInfo.find('p').text(description || 'No image available');
+                    // Add no-image class for styling
+                    imageWrapper.addClass('no-image');
+                    imageElement.hide();
+                    $('#floorPlanImageName').text(name);
+                    $('#floorPlanImageDesc').text(description || 'No image available');
+                    imageDisplay.slideDown(300);
+                };
+                img.src = image;
+            } else {
+                // No image URL, but still show display with info
+                imageElement.attr('src', '');
+                imageElement.attr('alt', name);
+                imageInfo.find('h4').text(name);
+                imageInfo.find('p').text(description || 'No image available');
+                imageWrapper.addClass('no-image');
+                imageElement.hide();
+                $('#floorPlanImageName').text(name);
+                $('#floorPlanImageDesc').text(description || 'No image available');
+                imageDisplay.slideDown(300);
+            }
+        } else {
+            // Hide image display when "All Floor Plans" is selected
+            imageDisplay.slideUp(300);
+        }
+        
+        // Only reload if explicitly requested (user click, not initialization)
+        if (shouldReload !== false) {
+            // Check if the value is different from current URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentFloorPlanId = urlParams.get('floor_plan_id');
+            
+            // Only reload if the value has changed
+            if (value !== currentFloorPlanId) {
+                filterByFloorPlan(value);
+            }
+        }
+    }
+    
+    // Icon view selection (only view available)
+    $('.floor-plan-option-icon').on('click', function() {
+        const value = $(this).data('value');
+        const image = $(this).data('image');
+        const name = $(this).data('name');
+        const description = $(this).data('description');
+        selectFloorPlan(value, image, name, description, true); // true = allow reload
+    });
+    
+    // Close image display
+    window.closeFloorPlanImage = function() {
+        $('#floorPlanImageDisplay').slideUp(300);
+    };
+    
+    // Initialize with saved or default selected value (without reloading)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlFloorPlanId = urlParams.get('floor_plan_id');
+    const savedFloorPlan = getFromLocalStorage('floor_plan', null);
+    
+    // Priority: URL parameter > Saved preference > Default
+    let defaultValue = urlFloorPlanId || (savedFloorPlan ? savedFloorPlan.value : '');
+    
+    if (defaultValue) {
+        const selectedOption = $(`#floor_plan_filter option[value="${defaultValue}"]`);
+        if (selectedOption.length) {
+            const image = selectedOption.data('image') || (savedFloorPlan ? savedFloorPlan.image : '');
+            const name = selectedOption.data('name') || (savedFloorPlan ? savedFloorPlan.name : '');
+            const description = selectedOption.data('description') || (savedFloorPlan ? savedFloorPlan.description : '');
+            // false = don't reload on initialization
+            selectFloorPlan(defaultValue, image, name, description, false);
+        } else if (savedFloorPlan && savedFloorPlan.value) {
+            // If saved value doesn't exist in options, try to restore saved data
+            selectFloorPlan(savedFloorPlan.value, savedFloorPlan.image, savedFloorPlan.name, savedFloorPlan.description, false);
+        }
+    } else {
+        // If no value selected, make sure "All" is selected
+        $('.floor-plan-option-icon[data-value=""], .floor-plan-option-list[data-value=""], .floor-plan-option-card[data-value=""]').addClass('selected');
+    }
+});
+
 function toggleBooth(element, boothId) {
     const checkbox = element.querySelector('.booth-checkbox-mobile');
     checkbox.checked = !checkbox.checked;
@@ -3422,9 +5215,16 @@ function toggleBooth(element, boothId) {
 
 // Booking Type Selector - View Switching and Selection
 $(document).ready(function() {
+    // Restore booking type view mode preference
+    const savedBookingTypeView = getFromLocalStorage('booking_type_view', 'icon');
+    $(`.view-switch-btn[data-view="${savedBookingTypeView}"]`).click();
+    
     // View switcher functionality
     $('.view-switch-btn').on('click', function() {
         const view = $(this).data('view');
+        
+        // Save view preference
+        saveToLocalStorage('booking_type_view', view);
         
         // Update active button
         $('.view-switch-btn').removeClass('active');
@@ -3437,6 +5237,9 @@ $(document).ready(function() {
     
     // Handle booking type selection
     function selectBookingType(value) {
+        // Save to localStorage
+        saveToLocalStorage('booking_type', value);
+        
         // Update hidden select
         $('#type').val(value);
         
@@ -3463,8 +5266,10 @@ $(document).ready(function() {
         selectBookingType(value);
     });
     
-    // Initialize with default selected value
-    const defaultValue = $('#type').val();
+    // Initialize with saved or default selected value
+    const savedBookingType = getFromLocalStorage('booking_type', null);
+    const defaultValue = $('#type').val() || savedBookingType || '1'; // Default to 1 if nothing saved
+    
     if (defaultValue) {
         selectBookingType(defaultValue);
     }
@@ -3543,6 +5348,26 @@ $(document).ready(function() {
     });
 });
 
+// Toggle Booth Help Info
+function toggleBoothHelp() {
+    const helpBtn = document.getElementById('boothHelpBtn');
+    const infoPanel = document.getElementById('boothGridInfo');
+    
+    if (helpBtn && infoPanel) {
+        const isVisible = infoPanel.style.display === 'flex' || infoPanel.classList.contains('show');
+        
+        if (isVisible) {
+            infoPanel.style.display = 'none';
+            infoPanel.classList.remove('show');
+            helpBtn.classList.remove('active');
+        } else {
+            infoPanel.style.display = 'flex';
+            infoPanel.classList.add('show');
+            helpBtn.classList.add('active');
+        }
+    }
+}
+
 // Switch between booth letters (A-Z)
 function switchBoothLetter(letter) {
     // Update tabs
@@ -3585,6 +5410,8 @@ function filterBooths(searchTerm) {
     const boothCards = document.querySelectorAll('.booth-card-mobile');
     let visibleCount = 0;
     
+    // All booths are already loaded and visible via horizontal scrolling
+    
     boothCards.forEach(function(card) {
         const boothNumber = card.dataset.boothNumber || '';
         const category = card.dataset.category || '';
@@ -3618,6 +5445,215 @@ function filterBooths(searchTerm) {
     }
 }
 
+// Horizontal Scroll Functions - Slide by 5-row groups
+function scrollBoothGrid(gridId, direction) {
+    const grid = document.getElementById(gridId);
+    if (!grid) return;
+    
+    // Get the width of one slide (100% of container)
+    const slideWidth = grid.clientWidth;
+    const currentScroll = grid.scrollLeft;
+    
+    // Calculate which slide we're on
+    const currentSlide = Math.round(currentScroll / slideWidth);
+    const totalSlides = grid.querySelectorAll('.booth-row-group').length;
+    
+    let targetSlide;
+    if (direction === 'left') {
+        targetSlide = Math.max(0, currentSlide - 1);
+    } else {
+        targetSlide = Math.min(totalSlides - 1, currentSlide + 1);
+    }
+    
+    // Scroll to target slide
+    const targetScroll = targetSlide * slideWidth;
+    
+    grid.scrollTo({
+        left: targetScroll,
+        behavior: 'smooth'
+    });
+    
+    // Update scroll indicators after scroll
+    setTimeout(function() {
+        updateBoothScrollIndicators(gridId);
+    }, 300);
+}
+
+function updateBoothScrollIndicators(gridId) {
+    const grid = document.getElementById(gridId);
+    if (!grid) return;
+    
+    const wrapper = grid.closest('.booth-grid-wrapper');
+    if (!wrapper) return;
+    
+    const leftBtn = wrapper.querySelector('.booth-scroll-btn-left');
+    const rightBtn = wrapper.querySelector('.booth-scroll-btn-right');
+    
+    const isAtStart = grid.scrollLeft <= 0;
+    const isAtEnd = grid.scrollLeft >= (grid.scrollWidth - grid.clientWidth - 1);
+    
+    // Update wrapper classes for gradient indicators
+    wrapper.classList.remove('scrolled-left', 'scrolled-right', 'scrolled-both');
+    if (isAtStart && isAtEnd) {
+        // No scroll needed
+    } else if (isAtStart) {
+        wrapper.classList.add('scrolled-right');
+        if (leftBtn) leftBtn.classList.add('hidden');
+        if (rightBtn) rightBtn.classList.remove('hidden');
+    } else if (isAtEnd) {
+        wrapper.classList.add('scrolled-left');
+        if (leftBtn) leftBtn.classList.remove('hidden');
+        if (rightBtn) rightBtn.classList.add('hidden');
+    } else {
+        wrapper.classList.add('scrolled-both');
+        if (leftBtn) leftBtn.classList.remove('hidden');
+        if (rightBtn) rightBtn.classList.remove('hidden');
+    }
+}
+
+// Initialize scroll indicators on page load and scroll
+$(document).ready(function() {
+    // Update scroll indicators for all grids
+    $('.booth-grid-mobile').each(function() {
+        const gridId = $(this).attr('id');
+        if (gridId) {
+            updateBoothScrollIndicators(gridId);
+            
+            // Update on scroll
+            $(this).on('scroll', function() {
+                updateBoothScrollIndicators(gridId);
+            });
+        }
+    });
+    
+    // Update visible count on page load
+    function updateBoothVisibleCount() {
+        const activeGrid = $('.booth-letter-content.active .booth-grid-mobile, #boothSelector').first();
+        if (activeGrid.length) {
+            // Count all booths since all are loaded
+            const totalCount = parseInt(activeGrid.data('total')) || activeGrid.find('.booth-card-mobile').length;
+            const visibleCount = totalCount; // All booths are visible via horizontal scrolling
+            
+            // Update all info displays
+            $('.booth-grid-info').each(function() {
+                const visibleCountEl = $(this).find('#boothVisibleCount');
+                const totalCountEl = $(this).find('#boothTotalCount');
+                if (visibleCountEl.length) {
+                    visibleCountEl.text(visibleCount);
+                }
+                if (totalCountEl.length) {
+                    totalCountEl.text(totalCount);
+                }
+            });
+        }
+    }
+    
+    // Update count initially and when switching tabs
+    updateBoothVisibleCount();
+    
+    // Update when switching letter tabs
+    $(document).on('click', '.booth-letter-tab', function() {
+        setTimeout(updateBoothVisibleCount, 100);
+    });
+    
+    // Update on window resize
+    $(window).on('resize', function() {
+        $('.booth-grid-mobile').each(function() {
+            const gridId = $(this).attr('id');
+            if (gridId) {
+                updateBoothScrollIndicators(gridId);
+            }
+        });
+        updateBoothVisibleCount();
+    });
+});
+
+// Lazy Loading - Load More Booths (Vertical Expansion)
+function loadMoreBooths(gridId) {
+    const grid = document.getElementById(gridId);
+    if (!grid) return;
+    
+    const wrapper = grid.closest('.booth-grid-wrapper');
+    const loadMoreBtn = wrapper ? wrapper.nextElementSibling?.querySelector('.booth-load-more-btn') : null;
+    if (!loadMoreBtn) return;
+    
+    // Show loading state
+    loadMoreBtn.disabled = true;
+    loadMoreBtn.classList.add('loading');
+    const originalHTML = loadMoreBtn.innerHTML;
+    loadMoreBtn.innerHTML = '<i class="fas fa-spinner"></i> <span>Loading...</span>';
+    
+    // Get all hidden booths in this grid
+    const hiddenBooths = Array.from(grid.querySelectorAll('.booth-card-mobile.booth-lazy-hidden'));
+    const itemsPerLoad = 15; // 5 rows × 3 columns = 15 items
+    const boothsToShow = hiddenBooths.slice(0, itemsPerLoad);
+    
+    // Update visible count info
+    const currentVisible = grid.querySelectorAll('.booth-card-mobile:not(.booth-lazy-hidden)').length;
+    const newVisible = currentVisible + boothsToShow.length;
+    const totalBooths = parseInt(grid.dataset.total) || grid.querySelectorAll('.booth-card-mobile').length;
+    
+    // Update info display
+    const infoDiv = document.querySelector('.booth-grid-info');
+    if (infoDiv) {
+        const visibleCountEl = infoDiv.querySelector('#boothVisibleCount');
+        const totalCountEl = infoDiv.querySelector('#boothTotalCount');
+        if (visibleCountEl) {
+            visibleCountEl.textContent = newVisible;
+        }
+        if (totalCountEl) {
+            totalCountEl.textContent = totalBooths;
+        }
+    }
+    
+    // Show booths with animation
+    setTimeout(function() {
+        boothsToShow.forEach(function(booth, index) {
+            setTimeout(function() {
+                booth.classList.remove('booth-lazy-hidden');
+                booth.style.opacity = '0';
+                booth.style.transform = 'translateY(10px)';
+                
+                // Animate in
+                setTimeout(function() {
+                    booth.style.transition = 'all 0.3s ease';
+                    booth.style.opacity = '1';
+                    booth.style.transform = 'translateY(0)';
+                }, 10);
+            }, index * 20); // Stagger animation
+        });
+        
+        // Update remaining count
+        const remainingBooths = hiddenBooths.length - boothsToShow.length;
+        const remainingCountEl = loadMoreBtn.querySelector('.booth-remaining-count');
+        
+        // Update scroll indicators after new items are added
+        setTimeout(function() {
+            updateBoothScrollIndicators(gridId);
+        }, 400);
+        
+        if (remainingBooths > 0) {
+            if (remainingCountEl) {
+                remainingCountEl.textContent = remainingBooths;
+            }
+            // Restore button
+            loadMoreBtn.disabled = false;
+            loadMoreBtn.classList.remove('loading');
+            loadMoreBtn.innerHTML = originalHTML;
+        } else {
+            // Hide button if all loaded
+            const container = loadMoreBtn.closest('.booth-load-more-container');
+            if (container) {
+                container.style.transition = 'opacity 0.3s ease';
+                container.style.opacity = '0';
+                setTimeout(function() {
+                    container.style.display = 'none';
+                }, 300);
+            }
+        }
+    }, 300);
+}
+
 function updateSelection() {
     const selected = [];
     let totalAmount = 0;
@@ -3627,8 +5663,20 @@ function updateSelection() {
         const boothId = checkbox.value;
         const boothNumber = boothCard.querySelector('.booth-number-mobile').textContent;
         const price = parseFloat(boothCard.dataset.price) || 0;
+        const category = boothCard.dataset.category || 'N/A';
+        const status = boothCard.dataset.status || 'N/A';
         
-        selected.push({ id: boothId, number: boothNumber, price: price });
+        // Get status label from the status badge if available
+        const statusBadge = boothCard.querySelector('.booth-status-mobile');
+        const statusLabel = statusBadge ? statusBadge.textContent.trim() : status;
+        
+        selected.push({ 
+            id: boothId, 
+            number: boothNumber, 
+            price: price,
+            category: category,
+            status: statusLabel
+        });
         totalAmount += price;
     });
     
@@ -3637,12 +5685,43 @@ function updateSelection() {
     if (selected.length > 0) {
         let html = '';
         selected.forEach(function(booth) {
-            html += '<div class="selected-booth-item-mobile">';
+            // Determine status class
+            const statusLower = booth.status.toLowerCase();
+            let statusClass = 'other';
+            if (statusLower.includes('available') || statusLower.includes('free')) {
+                statusClass = 'available';
+            } else if (statusLower.includes('reserved')) {
+                statusClass = 'reserved';
+            } else if (statusLower.includes('booked') || statusLower.includes('occupied')) {
+                statusClass = 'booked';
+            }
+            
             html += '<div class="selected-booth-info-mobile">';
+            html += '<div class="selected-booth-header">';
+            html += '<div class="selected-booth-main-info">';
+            html += '<div class="selected-booth-number">';
             html += '<i class="fas fa-cube"></i>';
             html += '<span>' + booth.number + '</span>';
             html += '</div>';
+            html += '</div>';
             html += '<div class="selected-booth-price-mobile">$' + booth.price.toFixed(2) + '</div>';
+            html += '</div>';
+            html += '<div class="selected-booth-details">';
+            html += '<div class="selected-booth-detail-item">';
+            html += '<i class="fas fa-hashtag"></i>';
+            html += '<span class="detail-label">ID:</span>';
+            html += '<span class="detail-value">' + booth.id + '</span>';
+            html += '</div>';
+            html += '<div class="selected-booth-detail-item">';
+            html += '<i class="fas fa-tag"></i>';
+            html += '<span class="detail-label">Category:</span>';
+            html += '<span class="detail-value">' + (booth.category !== 'n/a' ? booth.category.charAt(0).toUpperCase() + booth.category.slice(1) : 'N/A') + '</span>';
+            html += '</div>';
+            html += '<div class="selected-booth-status ' + statusClass + '">';
+            html += '<i class="fas fa-circle" style="font-size: 6px;"></i>';
+            html += '<span>' + booth.status + '</span>';
+            html += '</div>';
+            html += '</div>';
             html += '</div>';
         });
         listContainer.innerHTML = html;
@@ -3699,7 +5778,7 @@ function updateSelection() {
 }
 
 function selectAllBooths() {
-    // Only select visible booths in the active letter tab
+    // Only select visible booths in the active letter tab (including lazy loaded ones)
     const activeLetter = document.querySelector('.booth-letter-content.active');
     if (activeLetter) {
         activeLetter.querySelectorAll('.booth-card-mobile').forEach(function(card) {
@@ -3710,7 +5789,7 @@ function selectAllBooths() {
             }
         });
     } else {
-        // Fallback: select all visible booths
+        // Fallback: select all visible booths (including lazy loaded ones)
         document.querySelectorAll('.booth-card-mobile').forEach(function(card) {
             const checkbox = card.querySelector('.booth-checkbox-mobile');
             if (card.style.display !== 'none' && !card.classList.contains('disabled') && checkbox) {
@@ -3730,11 +5809,236 @@ function clearSelection() {
     updateSelection();
 }
 
+// Booking Persistence Functions
+function saveBookingToStorage() {
+    const bookingData = {
+        clientId: $('#clientid').val() || '',
+        date: $('#date_book').val() || '',
+        type: $('#type').val() || '',
+        floorPlanId: $('#floor_plan_id').val() || '',
+        boothIds: [],
+        bookingTypeView: getFromLocalStorage('booking_type_view', 'icon'),
+        floorPlanView: getFromLocalStorage('floor_plan_view', 'icon')
+    };
+    
+    // Get selected booths
+    $('.booth-checkbox-mobile:checked').each(function() {
+        bookingData.boothIds.push($(this).val());
+    });
+    
+    // Get client info if available
+    const clientInfo = $('#selectedClientInfo');
+    if (clientInfo.is(':visible')) {
+        bookingData.clientName = $('#selectedClientName').text() || '';
+        bookingData.clientCompany = $('#selectedClientDetails').text() || '';
+    }
+    
+    localStorage.setItem('booking_draft', JSON.stringify(bookingData));
+}
+
+function loadBookingFromStorage() {
+    try {
+        const savedData = localStorage.getItem('booking_draft');
+        if (!savedData) return false;
+        
+        const bookingData = JSON.parse(savedData);
+        let hasData = false;
+        
+        // Restore client
+        if (bookingData.clientId && bookingData.clientId !== '') {
+            $('#clientid').val(bookingData.clientId);
+            hasData = true;
+            
+            // Try to fetch client data via AJAX to restore full client info
+            $.ajax({
+                url: '{{ route("clients.search") }}',
+                method: 'GET',
+                data: { q: '', id: bookingData.clientId },
+                success: function(clients) {
+                    if (clients && clients.length > 0) {
+                        const client = clients[0];
+                        if (typeof selectClient === 'function') {
+                            selectClient(client);
+                        }
+                    } else if (bookingData.clientName) {
+                        // Fallback: restore with saved name if AJAX fails
+                        const clientInfo = $('#selectedClientInfo');
+                        if (clientInfo.length) {
+                            $('#selectedClientName').text(bookingData.clientName);
+                            if (bookingData.clientCompany) {
+                                $('#selectedClientCompany').text(bookingData.clientCompany);
+                            }
+                            clientInfo.show();
+                            $('#clientSearchContainer').hide();
+                        }
+                    }
+                },
+                error: function() {
+                    // Fallback: restore with saved name if AJAX fails
+                    if (bookingData.clientName) {
+                        const clientInfo = $('#selectedClientInfo');
+                        if (clientInfo.length) {
+                            $('#selectedClientName').text(bookingData.clientName);
+                            if (bookingData.clientCompany) {
+                                $('#selectedClientCompany').text(bookingData.clientCompany);
+                            }
+                            clientInfo.show();
+                            $('#clientSearchContainer').hide();
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Restore date
+        if (bookingData.date && bookingData.date !== '') {
+            $('#date_book').val(bookingData.date);
+            hasData = true;
+        }
+        
+        // Restore booking type
+        if (bookingData.type && bookingData.type !== '') {
+            $('#type').val(bookingData.type);
+            if (typeof selectBookingType === 'function') {
+                selectBookingType(bookingData.type, false);
+            }
+            hasData = true;
+        }
+        
+        // Restore floor plan
+        if (bookingData.floorPlanId && bookingData.floorPlanId !== '') {
+            $('#floor_plan_id').val(bookingData.floorPlanId);
+            // Don't reload page, just update selection
+            const floorPlanOption = $('.floor-plan-option[data-value="' + bookingData.floorPlanId + '"]');
+            if (floorPlanOption.length && typeof selectFloorPlan === 'function') {
+                const image = floorPlanOption.data('image') || '';
+                const name = floorPlanOption.data('name') || '';
+                const description = floorPlanOption.data('description') || '';
+                selectFloorPlan(bookingData.floorPlanId, image, name, description, false);
+            }
+            hasData = true;
+        }
+        
+        // Restore booths (after a short delay to ensure DOM is ready)
+        if (bookingData.boothIds && bookingData.boothIds.length > 0) {
+            setTimeout(function() {
+                bookingData.boothIds.forEach(function(boothId) {
+                    const checkbox = $('.booth-checkbox-mobile[value="' + boothId + '"]');
+                    if (checkbox.length) {
+                        checkbox.prop('checked', true);
+                        checkbox.closest('.booth-card-mobile').addClass('selected');
+                    }
+                });
+                if (typeof updateSelection === 'function') {
+                    updateSelection();
+                }
+                if (typeof updateProgress === 'function') {
+                    updateProgress();
+                }
+            }, 500);
+            hasData = true;
+        }
+        
+        // Restore view preferences
+        if (bookingData.bookingTypeView) {
+            saveToLocalStorage('booking_type_view', bookingData.bookingTypeView);
+        }
+        if (bookingData.floorPlanView) {
+            saveToLocalStorage('floor_plan_view', bookingData.floorPlanView);
+        }
+        
+        return hasData;
+    } catch (e) {
+        console.error('Error loading booking from storage:', e);
+        return false;
+    }
+}
+
+function clearBookingData() {
+    // Clear localStorage
+    localStorage.removeItem('booking_draft');
+    
+    // Clear form
+    $('#clientid').val('');
+    $('#date_book').val('');
+    $('#type').val('');
+    $('#floor_plan_id').val('');
+    
+    // Clear client selection UI
+    $('#selectedClientInfo').hide();
+    $('#clientSearchContainer').show();
+    $('#clientSearchInline').val('');
+    $('#inlineClientResults').hide();
+    
+    // Clear all booth selections
+    $('.booth-checkbox-mobile').prop('checked', false);
+    $('.booth-card-mobile').removeClass('selected');
+    
+    // Reset booking type view
+    if (typeof selectBookingType === 'function') {
+        selectBookingType('', false);
+    }
+    
+    // Reset floor plan (reload page to reset floor plan filter)
+    window.location.href = '{{ route("books.create") }}';
+}
+
 // Client Search & Select Functionality (adapted for mobile)
 $(document).ready(function() {
     let clientSearchTimeout;
     let inlineSearchTimeout;
     let selectedClient = null;
+    
+    // Load saved booking data on page load
+    const hasSavedData = loadBookingFromStorage();
+    if (hasSavedData) {
+        // Show a subtle notification that data was restored
+        setTimeout(function() {
+            if (typeof updateProgress === 'function') {
+                updateProgress();
+            }
+            if (typeof updateSelection === 'function') {
+                updateSelection();
+            }
+        }, 300);
+    }
+    
+    // Save booking data on form changes
+    $('#clientid, #date_book, #type, #floor_plan_id').on('change', function() {
+        saveBookingToStorage();
+    });
+    
+    // Save when booths are selected/deselected
+    $(document).on('change', '.booth-checkbox-mobile', function() {
+        setTimeout(function() {
+            saveBookingToStorage();
+        }, 100);
+    });
+    
+    // Clear Booking Button
+    $('#clearBookingBtn').on('click', function() {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Clear Booking?',
+                text: 'This will clear all your selections and start fresh. This action cannot be undone.',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, Clear All',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    clearBookingData();
+                }
+            });
+        } else {
+            if (confirm('Clear all booking data and start fresh?')) {
+                clearBookingData();
+            }
+        }
+    });
     
     // Initialize - check if client is already selected
     @if(old('clientid'))
@@ -3902,6 +6206,9 @@ $(document).ready(function() {
         $('#inlineClientResults').hide();
         $('#searchClientModal').modal('hide');
         
+        // Save to storage
+        saveBookingToStorage();
+        
         // Update progress indicator
         if (typeof updateProgress === 'function') {
             updateProgress();
@@ -3916,6 +6223,9 @@ $(document).ready(function() {
         $('#clientSearchContainer').show();
         $('#clientSearchInline').val('');
         $('#inlineClientResults').hide();
+        
+        // Save to storage
+        saveBookingToStorage();
         
         // Update progress indicator
         if (typeof updateProgress === 'function') {
@@ -3932,18 +6242,17 @@ $(document).ready(function() {
         }, 100);
     });
     
-    // Client Search Function (for modal) - same as desktop
+    // Client Search Function (for modal) - Card View with 150+ clients
+    let currentClientView = 'card';
+    
     function searchClients(query) {
-        if (!query || query.length < 2) {
-            $('#clientSearchResults').hide();
-            $('#noClientResults').hide();
-            return;
-        }
+        // If query is empty or less than 2 chars, load all clients (150+)
+        const searchQuery = query && query.length >= 2 ? query : '';
         
         $.ajax({
             url: '{{ route("clients.search") }}',
             method: 'GET',
-            data: { q: query },
+            data: { q: searchQuery },
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json',
@@ -3953,6 +6262,7 @@ $(document).ready(function() {
                 const resultsDiv = $('#clientSearchResults');
                 const resultsList = $('#clientSearchResultsList');
                 const noResultsDiv = $('#noClientResults');
+                const resultsCount = $('#clientResultsCount');
                 
                 resultsList.empty();
                 const clientsArray = Array.isArray(clients) ? clients : (clients ? Object.values(clients) : []);
@@ -3965,39 +6275,10 @@ $(document).ready(function() {
                 
                 noResultsDiv.hide();
                 resultsDiv.show();
+                resultsCount.text(clientsArray.length);
                 
-                clientsArray.forEach(function(client) {
-                    const displayName = (client.company || client.name || 'N/A');
-                    let detailsHTML = '<div class="client-result-details">';
-                    if (client.name && client.company) detailsHTML += '<div class="client-result-detail user"><i class="fas fa-user"></i><span>' + client.name + '</span></div>';
-                    if (client.email) detailsHTML += '<div class="client-result-detail email"><i class="fas fa-envelope"></i><span>' + client.email + '</span></div>';
-                    if (client.phone_number) detailsHTML += '<div class="client-result-detail phone"><i class="fas fa-phone"></i><span>' + client.phone_number + '</span></div>';
-                    detailsHTML += '</div>';
-                    
-                    const item = $('<div class="client-search-result"></div>')
-                        .html(
-                            '<div class="client-result-content">' +
-                                '<div class="client-result-name">' +
-                                    '<i class="fas fa-building"></i>' +
-                                    '<span>' + displayName + '</span>' +
-                                '</div>' +
-                                detailsHTML +
-                            '</div>' +
-                            '<button type="button" class="btn btn-modern btn-modern-primary select-client-btn" data-client-id="' + client.id + '">' +
-                                '<i class="fas fa-check mr-1"></i>Select' +
-                            '</button>'
-                        )
-                        .data('client', client);
-                    
-                    resultsList.append(item);
-                });
-                
-                $('.select-client-btn').on('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const client = $(this).closest('.client-search-result').data('client');
-                    selectClient(client);
-                });
+                // Render clients based on current view
+                renderClients(clientsArray, currentClientView);
             },
             error: function() {
                 $('#clientSearchResults').hide();
@@ -4006,9 +6287,158 @@ $(document).ready(function() {
         });
     }
     
+    function renderClients(clientsArray, view) {
+        const resultsList = $('#clientSearchResultsList');
+        resultsList.empty();
+        
+        if (view === 'card') {
+            // Card View
+            resultsList.removeClass('client-list-container').addClass('client-cards-container');
+            resultsList.css({
+                'display': 'grid',
+                'grid-template-columns': 'repeat(auto-fill, minmax(280px, 1fr))',
+                'gap': '16px',
+                'max-height': 'calc(100vh - 350px)',
+                'overflow-y': 'auto',
+                'padding': '0.5rem'
+            });
+            
+            clientsArray.forEach(function(client) {
+                const displayName = (client.company || client.name || 'N/A');
+                const clientName = client.name || '';
+                const companyName = client.company || '';
+                
+                let cardHTML = '<div class="client-card" style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">';
+                cardHTML += '<div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;">';
+                cardHTML += '<div style="flex: 1;">';
+                cardHTML += '<div style="font-size: 16px; font-weight: 700; color: #374151; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">';
+                cardHTML += '<i class="fas fa-building" style="color: #667eea; font-size: 14px;"></i>';
+                cardHTML += '<span>' + displayName + '</span>';
+                cardHTML += '</div>';
+                if (clientName && companyName) {
+                    cardHTML += '<div style="font-size: 13px; color: #6b7280; margin-bottom: 8px;"><i class="fas fa-user" style="margin-right: 6px; color: #9ca3af;"></i>' + clientName + '</div>';
+                }
+                cardHTML += '</div>';
+                cardHTML += '</div>';
+                
+                cardHTML += '<div class="client-card-details" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #f3f4f6;">';
+                if (client.email) {
+                    cardHTML += '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; color: #6b7280;">';
+                    cardHTML += '<i class="fas fa-envelope" style="color: #9ca3af; width: 16px;"></i>';
+                    cardHTML += '<span style="word-break: break-word;">' + client.email + '</span>';
+                    cardHTML += '</div>';
+                }
+                if (client.phone_number) {
+                    cardHTML += '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; color: #6b7280;">';
+                    cardHTML += '<i class="fas fa-phone" style="color: #9ca3af; width: 16px;"></i>';
+                    cardHTML += '<span>' + client.phone_number + '</span>';
+                    cardHTML += '</div>';
+                }
+                if (client.position) {
+                    cardHTML += '<div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #6b7280;">';
+                    cardHTML += '<i class="fas fa-briefcase" style="color: #9ca3af; width: 16px;"></i>';
+                    cardHTML += '<span>' + client.position + '</span>';
+                    cardHTML += '</div>';
+                }
+                cardHTML += '</div>';
+                
+                cardHTML += '<button type="button" class="select-client-card-btn" data-client-id="' + client.id + '" style="margin-top: 12px; width: 100%; padding: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s ease;">';
+                cardHTML += '<i class="fas fa-check mr-1"></i>Select Client';
+                cardHTML += '</button>';
+                cardHTML += '</div>';
+                
+                const item = $(cardHTML).data('client', client);
+                resultsList.append(item);
+            });
+        } else {
+            // List View
+            resultsList.removeClass('client-cards-container').addClass('client-list-container');
+            resultsList.css({
+                'display': 'block',
+                'max-height': 'calc(100vh - 350px)',
+                'overflow-y': 'auto',
+                'padding': '0.5rem'
+            });
+            
+            clientsArray.forEach(function(client) {
+                const displayName = (client.company || client.name || 'N/A');
+                let detailsHTML = '<div class="client-result-details">';
+                if (client.name && client.company) detailsHTML += '<div class="client-result-detail user"><i class="fas fa-user"></i><span>' + client.name + '</span></div>';
+                if (client.email) detailsHTML += '<div class="client-result-detail email"><i class="fas fa-envelope"></i><span>' + client.email + '</span></div>';
+                if (client.phone_number) detailsHTML += '<div class="client-result-detail phone"><i class="fas fa-phone"></i><span>' + client.phone_number + '</span></div>';
+                detailsHTML += '</div>';
+                
+                const item = $('<div class="client-search-result"></div>')
+                    .html(
+                        '<div class="client-result-content">' +
+                            '<div class="client-result-name">' +
+                                '<i class="fas fa-building"></i>' +
+                                '<span>' + displayName + '</span>' +
+                            '</div>' +
+                            detailsHTML +
+                        '</div>' +
+                        '<button type="button" class="btn btn-modern btn-modern-primary select-client-btn" data-client-id="' + client.id + '">' +
+                            '<i class="fas fa-check mr-1"></i>Select' +
+                        '</button>'
+                    )
+                    .data('client', client);
+                
+                resultsList.append(item);
+            });
+        }
+        
+        // Attach click handlers
+        $('.select-client-card-btn, .select-client-btn').off('click').on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const client = $(this).closest('.client-card, .client-search-result').data('client');
+            if (client) {
+                selectClient(client);
+                $('#searchClientModal').modal('hide');
+            }
+        });
+        
+        // Card click handler
+        $('.client-card').off('click').on('click', function(e) {
+            if (!$(e.target).closest('.select-client-card-btn').length) {
+                const client = $(this).data('client');
+                if (client) {
+                    selectClient(client);
+                    $('#searchClientModal').modal('hide');
+                }
+            }
+        });
+    }
+    
+    // View toggle handler
+    $('.view-toggle-btn').on('click', function() {
+        const view = $(this).data('view');
+        currentClientView = view;
+        $('.view-toggle-btn').removeClass('active');
+        $(this).addClass('active');
+        
+        // Re-render with current search query
+        const query = $('#clientSearchInput').val().trim();
+        searchClients(query);
+    });
+    
+    // Modal open handler - load 150 clients automatically
+    $('#searchClientModal').on('shown.bs.modal', function() {
+        // Load all clients (150+) when modal opens
+        searchClients('');
+        $('#clientSearchResults').show();
+    });
+    
     $('#clientSearchInput').on('input keyup', function(e) {
         const query = $(this).val().trim();
         clearTimeout(clientSearchTimeout);
+        
+        if (query.length === 0) {
+            // If empty, show all clients
+            $('#btnClearClientSearch').hide();
+            searchClients('');
+            return;
+        }
         
         if (query.length < 2) {
             $('#clientSearchResults').hide();
@@ -4025,16 +6455,24 @@ $(document).ready(function() {
     
     $('#btnSearchClient').on('click', function() {
         const query = $('#clientSearchInput').val().trim();
-        if (query.length >= 2) {
-            searchClients(query);
-        }
+        searchClients(query);
     });
     
     $('#btnClearClientSearch').on('click', function() {
         $('#clientSearchInput').val('');
-        $('#clientSearchResults').hide();
+        $('#clientSearchResults').show();
         $('#noClientResults').hide();
         $(this).hide();
+        // Reload all clients
+        searchClients('');
+    });
+    
+    // Reset modal when closed
+    $('#searchClientModal').on('hidden.bs.modal', function() {
+        $('#clientSearchInput').val('');
+        $('#clientSearchResults').hide();
+        $('#noClientResults').hide();
+        $('#btnClearClientSearch').hide();
     });
     
     // Create Client Form Submission
@@ -4178,6 +6616,9 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if (response.success) {
+                    // Clear saved booking data on successful submission
+                    localStorage.removeItem('booking_draft');
+                    
                     if (typeof Swal !== 'undefined') {
                         Swal.fire({
                             icon: 'success',
@@ -4285,54 +6726,109 @@ $(document).ready(function() {
         return false;
     });
     
-    // Progress Indicator Updates - Enhanced with animated lines
+    // Progress Indicator Updates - Enhanced with step info
     function updateProgress() {
         const clientId = $('#clientid').val();
         const hasBooths = $('.booth-checkbox-mobile:checked').length > 0;
         const hasDate = $('#date_book').val() && $('#date_book').val() !== '';
+        const selectedClientName = $('#selectedClientName').text() || '';
+        const selectedDate = $('#date_book').val() || '';
+        const boothCount = $('.booth-checkbox-mobile:checked').length;
         
         // Step 1: Client
         if (clientId && clientId !== '') {
-            $('#progressStep1').addClass('completed').removeClass('active').html('<i class="fas fa-check"></i>');
+            $('#progressStep1').addClass('completed').removeClass('active pending').html('<i class="fas fa-check"></i>');
             $('#clientSection').addClass('completed');
+            $('#stepInfo1 .step-title').css('color', '#22c55e');
+            $('#stepInfo1 .step-status').text(selectedClientName || 'Client selected').css('color', '#22c55e');
             // Animate progress line 1
             setTimeout(function() {
                 $('#progressLine1').addClass('completed');
+                $('#progressLine1 .progress-line-fill').css('width', '100%');
             }, 200);
         } else {
-            $('#progressStep1').addClass('active').removeClass('completed').html('<i class="fas fa-user"></i>');
+            $('#progressStep1').addClass('active').removeClass('completed pending').html('<i class="fas fa-user"></i>');
             $('#clientSection').removeClass('completed');
+            $('#stepInfo1 .step-title').css('color', '#667eea');
+            $('#stepInfo1 .step-status').text('Select client').css('color', '#9ca3af');
             $('#progressLine1').removeClass('completed');
+            $('#progressLine1 .progress-line-fill').css('width', '0%');
         }
         
         // Step 2: Details (active after client, completed when date is set)
         if (clientId && clientId !== '') {
             if (hasDate) {
-                $('#progressStep2').addClass('completed').removeClass('active').html('<i class="fas fa-check"></i>');
+                $('#progressStep2').addClass('completed').removeClass('active pending').html('<i class="fas fa-check"></i>');
+                $('#stepInfo2 .step-title').css('color', '#22c55e');
+                $('#stepInfo2 .step-status').text(selectedDate || 'Date set').css('color', '#22c55e');
                 // Animate progress line 2
                 setTimeout(function() {
                     $('#progressLine2').addClass('completed');
+                    $('#progressLine2 .progress-line-fill').css('width', '100%');
                 }, 200);
             } else {
-                $('#progressStep2').addClass('active').removeClass('completed').html('<i class="fas fa-calendar"></i>');
+                $('#progressStep2').addClass('active').removeClass('completed pending').html('<i class="fas fa-calendar"></i>');
+                $('#stepInfo2 .step-title').css('color', '#667eea');
+                $('#stepInfo2 .step-status').text('Set booking date').css('color', '#9ca3af');
                 $('#progressLine2').removeClass('completed');
+                $('#progressLine2 .progress-line-fill').css('width', '0%');
             }
         } else {
-            $('#progressStep2').removeClass('active').removeClass('completed').html('<i class="fas fa-calendar"></i>');
+            $('#progressStep2').addClass('pending').removeClass('active completed').html('<i class="fas fa-calendar"></i>');
+            $('#stepInfo2 .step-title').css('color', '#9ca3af');
+            $('#stepInfo2 .step-status').text('Set date').css('color', '#d1d5db');
             $('#progressLine2').removeClass('completed');
+            $('#progressLine2 .progress-line-fill').css('width', '0%');
         }
         
         // Step 3: Booths
         if (hasBooths) {
-            $('#progressStep3').addClass('completed').removeClass('active').html('<i class="fas fa-check"></i>');
+            $('#progressStep3').addClass('completed').removeClass('active pending').html('<i class="fas fa-check"></i>');
             $('#boothSection').addClass('completed');
+            $('#stepInfo3 .step-title').css('color', '#22c55e');
+            $('#stepInfo3 .step-status').text(boothCount + ' booth' + (boothCount > 1 ? 's' : '') + ' selected').css('color', '#22c55e');
         } else {
             if (clientId && hasDate) {
-                $('#progressStep3').addClass('active').removeClass('completed').html('<i class="fas fa-cube"></i>');
+                $('#progressStep3').addClass('active').removeClass('completed pending').html('<i class="fas fa-cube"></i>');
+                $('#stepInfo3 .step-title').css('color', '#667eea');
+                $('#stepInfo3 .step-status').text('Select booths').css('color', '#9ca3af');
             } else {
-                $('#progressStep3').removeClass('active').removeClass('completed').html('<i class="fas fa-cube"></i>');
+                $('#progressStep3').addClass('pending').removeClass('active completed').html('<i class="fas fa-cube"></i>');
+                $('#stepInfo3 .step-title').css('color', '#9ca3af');
+                $('#stepInfo3 .step-status').text('Select booths').css('color', '#d1d5db');
             }
             $('#boothSection').removeClass('completed');
+        }
+        
+        // Update current step message
+        let currentMessage = '';
+        let currentStep = 0;
+        
+        if (!clientId || clientId === '') {
+            currentMessage = 'Please select a client to begin your booking';
+            currentStep = 1;
+        } else if (!hasDate) {
+            currentMessage = 'Great! Now please set the booking date';
+            currentStep = 2;
+        } else if (!hasBooths) {
+            currentMessage = 'Almost done! Select at least one booth for this booking';
+            currentStep = 3;
+        } else {
+            currentMessage = 'Perfect! All steps completed. Review and submit your booking';
+            currentStep = 0;
+        }
+        
+        $('#currentStepMessage').text(currentMessage);
+        
+        // Update highlight border color based on current step
+        if (currentStep === 1) {
+            $('#currentStepHighlight').css('border-left-color', '#667eea');
+        } else if (currentStep === 2) {
+            $('#currentStepHighlight').css('border-left-color', '#667eea');
+        } else if (currentStep === 3) {
+            $('#currentStepHighlight').css('border-left-color', '#667eea');
+        } else {
+            $('#currentStepHighlight').css('border-left-color', '#22c55e');
         }
     }
     
@@ -4428,3 +6924,55 @@ $(document).ready(function() {
 });
 </script>
 @endpush
+
+<!-- Modern Mobile Bottom Navigation - Sticky at Bottom -->
+<nav class="modern-mobile-nav">
+    @php
+        try {
+            $moduleSettings = \App\Models\Setting::getModuleDisplaySettings();
+        } catch (\Exception $e) {
+            $moduleSettings = [
+                'dashboard' => ['mobile' => true, 'tablet' => true],
+                'booths' => ['mobile' => true, 'tablet' => true],
+                'bookings' => ['mobile' => true, 'tablet' => true],
+                'clients' => ['mobile' => true, 'tablet' => true],
+                'settings' => ['mobile' => true, 'tablet' => true],
+            ];
+        }
+    @endphp
+    
+    @if(($moduleSettings['dashboard']['mobile'] ?? true) || ($moduleSettings['dashboard']['tablet'] ?? true))
+    <a href="{{ route('dashboard') }}" class="modern-mobile-nav-item" data-route="dashboard">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+    </a>
+    @endif
+    
+    @if(($moduleSettings['booths']['mobile'] ?? true) || ($moduleSettings['booths']['tablet'] ?? true))
+    <a href="{{ route('booths.index', ['view' => 'table']) }}" class="modern-mobile-nav-item" data-route="booths">
+        <i class="fas fa-store"></i>
+        <span>Booths</span>
+    </a>
+    @endif
+    
+    @if(($moduleSettings['bookings']['mobile'] ?? true) || ($moduleSettings['bookings']['tablet'] ?? true))
+    <a href="{{ route('books.index') }}" class="modern-mobile-nav-item active" data-route="books">
+        <i class="fas fa-calendar-check"></i>
+        <span>Bookings</span>
+    </a>
+    @endif
+    
+    @if(($moduleSettings['clients']['mobile'] ?? true) || ($moduleSettings['clients']['tablet'] ?? true))
+    <a href="{{ route('clients.index') }}" class="modern-mobile-nav-item" data-route="clients">
+        <i class="fas fa-users"></i>
+        <span>Clients</span>
+    </a>
+    @endif
+    
+    @if(($moduleSettings['settings']['mobile'] ?? true) || ($moduleSettings['settings']['tablet'] ?? true))
+    <a href="{{ route('settings.index') }}" class="modern-mobile-nav-item" data-route="settings">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+    </a>
+    @endif
+</nav>

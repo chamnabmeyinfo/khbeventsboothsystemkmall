@@ -433,34 +433,40 @@ class ClientController extends Controller
                 return response()->json([]);
             }
             
-            if (empty($query)) {
-                return response()->json([]);
-            }
-            
             // Check which columns exist in the database
             $columns = \DB::select("SHOW COLUMNS FROM `client`");
             $columnNames = array_map(function($col) {
                 return $col->Field;
             }, $columns);
             
-            // Build search query with only existing columns
-            $clients = Client::where(function($q) use ($query, $columnNames) {
-                    $q->where('name', 'like', "%{$query}%")
-                      ->orWhere('company', 'like', "%{$query}%")
-                      ->orWhere('phone_number', 'like', "%{$query}%");
-                    
-                    // Add email search only if column exists
-                    if (in_array('email', $columnNames)) {
-                        $q->orWhere('email', 'like', "%{$query}%");
-                    }
-                });
-            
-            // Order by company (handle NULLs) then by name
-            $clients = $clients->orderByRaw('CASE WHEN company IS NULL OR company = "" THEN 1 ELSE 0 END')
-                ->orderBy('company')
-                ->orderBy('name')
-                ->limit(20)
-                ->get();
+            // Build query - if query is empty, load all clients (at least 150)
+            if (empty($query)) {
+                // Load all clients, ordered by company then name
+                $clients = Client::orderByRaw('CASE WHEN company IS NULL OR company = "" THEN 1 ELSE 0 END')
+                    ->orderBy('company')
+                    ->orderBy('name')
+                    ->limit(150)
+                    ->get();
+            } else {
+                // Build search query with only existing columns
+                $clients = Client::where(function($q) use ($query, $columnNames) {
+                        $q->where('name', 'like', "%{$query}%")
+                          ->orWhere('company', 'like', "%{$query}%")
+                          ->orWhere('phone_number', 'like', "%{$query}%");
+                        
+                        // Add email search only if column exists
+                        if (in_array('email', $columnNames)) {
+                            $q->orWhere('email', 'like', "%{$query}%");
+                        }
+                    });
+                
+                // Order by company (handle NULLs) then by name
+                $clients = $clients->orderByRaw('CASE WHEN company IS NULL OR company = "" THEN 1 ELSE 0 END')
+                    ->orderBy('company')
+                    ->orderBy('name')
+                    ->limit(150) // Increased limit for search results too
+                    ->get();
+            }
             
             $results = $clients->map(function ($client) use ($columnNames) {
                 return [
