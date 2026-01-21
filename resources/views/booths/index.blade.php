@@ -1748,40 +1748,7 @@
     outline-offset: 2px;
 }
 
-.dropped-booth.selected .booth-color-picker-btn {
-    display: block !important;
-}
-
-/* Individual Booth Color Picker Button */
-.booth-color-picker-btn {
-    position: absolute;
-    top: -12px;
-    right: -12px;
-    width: 32px;
-    height: 32px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: 2px solid white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 1001;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    transition: all 0.2s ease;
-    font-size: 14px;
-}
-
-.booth-color-picker-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
-    background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
-}
-
-.booth-color-picker-btn:active {
-    transform: scale(0.95);
-}
+/* Color picker button removed - now accessed via right-click context menu */
 
 .dropped-booth.dragging {
     opacity: 0.85;
@@ -1882,32 +1849,64 @@
     position: fixed;
     background: white;
     border: 1px solid #ddd;
-    border-radius: 4px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
     z-index: 10000;
-    min-width: 180px;
-    padding: 4px 0;
+    min-width: 220px;
+    padding: 8px 0;
     font-size: 14px;
+    overflow: hidden;
 }
 
 .context-menu-item {
-    padding: 8px 16px;
+    padding: 12px 18px;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     color: #333;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
 }
 
 .context-menu-item:hover {
-    background-color: #f0f0f0;
+    background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.05) 100%);
+    border-left-color: #667eea;
+    padding-left: 20px;
 }
 
 .context-menu-item i {
-    width: 18px;
+    width: 20px;
     text-align: center;
-    color: #007bff;
+    font-size: 16px;
+    color: #667eea;
+}
+
+.context-menu-divider {
+    height: 1px;
+    background: #e0e0e0;
+    margin: 6px 0;
+}
+
+/* Right-click progress indicator for long-press */
+.right-click-progress {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(102, 126, 234, 0.2);
+    border-top-color: #667eea;
+    border-radius: 50%;
+    z-index: 10000;
+    pointer-events: none;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 /* Locked booth styles */
@@ -6718,6 +6717,10 @@ const FloorPlanDesigner = {
         contextMenu.id = 'boothContextMenu';
         contextMenu.className = 'booth-context-menu';
         contextMenu.innerHTML = `
+            <div class="context-menu-item" data-action="set-colors" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600;">
+                <i class="fas fa-palette"></i> Set Individual Colors
+            </div>
+            <div class="context-menu-divider"></div>
             <div class="context-menu-item" data-action="set-price">
                 <i class="fas fa-dollar-sign"></i> Set Price
             </div>
@@ -6856,6 +6859,9 @@ const FloorPlanDesigner = {
                                 });
                         }
                     });
+                } else if (action === 'set-colors') {
+                    // Open individual booth color picker
+                    self.openBoothColorPicker(boothId, boothNumber, boothElement);
                 } else if (action === 'book') {
                     self.showBookBoothModal(boothId, boothNumber, boothElement);
                 }
@@ -9866,20 +9872,13 @@ const FloorPlanDesigner = {
         transformControls.style.display = 'none';
         div.appendChild(transformControls);
         
-        // Add individual booth color picker button (separate from zone settings)
-        const colorPickerBtn = document.createElement('div');
-        colorPickerBtn.className = 'booth-color-picker-btn';
-        colorPickerBtn.innerHTML = '<i class="fas fa-palette"></i>';
-        colorPickerBtn.title = 'Set Individual Booth Colors';
-        colorPickerBtn.style.display = 'none'; // Hidden by default, shown when selected
-        colorPickerBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            e.preventDefault();
-            self.openBoothColorPicker(boothData.id, boothData.number, div);
-        });
-        div.appendChild(colorPickerBtn);
+        // Add right-click context menu handler with long-press detection (2 seconds for color settings)
+        let rightClickStartTime = 0;
+        let rightClickTimer = null;
+        let isRightClickHeld = false;
+        let progressIndicator = null;
+        let originalTransform = '';
         
-        // Add right-click context menu handler
         div.addEventListener('contextmenu', function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -9887,8 +9886,65 @@ const FloorPlanDesigner = {
             const boothId = div.getAttribute('data-booth-id');
             const boothNumber = div.getAttribute('data-booth-number');
             
-            // Show context menu
-            self.showBoothContextMenu(e, boothId, boothNumber, div);
+            // Store original transform
+            originalTransform = div.style.transform || '';
+            
+            // Start timer for long-press detection (2 seconds)
+            rightClickStartTime = Date.now();
+            isRightClickHeld = false;
+            
+            // Show visual feedback that right-click is being held
+            div.style.opacity = '0.8';
+            div.style.transform = originalTransform + (originalTransform ? ' ' : '') + 'scale(1.08)';
+            
+            // Create a progress indicator
+            progressIndicator = document.createElement('div');
+            progressIndicator.className = 'right-click-progress';
+            div.appendChild(progressIndicator);
+            
+            // Timer for 2 seconds - show color picker directly
+            rightClickTimer = setTimeout(function() {
+                isRightClickHeld = true;
+                
+                // Clean up visual feedback
+                div.style.opacity = '';
+                div.style.transform = originalTransform;
+                if (progressIndicator && progressIndicator.parentElement) {
+                    progressIndicator.remove();
+                }
+                
+                // Open color picker directly after 2 seconds
+                self.openBoothColorPicker(boothId, boothNumber, div);
+            }, 2000);
+            
+            // Clean up on mouse release
+            const cleanup = function() {
+                if (rightClickTimer) {
+                    clearTimeout(rightClickTimer);
+                    rightClickTimer = null;
+                }
+                
+                // Restore original appearance
+                div.style.opacity = '';
+                div.style.transform = originalTransform;
+                if (progressIndicator && progressIndicator.parentElement) {
+                    progressIndicator.remove();
+                }
+                
+                // If NOT held for 2 seconds, show regular context menu
+                if (!isRightClickHeld) {
+                    // Show context menu immediately (quick right-click)
+                    self.showBoothContextMenu(e, boothId, boothNumber, div);
+                }
+                
+                document.removeEventListener('mouseup', cleanup);
+                document.removeEventListener('contextmenu', cleanup);
+                document.removeEventListener('mousemove', cleanup);
+            };
+            
+            document.addEventListener('mouseup', cleanup);
+            document.addEventListener('contextmenu', cleanup);
+            document.addEventListener('mousemove', cleanup);
         });
         
         return div;
@@ -10111,11 +10167,6 @@ const FloorPlanDesigner = {
                 // Single select - deselect all others
             document.querySelectorAll('.dropped-booth').forEach(function(booth) {
                 booth.classList.remove('selected');
-                // Hide color picker button when deselected
-                const colorPickerBtn = booth.querySelector('.booth-color-picker-btn');
-                if (colorPickerBtn) {
-                    colorPickerBtn.style.display = 'none';
-                }
                 const ctrl = booth.querySelector('.transform-controls');
                 if (ctrl) {
                     ctrl.style.display = 'none';
@@ -10132,11 +10183,6 @@ const FloorPlanDesigner = {
                     const index = self.selectedBooths.indexOf(element);
                     if (index > -1) {
                         self.selectedBooths.splice(index, 1);
-                    }
-                    // Hide color picker button when deselected
-                    const colorPickerBtn = element.querySelector('.booth-color-picker-btn');
-                    if (colorPickerBtn) {
-                        colorPickerBtn.style.display = 'none';
                     }
                     const handles = element.querySelectorAll('.resize-handle');
                     handles.forEach(function(handle) {
@@ -10161,12 +10207,6 @@ const FloorPlanDesigner = {
             // Add to selection
             element.classList.add('selected');
             const controls = element.querySelector('.transform-controls');
-            
-            // Show color picker button when booth is selected
-            const colorPickerBtn = element.querySelector('.booth-color-picker-btn');
-            if (colorPickerBtn) {
-                colorPickerBtn.style.display = 'block';
-            }
             
             // Update information toolbar with booth data first (but don't update if in edit mode)
             // Check if toolbar is already in edit mode - if so, skip update to preserve inputs
