@@ -45,22 +45,37 @@ class ReportController extends Controller
             $bookingTotal = $booths->sum('price');
             $totalRevenue += $bookingTotal;
 
-            // Check if all booths in booking are paid
+            // Calculate actual paid revenue - sum of deposit_paid + balance_paid for all booths
+            // This gives accurate paid amount regardless of status
+            $bookingPaid = $booths->sum(function ($booth) {
+                $depositPaid = (float) ($booth->deposit_paid ?? 0);
+                $balancePaid = (float) ($booth->balance_paid ?? 0);
+                return $depositPaid + $balancePaid;
+            });
+            
+            $paidRevenue += $bookingPaid;
+
+            // Check if all booths in booking are fully paid (status = PAID)
             $allPaid = $booths->count() > 0 && $booths->every(function ($booth) {
                 return $booth->status === Booth::STATUS_PAID;
             });
 
+            // Determine booking status based on payment
+            $bookingStatus = 'Pending';
             if ($allPaid) {
-                $paidRevenue += $bookingTotal;
+                $bookingStatus = 'Fully Paid';
+            } elseif ($bookingPaid > 0) {
+                $bookingStatus = 'Partially Paid';
             }
-
+            
             $bookingData[] = [
                 'id' => $book->id,
                 'date' => $book->date_book->format('Y-m-d'),
                 'client' => $book->client ? $book->client->company : 'N/A',
                 'booths_count' => $booths->count(),
                 'total' => $bookingTotal,
-                'status' => $allPaid ? 'Paid' : 'Pending',
+                'paid' => $bookingPaid,
+                'status' => $bookingStatus,
                 'user' => $book->user ? $book->user->username : 'N/A',
             ];
         }
@@ -158,13 +173,14 @@ class ReportController extends Controller
                 $bookingTotal = $booths->sum('price');
                 $totalRevenue += $bookingTotal;
 
-                $allPaid = $booths->count() > 0 && $booths->every(function ($booth) {
-                    return $booth->status === Booth::STATUS_PAID;
+                // Calculate actual paid revenue - sum of deposit_paid + balance_paid for all booths
+                $bookingPaid = $booths->sum(function ($booth) {
+                    $depositPaid = (float) ($booth->deposit_paid ?? 0);
+                    $balancePaid = (float) ($booth->balance_paid ?? 0);
+                    return $depositPaid + $balancePaid;
                 });
-
-                if ($allPaid) {
-                    $paidRevenue += $bookingTotal;
-                }
+                
+                $paidRevenue += $bookingPaid;
             }
 
             $performance[] = [
@@ -174,7 +190,7 @@ class ReportController extends Controller
                 'total_bookings' => $totalBookings,
                 'total_revenue' => $totalRevenue,
                 'paid_revenue' => $paidRevenue,
-                'conversion_rate' => $totalBookings > 0 ? round(($paidRevenue / $totalRevenue) * 100, 2) : 0,
+                'conversion_rate' => ($totalRevenue > 0) ? round(($paidRevenue / $totalRevenue) * 100, 2) : 0,
             ];
         }
 
@@ -235,13 +251,14 @@ class ReportController extends Controller
             $grouped[$key]['total'] += $total;
             $grouped[$key]['count']++;
 
-            $allPaid = $booths->count() > 0 && $booths->every(function ($booth) {
-                return $booth->status === Booth::STATUS_PAID;
+            // Calculate actual paid revenue - sum of deposit_paid + balance_paid for all booths
+            $paid = $booths->sum(function ($booth) {
+                $depositPaid = (float) ($booth->deposit_paid ?? 0);
+                $balancePaid = (float) ($booth->balance_paid ?? 0);
+                return $depositPaid + $balancePaid;
             });
-
-            if ($allPaid) {
-                $grouped[$key]['paid'] += $total;
-            }
+            
+            $grouped[$key]['paid'] += $paid;
         }
 
         return array_values($grouped);
@@ -270,13 +287,14 @@ class ReportController extends Controller
                 $bookingTotal = $booths->sum('price');
                 $total += $bookingTotal;
 
-                $allPaid = $booths->count() > 0 && $booths->every(function ($booth) {
-                    return $booth->status === Booth::STATUS_PAID;
+                // Calculate actual paid revenue - sum of deposit_paid + balance_paid for all booths
+                $bookingPaid = $booths->sum(function ($booth) {
+                    $depositPaid = (float) ($booth->deposit_paid ?? 0);
+                    $balancePaid = (float) ($booth->balance_paid ?? 0);
+                    return $depositPaid + $balancePaid;
                 });
-
-                if ($allPaid) {
-                    $paid += $bookingTotal;
-                }
+                
+                $paid += $bookingPaid;
             }
 
             $labels[] = $date->format('M d');
