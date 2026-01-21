@@ -6,6 +6,7 @@ use App\Models\Booth;
 use App\Models\Book;
 use App\Models\Client;
 use App\Models\User;
+use App\Models\BookingTimeline;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -91,12 +92,33 @@ class ReportController extends Controller
             $dateStr = $date->format('Y-m-d');
 
             $bookings = Book::whereDate('date_book', $dateStr)->count();
-            $confirmed = Booth::whereDate('create_time', $dateStr)
-                ->where('status', Booth::STATUS_CONFIRMED)
-                ->count();
-            $paid = Booth::whereDate('create_time', $dateStr)
+            
+            // Count confirmed booths - use booking timeline to find when status changed to CONFIRMED
+            $confirmed = BookingTimeline::whereDate('created_at', $dateStr)
+                ->where('new_status', Booth::STATUS_CONFIRMED)
+                ->distinct('booth_id')
+                ->count('booth_id');
+            
+            // Count paid booths - use balance_paid_date or check timeline for fully_paid action
+            $paid = Booth::where(function($query) use ($dateStr) {
+                    $query->whereDate('balance_paid_date', $dateStr)
+                          ->orWhereDate('deposit_paid_date', $dateStr);
+                })
                 ->where('status', Booth::STATUS_PAID)
                 ->count();
+            
+            // Alternative: Also count from timeline if payment dates are not set
+            $paidFromTimeline = BookingTimeline::whereDate('created_at', $dateStr)
+                ->where(function($query) {
+                    $query->where('action', 'fully_paid')
+                          ->orWhere('action', 'balance_paid')
+                          ->orWhere('new_status', Booth::STATUS_PAID);
+                })
+                ->distinct('booth_id')
+                ->count('booth_id');
+            
+            // Use the higher count (either from payment dates or timeline)
+            $paid = max($paid, $paidFromTimeline);
 
             $trends[] = [
                 'date' => $date->format('M d'),
