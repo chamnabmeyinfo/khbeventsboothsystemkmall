@@ -742,10 +742,13 @@
         
         .booth-tooltip .tooltip-status {
             display: inline-block;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         
         .booth-modal {
@@ -865,8 +868,12 @@
         
         .booth-detail-value.status-badge {
             display: inline-block;
-            padding: 6px 16px;
+            padding: 8px 18px;
             border-radius: 25px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             font-size: 0.9rem;
             font-weight: 600;
             color: white;
@@ -1229,6 +1236,24 @@
                 const statusDescriptions = @json($statusDescriptionsArray);
                 const statusColors = @json($statusColorsArray);
                 
+                // Function to calculate contrasting text color (black or white) based on background
+                // This function is used globally for status badges
+                function getContrastColor(hexColor) {
+                    // Remove # if present
+                    hexColor = hexColor.replace('#', '');
+                    
+                    // Convert to RGB
+                    const r = parseInt(hexColor.substr(0, 2), 16);
+                    const g = parseInt(hexColor.substr(2, 2), 16);
+                    const b = parseInt(hexColor.substr(4, 2), 16);
+                    
+                    // Calculate luminance (relative brightness)
+                    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                    
+                    // Return black for light colors, white for dark colors
+                    return luminance > 0.5 ? '#000000' : '#ffffff';
+                }
+                
                 // Enhanced tooltip on hover
                 const tooltip = document.getElementById('boothTooltip');
                 let tooltipTimeout;
@@ -1271,13 +1296,13 @@
                     
                     let tooltipHTML = '<div class="tooltip-title"><i class="fas fa-store mr-1"></i>Booth ' + booth.booth_number + '</div>';
                     
-                    // Show client logo if available (prioritize over booth image)
+                    // Always show client logo if available (prioritize over booth image)
                     if (booth.client_logo) {
-                        tooltipHTML += '<div style="margin-bottom: 10px; text-align: center;"><img src="' + booth.client_logo + '" alt="' + (booth.company || 'Client Logo') + '" style="max-width: 100%; max-height: 120px; border-radius: 6px; object-fit: contain; box-shadow: 0 2px 6px rgba(0,0,0,0.2); background: rgba(255,255,255,0.1); padding: 8px;"></div>';
+                        tooltipHTML += '<div style="margin-bottom: 12px; text-align: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;"><img src="' + booth.client_logo + '" alt="' + (booth.company || 'Client Logo') + '" style="max-width: 100%; max-height: 140px; border-radius: 6px; object-fit: contain; box-shadow: 0 4px 12px rgba(0,0,0,0.3); background: rgba(255,255,255,0.95); padding: 12px;"></div>';
                     }
                     // Show booth image if available (and no client logo)
                     else if (booth.booth_image) {
-                        tooltipHTML += '<div style="margin-bottom: 10px; text-align: center;"><img src="' + booth.booth_image + '" alt="Booth Preview" style="max-width: 100%; max-height: 140px; border-radius: 6px; object-fit: cover; box-shadow: 0 2px 6px rgba(0,0,0,0.2);"></div>';
+                        tooltipHTML += '<div style="margin-bottom: 12px; text-align: center;"><img src="' + booth.booth_image + '" alt="Booth Preview" style="max-width: 100%; max-height: 140px; border-radius: 6px; object-fit: cover; box-shadow: 0 2px 6px rgba(0,0,0,0.2);"></div>';
                     }
                     
                     // Key information in organized sections
@@ -1288,9 +1313,10 @@
                         tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label"><i class="fas fa-tag mr-1"></i>Type:</span><span class="tooltip-value"><strong>' + booth.booth_type + '</strong></span></div>';
                     }
                     
-                    // Status with description
+                    // Status with description - calculate contrasting text color
                     const statusDescription = statusDescriptions[booth.status] || '';
-                    tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label"><i class="fas fa-info-circle mr-1"></i>Status:</span><span class="tooltip-value"><span class="tooltip-status" style="background: ' + statusColor + '">' + statusLabel + '</span></span></div>';
+                    const contrastColor = getContrastColor(statusColor);
+                    tooltipHTML += '<div class="tooltip-row"><span class="tooltip-label"><i class="fas fa-info-circle mr-1"></i>Status:</span><span class="tooltip-value"><span class="tooltip-status" style="background: ' + statusColor + '; color: ' + contrastColor + ';">' + statusLabel + '</span></span></div>';
                     if (statusDescription) {
                         tooltipHTML += '<div style="margin-top: 4px; padding-left: 20px; font-size: 0.85rem; color: rgba(255,255,255,0.85); font-style: italic;">' + statusDescription + '</div>';
                     }
@@ -1680,6 +1706,7 @@
             const statusLabel = statusLabels[booth.status] || 'Unknown';
             const statusColor = statusColors[booth.status] || '#6c757d';
             const statusDescription = (statusDescriptions && statusDescriptions[booth.status]) ? statusDescriptions[booth.status] : '';
+            const contrastColor = getContrastColor(statusColor);
             
             let html = '';
             
@@ -1714,7 +1741,8 @@
             
             html += '<div class="booth-detail-row">';
             html += '<span class="booth-detail-label"><i class="fas fa-info-circle"></i> Status:</span>';
-            html += '<span class="booth-detail-value status-badge" style="background: ' + statusColor + '">' + statusLabel + '</span>';
+            const contrastColor = getContrastColor(statusColor);
+            html += '<span class="booth-detail-value status-badge" style="background: ' + statusColor + '; color: ' + contrastColor + ';">' + statusLabel + '</span>';
             html += '</div>';
             
             if (statusDescription) {
