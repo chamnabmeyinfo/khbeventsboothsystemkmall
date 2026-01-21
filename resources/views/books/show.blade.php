@@ -155,11 +155,18 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="text-muted"><i class="fas fa-info-circle mr-2"></i>Status:</span>
                             @php
-                                $statusSetting = $book->statusSetting ?? \App\Models\BookingStatusSetting::getByCode($book->status ?? 1);
-                                $statusColor = $statusSetting ? $statusSetting->status_color : '#6c757d';
-                                $statusName = $statusSetting ? $statusSetting->status_name : 'Pending';
+                                try {
+                                    $statusSetting = $book->statusSetting ?? \App\Models\BookingStatusSetting::getByCode($book->status ?? 1);
+                                    $statusColor = $statusSetting ? $statusSetting->status_color : '#6c757d';
+                                    $statusTextColor = $statusSetting && $statusSetting->text_color ? $statusSetting->text_color : '#ffffff';
+                                    $statusName = $statusSetting ? $statusSetting->status_name : 'Pending';
+                                } catch (\Exception $e) {
+                                    $statusColor = '#6c757d';
+                                    $statusTextColor = '#ffffff';
+                                    $statusName = 'Pending';
+                                }
                             @endphp
-                            <span class="badge" style="background-color: {{ $statusColor }}; color: {{ $statusSetting && $statusSetting->text_color ? $statusSetting->text_color : '#ffffff' }};">
+                            <span class="badge" style="background-color: {{ $statusColor }}; color: {{ $statusTextColor }};">
                                 {{ $statusName }}
                             </span>
                         </div>
@@ -169,14 +176,21 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="text-muted"><i class="fas fa-edit mr-2"></i>Change Status:</span>
                             <select id="bookingStatusSelect" class="form-control form-control-sm" style="max-width: 200px; display: inline-block;">
-                                @foreach($statusSettings as $status)
-                                    <option value="{{ $status->status_code }}" 
-                                        {{ ($book->status ?? 1) == $status->status_code ? 'selected' : '' }}
-                                        data-color="{{ $status->status_color }}"
-                                        data-text-color="{{ $status->text_color }}">
-                                        {{ $status->status_name }}
-                                    </option>
-                                @endforeach
+                                @if($statusSettings && $statusSettings->count() > 0)
+                                    @foreach($statusSettings as $status)
+                                        <option value="{{ $status->status_code }}" 
+                                            {{ ($book->status ?? 1) == $status->status_code ? 'selected' : '' }}
+                                            data-color="{{ $status->status_color }}"
+                                            data-text-color="{{ $status->text_color }}">
+                                            {{ $status->status_name }}
+                                        </option>
+                                    @endforeach
+                                @else
+                                    <option value="1" {{ ($book->status ?? 1) == 1 ? 'selected' : '' }}>Pending</option>
+                                    <option value="2" {{ ($book->status ?? 1) == 2 ? 'selected' : '' }}>Confirmed</option>
+                                    <option value="3" {{ ($book->status ?? 1) == 3 ? 'selected' : '' }}>Reserved</option>
+                                    <option value="4" {{ ($book->status ?? 1) == 4 ? 'selected' : '' }}>Paid</option>
+                                @endif
                             </select>
                         </div>
                     </div>

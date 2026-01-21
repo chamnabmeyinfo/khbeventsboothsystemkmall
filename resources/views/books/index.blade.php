@@ -1150,10 +1150,16 @@
                         </td>
                         <td>
                             @php
-                                $statusSetting = $book->statusSetting ?? \App\Models\BookingStatusSetting::getByCode($book->status ?? 1);
-                                $statusColor = $statusSetting ? $statusSetting->status_color : '#6c757d';
-                                $statusTextColor = $statusSetting && $statusSetting->text_color ? $statusSetting->text_color : '#ffffff';
-                                $statusName = $statusSetting ? $statusSetting->status_name : 'Pending';
+                                try {
+                                    $statusSetting = $book->statusSetting ?? \App\Models\BookingStatusSetting::getByCode($book->status ?? 1);
+                                    $statusColor = $statusSetting ? $statusSetting->status_color : '#6c757d';
+                                    $statusTextColor = $statusSetting && $statusSetting->text_color ? $statusSetting->text_color : '#ffffff';
+                                    $statusName = $statusSetting ? $statusSetting->status_name : 'Pending';
+                                } catch (\Exception $e) {
+                                    $statusColor = '#6c757d';
+                                    $statusTextColor = '#ffffff';
+                                    $statusName = 'Pending';
+                                }
                             @endphp
                             <span class="badge-modern" style="background-color: {{ $statusColor }}; color: {{ $statusTextColor }};">
                                 {{ $statusName }}

@@ -7,6 +7,7 @@ use App\Models\Book;
 use App\Models\Booth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
@@ -96,6 +97,14 @@ class PaymentController extends Controller
             $booking->total_amount = $booking->calculateTotalAmount();
         }
 
+        // Get authenticated user ID - explicitly get from user object to ensure it's the ID, not username
+        $user = Auth::user();
+        $userId = $user ? (int) $user->id : null;
+        
+        if (!$userId) {
+            return back()->withErrors(['error' => 'You must be logged in to record a payment.'])->withInput();
+        }
+        
         $payment = Payment::create([
             'booking_id' => $request->booking_id,
             'client_id' => $booking->clientid,
@@ -104,7 +113,7 @@ class PaymentController extends Controller
             'status' => Payment::STATUS_COMPLETED,
             'notes' => $request->notes,
             'paid_at' => now(),
-            'user_id' => Auth::id(),
+            'user_id' => $userId,
         ]);
 
         // Update booking payment amounts and status
@@ -218,6 +227,15 @@ class PaymentController extends Controller
         try {
             \DB::beginTransaction();
 
+            // Get authenticated user ID
+            $user = Auth::user();
+            $userId = $user ? (int) $user->id : null;
+            
+            if (!$userId) {
+                \DB::rollBack();
+                return back()->withErrors(['error' => 'You must be logged in to process a refund.']);
+            }
+            
             // Create refund payment entry (negative amount)
             $refundPayment = Payment::create([
                 'booking_id' => $payment->booking_id,
@@ -228,7 +246,7 @@ class PaymentController extends Controller
                 'transaction_id' => 'REFUND-' . $payment->transaction_id ?? 'REFUND-' . $payment->id,
                 'notes' => 'Refund for Payment #' . $payment->id . ($request->notes ? ': ' . $request->notes : ''),
                 'paid_at' => now(),
-                'user_id' => Auth::id(),
+                'user_id' => $userId,
             ]);
 
             // Update original payment status

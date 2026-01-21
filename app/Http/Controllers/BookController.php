@@ -286,8 +286,12 @@ class BookController extends Controller
             $totalAmount = $booths->sum('price');
             
             // Get default booking status
-            $defaultStatus = \App\Models\BookingStatusSetting::getDefault();
-            $bookingStatus = $defaultStatus ? $defaultStatus->status_code : Book::STATUS_PENDING;
+            try {
+                $defaultStatus = \App\Models\BookingStatusSetting::getDefault();
+                $bookingStatus = $defaultStatus ? $defaultStatus->status_code : Book::STATUS_PENDING;
+            } catch (\Exception $e) {
+                $bookingStatus = Book::STATUS_PENDING;
+            }
             
             // Create booking with project/floor plan tracking
             $book = Book::create([
@@ -395,7 +399,12 @@ class BookController extends Controller
         $payments = $book->payments()->with('user')->latest('paid_at')->get();
         
         // Get booking status settings
-        $statusSettings = \App\Models\BookingStatusSetting::getActiveStatuses();
+        try {
+            $statusSettings = \App\Models\BookingStatusSetting::getActiveStatuses();
+        } catch (\Exception $e) {
+            // Fallback if table doesn't exist or is empty
+            $statusSettings = collect([]);
+        }
         
         return view('books.show', compact('book', 'booths', 'payments', 'statusSettings'));
     }
@@ -973,8 +982,12 @@ class BookController extends Controller
             $totalAmount = $booths->sum('price');
             
             // Get default booking status
-            $defaultStatus = \App\Models\BookingStatusSetting::getDefault();
-            $bookingStatus = $defaultStatus ? $defaultStatus->status_code : Book::STATUS_PENDING;
+            try {
+                $defaultStatus = \App\Models\BookingStatusSetting::getDefault();
+                $bookingStatus = $defaultStatus ? $defaultStatus->status_code : Book::STATUS_PENDING;
+            } catch (\Exception $e) {
+                $bookingStatus = Book::STATUS_PENDING;
+            }
             
             $book = Book::create([
                 'event_id' => $eventId,

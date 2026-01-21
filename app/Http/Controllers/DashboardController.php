@@ -7,6 +7,7 @@ use App\Models\Booth;
 use App\Models\Client;
 use App\Models\Book;
 use App\Models\Category;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\DebugLogger;
@@ -326,25 +327,20 @@ class DashboardController extends Controller
                     // Get booking count from pre-fetched data
                     $count = isset($bookingsByDate[$dateStr]) ? (int)$bookingsByDate[$dateStr] : 0;
                     
-                    // Revenue calculation - simplified
+                    // Revenue calculation - use actual payments made on this date
                     $dayRevenue = 0;
-                    if ($count > 0) {
+                    try {
+                        $dayRevenue = (float) Payment::where('status', Payment::STATUS_COMPLETED)
+                            ->whereDate('paid_at', $dateStr)
+                            ->sum('amount');
+                    } catch (\Exception $e) {
+                        // Fallback: use booking paid amounts if payments table query fails
                         try {
                             $dayBookings = Book::whereDate('date_book', $dateStr)->get();
                             foreach ($dayBookings as $booking) {
-                                try {
-                                    $boothIds = json_decode($booking->boothid, true) ?? [];
-                                    if (!empty($boothIds) && is_array($boothIds)) {
-                                        $dayRevenue += Booth::whereIn('id', $boothIds)
-                                            ->where('status', Booth::STATUS_PAID)
-                                            ->sum('price');
-                                    }
-                                } catch (\Exception $e) {
-                                    // Skip if error
-                                    continue;
-                                }
+                                $dayRevenue += (float) ($booking->paid_amount ?? 0);
                             }
-                        } catch (\Exception $e) {
+                        } catch (\Exception $e2) {
                             // Skip revenue calculation if error
                         }
                     }
@@ -401,69 +397,38 @@ class DashboardController extends Controller
             $thisMonthRevenue = 0;
             
             try {
-                // Total revenue calculation - sum of all booths with status = PAID
-                // Price is stored as DOUBLE in database, so direct sum should work
-                $totalRevenue = (float) Booth::where('status', Booth::STATUS_PAID)
-                    ->sum('price');
+                // Total revenue calculation - use actual payment amounts from payments table
+                // This is more accurate as it reflects actual money received
+                $totalRevenue = (float) Payment::where('status', Payment::STATUS_COMPLETED)
+                    ->sum('amount');
                 
-                // If result is 0 or null, try alternative calculation
-                if ($totalRevenue == 0 || $totalRevenue === null) {
-                    // Get all paid booths and sum manually to ensure accuracy
-                    $paidBooths = Booth::where('status', Booth::STATUS_PAID)->get();
-                    $totalRevenue = 0;
-                    foreach ($paidBooths as $booth) {
-                        $price = (float) ($booth->price ?? 0);
-                        if ($price > 0) {
-                            $totalRevenue += $price;
-                        }
-                    }
+                // Alternative: Calculate from booking paid amounts if payments table is empty
+                if ($totalRevenue == 0) {
+                    $totalRevenue = (float) Book::sum('paid_amount');
                 }
                 
-                // Today's revenue - sum of all booths that are paid AND were booked today
-                $todayBookingsList = Book::whereDate('date_book', today())->get();
-                $todayBoothIds = [];
-                
-                foreach ($todayBookingsList as $booking) {
-                    try {
-                        $boothIds = json_decode($booking->boothid, true) ?? [];
-                        if (!empty($boothIds)) {
-                            $todayBoothIds = array_merge($todayBoothIds, $boothIds);
-                        }
-                    } catch (\Exception $e) {
-                        // Skip if error
-                    }
-                }
-                
-                if (!empty($todayBoothIds)) {
-                    $todayBoothIds = array_unique($todayBoothIds);
-                    $todayRevenue = (float) Booth::whereIn('id', $todayBoothIds)
-                        ->where('status', Booth::STATUS_PAID)
+                // Fallback: Calculate from paid booths if both above are 0
+                if ($totalRevenue == 0) {
+                    $totalRevenue = (float) Booth::where('status', Booth::STATUS_PAID)
                         ->sum('price');
                 }
                 
-                // This month revenue - sum of all booths that are paid AND were booked this month
-                $monthBookings = Book::whereMonth('date_book', now()->month)
-                    ->whereYear('date_book', now()->year)
-                    ->get();
-                $monthBoothIds = [];
+                // Today's revenue - sum of all payments made today
+                $todayRevenue = (float) Payment::where('status', Payment::STATUS_COMPLETED)
+                    ->whereDate('paid_at', today())
+                    ->sum('amount');
                 
-                foreach ($monthBookings as $booking) {
-                    try {
-                        $boothIds = json_decode($booking->boothid, true) ?? [];
-                        if (!empty($boothIds)) {
-                            $monthBoothIds = array_merge($monthBoothIds, $boothIds);
-                        }
-                    } catch (\Exception $e) {
-                        // Skip if error
-                    }
-                }
+                // This month revenue - sum of all payments made this month
+                $thisMonthRevenue = (float) Payment::where('status', Payment::STATUS_COMPLETED)
+                    ->whereMonth('paid_at', now()->month)
+                    ->whereYear('paid_at', now()->year)
+                    ->sum('amount');
                 
-                if (!empty($monthBoothIds)) {
-                    $monthBoothIds = array_unique($monthBoothIds);
-                    $thisMonthRevenue = (float) Booth::whereIn('id', $monthBoothIds)
-                        ->where('status', Booth::STATUS_PAID)
-                        ->sum('price');
-                }
+                // Update stats with calculated revenue
+                $stats['total_revenue'] = $totalRevenue;
+                $stats['today_revenue'] = $todayRevenue;
+                $stats['this_month_revenue'] = $thisMonthRevenue;
+                
             } catch (\Exception $e) {
                 \Log::error('Revenue calculation error: ' . $e->getMessage(), [
                     'trace' => $e->getTraceAsString()
@@ -554,10 +519,17 @@ class DashboardController extends Controller
             $stats['booking_growth'] = round($bookingGrowth, 1);
             $stats['month_booking_growth'] = round($monthBookingGrowth, 1);
             
-            // Ensure revenue values are properly formatted as floats
-            $stats['total_revenue'] = (float) ($totalRevenue ?? 0);
-            $stats['today_revenue'] = (float) ($todayRevenue ?? 0);
-            $stats['this_month_revenue'] = (float) ($thisMonthRevenue ?? 0);
+            // Revenue values are already set in the try-catch block above
+            // Only set defaults if they weren't set (in case of exception)
+            if (!isset($stats['total_revenue']) || $stats['total_revenue'] == 0) {
+                $stats['total_revenue'] = (float) ($totalRevenue ?? 0);
+            }
+            if (!isset($stats['today_revenue']) || $stats['today_revenue'] == 0) {
+                $stats['today_revenue'] = (float) ($todayRevenue ?? 0);
+            }
+            if (!isset($stats['this_month_revenue']) || $stats['this_month_revenue'] == 0) {
+                $stats['this_month_revenue'] = (float) ($thisMonthRevenue ?? 0);
+            }
             $stats['occupancy_rate'] = round($occupancyRate, 1);
             $stats['available_rate'] = round(100 - $occupancyRate, 1);
             

@@ -168,15 +168,26 @@
                             <div class="form-group">
                                 <label for="status" class="form-label">Booking Status</label>
                                 @php
-                                    $statusSettings = \App\Models\BookingStatusSetting::getActiveStatuses();
+                                    try {
+                                        $statusSettings = \App\Models\BookingStatusSetting::getActiveStatuses();
+                                    } catch (\Exception $e) {
+                                        $statusSettings = collect([]);
+                                    }
                                 @endphp
                                 <select class="form-control @error('status') is-invalid @enderror" id="status" name="status">
-                                    @foreach($statusSettings as $status)
-                                        <option value="{{ $status->status_code }}" 
-                                            {{ old('status', $book->status ?? 1) == $status->status_code ? 'selected' : '' }}>
-                                            {{ $status->status_name }}
-                                        </option>
-                                    @endforeach
+                                    @if($statusSettings && $statusSettings->count() > 0)
+                                        @foreach($statusSettings as $status)
+                                            <option value="{{ $status->status_code }}" 
+                                                {{ old('status', $book->status ?? 1) == $status->status_code ? 'selected' : '' }}>
+                                                {{ $status->status_name }}
+                                            </option>
+                                        @endforeach
+                                    @else
+                                        <option value="1" {{ old('status', $book->status ?? 1) == 1 ? 'selected' : '' }}>Pending</option>
+                                        <option value="2" {{ old('status', $book->status ?? 1) == 2 ? 'selected' : '' }}>Confirmed</option>
+                                        <option value="3" {{ old('status', $book->status ?? 1) == 3 ? 'selected' : '' }}>Reserved</option>
+                                        <option value="4" {{ old('status', $book->status ?? 1) == 4 ? 'selected' : '' }}>Paid</option>
+                                    @endif
                                 </select>
                                 @error('status')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
