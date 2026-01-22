@@ -10,6 +10,7 @@ use App\Models\FloorPlan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class BookController extends Controller
 {
@@ -375,29 +376,51 @@ class BookController extends Controller
             $booths = Booth::whereIn('id', $validated['booth_ids'])->get();
             $totalAmount = $booths->sum('price');
             
-            // Get default booking status
-            try {
-                $defaultStatus = \App\Models\BookingStatusSetting::getDefault();
-                $bookingStatus = $defaultStatus ? $defaultStatus->status_code : Book::STATUS_PENDING;
-            } catch (\Exception $e) {
-                $bookingStatus = Book::STATUS_PENDING;
+            // Get default booking status (only if status column exists)
+            $bookingStatus = null;
+            if (Schema::hasColumn('book', 'status')) {
+                try {
+                    $defaultStatus = \App\Models\BookingStatusSetting::getDefault();
+                    $bookingStatus = $defaultStatus ? $defaultStatus->status_code : Book::STATUS_PENDING;
+                } catch (\Exception $e) {
+                    $bookingStatus = Book::STATUS_PENDING;
+                }
             }
             
-            // Create booking with project/floor plan tracking
-            $book = Book::create([
+            // Build booking data array
+            $bookingData = [
                 'event_id' => $eventId,
                 'floor_plan_id' => $floorPlanId,
                 'clientid' => $validated['clientid'],
                 'boothid' => json_encode($validated['booth_ids']),
                 'date_book' => $validated['date_book'],
                 'userid' => auth()->user()->id,
-                'affiliate_user_id' => $affiliateUserId, // Track which sales person's link was used
                 'type' => $bookingType,
-                'status' => $bookingStatus,
-                'total_amount' => $totalAmount,
-                'paid_amount' => 0,
-                'balance_amount' => $totalAmount,
-            ]);
+            ];
+            
+            // Add optional fields only if columns exist
+            if ($affiliateUserId && Schema::hasColumn('book', 'affiliate_user_id')) {
+                $bookingData['affiliate_user_id'] = $affiliateUserId;
+            }
+            
+            if ($bookingStatus !== null && Schema::hasColumn('book', 'status')) {
+                $bookingData['status'] = $bookingStatus;
+            }
+            
+            if (Schema::hasColumn('book', 'total_amount')) {
+                $bookingData['total_amount'] = $totalAmount;
+            }
+            
+            if (Schema::hasColumn('book', 'paid_amount')) {
+                $bookingData['paid_amount'] = 0;
+            }
+            
+            if (Schema::hasColumn('book', 'balance_amount')) {
+                $bookingData['balance_amount'] = $totalAmount;
+            }
+            
+            // Create booking with project/floor plan tracking
+            $book = Book::create($bookingData);
 
             // Update booths status - use lockForUpdate to prevent race conditions
             $updated = Booth::whereIn('id', $validated['booth_ids'])
@@ -658,16 +681,29 @@ class BookController extends Controller
                 ]);
             }
             
-            // Update booking
-            $book->update([
+            // Build update data array
+            $updateData = [
                 'clientid' => $validated['clientid'],
                 'boothid' => json_encode($newBoothIds),
                 'date_book' => $validated['date_book'] ?? $book->date_book ?? now(),
                 'type' => $validated['type'] ?? $book->type,
-                'status' => $validated['status'] ?? $book->status,
-                'payment_due_date' => $validated['payment_due_date'] ?? $book->payment_due_date,
-                'notes' => $validated['notes'] ?? $book->notes,
-            ]);
+            ];
+            
+            // Add optional fields only if columns exist
+            if (Schema::hasColumn('book', 'status')) {
+                $updateData['status'] = $validated['status'] ?? $book->status ?? Book::STATUS_PENDING;
+            }
+            
+            if (Schema::hasColumn('book', 'payment_due_date')) {
+                $updateData['payment_due_date'] = $validated['payment_due_date'] ?? $book->payment_due_date;
+            }
+            
+            if (Schema::hasColumn('book', 'notes')) {
+                $updateData['notes'] = $validated['notes'] ?? $book->notes;
+            }
+            
+            // Update booking
+            $book->update($updateData);
             
             // Recalculate amounts after booth changes
             $book->updatePaymentAmounts();
@@ -1076,15 +1112,19 @@ class BookController extends Controller
             // Calculate total amount from booths
             $totalAmount = $booths->sum('price');
             
-            // Get default booking status
-            try {
-                $defaultStatus = \App\Models\BookingStatusSetting::getDefault();
-                $bookingStatus = $defaultStatus ? $defaultStatus->status_code : Book::STATUS_PENDING;
-            } catch (\Exception $e) {
-                $bookingStatus = Book::STATUS_PENDING;
+            // Get default booking status (only if status column exists)
+            $bookingStatus = null;
+            if (Schema::hasColumn('book', 'status')) {
+                try {
+                    $defaultStatus = \App\Models\BookingStatusSetting::getDefault();
+                    $bookingStatus = $defaultStatus ? $defaultStatus->status_code : Book::STATUS_PENDING;
+                } catch (\Exception $e) {
+                    $bookingStatus = Book::STATUS_PENDING;
+                }
             }
             
-            $book = Book::create([
+            // Build booking data array
+            $bookingData = [
                 'event_id' => $eventId,
                 'floor_plan_id' => $floorPlanId,
                 'userid' => $userid,
@@ -1092,12 +1132,30 @@ class BookController extends Controller
                 'clientid' => $clientID,
                 'boothid' => json_encode($data['booth']),
                 'date_book' => now(),
-                'affiliate_user_id' => $affiliateUserId, // Track which sales person's link was used
-                'status' => $bookingStatus,
-                'total_amount' => $totalAmount,
-                'paid_amount' => 0,
-                'balance_amount' => $totalAmount,
-            ]);
+            ];
+            
+            // Add optional fields only if columns exist
+            if ($affiliateUserId && Schema::hasColumn('book', 'affiliate_user_id')) {
+                $bookingData['affiliate_user_id'] = $affiliateUserId;
+            }
+            
+            if ($bookingStatus !== null && Schema::hasColumn('book', 'status')) {
+                $bookingData['status'] = $bookingStatus;
+            }
+            
+            if (Schema::hasColumn('book', 'total_amount')) {
+                $bookingData['total_amount'] = $totalAmount;
+            }
+            
+            if (Schema::hasColumn('book', 'paid_amount')) {
+                $bookingData['paid_amount'] = 0;
+            }
+            
+            if (Schema::hasColumn('book', 'balance_amount')) {
+                $bookingData['balance_amount'] = $totalAmount;
+            }
+            
+            $book = Book::create($bookingData);
             
             $bookID = $book->id;
             

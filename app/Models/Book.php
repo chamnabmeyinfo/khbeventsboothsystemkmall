@@ -33,6 +33,7 @@ class Book extends Model
         'userid',
         'affiliate_user_id',
         'type',
+        // Optional fields (only included if columns exist in database)
         'status',
         'total_amount',
         'paid_amount',
@@ -40,6 +41,23 @@ class Book extends Model
         'payment_due_date',
         'notes',
     ];
+    
+    /**
+     * Get fillable attributes that actually exist in the database
+     */
+    public function getFillableAttributes()
+    {
+        $fillable = $this->fillable;
+        $existingColumns = [];
+        
+        foreach ($fillable as $column) {
+            if (Schema::hasColumn($this->getTable(), $column)) {
+                $existingColumns[] = $column;
+            }
+        }
+        
+        return $existingColumns;
+    }
 
     protected $casts = [
         'date_book' => 'datetime',

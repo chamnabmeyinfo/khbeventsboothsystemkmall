@@ -1034,6 +1034,51 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
         
+        /* Enhanced Search Results Styles */
+        .search-type-filter .btn {
+            border-radius: 6px;
+            margin: 0 2px;
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .search-type-filter .btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .search-type-filter .btn:hover:not(.active) {
+            background: #f3f4f6;
+            border-color: #e5e7eb;
+        }
+        
+        .search-result-item {
+            transition: all 0.2s ease;
+        }
+        
+        .search-result-item:hover {
+            background-color: #f8f9fa !important;
+            transform: translateX(2px);
+        }
+        
+        .search-result-item.active {
+            background-color: #e3f2fd !important;
+        }
+        
+        .search-group-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        #searchResults {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        
         .btn-navbar {
             border: 1px solid #e2e8f0;
             border-left: none;
@@ -1717,14 +1762,42 @@
         <form class="form-inline ml-3 d-none d-md-block position-relative" id="globalSearchForm">
             <div class="input-group input-group-sm">
                 <input class="form-control form-control-navbar" type="search" id="globalSearchInput" 
-                       placeholder="Search booths, clients, bookings..." aria-label="Search" autocomplete="off">
+                       placeholder="Search anything..." aria-label="Search" autocomplete="off">
                 <div class="input-group-append">
                     <button class="btn btn-navbar" type="submit">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
             </div>
-            <div id="searchResults" class="dropdown-menu position-absolute" style="display: none; max-width: 400px; max-height: 400px; overflow-y: auto; top: 100%; left: 0; z-index: 1000; margin-top: 5px;"></div>
+            <div id="searchResults" class="dropdown-menu position-absolute" style="display: none; max-width: 500px; max-height: 500px; overflow-y: auto; top: 100%; left: 0; z-index: 1000; margin-top: 5px; padding: 0;">
+                <!-- Search Type Filter -->
+                <div class="search-type-filter p-2 border-bottom" style="background: #f8f9fa;">
+                    <div class="btn-group btn-group-sm w-100" role="group">
+                        <button type="button" class="btn btn-sm search-type-btn active" data-type="all" title="All">
+                            <i class="fas fa-th"></i> All
+                        </button>
+                        <button type="button" class="btn btn-sm search-type-btn" data-type="booths" title="Booths">
+                            <i class="fas fa-cube"></i> Booths
+                        </button>
+                        <button type="button" class="btn btn-sm search-type-btn" data-type="clients" title="Clients">
+                            <i class="fas fa-building"></i> Clients
+                        </button>
+                        <button type="button" class="btn btn-sm search-type-btn" data-type="bookings" title="Bookings">
+                            <i class="fas fa-calendar-check"></i> Bookings
+                        </button>
+                        <button type="button" class="btn btn-sm search-type-btn" data-type="users" title="Users">
+                            <i class="fas fa-user"></i> Users
+                        </button>
+                    </div>
+                </div>
+                <!-- Search Results Container -->
+                <div id="searchResultsContent" style="max-height: 400px; overflow-y: auto;">
+                    <div class="text-center p-3 text-muted">
+                        <i class="fas fa-search fa-2x mb-2"></i>
+                        <p class="mb-0">Start typing to search...</p>
+                    </div>
+                </div>
+            </div>
         </form>
     </nav>
     <!-- /.navbar -->
@@ -2471,47 +2544,180 @@ function showNotificationAlert(count) {
 updateNotificationBadge();
 setInterval(updateNotificationBadge, 15000);
 
-// Global Search
+// Global Search - Enhanced Dynamic Search
 let searchTimeout;
+let currentSearchType = 'all';
+let isSearching = false;
+
+// Search Type Selection
+$('.search-type-btn').on('click', function() {
+    $('.search-type-btn').removeClass('active');
+    $(this).addClass('active');
+    currentSearchType = $(this).data('type');
+    
+    // Trigger search with new type
+    const query = $('#globalSearchInput').val();
+    if (query && query.length >= 2) {
+        performSearch(query, currentSearchType);
+    }
+});
+
+// Enhanced Search Function
+function performSearch(query, type = 'all') {
+    if (isSearching) return;
+    
+    const resultsContent = $('#searchResultsContent');
+    const resultsDiv = $('#searchResults');
+    
+    // Show loading state
+    isSearching = true;
+    resultsContent.html(`
+        <div class="text-center p-4">
+            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <p class="mt-2 mb-0 text-muted">Searching...</p>
+        </div>
+    `);
+    resultsDiv.show();
+    
+    // Perform search
+    fetch('{{ route("search") }}?q=' + encodeURIComponent(query) + '&type=' + encodeURIComponent(type))
+        .then(response => response.json())
+        .then(data => {
+            isSearching = false;
+            
+            if (data.results && data.results.length > 0) {
+                let html = '';
+                
+                // Group results by type
+                const groupedResults = {};
+                data.results.forEach(function(result) {
+                    if (!groupedResults[result.type]) {
+                        groupedResults[result.type] = [];
+                    }
+                    groupedResults[result.type].push(result);
+                });
+                
+                // Render grouped results
+                Object.keys(groupedResults).forEach(function(type) {
+                    const typeLabel = {
+                        'booth': 'Booths',
+                        'client': 'Clients',
+                        'booking': 'Bookings',
+                        'user': 'Users'
+                    }[type] || type;
+                    
+                    html += `<div class="search-group-header px-3 py-2 bg-light border-bottom">
+                        <small class="text-muted font-weight-bold"><i class="fas fa-${groupedResults[type][0].icon.replace('fas fa-', '')} mr-1"></i>${typeLabel}</small>
+                    </div>`;
+                    
+                    groupedResults[type].forEach(function(result) {
+                        html += `<a href="${result.url}" class="dropdown-item search-result-item" style="padding: 12px 16px; border-bottom: 1px solid #f0f0f0;">
+                            <div class="d-flex align-items-start">
+                                <div class="search-icon mr-3" style="color: #667eea; font-size: 18px; margin-top: 2px;">
+                                    <i class="${result.icon}"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="font-weight-bold" style="color: #2d3748; margin-bottom: 4px;">${result.title}</div>
+                                    <div class="text-muted" style="font-size: 0.85rem; line-height: 1.4;">${result.description}</div>
+                                </div>
+                            </div>
+                        </a>`;
+                    });
+                });
+                
+                resultsContent.html(html);
+            } else {
+                resultsContent.html(`
+                    <div class="text-center p-4">
+                        <i class="fas fa-search fa-2x text-muted mb-2"></i>
+                        <p class="mb-0 text-muted">No results found for "${query}"</p>
+                        <small class="text-muted">Try a different search term</small>
+                    </div>
+                `);
+            }
+        })
+        .catch(error => {
+            isSearching = false;
+            console.error('Search error:', error);
+            resultsContent.html(`
+                <div class="text-center p-4 text-danger">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                    <p class="mb-0">Error searching. Please try again.</p>
+                </div>
+            `);
+        });
+}
+
+// Search Input Handler
 $('#globalSearchInput').on('input', function() {
-    const query = $(this).val();
+    const query = $(this).val().trim();
     const resultsDiv = $('#searchResults');
     
     clearTimeout(searchTimeout);
     
     if (query.length < 2) {
-        resultsDiv.hide();
+        if (query.length === 0) {
+            $('#searchResultsContent').html(`
+                <div class="text-center p-3 text-muted">
+                    <i class="fas fa-search fa-2x mb-2"></i>
+                    <p class="mb-0">Start typing to search...</p>
+                </div>
+            `);
+        }
         return;
     }
     
+    // Debounce search
     searchTimeout = setTimeout(function() {
-        fetch('{{ route("search") }}?q=' + encodeURIComponent(query))
-            .then(response => response.json())
-            .then(data => {
-                if (data.results && data.results.length > 0) {
-                    let html = '';
-                    data.results.forEach(function(result) {
-                        html += '<a href="' + result.url + '" class="dropdown-item">';
-                        html += '<i class="' + result.icon + ' mr-2"></i>';
-                        html += '<div><strong>' + result.title + '</strong><br>';
-                        html += '<small class="text-muted">' + result.description + '</small></div>';
-                        html += '</a>';
-                    });
-                    resultsDiv.html(html).show();
-                } else {
-                    resultsDiv.html('<div class="dropdown-item text-muted">No results found</div>').show();
-                }
-            })
-            .catch(error => {
-                console.error('Search error:', error);
-            });
+        performSearch(query, currentSearchType);
     }, 300);
+});
+
+// Show search results on focus
+$('#globalSearchInput').on('focus', function() {
+    const query = $(this).val().trim();
+    if (query.length >= 2) {
+        $('#searchResults').show();
+    } else {
+        $('#searchResults').show();
+    }
+});
+
+// Handle form submission
+$('#globalSearchForm').on('submit', function(e) {
+    e.preventDefault();
+    const query = $('#globalSearchInput').val().trim();
+    if (query.length >= 2) {
+        performSearch(query, currentSearchType);
+    }
 });
 
 // Hide search results when clicking outside
 $(document).on('click', function(e) {
     if (!$(e.target).closest('#globalSearchForm').length) {
         $('#searchResults').hide();
+    }
+});
+
+// Keyboard navigation
+$('#globalSearchInput').on('keydown', function(e) {
+    const resultsDiv = $('#searchResults');
+    const visibleItems = resultsDiv.find('.search-result-item:visible');
+    
+    if (e.key === 'ArrowDown' && visibleItems.length > 0) {
+        e.preventDefault();
+        const firstItem = visibleItems.first();
+        firstItem.focus();
+        firstItem.addClass('active');
+    }
+});
+
+// Handle Enter key on search result items
+$(document).on('keydown', '.search-result-item', function(e) {
+    if (e.key === 'Enter') {
+        window.location.href = $(this).attr('href');
     }
 });
 
