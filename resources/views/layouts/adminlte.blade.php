@@ -46,6 +46,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap4-theme@1.0.0/dist/select2-bootstrap4.min.css" rel="stylesheet" />
+    {{-- Khmer Fonts from Google Fonts --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hanuman:wght@100;300;400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     @else
     {{-- Local CSS: Preload essential stylesheets --}}
     <link rel="preload" href="{{ asset('vendor/adminlte/css/adminlte.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -71,6 +76,11 @@
         <link href="{{ asset('vendor/select2/css/select2-bootstrap4.min.css') }}" rel="stylesheet" />
     </noscript>
     
+    {{-- Khmer Fonts from Google Fonts (for local CSS mode) --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hanuman:wght@100;300;400;700;900&family=Noto+Sans+Khmer:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
     {{-- Device-Optimized Performance CSS --}}
     <link rel="stylesheet" href="{{ asset('css/device-optimized.css') }}">
     <link rel="stylesheet" href="{{ asset('css/tablet-optimized.css') }}">
@@ -86,6 +96,27 @@
     </script>
     
     <style>
+        /* Khmer Font Support - Local Fonts First, then Google Fonts */
+        @font-face {
+            font-family: 'Khmer OS Battambang';
+            src: local('Khmer OS Battambang'), 
+                 local('KhmerOSBattambang'),
+                 local('Khmer OS'),
+                 local('Khmer');
+            font-weight: normal;
+            font-style: normal;
+            unicode-range: U+1780-17FF, U+19E0-19FF;
+        }
+        
+        @font-face {
+            font-family: 'Hanuman';
+            src: local('Hanuman'), 
+                 local('Hanuman-Regular');
+            font-weight: normal;
+            font-style: normal;
+            unicode-range: U+1780-17FF, U+19E0-19FF;
+        }
+        
         /* Modern UX/UI Enhancements */
         :root {
             --primary-color: {{ $appearanceSettings['primary_color'] ?? '#4e73df' }};
@@ -98,6 +129,26 @@
             --navbar-bg: {{ $appearanceSettings['navbar_bg'] ?? '#ffffff' }};
             --footer-bg: {{ $appearanceSettings['footer_bg'] ?? '#f8f9fc' }};
             --sidebar-width: 250px;
+            /* Khmer Font Variables */
+            --khmer-font-primary: 'Khmer OS Battambang', 'KhmerOSBattambang', 'Khmer OS', 'Khmer', sans-serif;
+            --khmer-font-secondary: 'Hanuman', 'Hanuman-Regular', 'Noto Sans Khmer', 'Khmer OS Battambang', 'KhmerOSBattambang', sans-serif;
+        }
+        
+        /* Apply Khmer fonts globally for Khmer Unicode characters */
+        html, body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Khmer OS Battambang", "KhmerOSBattambang", "Hanuman", "Hanuman-Regular", "Noto Sans Khmer", "Khmer OS", "Khmer", sans-serif;
+        }
+        
+        /* Khmer Unicode Range - Auto-detect and apply Khmer fonts */
+        * {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Khmer OS Battambang", "KhmerOSBattambang", "Hanuman", "Hanuman-Regular", "Noto Sans Khmer", "Khmer OS", "Khmer", sans-serif;
+        }
+        
+        /* Ensure Khmer text uses Khmer fonts */
+        [lang="km"], 
+        .khmer-text,
+        *:lang(km) {
+            font-family: "Khmer OS Battambang", "KhmerOSBattambang", "Hanuman", "Hanuman-Regular", "Noto Sans Khmer", "Khmer OS", "Khmer", sans-serif !important;
         }
         
         /* Mobile Navigation & Responsive Styles */

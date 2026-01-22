@@ -122,13 +122,12 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="date_book">Date & Time <span class="text-danger">*</span></label>
+                                <label for="date_book">Date & Time</label>
                                 <input type="datetime-local" 
                                        class="form-control @error('date_book') is-invalid @enderror" 
                                        id="date_book" 
                                        name="date_book" 
-                                       value="{{ old('date_book', now()->format('Y-m-d\TH:i')) }}" 
-                                       required>
+                                       value="{{ old('date_book', now()->format('Y-m-d\TH:i')) }}">
                                 @error('date_book')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror

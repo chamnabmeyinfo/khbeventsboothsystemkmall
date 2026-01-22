@@ -2598,14 +2598,13 @@
                         <div class="bf-col bf-col-6">
                             <div class="bf-form-group">
                                 <label for="date_book" class="bf-form-label bf-font-weight-bold">
-                                    <i class="fas fa-calendar-alt bf-mr-2"></i>Date & Time <span class="bf-text-danger">*</span>
+                                    <i class="fas fa-calendar-alt bf-mr-2"></i>Date & Time
                                 </label>
                                 <input type="datetime-local" 
                                        class="bf-form-control @error('date_book') is-invalid @enderror" 
                                        id="date_book" 
                                        name="date_book" 
-                                       value="{{ old('date_book', now()->format('Y-m-d\TH:i')) }}" 
-                                       required>
+                                       value="{{ old('date_book', now()->format('Y-m-d\TH:i')) }}">
                                 @error('date_book')
                                     <div class="bf-text-danger bf-mt-2">{{ $message }}</div>
                                 @enderror

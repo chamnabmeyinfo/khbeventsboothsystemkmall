@@ -128,8 +128,35 @@ class BookController extends Controller
             }
             
             if ($view === 'table') {
-                // Table row HTML - partial will calculate everything internally to match main view exactly
-                $html .= view('books.partials.table-row', compact('book'))->render();
+                // Compact card HTML for table view (now using card/icon view)
+                $boothIds = json_decode($book->boothid, true) ?? [];
+                $boothCount = count($boothIds);
+                $typeClass = 'regular';
+                $typeBadge = 'badge-modern-primary';
+                if ($book->type == 2) {
+                    $typeClass = 'special';
+                    $typeBadge = 'badge-modern-warning';
+                } elseif ($book->type == 3) {
+                    $typeClass = 'temporary';
+                    $typeBadge = 'badge-modern-danger';
+                }
+                
+                try {
+                    $statusSetting = $book->statusSetting ?? \App\Models\BookingStatusSetting::getByCode($book->status ?? 1);
+                    $statusColor = $statusSetting ? $statusSetting->status_color : '#6c757d';
+                    $statusTextColor = $statusSetting && $statusSetting->text_color ? $statusSetting->text_color : '#ffffff';
+                    $statusName = $statusSetting ? $statusSetting->status_name : 'Pending';
+                } catch (\Exception $e) {
+                    $statusColor = '#6c757d';
+                    $statusTextColor = '#ffffff';
+                    $statusName = 'Pending';
+                }
+                
+                $totalAmount = $book->total_amount ?? \App\Models\Booth::whereIn('id', $boothIds)->sum('price');
+                $paidAmount = $book->paid_amount ?? 0;
+                $balanceAmount = $book->balance_amount ?? ($totalAmount - $paidAmount);
+                
+                $html .= view('books.partials.compact-card', compact('book', 'boothCount', 'typeClass', 'typeBadge', 'statusColor', 'statusTextColor', 'statusName', 'totalAmount', 'balanceAmount'))->render();
             } else {
                 // Card HTML
                 $html .= view('books.partials.card-item', compact('book', 'boothCount', 'typeBadge', 'typeClass'))->render();
@@ -272,9 +299,14 @@ class BookController extends Controller
             'clientid' => 'required|exists:client,id',
             'booth_ids' => 'required|array|min:1',
             'booth_ids.*' => 'exists:booth,id',
-            'date_book' => 'required|date',
+            'date_book' => 'nullable|date',
             'type' => 'nullable|integer|in:1,2,3',
         ]);
+        
+        // Auto-set date_book to current date/time if not provided
+        if (empty($validated['date_book'])) {
+            $validated['date_book'] = now();
+        }
 
         try {
             DB::beginTransaction();
@@ -530,12 +562,17 @@ class BookController extends Controller
             'clientid' => 'required|exists:client,id',
             'booth_ids' => 'required|array|min:1',
             'booth_ids.*' => 'exists:booth,id',
-            'date_book' => 'required|date',
+            'date_book' => 'nullable|date',
             'type' => 'nullable|integer|in:1,2,3',
             'status' => 'nullable|integer',
             'payment_due_date' => 'nullable|date',
             'notes' => 'nullable|string',
         ]);
+        
+        // Auto-set date_book to current date/time if not provided
+        if (empty($validated['date_book'])) {
+            $validated['date_book'] = $book->date_book ?? now();
+        }
 
         try {
             DB::beginTransaction();
@@ -625,7 +662,7 @@ class BookController extends Controller
             $book->update([
                 'clientid' => $validated['clientid'],
                 'boothid' => json_encode($newBoothIds),
-                'date_book' => $validated['date_book'],
+                'date_book' => $validated['date_book'] ?? $book->date_book ?? now(),
                 'type' => $validated['type'] ?? $book->type,
                 'status' => $validated['status'] ?? $book->status,
                 'payment_due_date' => $validated['payment_due_date'] ?? $book->payment_due_date,

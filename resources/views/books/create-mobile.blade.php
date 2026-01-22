@@ -3715,6 +3715,150 @@ main.container-fluid,
     transform: scale(0.97) translateY(0);
 }
 
+/* ============================================
+   CLICK ANIMATION - RIPPLE EFFECT
+   ============================================ */
+.mobile-btn,
+.btn,
+button:not([type="submit"]):not([type="button"]),
+.booth-card-mobile,
+.client-result-item-mobile,
+.select-client-inline-btn,
+.change-client-btn-mobile,
+.client-search-btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Ripple effect container */
+.mobile-btn::before,
+.btn::before,
+button:not([type="submit"]):not([type="button"])::before,
+.booth-card-mobile::before,
+.client-result-item-mobile::before,
+.select-client-inline-btn::before,
+.change-client-btn-mobile::before,
+.client-search-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s, opacity 0.6s;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Ripple animation on click */
+.mobile-btn:active::before,
+.btn:active::before,
+button:not([type="submit"]):not([type="button"]):active::before,
+.booth-card-mobile:active::before,
+.client-result-item-mobile:active::before,
+.select-client-inline-btn:active::before,
+.change-client-btn-mobile:active::before,
+.client-search-btn:active::before {
+    width: 300px;
+    height: 300px;
+    opacity: 0.3;
+    transition: width 0.3s, height 0.3s, opacity 0.3s;
+}
+
+/* Ensure content stays above ripple */
+.mobile-btn > *,
+.btn > *,
+button:not([type="submit"]):not([type="button"]) > *,
+.booth-card-mobile > *,
+.client-result-item-mobile > *,
+.select-client-inline-btn > *,
+.change-client-btn-mobile > *,
+.client-search-btn > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Enhanced click animation with scale and shadow */
+.mobile-btn:active,
+.btn:active,
+button:not([type="submit"]):not([type="button"]):active,
+.booth-card-mobile:active,
+.client-result-item-mobile:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Primary button specific click animation */
+.mobile-btn-primary:active {
+    transform: scale(0.95);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Secondary button specific click animation */
+.mobile-btn-secondary:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Smooth transition back after click */
+.mobile-btn,
+.btn,
+button:not([type="submit"]):not([type="button"]),
+.booth-card-mobile,
+.client-result-item-mobile {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Touch device optimization */
+@media (hover: none) and (pointer: coarse) {
+    .mobile-btn:active,
+    .btn:active,
+    button:not([type="submit"]):not([type="button"]):active,
+    .booth-card-mobile:active,
+    .client-result-item-mobile:active {
+        transform: scale(0.93);
+    }
+}
+
+/* JavaScript-generated ripple effect */
+.click-ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(0);
+    animation: ripple-animation 0.6s ease-out;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes ripple-animation {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* Dark ripple for light buttons */
+.mobile-btn-secondary .click-ripple,
+.btn-secondary .click-ripple {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* Colored ripple for primary buttons */
+.mobile-btn-primary .click-ripple,
+.btn-primary .click-ripple,
+.btn-success .click-ripple {
+    background: rgba(255, 255, 255, 0.5);
+}
+
 .mobile-action-buttons-container .mobile-btn-secondary {
     flex: 0 0 auto;
     min-width: min(120px, 35%);
@@ -7749,6 +7893,182 @@ $(document).ready(function() {
     $('.booth-checkbox-mobile').each(function() {
         const boothNumber = $(this).closest('.booth-card-mobile').find('.booth-number-mobile').text();
         $(this).attr('aria-label', 'Select booth ' + boothNumber);
+    });
+});
+
+// Enhanced Click Animation with Ripple Effect
+(function() {
+    'use strict';
+    
+    // Add click animation to all clickable elements
+    function addClickAnimation(element) {
+        if (!element || element.classList.contains('no-click-animation')) {
+            return;
+        }
+        
+        element.addEventListener('click', function(e) {
+            // Create ripple element
+            const ripple = document.createElement('span');
+            const rect = element.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+            
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.classList.add('click-ripple');
+            
+            // Add ripple to element
+            element.style.position = 'relative';
+            element.style.overflow = 'hidden';
+            element.appendChild(ripple);
+            
+            // Remove ripple after animation
+            setTimeout(function() {
+                ripple.remove();
+            }, 600);
+        }, { passive: true });
+    }
+    
+    // Apply to all buttons and clickable elements
+    document.addEventListener('DOMContentLoaded', function() {
+        const clickableElements = document.querySelectorAll(
+            '.mobile-btn, .btn, button, .booth-card-mobile, .client-result-item-mobile, ' +
+            '.select-client-inline-btn, .change-client-btn-mobile, .client-search-btn, ' +
+            '.booth-checkbox-mobile, .view-toggle-btn, .mobile-form-section-title'
+        );
+        
+        clickableElements.forEach(function(element) {
+            addClickAnimation(element);
+        });
+        
+        // Also apply to dynamically added elements
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                mutation.addedNodes.forEach(function(node) {
+                    if (node.nodeType === 1) { // Element node
+                        if (node.matches && node.matches('.mobile-btn, .btn, button, .booth-card-mobile, .client-result-item-mobile')) {
+                            addClickAnimation(node);
+                        }
+                        // Check children
+                        const children = node.querySelectorAll('.mobile-btn, .btn, button, .booth-card-mobile, .client-result-item-mobile');
+                        children.forEach(function(child) {
+                            addClickAnimation(child);
+                        });
+                    }
+                });
+            });
+        });
+        
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    });
+})();
+
+// Handle Create Client Form Submission via AJAX
+$(document).ready(function() {
+    $('#createClientForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const submitBtn = $('#createClientSubmitBtn');
+        const errorDiv = $('#createClientError');
+        const originalBtnText = submitBtn.html();
+        
+        // Hide previous errors
+        errorDiv.hide().html('');
+        
+        // Disable submit button and show loading
+        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i>Creating...');
+        
+        // Get form data
+        const formData = form.serialize();
+        
+        // Submit via AJAX
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            data: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            success: function(response) {
+                if (response.status === 'success' && response.client) {
+                    // Close modal
+                    $('#createClientModal').modal('hide');
+                    
+                    // Reset form
+                    form[0].reset();
+                    
+                    // Select the newly created client in the booking form
+                    if (typeof selectClient === 'function') {
+                        selectClient(response.client);
+                    }
+                    
+                    // Show success message
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Client Created!',
+                            text: response.message || 'Client has been created and selected.',
+                            timer: 2000,
+                            showConfirmButton: false,
+                            toast: true,
+                            position: 'top-end'
+                        });
+                    } else {
+                        // Fallback to simple alert if Swal is not available
+                        alert(response.message || 'Client created successfully and added to booking form.');
+                    }
+                } else {
+                    // Handle unexpected response format
+                    errorDiv.html('<i class="fas fa-exclamation-circle mr-1"></i>Unexpected response from server.').show();
+                    submitBtn.prop('disabled', false).html(originalBtnText);
+                }
+            },
+            error: function(xhr) {
+                // Re-enable submit button
+                submitBtn.prop('disabled', false).html(originalBtnText);
+                
+                // Handle validation errors
+                if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
+                    let errorMessages = [];
+                    const errors = xhr.responseJSON.errors;
+                    
+                    for (let field in errors) {
+                        if (errors.hasOwnProperty(field)) {
+                            errors[field].forEach(function(error) {
+                                errorMessages.push('<div><strong>' + field + ':</strong> ' + error + '</div>');
+                            });
+                        }
+                    }
+                    
+                    errorDiv.html('<i class="fas fa-exclamation-circle mr-1"></i><div style="margin-top: 8px;">' + errorMessages.join('') + '</div>').show();
+                } else {
+                    // Handle other errors
+                    const errorMessage = xhr.responseJSON && xhr.responseJSON.message 
+                        ? xhr.responseJSON.message 
+                        : 'An error occurred while creating the client. Please try again.';
+                    errorDiv.html('<i class="fas fa-exclamation-circle mr-1"></i>' + errorMessage).show();
+                }
+                
+                // Scroll to error
+                $('html, body').animate({
+                    scrollTop: errorDiv.offset().top - 100
+                }, 300);
+            }
+        });
+    });
+    
+    // Reset form when modal is closed
+    $('#createClientModal').on('hidden.bs.modal', function() {
+        $('#createClientForm')[0].reset();
+        $('#createClientError').hide().html('');
+        $('#createClientSubmitBtn').prop('disabled', false).html('<i class="fas fa-save mr-1"></i>Create Client');
     });
 });
 </script>

@@ -6,6 +6,18 @@
 
 @push('styles')
 <style>
+    /* Khmer Font Support for Bookings Page */
+    .compact-booking-card,
+    .booking-card-modern,
+    .table-modern,
+    #compactBookingsContainer,
+    #cardBookingsContainer,
+    .compact-card-content,
+    .compact-card-row,
+    .compact-card-id {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Khmer OS Battambang", "KhmerOSBattambang", "Hanuman", "Hanuman-Regular", "Noto Sans Khmer", "Khmer OS", "Khmer", sans-serif;
+    }
+    
     /* Modern Design System - Enhanced Glassmorphism Cards */
     .stats-card {
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.95) 100%);
@@ -760,6 +772,283 @@
         padding: 24px 32px;
     }
 
+    /* Master Layout Styles */
+    .master-layout-switcher {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .master-layout-btn {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        border-radius: 6px;
+        background: #ffffff;
+        border: 1.5px solid #e5e7eb;
+        color: #6b7280;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .master-layout-btn:hover {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+        transform: translateY(-1px);
+    }
+
+    .master-layout-btn.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: white;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.25);
+    }
+
+    .master-layout-btn i {
+        font-size: 12px;
+    }
+
+    /* Master Layout: Default */
+    .master-layout-default .compact-card-view {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .master-layout-default .compact-booking-card {
+        padding: 20px;
+        border-radius: 16px;
+    }
+
+    .master-layout-default .compact-card-id {
+        font-size: 1.125rem;
+    }
+
+    /* Master Layout: Min (Minimal) */
+    .master-layout-min .compact-card-view {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .master-layout-min .compact-booking-card {
+        padding: 12px;
+        border-radius: 10px;
+    }
+
+    .master-layout-min .compact-card-id {
+        font-size: 0.9375rem;
+    }
+
+    .master-layout-min .compact-card-row {
+        font-size: 0.75rem;
+    }
+
+    /* Master Layout: Max (Maximum) */
+    .master-layout-max .compact-card-view {
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 24px;
+        padding: 24px;
+    }
+
+    .master-layout-max .compact-booking-card {
+        padding: 24px;
+        border-radius: 20px;
+    }
+
+    .master-layout-max .compact-card-id {
+        font-size: 1.25rem;
+    }
+
+    .master-layout-max .compact-card-row {
+        font-size: 0.9375rem;
+    }
+
+    /* Master Layout: Tiny (Smallest) */
+    .master-layout-tiny .compact-card-view {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 8px;
+        padding: 8px;
+    }
+
+    .master-layout-tiny .compact-booking-card {
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    .master-layout-tiny .compact-card-id {
+        font-size: 0.8125rem;
+    }
+
+    .master-layout-tiny .compact-card-row {
+        font-size: 0.6875rem;
+    }
+
+    .master-layout-tiny .compact-card-actions .btn {
+        width: 24px;
+        height: 24px;
+        font-size: 0.6875rem;
+    }
+
+    /* Compact Card/Icon View Styles */
+    .compact-card-view {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+        padding: 16px;
+    }
+
+    .compact-booking-card {
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .compact-booking-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .compact-booking-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .compact-booking-card.special::before {
+        background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+    }
+
+    .compact-booking-card.temporary::before {
+        background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+    }
+
+    .compact-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .compact-card-id {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #1a202c;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .compact-card-id i {
+        color: #667eea;
+        font-size: 0.875rem;
+    }
+
+    .compact-card-badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .compact-card-content {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .compact-card-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8125rem;
+    }
+
+    .compact-card-row i {
+        width: 16px;
+        color: #6b7280;
+        font-size: 0.75rem;
+    }
+
+    .compact-card-row strong {
+        color: #1a202c;
+        font-weight: 600;
+    }
+
+    .compact-card-row span {
+        color: #6b7280;
+    }
+
+    .compact-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #f3f4f6;
+    }
+
+    .compact-card-actions {
+        display: flex;
+        gap: 4px;
+    }
+
+    .compact-card-actions .btn {
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        font-size: 0.75rem;
+    }
+
+    /* Instant Search Styles */
+    #instantSearchInput:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    #instantSearchIndicator {
+        display: inline-flex;
+        align-items: center;
+        animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* Search Loading State */
+    .input-group-modern.searching .input-group-text i {
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
     .view-mode-expand .table-modern tbody td {
         padding: 28px;
         font-size: 1rem;
@@ -964,15 +1253,19 @@
             </div>
             <div class="col-md-4 text-right">
                 <div class="d-flex align-items-center justify-content-end gap-2 flex-wrap">
-                    <div class="view-mode-selector">
-                        <button type="button" class="active" onclick="switchViewMode('default')" id="viewModeDefault" title="Default View">
-                            <i class="fas fa-adjust mr-1"></i>Default
+                    <!-- Master Layout Switcher -->
+                    <div class="master-layout-switcher" style="display: flex; align-items: center; padding: 6px 10px; background: rgba(102, 126, 234, 0.05); border-radius: 8px; border: 1px solid rgba(102, 126, 234, 0.1); margin-right: 12px;">
+                        <button type="button" class="master-layout-btn active" onclick="switchMasterLayout('default')" id="masterLayoutDefault" title="Default Layout" style="width: 32px; height: 32px; padding: 0; border-radius: 6px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white; cursor: pointer; margin: 0 2px;">
+                            <i class="fas fa-adjust" style="font-size: 12px;"></i>
                         </button>
-                        <button type="button" onclick="switchViewMode('minimal')" id="viewModeMinimal" title="Minimal View">
-                            <i class="fas fa-compress mr-1"></i>Minimal
+                        <button type="button" class="master-layout-btn" onclick="switchMasterLayout('min')" id="masterLayoutMin" title="Minimal Layout" style="width: 32px; height: 32px; padding: 0; border-radius: 6px; background: #ffffff; border: 1.5px solid #e5e7eb; color: #6b7280; cursor: pointer; margin: 0 2px;">
+                            <i class="fas fa-compress" style="font-size: 12px;"></i>
                         </button>
-                        <button type="button" onclick="switchViewMode('expand')" id="viewModeExpand" title="Expand View">
-                            <i class="fas fa-expand mr-1"></i>Expand
+                        <button type="button" class="master-layout-btn" onclick="switchMasterLayout('max')" id="masterLayoutMax" title="Maximum Layout" style="width: 32px; height: 32px; padding: 0; border-radius: 6px; background: #ffffff; border: 1.5px solid #e5e7eb; color: #6b7280; cursor: pointer; margin: 0 2px;">
+                            <i class="fas fa-expand" style="font-size: 12px;"></i>
+                        </button>
+                        <button type="button" class="master-layout-btn" onclick="switchMasterLayout('tiny')" id="masterLayoutTiny" title="Tiny Layout" style="width: 32px; height: 32px; padding: 0; border-radius: 6px; background: #ffffff; border: 1.5px solid #e5e7eb; color: #6b7280; cursor: pointer; margin: 0 2px;">
+                            <i class="fas fa-compress-arrows-alt" style="font-size: 12px;"></i>
                         </button>
                     </div>
                     <div class="view-toggle">
@@ -1000,7 +1293,7 @@
             </button>
         </div>
         <div id="filterSection">
-            <form method="GET" action="{{ route('books.index') }}" id="filterForm">
+            <form method="GET" action="{{ route('books.index') }}" id="filterForm" onsubmit="event.preventDefault(); performInstantSearch(); return false;">
                 <div class="row">
                     <div class="col-md-4 mb-3">
                         <label class="font-weight-600 mb-2"><i class="fas fa-search mr-1 text-primary"></i>Search</label>
@@ -1008,9 +1301,10 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text"><i class="fas fa-search"></i></span>
                             </div>
-                            <input type="text" name="search" class="form-control form-control-modern" 
+                            <input type="text" name="search" id="instantSearchInput" class="form-control form-control-modern" 
                                    placeholder="Client name, company, or user..." 
-                                   value="{{ request('search') }}">
+                                   value="{{ request('search') }}"
+                                   autocomplete="off">
                         </div>
                     </div>
                     <div class="col-md-3 mb-3">
@@ -1035,12 +1329,15 @@
                 </div>
                 <div class="row">
                     <div class="col-12">
-                        <button type="submit" class="btn btn-modern btn-modern-primary">
+                        <button type="button" onclick="performInstantSearch()" class="btn btn-modern btn-modern-primary" id="applyFiltersBtn">
                             <i class="fas fa-filter mr-2"></i>Apply Filters
                         </button>
                         <a href="{{ route('books.index') }}" class="btn btn-modern" style="background: #e2e8f0; color: #4a5568;">
                             <i class="fas fa-times mr-2"></i>Clear
                         </a>
+                        <span class="ml-3 text-muted" style="font-size: 0.875rem; display: none;" id="instantSearchIndicator">
+                            <i class="fas fa-search fa-spin mr-1"></i>Searching...
+                        </span>
                         @if(request()->hasAny(['search', 'date_from', 'date_to', 'type']))
                         <span class="badge-modern badge-modern-info ml-3" style="padding: 12px 20px; font-size: 0.875rem;">
                             <i class="fas fa-check-circle mr-1"></i>{{ isset($total) ? $total : count($books) }} result(s) found
@@ -1052,205 +1349,122 @@
         </div>
     </div>
 
-    <!-- Table View -->
+    <!-- Table View (Compact Card/Icon View) -->
     <div id="tableView" class="view-content">
-        <div class="card">
-            <div class="card-body p-0">
-                <div class="table-modern-wrapper">
-                    <table class="table table-modern">
-                <thead>
-                    <tr>
-                        <th style="width: 50px;">
-                            <input type="checkbox" id="selectAllBookings" class="form-check-input">
-                        </th>
-                        <th style="width: 80px;">ID</th>
-                        <th>Client Information</th>
-                        <th style="width: 120px;">Booths</th>
-                        <th style="width: 150px;">Date & Time</th>
-                        <th style="width: 120px;">Type</th>
-                        <th style="width: 100px;">Status</th>
-                        <th style="width: 150px;">Amount</th>
-                        <th style="width: 150px;">Booked By</th>
-                        <th style="width: 140px;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBookingsBody">
-                    @forelse($books as $book)
-                    @php
-                        $boothIds = json_decode($book->boothid, true) ?? [];
-                        $boothCount = count($boothIds);
-                        $typeClass = 'regular';
-                        $typeBadge = 'badge-modern-primary';
-                        if ($book->type == 2) {
-                            $typeClass = 'special';
-                            $typeBadge = 'badge-modern-warning';
-                        } elseif ($book->type == 3) {
-                            $typeClass = 'temporary';
-                            $typeBadge = 'badge-modern-danger';
-                        }
-                    @endphp
-                    <tr>
-                        <td>
-                            <input type="checkbox" class="form-check-input booking-checkbox" value="{{ $book->id }}">
-                        </td>
-                        <td>
-                            <strong class="text-primary" style="font-size: 1.125rem;">#{{ $book->id }}</strong>
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="mr-3">
-                                    <x-avatar 
-                                        :avatar="$book->client->avatar ?? null" 
-                                        :name="$book->client->name ?? 'N/A'" 
-                                        :size="'sm'" 
-                                        :type="'client'"
-                                        :shape="'circle'"
-                                    />
-                                </div>
-                                <div>
-                                    <div class="font-weight-700" style="color: #1a202c; font-size: 1rem;">
-                                        {{ $book->client ? ($book->client->company ?? $book->client->name) : 'N/A' }}
-                                    </div>
-                                    @if($book->client && $book->client->company && $book->client->name)
-                                    <div class="text-muted" style="font-size: 0.875rem; margin-top: 4px;">
-                                        <i class="fas fa-user mr-1"></i>{{ $book->client->name }}
-                                    </div>
-                                    @endif
-                                    @if($book->client && $book->client->email)
-                                    <div class="text-muted" style="font-size: 0.8125rem; margin-top: 2px;">
-                                        <i class="fas fa-envelope mr-1"></i>{{ $book->client->email }}
-                                    </div>
-                                    @endif
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <span class="badge-modern badge-modern-info">
-                                    <i class="fas fa-cube mr-1"></i>{{ $boothCount }}
-                                </span>
-                            </div>
-                        </td>
-                        <td>
-                            <div style="color: #1a202c;">
-                                <div class="font-weight-700" style="font-size: 0.9375rem;">
-                                    <i class="fas fa-calendar text-muted mr-1"></i>{{ $book->date_book->format('M d, Y') }}
-                                </div>
-                                <div class="text-muted" style="font-size: 0.8125rem; margin-top: 4px;">
-                                    <i class="fas fa-clock mr-1"></i>{{ $book->date_book->format('h:i A') }}
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge-modern {{ $typeBadge }}">
-                                @if($book->type == 1) Regular
-                                @elseif($book->type == 2) Special
-                                @elseif($book->type == 3) Temporary
-                                @else {{ $book->type }}
-                                @endif
-                            </span>
-                        </td>
-                        <td>
-                            @php
-                                try {
-                                    $statusSetting = $book->statusSetting ?? \App\Models\BookingStatusSetting::getByCode($book->status ?? 1);
-                                    $statusColor = $statusSetting ? $statusSetting->status_color : '#6c757d';
-                                    $statusTextColor = $statusSetting && $statusSetting->text_color ? $statusSetting->text_color : '#ffffff';
-                                    $statusName = $statusSetting ? $statusSetting->status_name : 'Pending';
-                                } catch (\Exception $e) {
-                                    $statusColor = '#6c757d';
-                                    $statusTextColor = '#ffffff';
-                                    $statusName = 'Pending';
-                                }
-                            @endphp
-                            <span class="badge-modern" style="background-color: {{ $statusColor }}; color: {{ $statusTextColor }};">
-                                {{ $statusName }}
-                            </span>
-                        </td>
-                        <td>
-                            @php
-                                $totalAmount = $book->total_amount ?? \App\Models\Booth::whereIn('id', $boothIds)->sum('price');
-                                $paidAmount = $book->paid_amount ?? 0;
-                                $balanceAmount = $book->balance_amount ?? ($totalAmount - $paidAmount);
-                            @endphp
-                            <div>
-                                <div class="font-weight-700 text-success" style="font-size: 0.9375rem;">
-                                    ${{ number_format($totalAmount, 2) }}
-                                </div>
-                                @if($paidAmount > 0)
-                                <div class="text-muted" style="font-size: 0.8125rem;">
-                                    Paid: ${{ number_format($paidAmount, 2) }}
-                                </div>
-                                @endif
-                                @if($balanceAmount > 0)
-                                <div class="text-warning" style="font-size: 0.8125rem;">
-                                    Balance: ${{ number_format($balanceAmount, 2) }}
-                                </div>
-                                @endif
-                            </div>
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                @if($book->user)
-                                    <x-avatar 
-                                        :avatar="$book->user->avatar" 
-                                        :name="$book->user->username" 
-                                        :size="'xs'" 
-                                        :type="$book->user->isAdmin() ? 'admin' : 'user'"
-                                        :shape="'circle'"
-                                    />
-                                    <span class="ml-2 text-muted" style="font-size: 0.875rem;">{{ $book->user->username }}</span>
-                                @else
-                                    <i class="fas fa-server text-muted mr-2"></i>
-                                    <span class="text-muted" style="font-size: 0.875rem;">System</span>
-                                @endif
-                            </div>
-                        </td>
-                        <td>
-                            <div class="btn-group btn-group-sm" role="group">
-                                <a href="{{ route('books.show', $book) }}" class="btn btn-info" title="View Details" style="border-radius: 8px 0 0 8px;">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                @if(auth()->user()->isAdmin())
-                                <button type="button" class="btn btn-danger" onclick="deleteBooking({{ $book->id }})" title="Delete" style="border-radius: 0 8px 8px 0;">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="9" class="text-center">
-                            <div class="empty-state">
-                                <div class="empty-state-icon">
-                                    <i class="fas fa-calendar-times"></i>
-                                </div>
-                                <h4 style="color: #4a5568; margin-bottom: 12px;">No Bookings Found</h4>
-                                <p class="text-muted mb-4">Get started by creating your first booking</p>
-                                <a href="{{ route('books.create') }}" class="btn btn-modern btn-modern-primary">
-                                    <i class="fas fa-plus mr-2"></i>Create First Booking
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+        <div class="compact-card-view" id="compactBookingsContainer">
+            @forelse($books as $book)
+            @php
+                $boothIds = json_decode($book->boothid, true) ?? [];
+                $boothCount = count($boothIds);
+                $typeClass = 'regular';
+                $typeBadge = 'badge-modern-primary';
+                if ($book->type == 2) {
+                    $typeClass = 'special';
+                    $typeBadge = 'badge-modern-warning';
+                } elseif ($book->type == 3) {
+                    $typeClass = 'temporary';
+                    $typeBadge = 'badge-modern-danger';
+                }
+                try {
+                    $statusSetting = $book->statusSetting ?? \App\Models\BookingStatusSetting::getByCode($book->status ?? 1);
+                    $statusColor = $statusSetting ? $statusSetting->status_color : '#6c757d';
+                    $statusTextColor = $statusSetting && $statusSetting->text_color ? $statusSetting->text_color : '#ffffff';
+                    $statusName = $statusSetting ? $statusSetting->status_name : 'Pending';
+                } catch (\Exception $e) {
+                    $statusColor = '#6c757d';
+                    $statusTextColor = '#ffffff';
+                    $statusName = 'Pending';
+                }
+                $totalAmount = $book->total_amount ?? \App\Models\Booth::whereIn('id', $boothIds)->sum('price');
+                $paidAmount = $book->paid_amount ?? 0;
+                $balanceAmount = $book->balance_amount ?? ($totalAmount - $paidAmount);
+            @endphp
+            <div class="compact-booking-card {{ $typeClass }}" onclick="window.location='{{ route('books.show', $book) }}'">
+                <div class="compact-card-header">
+                    <div class="compact-card-id">
+                        <i class="fas fa-hashtag"></i>
+                        <span>#{{ $book->id }}</span>
+                    </div>
+                    <span class="compact-card-badge {{ $typeBadge }}" style="background: {{ $statusColor }}; color: {{ $statusTextColor }};">
+                        {{ $statusName }}
+                    </span>
                 </div>
-                <!-- Lazy Load Trigger -->
-                <div class="lazy-load-trigger" id="tableLazyLoadTrigger"></div>
-                <!-- Lazy Load Spinner -->
-                <div class="lazy-load-spinner" id="tableLazyLoadSpinner">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <p style="margin-top: 16px; color: #718096; font-weight: 600;">Loading more bookings...</p>
+                <div class="compact-card-content">
+                    <div class="compact-card-row">
+                        <i class="fas fa-building"></i>
+                        <strong>{{ $book->client ? ($book->client->company ?? $book->client->name) : 'N/A' }}</strong>
+                    </div>
+                    @if($book->client && $book->client->name && $book->client->company)
+                    <div class="compact-card-row">
+                        <i class="fas fa-user"></i>
+                        <span>{{ $book->client->name }}</span>
+                    </div>
+                    @endif
+                    <div class="compact-card-row">
+                        <i class="fas fa-cube"></i>
+                        <span>{{ $boothCount }} {{ $boothCount == 1 ? 'Booth' : 'Booths' }}</span>
+                    </div>
+                    <div class="compact-card-row">
+                        <i class="fas fa-calendar"></i>
+                        <span>{{ $book->date_book->format('M d, Y') }}</span>
+                        <i class="fas fa-clock ml-2"></i>
+                        <span>{{ $book->date_book->format('h:i A') }}</span>
+                    </div>
+                    <div class="compact-card-row">
+                        <i class="fas fa-dollar-sign"></i>
+                        <strong style="color: #10b981;">${{ number_format($totalAmount, 2) }}</strong>
+                        @if($balanceAmount > 0)
+                        <span style="color: #f59e0b; margin-left: 8px;">Balance: ${{ number_format($balanceAmount, 2) }}</span>
+                        @endif
+                    </div>
                 </div>
-                <!-- End Message -->
-                <div class="lazy-load-end" id="tableLazyLoadEnd" style="display: none;">
-                    <i class="fas fa-check-circle mr-2" style="color: #48bb78;"></i>
-                    All bookings loaded
+                <div class="compact-card-footer">
+                    <div class="compact-card-row">
+                        @if($book->user)
+                        <x-avatar 
+                            :avatar="$book->user->avatar" 
+                            :name="$book->user->username" 
+                            :size="'xs'" 
+                            :type="$book->user->isAdmin() ? 'admin' : 'user'"
+                            :shape="'circle'"
+                        />
+                        <span style="font-size: 0.75rem; color: #6b7280;">{{ $book->user->username }}</span>
+                        @else
+                        <i class="fas fa-server" style="color: #6b7280;"></i>
+                        <span style="font-size: 0.75rem; color: #6b7280;">System</span>
+                        @endif
+                    </div>
+                    <div class="compact-card-actions" onclick="event.stopPropagation()">
+                        <a href="{{ route('books.show', $book) }}" class="btn btn-info btn-sm" title="View">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        @if(auth()->user()->isAdmin())
+                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteBooking({{ $book->id }})" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        @endif
+                    </div>
                 </div>
             </div>
+            @empty
+            <div style="grid-column: 1 / -1; text-center; padding: 40px;">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No bookings found</p>
+            </div>
+            @endforelse
+        </div>
+        <!-- Lazy Loading Trigger -->
+        <div id="tableLazyLoadTrigger" style="height: 20px; margin: 10px 0;"></div>
+        <!-- Lazy Loading Spinner -->
+        <div id="tableLazyLoadSpinner" class="text-center py-3" style="display: none;">
+            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <span class="ml-2 text-muted">Loading more bookings...</span>
+        </div>
+        <!-- Lazy Loading End -->
+        <div id="tableLazyLoadEnd" class="text-center py-3" style="display: none;">
+            <span class="text-muted">No more bookings to load</span>
         </div>
     </div>
 
@@ -1491,6 +1705,22 @@ let currentView = 'table';
 let currentViewMode = 'default';
 let filterParams = {};
 
+// Master Layout Toggle
+window.switchMasterLayout = function(layout) {
+    // Remove all master layout classes from body
+    $('body').removeClass('master-layout-default master-layout-min master-layout-max master-layout-tiny');
+    
+    // Add selected layout class
+    $('body').addClass('master-layout-' + layout);
+    
+    // Update button states
+    $('.master-layout-btn').removeClass('active');
+    $('#masterLayout' + layout.charAt(0).toUpperCase() + layout.slice(1)).addClass('active');
+    
+    // Save preference
+    localStorage.setItem('bookingMasterLayout', layout);
+}
+
 // View Mode Toggle
 window.switchViewMode = function(mode) {
     currentViewMode = mode;
@@ -1509,8 +1739,130 @@ window.switchViewMode = function(mode) {
     localStorage.setItem('bookingViewMode', mode);
 }
 
+// Instant Search Variables
+let instantSearchTimeout = null;
+let isSearching = false;
+
+// Instant Search Function
+window.performInstantSearch = function() {
+    // Only enable instant search on desktop (screen width > 768px)
+    if ($(window).width() <= 768) {
+        // On mobile, submit form normally
+        $('#filterForm').off('submit').submit();
+        return;
+    }
+    
+    if (isSearching) return;
+    
+    const searchQuery = $('#instantSearchInput').val().trim();
+    const dateFrom = $('input[name="date_from"]').val();
+    const dateTo = $('input[name="date_to"]').val();
+    const type = $('select[name="type"]').val();
+    
+    // Update filter params
+    filterParams = {
+        search: searchQuery,
+        date_from: dateFrom,
+        date_to: dateTo,
+        type: type
+    };
+    
+    // Reset lazy loading
+    currentPage = 1;
+    hasMoreData = true;
+    isLoading = false;
+    
+    // Show loading indicator
+    if (currentView === 'table') {
+        $('#compactBookingsContainer').html('<div style="grid-column: 1 / -1; text-center; padding: 40px;"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div><p class="mt-3 text-muted">Searching...</p></div>');
+    } else {
+        $('#cardBookingsContainer').html('<div class="col-12 text-center py-5"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div><p class="mt-3 text-muted">Searching...</p></div>');
+    }
+    
+    isSearching = true;
+    
+    // Show search indicator
+    $('#instantSearchIndicator').show();
+    
+    // Build params
+    const params = new URLSearchParams({
+        page: 1,
+        view: currentView
+    });
+    
+    if (searchQuery) params.append('search', searchQuery);
+    if (dateFrom) params.append('date_from', dateFrom);
+    if (dateTo) params.append('date_to', dateTo);
+    if (type) params.append('type', type);
+    
+    fetch('{{ route("books.index") }}?' + params.toString(), {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success && data.html) {
+            if (currentView === 'table') {
+                $('#compactBookingsContainer').html(data.html);
+            } else {
+                $('#cardBookingsContainer').html(data.html);
+            }
+            
+            hasMoreData = data.hasMore !== false;
+            
+            if (!data.hasMore) {
+                const endId = currentView === 'table' ? 'tableLazyLoadEnd' : 'cardLazyLoadEnd';
+                $('#' + endId).show();
+            } else {
+                const endId = currentView === 'table' ? 'tableLazyLoadEnd' : 'cardLazyLoadEnd';
+                $('#' + endId).hide();
+                // Re-initialize lazy loading
+                setTimeout(function() {
+                    initLazyLoading();
+                }, 100);
+            }
+        } else {
+            // No results
+            if (currentView === 'table') {
+                $('#compactBookingsContainer').html('<div style="grid-column: 1 / -1; text-center; padding: 40px;"><i class="fas fa-search fa-3x text-muted mb-3"></i><p class="text-muted">No bookings found matching your search</p></div>');
+            } else {
+                $('#cardBookingsContainer').html('<div class="col-12 text-center py-5"><i class="fas fa-search fa-3x text-muted mb-3"></i><p class="text-muted">No bookings found matching your search</p></div>');
+            }
+            hasMoreData = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error performing instant search:', error);
+        if (currentView === 'table') {
+            $('#compactBookingsContainer').html('<div style="grid-column: 1 / -1; text-center; padding: 40px;"><i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i><p class="text-danger">Error searching bookings. Please try again.</p></div>');
+        } else {
+            $('#cardBookingsContainer').html('<div class="col-12 text-center py-5"><i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i><p class="text-danger">Error searching bookings. Please try again.</p></div>');
+        }
+        if (typeof toastr !== 'undefined') {
+            toastr.error('Failed to search bookings. Please try again.');
+        }
+    })
+    .finally(() => {
+        isSearching = false;
+        $('#instantSearchIndicator').hide();
+    });
+};
+
 // Load saved view preference
 $(document).ready(function() {
+    // Load master layout preference
+    const savedMasterLayout = localStorage.getItem('bookingMasterLayout') || 'default';
+    switchMasterLayout(savedMasterLayout);
+    
     // Load view mode preference
     const savedViewMode = localStorage.getItem('bookingViewMode') || 'default';
     switchViewMode(savedViewMode);
@@ -1530,6 +1882,72 @@ $(document).ready(function() {
     
     // Initialize lazy loading
     initLazyLoading();
+    
+    // Instant Search Input Handler (Desktop Only)
+    $(document).on('input', '#instantSearchInput', function() {
+        // Only enable instant search on desktop (screen width > 768px)
+        if ($(window).width() <= 768) {
+            return;
+        }
+        
+        clearTimeout(instantSearchTimeout);
+        
+        const query = $(this).val().trim();
+        
+        // Show search indicator while typing
+        if (query.length > 0) {
+            $('#instantSearchIndicator').show();
+        } else {
+            $('#instantSearchIndicator').hide();
+        }
+        
+        // If search is completely cleared and no other filters, reload page
+        if (query.length === 0 && !$('input[name="date_from"]').val() && !$('input[name="date_to"]').val() && !$('select[name="type"]').val()) {
+            // Only reload if we're not already on the base page
+            if (window.location.search) {
+                clearTimeout(instantSearchTimeout);
+                window.location.href = '{{ route("books.index") }}';
+                return;
+            }
+        }
+        
+        // Debounce: wait 500ms after user stops typing
+        instantSearchTimeout = setTimeout(function() {
+            performInstantSearch();
+        }, 500);
+    });
+
+    // Also trigger search on date and type changes (Desktop Only)
+    $(document).on('change', 'input[name="date_from"], input[name="date_to"], select[name="type"]', function() {
+        // Only enable instant search on desktop (screen width > 768px)
+        if ($(window).width() <= 768) {
+            return;
+        }
+        
+        clearTimeout(instantSearchTimeout);
+        instantSearchTimeout = setTimeout(function() {
+            performInstantSearch();
+        }, 300);
+    });
+
+    // Prevent form submission on Enter key in search (use instant search instead - Desktop Only)
+    $(document).on('keydown', '#instantSearchInput', function(e) {
+        if (e.key === 'Enter') {
+            // Only prevent default on desktop
+            if ($(window).width() > 768) {
+                e.preventDefault();
+                clearTimeout(instantSearchTimeout);
+                performInstantSearch();
+            }
+        }
+    });
+    
+    // Add search icon animation on focus
+    $('#instantSearchInput').on('focus', function() {
+        $(this).closest('.input-group').addClass('searching');
+    }).on('blur', function() {
+        $(this).closest('.input-group').removeClass('searching');
+    });
 });
 
 // Lazy Loading Observer (global to allow re-initialization)
@@ -1560,10 +1978,10 @@ function initLazyLoading() {
         });
     }, observerOptions);
     
-    if (tableTrigger) {
+    // Observe trigger based on current view
+    if (currentView === 'table' && tableTrigger) {
         lazyLoadObserver.observe(tableTrigger);
-    }
-    if (cardTrigger) {
+    } else if (currentView === 'cards' && cardTrigger) {
         lazyLoadObserver.observe(cardTrigger);
     }
 }
@@ -1604,15 +2022,15 @@ function loadMoreBookings() {
         }
         return response.json();
     })
-    .then(data => {
-        if (data.success && data.html) {
-            if (currentView === 'table') {
-                // Append new rows to table body
-                $('#tableBookingsBody').append(data.html);
-            } else {
-                // Append new cards to card container
-                $('#cardBookingsContainer').append(data.html);
-            }
+        .then(data => {
+            if (data.success && data.html) {
+                if (currentView === 'table') {
+                    // Append new compact cards to container
+                    $('#compactBookingsContainer').append(data.html);
+                } else {
+                    // Append new cards to card container
+                    $('#cardBookingsContainer').append(data.html);
+                }
             
             hasMoreData = data.hasMore !== false;
             

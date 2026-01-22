@@ -33,6 +33,10 @@
     {{-- CDN CSS --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {{-- Khmer Fonts from Google Fonts --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hanuman:wght@100;300;400;700;900&family=Noto+Sans+Khmer:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     @else
     {{-- Critical CSS: Preload essential stylesheets --}}
     <link rel="preload" href="{{ asset('vendor/bootstrap5/css/bootstrap.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -41,6 +45,11 @@
         <link rel="stylesheet" href="{{ asset('vendor/bootstrap5/css/bootstrap.min.css') }}">
         <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
     </noscript>
+    
+    {{-- Khmer Fonts from Google Fonts (for local CSS mode) --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hanuman:wght@100;300;400;700;900&family=Noto+Sans+Khmer:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     {{-- Device-Optimized Performance CSS --}}
     <link rel="stylesheet" href="{{ asset('css/device-optimized.css') }}">
@@ -491,6 +500,21 @@
     </script>
     
     <style>
+    /* Khmer Font Support */
+    html, body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Khmer OS Battambang", "KhmerOSBattambang", "Hanuman", "Hanuman-Regular", "Noto Sans Khmer", "Khmer OS", "Khmer", sans-serif;
+    }
+    
+    * {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Khmer OS Battambang", "KhmerOSBattambang", "Hanuman", "Hanuman-Regular", "Noto Sans Khmer", "Khmer OS", "Khmer", sans-serif;
+    }
+    
+    [lang="km"], 
+    .khmer-text,
+    *:lang(km) {
+        font-family: "Khmer OS Battambang", "KhmerOSBattambang", "Hanuman", "Hanuman-Regular", "Noto Sans Khmer", "Khmer OS", "Khmer", sans-serif !important;
+    }
+    
     .custom-swal-popup {
         border-radius: 12px;
         box-shadow: 0 10px 40px rgba(0,0,0,0.2);
