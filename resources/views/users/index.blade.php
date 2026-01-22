@@ -277,7 +277,7 @@
             <div class="card-header">
                 <h3 class="card-title"><i class="fas fa-list mr-2"></i>All Users</h3>
                 <div class="card-tools">
-                    <span class="badge badge-primary">{{ $users->total() }} Total</span>
+                    <span class="badge badge-primary">{{ $total ?? count($users) }} Total</span>
                 </div>
             </div>
             <div class="card-body p-0">
@@ -297,116 +297,9 @@
                                 <th style="width: 150px;">Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="tableUsersBody">
                             @forelse($users as $user)
-                            <tr class="table-row-hover">
-                                <td>
-                                    <input type="checkbox" class="form-check-input user-checkbox" value="{{ $user->id }}">
-                                </td>
-                                <td>
-                                    <strong class="text-primary">#{{ $user->id }}</strong>
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="mr-2">
-                                            <x-avatar 
-                                                :avatar="$user->avatar" 
-                                                :name="$user->username" 
-                                                :size="'sm'" 
-                                                :type="$user->isAdmin() ? 'admin' : 'user'"
-                                                :shape="'circle'"
-                                            />
-                                        </div>
-                                        <div>
-                                            <strong>{{ $user->username }}</strong>
-                                            @php
-                                                try {
-                                                    $bookingCount = $user->books()->count();
-                                                    if ($bookingCount > 0) {
-                                                        echo '<br><small class="text-muted"><i class="fas fa-calendar-check mr-1"></i>' . $bookingCount . ' booking(s)</small>';
-                                                    }
-                                                } catch (\Exception $e) {
-                                                    // Skip if relationship fails
-                                                }
-                                            @endphp
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    @if($user->isAdmin())
-                                        <span class="badge badge-danger">
-                                            <i class="fas fa-shield-alt mr-1"></i>Admin
-                                        </span>
-                                    @else
-                                        <span class="badge badge-secondary">
-                                            <i class="fas fa-user-tie mr-1"></i>Sale
-                                        </span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if($user->role)
-                                        <span class="badge badge-info">
-                                            <i class="fas fa-user-shield mr-1"></i>{{ $user->role->name }}
-                                        </span>
-                                        @if($user->role->permissions->count() > 0)
-                                        <br><small class="text-muted">
-                                            {{ $user->role->permissions->count() }} permission(s)
-                                        </small>
-                                        @endif
-                                    @else
-                                        <span class="badge badge-light">
-                                            <i class="fas fa-minus-circle mr-1"></i>No Role
-                                        </span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if($user->isActive())
-                                        <span class="badge badge-success status-toggle" onclick="toggleUserStatus({{ $user->id }}, {{ $user->status }})" style="cursor: pointer;" title="Click to deactivate">
-                                            <i class="fas fa-check-circle mr-1"></i>Active
-                                        </span>
-                                    @else
-                                        <span class="badge badge-warning status-toggle" onclick="toggleUserStatus({{ $user->id }}, {{ $user->status }})" style="cursor: pointer;" title="Click to activate">
-                                            <i class="fas fa-times-circle mr-1"></i>Inactive
-                                        </span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @php
-                                        try {
-                                            $boothCount = $user->booths()->count();
-                                            $bookingCount = $user->books()->count();
-                                        } catch (\Exception $e) {
-                                            $boothCount = 0;
-                                            $bookingCount = 0;
-                                        }
-                                    @endphp
-                                    <div>
-                                        <small class="text-muted">
-                                            <i class="fas fa-cube mr-1"></i>{{ $boothCount }} booth(s)
-                                        </small>
-                                    </div>
-                                    <div>
-                                        <small class="text-muted">
-                                            <i class="fas fa-calendar mr-1"></i>{{ $bookingCount }} booking(s)
-                                        </small>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm" role="group">
-                                        <a href="{{ route('users.show', $user) }}" class="btn btn-info" title="View Details">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="{{ route('users.edit', $user) }}" class="btn btn-warning" title="Edit">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        @if(auth()->user()->isAdmin() && $user->id != auth()->id())
-                                        <button type="button" class="btn btn-danger" onclick="deleteUser({{ $user->id }}, '{{ $user->username }}')" title="Delete">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr>
+                                @include('users.partials.table-row', ['user' => $user])
                             @empty
                             <tr>
                                 <td colspan="8" class="text-center py-5">
@@ -423,27 +316,20 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
-            @if(method_exists($users, 'hasPages') && $users->hasPages())
-            <div class="card-footer">
-                <div class="row align-items-center">
-                    <div class="col-md-6">
-                        <div class="text-muted">
-                            @if($users->firstItem())
-                            Showing {{ $users->firstItem() }} to {{ $users->lastItem() }} of {{ $users->total() }} users
-                            @else
-                            {{ $users->total() }} user(s) total
-                            @endif
-                        </div>
+                <!-- Lazy Loading Trigger -->
+                <div id="usersLazyLoadTrigger" style="height: 20px; margin: 10px 0;"></div>
+                <!-- Lazy Loading Spinner -->
+                <div id="usersLazyLoadSpinner" class="text-center py-3" style="display: none;">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                        <span class="sr-only">Loading...</span>
                     </div>
-                    <div class="col-md-6">
-                        <div class="float-right">
-                            {{ $users->links() }}
-                        </div>
-                    </div>
+                    <span class="ml-2 text-muted">Loading more users...</span>
+                </div>
+                <!-- Lazy Loading End -->
+                <div id="usersLazyLoadEnd" class="text-center py-3" style="display: none;">
+                    <span class="text-muted">No more users to load</span>
                 </div>
             </div>
-            @endif
         </div>
     </div>
 
@@ -920,6 +806,123 @@ $(document).ready(function() {
         $('#createUserError').hide();
         $('#modal_user_type').val('2');
         $('#modal_user_status').val('1');
+    });
+    
+    // Lazy Loading Variables
+    let usersCurrentPage = 1;
+    let usersIsLoading = false;
+    let usersHasMoreData = {{ $total > count($users) ? 'true' : 'false' }};
+    let usersFilterParams = {
+        search: '{{ request('search') }}',
+        type: '{{ request('type') }}',
+        status: '{{ request('status') }}',
+        role_id: '{{ request('role_id') }}'
+    };
+    
+    // Lazy Loading Observer
+    let usersLazyLoadObserver = null;
+    
+    // Initialize Lazy Loading
+    function initUsersLazyLoading() {
+        // Disconnect existing observer if any
+        if (usersLazyLoadObserver) {
+            usersLazyLoadObserver.disconnect();
+        }
+        
+        // Use Intersection Observer API for better performance
+        const trigger = document.getElementById('usersLazyLoadTrigger');
+        
+        if (!trigger) return;
+        
+        const observerOptions = {
+            root: null,
+            rootMargin: '200px',
+            threshold: 0.1
+        };
+        
+        usersLazyLoadObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && usersHasMoreData && !usersIsLoading) {
+                    loadMoreUsers();
+                }
+            });
+        }, observerOptions);
+        
+        usersLazyLoadObserver.observe(trigger);
+    }
+    
+    // Load More Users
+    function loadMoreUsers() {
+        if (usersIsLoading || !usersHasMoreData) return;
+        
+        usersIsLoading = true;
+        usersCurrentPage++;
+        
+        $('#usersLazyLoadSpinner').show();
+        
+        // Build params exactly like initial load
+        const params = new URLSearchParams({
+            page: usersCurrentPage
+        });
+        
+        // Add filter params if they exist
+        if (usersFilterParams.search) params.append('search', usersFilterParams.search);
+        if (usersFilterParams.type) params.append('type', usersFilterParams.type);
+        if (usersFilterParams.status) params.append('status', usersFilterParams.status);
+        if (usersFilterParams.role_id) params.append('role_id', usersFilterParams.role_id);
+        
+        fetch('{{ route("users.index") }}?' + params.toString(), {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success && data.html) {
+                // Append new rows to table body
+                $('#tableUsersBody').append(data.html);
+                
+                usersHasMoreData = data.hasMore !== false;
+                
+                if (!data.hasMore) {
+                    $('#usersLazyLoadEnd').show();
+                    $('#usersLazyLoadSpinner').hide();
+                } else {
+                    // Re-initialize lazy loading observer for new content after a brief delay
+                    setTimeout(function() {
+                        initUsersLazyLoading();
+                    }, 100);
+                }
+            } else {
+                usersHasMoreData = false;
+                $('#usersLazyLoadSpinner').hide();
+            }
+        })
+        .catch(error => {
+            console.error('Error loading more users:', error);
+            usersHasMoreData = false;
+            $('#usersLazyLoadSpinner').hide();
+            if (typeof toastr !== 'undefined') {
+                toastr.error('Failed to load more users. Please try again.');
+            }
+        })
+        .finally(() => {
+            usersIsLoading = false;
+            $('#usersLazyLoadSpinner').hide();
+        });
+    }
+    
+    // Initialize lazy loading on page load
+    $(document).ready(function() {
+        initUsersLazyLoading();
     });
 });
 </script>

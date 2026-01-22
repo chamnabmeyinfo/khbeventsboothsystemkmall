@@ -263,7 +263,7 @@
             <div class="card-header">
                 <h3 class="card-title"><i class="fas fa-list mr-2"></i>All Clients</h3>
                 <div class="card-tools">
-                    <span class="badge badge-primary">{{ $clients->total() }} Total</span>
+                    <span class="badge badge-primary">{{ $total ?? count($clients) }} Total</span>
                 </div>
             </div>
             <div class="card-body p-0">
@@ -283,91 +283,9 @@
                                 <th style="width: 150px;">Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="tableClientsBody">
                             @forelse($clients as $client)
-                            <tr class="table-row-hover">
-                                <td>
-                                    <input type="checkbox" class="form-check-input client-checkbox" value="{{ $client->id }}">
-                                </td>
-                                <td>
-                                    <strong class="text-primary">#{{ $client->id }}</strong>
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="mr-2">
-                                            <i class="fas fa-building text-muted" style="font-size: 1.2rem;"></i>
-                                        </div>
-                                        <div>
-                                            <strong>{{ $client->company ?? 'N/A' }}</strong>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="mr-2">
-                                            <x-avatar 
-                                                :avatar="$client->avatar" 
-                                                :name="$client->name" 
-                                                :size="'sm'" 
-                                                :type="'client'"
-                                                :shape="'circle'"
-                                            />
-                                        </div>
-                                        <div>
-                                            <strong>{{ $client->name }}</strong>
-                                            @if($client->sex)
-                                            <br><small class="text-muted">
-                                                <i class="fas fa-{{ $client->sex == 1 ? 'mars' : 'venus' }} mr-1"></i>
-                                                {{ $client->sex == 1 ? 'Male' : 'Female' }}
-                                            </small>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    @if($client->position)
-                                        <span class="badge badge-info">
-                                            <i class="fas fa-briefcase mr-1"></i>{{ $client->position }}
-                                        </span>
-                                    @else
-                                        <span class="text-muted">N/A</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if($client->phone_number)
-                                        <a href="tel:{{ $client->phone_number }}" class="text-primary">
-                                            <i class="fas fa-phone mr-1"></i>{{ $client->phone_number }}
-                                        </a>
-                                    @else
-                                        <span class="text-muted">N/A</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <div>
-                                        <small class="text-muted">
-                                            <i class="fas fa-store mr-1"></i>{{ $client->booths_count ?? 0 }} booth(s)
-                                        </small>
-                                    </div>
-                                    <div>
-                                        <small class="text-muted">
-                                            <i class="fas fa-calendar mr-1"></i>{{ $client->books_count ?? 0 }} booking(s)
-                                        </small>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm" role="group">
-                                        <a href="{{ route('clients.show', $client) }}" class="btn btn-info" title="View Details">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="{{ route('clients.edit', $client) }}" class="btn btn-warning" title="Edit">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-danger" onclick="deleteClient({{ $client->id }}, '{{ $client->name }}')" title="Delete">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                                @include('clients.partials.table-row', ['client' => $client])
                             @empty
                             <tr>
                                 <td colspan="8" class="text-center py-5">
@@ -384,27 +302,20 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
-            @if(method_exists($clients, 'hasPages') && $clients->hasPages())
-            <div class="card-footer">
-                <div class="row align-items-center">
-                    <div class="col-md-6">
-                        <div class="text-muted">
-                            @if($clients->firstItem())
-                            Showing {{ $clients->firstItem() }} to {{ $clients->lastItem() }} of {{ $clients->total() }} clients
-                            @else
-                            {{ $clients->total() }} client(s) total
-                            @endif
-                        </div>
+                <!-- Lazy Loading Trigger -->
+                <div id="clientsLazyLoadTrigger" style="height: 20px; margin: 10px 0;"></div>
+                <!-- Lazy Loading Spinner -->
+                <div id="clientsLazyLoadSpinner" class="text-center py-3" style="display: none;">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                        <span class="sr-only">Loading...</span>
                     </div>
-                    <div class="col-md-6">
-                        <div class="float-right">
-                            {{ $clients->links() }}
-                        </div>
-                    </div>
+                    <span class="ml-2 text-muted">Loading more clients...</span>
+                </div>
+                <!-- Lazy Loading End -->
+                <div id="clientsLazyLoadEnd" class="text-center py-3" style="display: none;">
+                    <span class="text-muted">No more clients to load</span>
                 </div>
             </div>
-            @endif
         </div>
     </div>
 
@@ -853,6 +764,123 @@ $(document).ready(function() {
     $('#createClientModal').on('hidden.bs.modal', function() {
         $('#createClientForm')[0].reset();
         $('#createClientError').hide();
+    });
+    
+    // Lazy Loading Variables
+    let clientsCurrentPage = 1;
+    let clientsIsLoading = false;
+    let clientsHasMoreData = {{ $total > count($clients) ? 'true' : 'false' }};
+    let clientsFilterParams = {
+        search: '{{ request('search') }}',
+        company: '{{ request('company') }}',
+        sort_by: '{{ request('sort_by', 'company') }}',
+        sort_dir: '{{ request('sort_dir', 'asc') }}'
+    };
+    
+    // Lazy Loading Observer
+    let clientsLazyLoadObserver = null;
+    
+    // Initialize Lazy Loading
+    function initClientsLazyLoading() {
+        // Disconnect existing observer if any
+        if (clientsLazyLoadObserver) {
+            clientsLazyLoadObserver.disconnect();
+        }
+        
+        // Use Intersection Observer API for better performance
+        const trigger = document.getElementById('clientsLazyLoadTrigger');
+        
+        if (!trigger) return;
+        
+        const observerOptions = {
+            root: null,
+            rootMargin: '200px',
+            threshold: 0.1
+        };
+        
+        clientsLazyLoadObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && clientsHasMoreData && !clientsIsLoading) {
+                    loadMoreClients();
+                }
+            });
+        }, observerOptions);
+        
+        clientsLazyLoadObserver.observe(trigger);
+    }
+    
+    // Load More Clients
+    function loadMoreClients() {
+        if (clientsIsLoading || !clientsHasMoreData) return;
+        
+        clientsIsLoading = true;
+        clientsCurrentPage++;
+        
+        $('#clientsLazyLoadSpinner').show();
+        
+        // Build params exactly like initial load
+        const params = new URLSearchParams({
+            page: clientsCurrentPage
+        });
+        
+        // Add filter params if they exist
+        if (clientsFilterParams.search) params.append('search', clientsFilterParams.search);
+        if (clientsFilterParams.company) params.append('company', clientsFilterParams.company);
+        if (clientsFilterParams.sort_by) params.append('sort_by', clientsFilterParams.sort_by);
+        if (clientsFilterParams.sort_dir) params.append('sort_dir', clientsFilterParams.sort_dir);
+        
+        fetch('{{ route("clients.index") }}?' + params.toString(), {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success && data.html) {
+                // Append new rows to table body
+                $('#tableClientsBody').append(data.html);
+                
+                clientsHasMoreData = data.hasMore !== false;
+                
+                if (!data.hasMore) {
+                    $('#clientsLazyLoadEnd').show();
+                    $('#clientsLazyLoadSpinner').hide();
+                } else {
+                    // Re-initialize lazy loading observer for new content after a brief delay
+                    setTimeout(function() {
+                        initClientsLazyLoading();
+                    }, 100);
+                }
+            } else {
+                clientsHasMoreData = false;
+                $('#clientsLazyLoadSpinner').hide();
+            }
+        })
+        .catch(error => {
+            console.error('Error loading more clients:', error);
+            clientsHasMoreData = false;
+            $('#clientsLazyLoadSpinner').hide();
+            if (typeof toastr !== 'undefined') {
+                toastr.error('Failed to load more clients. Please try again.');
+            }
+        })
+        .finally(() => {
+            clientsIsLoading = false;
+            $('#clientsLazyLoadSpinner').hide();
+        });
+    }
+    
+    // Initialize lazy loading on page load
+    $(document).ready(function() {
+        initClientsLazyLoading();
     });
 });
 </script>

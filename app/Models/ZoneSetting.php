@@ -20,6 +20,7 @@ class ZoneSetting extends Model
         'border_width',
         'opacity',
         'price',
+        'zone_about',
         // Appearance/Color fields (zone-specific customization)
         'background_color',
         'border_color',
@@ -94,6 +95,7 @@ class ZoneSetting extends Model
                 'border_width' => $settings['borderWidth'] ?? $settings['border_width'] ?? 2,
                 'opacity' => $settings['opacity'] ?? 1.0,
                 'price' => $settings['price'] ?? 500,
+                'zone_about' => $settings['zone_about'] ?? null,
                 // Appearance/Color fields (zone-specific customization)
                 'background_color' => $settings['background_color'] ?? $settings['backgroundColor'] ?? null,
                 'border_color' => $settings['border_color'] ?? $settings['borderColor'] ?? null,
@@ -123,6 +125,7 @@ class ZoneSetting extends Model
                 'borderWidth' => $zoneSetting->border_width,
                 'opacity' => $zoneSetting->opacity,
                 'price' => $zoneSetting->price ?? 500,
+                'zone_about' => $zoneSetting->zone_about,
                 // Appearance/Color fields (zone-specific customization)
                 'background_color' => $zoneSetting->background_color,
                 'border_color' => $zoneSetting->border_color,
@@ -144,6 +147,7 @@ class ZoneSetting extends Model
             'borderWidth' => 2,
             'opacity' => 1.0,
             'price' => 500,
+            'zone_about' => null,
             // Default appearance (null means use booth defaults)
             'background_color' => null,
             'border_color' => null,

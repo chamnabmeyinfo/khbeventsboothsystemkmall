@@ -1676,66 +1676,9 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="tableBoothsBody">
                     @forelse($booths as $booth)
-                    <tr>
-                        <td>
-                            <input type="checkbox" class="booth-checkbox" value="{{ $booth->id }}">
-                        </td>
-                        <td>
-                            @if($booth->booth_image)
-                                <img src="{{ asset($booth->booth_image) }}" alt="Booth Image" class="booth-image-preview" onclick="viewImage('{{ asset($booth->booth_image) }}')">
-                            @else
-                                <div style="width: 60px; height: 60px; background: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #9ca3af;">
-                                    <i class="fas fa-image"></i>
-                                </div>
-                            @endif
-                        </td>
-                        <td>
-                            <strong style="font-size: 16px; font-weight: 700; color: #111827;">{{ $booth->booth_number }}</strong>
-                        </td>
-                        <td>
-                            <span class="badge badge-info">
-                                {{ $booth->boothType ? $booth->boothType->name : ($booth->type == 1 ? 'Booth' : 'Space Only') }}
-                            </span>
-                        </td>
-                        <td>
-                            <span style="color: #4b5563; font-weight: 500;">{{ $booth->floorPlan ? $booth->floorPlan->name : 'N/A' }}</span>
-                        </td>
-                        <td>
-                            <span style="color: #374151; font-weight: 500;">{{ $booth->client ? $booth->client->company : 'N/A' }}</span>
-                        </td>
-                        <td>
-                            <span style="color: #4b5563; font-weight: 500;">{{ $booth->category ? $booth->category->name : 'N/A' }}</span>
-                        </td>
-                        <td>
-                            <span class="badge badge-{{ $booth->getStatusColor() }}">
-                                {{ $booth->getStatusLabel() }}
-                            </span>
-                        </td>
-                        <td>
-                            <strong style="color: #10b981; font-size: 15px; font-weight: 700;">${{ number_format($booth->price, 2) }}</strong>
-                        </td>
-                        <td>
-                            <span style="color: #6b7280;">{{ $booth->area_sqm ? number_format($booth->area_sqm, 2) . ' m²' : 'N/A' }}</span>
-                        </td>
-                        <td>
-                            <span style="color: #6b7280;">{{ $booth->capacity ? $booth->capacity . ' people' : 'N/A' }}</span>
-                        </td>
-                        <td>
-                            <div class="action-buttons">
-                                <button type="button" class="btn btn-sm btn-info btn-action" onclick="viewBooth({{ $booth->id }})" title="View">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-primary btn-action" onclick="editBooth({{ $booth->id }})" title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-danger btn-action" onclick="deleteBooth({{ $booth->id }})" title="Delete">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                        @include('booths.partials.table-row', ['booth' => $booth])
                     @empty
                     <tr>
                         <td colspan="12" class="text-center py-5">
@@ -1747,13 +1690,26 @@
                 </tbody>
             </table>
         </div>
-        @if($booths->hasPages())
+        <!-- Lazy Loading Trigger -->
+        <div id="boothsLazyLoadTrigger" style="height: 20px; margin: 10px 0;"></div>
+        <!-- Lazy Loading Spinner -->
+        <div id="boothsLazyLoadSpinner" class="text-center py-3" style="display: none;">
+            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <span class="ml-2 text-muted">Loading more booths...</span>
+        </div>
+        <!-- Lazy Loading End -->
+        <div id="boothsLazyLoadEnd" class="text-center py-3" style="display: none;">
+            <span class="text-muted">No more booths to load</span>
+        </div>
+        @if(isset($total) && $total > 0)
         <div class="card-footer-modern">
             <div class="pagination-wrapper">
                 <div class="pagination-info">
                     <span class="pagination-text">
                         <i class="fas fa-list mr-2"></i>
-                        Showing <strong>{{ $booths->firstItem() }}</strong> to <strong>{{ $booths->lastItem() }}</strong> of <strong>{{ $booths->total() }}</strong> booths
+                        Showing <strong>{{ count($booths) }}</strong> of <strong>{{ $total }}</strong> booths
                     </span>
                 </div>
                 <div class="pagination-controls">
@@ -3054,6 +3010,130 @@ document.addEventListener('DOMContentLoaded', function() {
     } else if (!status && !bookedToday && !paymentOverdue) {
         document.querySelector('.quick-filter-btn[onclick*="all"]')?.classList.add('active');
     }
+    
+    // Lazy Loading Variables
+    let boothsCurrentPage = 1;
+    let boothsIsLoading = false;
+    let boothsHasMoreData = {{ ($total ?? 0) > count($booths) ? 'true' : 'false' }};
+    let boothsFilterParams = {
+        search: '{{ request('search') }}',
+        floor_plan_id: '{{ request('floor_plan_id') }}',
+        status: '{{ request('status') }}',
+        booth_type_id: '{{ request('booth_type_id') }}',
+        category_id: '{{ request('category_id') }}',
+        sort_by: '{{ request('sort_by', 'booth_number') }}',
+        sort_dir: '{{ request('sort_dir', 'asc') }}'
+    };
+    
+    // Lazy Loading Observer
+    let boothsLazyLoadObserver = null;
+    
+    // Initialize Lazy Loading
+    function initBoothsLazyLoading() {
+        // Disconnect existing observer if any
+        if (boothsLazyLoadObserver) {
+            boothsLazyLoadObserver.disconnect();
+        }
+        
+        // Use Intersection Observer API for better performance
+        const trigger = document.getElementById('boothsLazyLoadTrigger');
+        
+        if (!trigger) return;
+        
+        const observerOptions = {
+            root: null,
+            rootMargin: '200px',
+            threshold: 0.1
+        };
+        
+        boothsLazyLoadObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && boothsHasMoreData && !boothsIsLoading) {
+                    loadMoreBooths();
+                }
+            });
+        }, observerOptions);
+        
+        boothsLazyLoadObserver.observe(trigger);
+    }
+    
+    // Load More Booths
+    function loadMoreBooths() {
+        if (boothsIsLoading || !boothsHasMoreData) return;
+        
+        boothsIsLoading = true;
+        boothsCurrentPage++;
+        
+        $('#boothsLazyLoadSpinner').show();
+        
+        // Build params exactly like initial load
+        const params = new URLSearchParams({
+            page: boothsCurrentPage,
+            view: 'table'
+        });
+        
+        // Add filter params if they exist
+        if (boothsFilterParams.search) params.append('search', boothsFilterParams.search);
+        if (boothsFilterParams.floor_plan_id) params.append('floor_plan_id', boothsFilterParams.floor_plan_id);
+        if (boothsFilterParams.status) params.append('status', boothsFilterParams.status);
+        if (boothsFilterParams.booth_type_id) params.append('booth_type_id', boothsFilterParams.booth_type_id);
+        if (boothsFilterParams.category_id) params.append('category_id', boothsFilterParams.category_id);
+        if (boothsFilterParams.sort_by) params.append('sort_by', boothsFilterParams.sort_by);
+        if (boothsFilterParams.sort_dir) params.append('sort_dir', boothsFilterParams.sort_dir);
+        
+        fetch('{{ route("booths.index") }}?' + params.toString(), {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success && data.html) {
+                // Append new rows to table body
+                $('#tableBoothsBody').append(data.html);
+                
+                boothsHasMoreData = data.hasMore !== false;
+                
+                if (!data.hasMore) {
+                    $('#boothsLazyLoadEnd').show();
+                    $('#boothsLazyLoadSpinner').hide();
+                } else {
+                    // Re-initialize lazy loading observer for new content after a brief delay
+                    setTimeout(function() {
+                        initBoothsLazyLoading();
+                    }, 100);
+                }
+            } else {
+                boothsHasMoreData = false;
+                $('#boothsLazyLoadSpinner').hide();
+            }
+        })
+        .catch(error => {
+            console.error('Error loading more booths:', error);
+            boothsHasMoreData = false;
+            $('#boothsLazyLoadSpinner').hide();
+            if (typeof toastr !== 'undefined') {
+                toastr.error('Failed to load more booths. Please try again.');
+            }
+        })
+        .finally(() => {
+            boothsIsLoading = false;
+            $('#boothsLazyLoadSpinner').hide();
+        });
+    }
+    
+    // Initialize lazy loading on page load
+    $(document).ready(function() {
+        initBoothsLazyLoading();
+    });
 });
 </script>
 @endpush

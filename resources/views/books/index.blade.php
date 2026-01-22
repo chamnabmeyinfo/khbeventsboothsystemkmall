@@ -1054,8 +1054,10 @@
 
     <!-- Table View -->
     <div id="tableView" class="view-content">
-        <div class="table-modern-wrapper">
-            <table class="table table-modern">
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-modern-wrapper">
+                    <table class="table table-modern">
                 <thead>
                     <tr>
                         <th style="width: 50px;">
@@ -1235,18 +1237,20 @@
                     @endforelse
                 </tbody>
             </table>
-        </div>
-        <!-- Lazy Load Trigger -->
-        <div class="lazy-load-trigger" id="tableLazyLoadTrigger"></div>
-        <!-- Lazy Load Spinner -->
-        <div class="lazy-load-spinner" id="tableLazyLoadSpinner">
-            <i class="fas fa-spinner"></i>
-            <p style="margin-top: 16px; color: #718096; font-weight: 600;">Loading more bookings...</p>
-        </div>
-        <!-- End Message -->
-        <div class="lazy-load-end" id="tableLazyLoadEnd" style="display: none;">
-            <i class="fas fa-check-circle mr-2" style="color: #48bb78;"></i>
-            All bookings loaded
+                </div>
+                <!-- Lazy Load Trigger -->
+                <div class="lazy-load-trigger" id="tableLazyLoadTrigger"></div>
+                <!-- Lazy Load Spinner -->
+                <div class="lazy-load-spinner" id="tableLazyLoadSpinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p style="margin-top: 16px; color: #718096; font-weight: 600;">Loading more bookings...</p>
+                </div>
+                <!-- End Message -->
+                <div class="lazy-load-end" id="tableLazyLoadEnd" style="display: none;">
+                    <i class="fas fa-check-circle mr-2" style="color: #48bb78;"></i>
+                    All bookings loaded
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1528,8 +1532,16 @@ $(document).ready(function() {
     initLazyLoading();
 });
 
+// Lazy Loading Observer (global to allow re-initialization)
+let lazyLoadObserver = null;
+
 // Initialize Lazy Loading
 function initLazyLoading() {
+    // Disconnect existing observer if any
+    if (lazyLoadObserver) {
+        lazyLoadObserver.disconnect();
+    }
+    
     // Use Intersection Observer API for better performance
     const tableTrigger = document.getElementById('tableLazyLoadTrigger');
     const cardTrigger = document.getElementById('cardLazyLoadTrigger');
@@ -1540,7 +1552,7 @@ function initLazyLoading() {
         threshold: 0.1
     };
     
-    const observer = new IntersectionObserver((entries) => {
+    lazyLoadObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting && hasMoreData && !isLoading) {
                 loadMoreBookings();
@@ -1549,10 +1561,10 @@ function initLazyLoading() {
     }, observerOptions);
     
     if (tableTrigger) {
-        observer.observe(tableTrigger);
+        lazyLoadObserver.observe(tableTrigger);
     }
     if (cardTrigger) {
-        observer.observe(cardTrigger);
+        lazyLoadObserver.observe(cardTrigger);
     }
 }
 
@@ -1566,41 +1578,66 @@ function loadMoreBookings() {
     const spinnerId = currentView === 'table' ? 'tableLazyLoadSpinner' : 'cardLazyLoadSpinner';
     $('#' + spinnerId).addClass('active');
     
+    // Build params exactly like initial load
     const params = new URLSearchParams({
-        page: currentPage,
-        ...filterParams
+        page: currentPage
     });
     
-    fetch('{{ route("books.index") }}?' + params.toString() + '&view=' + currentView, {
+    // Add filter params if they exist
+    if (filterParams.search) params.append('search', filterParams.search);
+    if (filterParams.date_from) params.append('date_from', filterParams.date_from);
+    if (filterParams.date_to) params.append('date_to', filterParams.date_to);
+    if (filterParams.type) params.append('type', filterParams.type);
+    params.append('view', currentView);
+    
+    fetch('{{ route("books.index") }}?' + params.toString(), {
         method: 'GET',
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
     .then(data => {
-        if (data.success) {
+        if (data.success && data.html) {
             if (currentView === 'table') {
+                // Append new rows to table body
                 $('#tableBookingsBody').append(data.html);
             } else {
+                // Append new cards to card container
                 $('#cardBookingsContainer').append(data.html);
             }
             
-            hasMoreData = data.hasMore;
+            hasMoreData = data.hasMore !== false;
             
             if (!data.hasMore) {
                 const endId = currentView === 'table' ? 'tableLazyLoadEnd' : 'cardLazyLoadEnd';
                 $('#' + endId).show();
                 $('#' + spinnerId).removeClass('active');
+            } else {
+                // Re-initialize lazy loading observer for new content after a brief delay
+                setTimeout(function() {
+                    initLazyLoading();
+                }, 100);
             }
         } else {
             hasMoreData = false;
+            $('#' + spinnerId).removeClass('active');
         }
     })
     .catch(error => {
         console.error('Error loading more bookings:', error);
         hasMoreData = false;
+        $('#' + spinnerId).removeClass('active');
+        if (typeof toastr !== 'undefined') {
+            toastr.error('Failed to load more bookings. Please try again.');
+        }
     })
     .finally(() => {
         isLoading = false;

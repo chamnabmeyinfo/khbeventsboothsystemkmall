@@ -1,3 +1,16 @@
+@php
+    $boothIds = json_decode($book->boothid, true) ?? [];
+    $boothCount = count($boothIds);
+    $typeClass = 'regular';
+    $typeBadge = 'badge-modern-primary';
+    if ($book->type == 2) {
+        $typeClass = 'special';
+        $typeBadge = 'badge-modern-warning';
+    } elseif ($book->type == 3) {
+        $typeClass = 'temporary';
+        $typeBadge = 'badge-modern-danger';
+    }
+@endphp
 <tr>
     <td>
         <input type="checkbox" class="form-check-input booking-checkbox" value="{{ $book->id }}">
@@ -58,6 +71,45 @@
             @else {{ $book->type }}
             @endif
         </span>
+    </td>
+    <td>
+        @php
+            try {
+                $statusSetting = $book->statusSetting ?? \App\Models\BookingStatusSetting::getByCode($book->status ?? 1);
+                $statusColor = $statusSetting ? $statusSetting->status_color : '#6c757d';
+                $statusTextColor = $statusSetting && $statusSetting->text_color ? $statusSetting->text_color : '#ffffff';
+                $statusName = $statusSetting ? $statusSetting->status_name : 'Pending';
+            } catch (\Exception $e) {
+                $statusColor = '#6c757d';
+                $statusTextColor = '#ffffff';
+                $statusName = 'Pending';
+            }
+        @endphp
+        <span class="badge-modern" style="background-color: {{ $statusColor }}; color: {{ $statusTextColor }};">
+            {{ $statusName }}
+        </span>
+    </td>
+    <td>
+        @php
+            $totalAmount = $book->total_amount ?? \App\Models\Booth::whereIn('id', $boothIds)->sum('price');
+            $paidAmount = $book->paid_amount ?? 0;
+            $balanceAmount = $book->balance_amount ?? ($totalAmount - $paidAmount);
+        @endphp
+        <div>
+            <div class="font-weight-700 text-success" style="font-size: 0.9375rem;">
+                ${{ number_format($totalAmount, 2) }}
+            </div>
+            @if($paidAmount > 0)
+            <div class="text-muted" style="font-size: 0.8125rem;">
+                Paid: ${{ number_format($paidAmount, 2) }}
+            </div>
+            @endif
+            @if($balanceAmount > 0)
+            <div class="text-warning" style="font-size: 0.8125rem;">
+                Balance: ${{ number_format($balanceAmount, 2) }}
+            </div>
+            @endif
+        </div>
     </td>
     <td>
         <div class="d-flex align-items-center">

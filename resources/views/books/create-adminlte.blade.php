@@ -66,6 +66,59 @@
         pointer-events: none;
     }
     
+    /* Unique Form Section View Switcher - Independent Style */
+    .bf-section-view-switcher {
+        display: flex;
+        align-items: center;
+        padding: 6px 10px;
+        background: rgba(102, 126, 234, 0.05);
+        border-radius: 8px;
+        border: 1px solid rgba(102, 126, 234, 0.1);
+        margin-right: 12px;
+    }
+    
+    .bf-section-view-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        padding: 0;
+        border-radius: 6px;
+        background: #ffffff;
+        border: 1.5px solid #e5e7eb;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        color: #6b7280;
+        font-size: 13px;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .bf-section-view-btn:hover {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+        transform: translateY(-1px);
+    }
+    
+    .bf-section-view-btn.bf-section-view-btn-active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: white;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.25);
+    }
+    
+    .bf-section-view-btn.bf-section-view-btn-active:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        transform: translateY(-1px) scale(1.02);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
+    }
+    
+    .bf-section-view-btn i {
+        font-size: 13px;
+    }
+    
     /* Unique Form Section - Independent Style */
     .bf-form-section {
         background: #ffffff;
@@ -78,8 +131,114 @@
         border: 0.5px solid rgba(0, 0, 0, 0.06);
         position: relative;
         overflow: visible;
-        transition: all 0.2s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         box-sizing: border-box;
+    }
+    
+    /* Default View */
+    .bf-form-section.bf-section-view-default {
+        padding: 20px;
+        border-radius: 16px;
+    }
+    
+    .bf-form-section.bf-section-view-default .bf-form-section-title {
+        font-size: 17px;
+        margin-bottom: 20px;
+    }
+    
+    /* Tiny View (Smallest) */
+    .bf-form-section.bf-section-view-tiny {
+        padding: 8px 12px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .bf-form-section.bf-section-view-tiny .bf-form-section-title {
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+    
+    .bf-form-section.bf-section-view-tiny .bf-form-group {
+        margin-bottom: 8px;
+    }
+    
+    .bf-form-section.bf-section-view-tiny .bf-form-label {
+        font-size: 11px;
+        margin-bottom: 4px;
+    }
+    
+    .bf-form-section.bf-section-view-tiny .bf-form-control {
+        padding: 6px 10px;
+        font-size: 12px;
+        border-radius: 8px;
+    }
+    
+    .bf-form-section.bf-section-view-tiny .bf-btn {
+        padding: 6px 12px;
+        font-size: 11px;
+        border-radius: 6px;
+    }
+    
+    /* Compact View */
+    .bf-form-section.bf-section-view-compact {
+        padding: 12px 16px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .bf-form-section.bf-section-view-compact .bf-form-section-title {
+        font-size: 14px;
+        margin-bottom: 12px;
+    }
+    
+    .bf-form-section.bf-section-view-compact .bf-form-group {
+        margin-bottom: 12px;
+    }
+    
+    .bf-form-section.bf-section-view-compact .bf-form-label {
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+    
+    .bf-form-section.bf-section-view-compact .bf-form-control {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    .bf-form-section.bf-section-view-compact .bf-btn {
+        padding: 8px 14px;
+        font-size: 13px;
+    }
+    
+    /* Expanded View */
+    .bf-form-section.bf-section-view-expanded {
+        padding: 28px 24px;
+        border-radius: 20px;
+        margin-bottom: 24px;
+    }
+    
+    .bf-form-section.bf-section-view-expanded .bf-form-section-title {
+        font-size: 19px;
+        margin-bottom: 24px;
+    }
+    
+    .bf-form-section.bf-section-view-expanded .bf-form-group {
+        margin-bottom: 22px;
+    }
+    
+    .bf-form-section.bf-section-view-expanded .bf-form-label {
+        font-size: 16px;
+        margin-bottom: 12px;
+    }
+    
+    .bf-form-section.bf-section-view-expanded .bf-form-control {
+        padding: 18px 20px;
+        font-size: 16px;
+    }
+    
+    .bf-form-section.bf-section-view-expanded .bf-btn {
+        padding: 16px 28px;
+        font-size: 15px;
     }
     
     .bf-form-section:hover {
@@ -281,6 +440,55 @@
         font-size: 14px;
     }
     
+    /* Unique View Switcher - Independent Style */
+    .bf-view-switcher {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        background: rgba(102, 126, 234, 0.05);
+        border-radius: 10px;
+        border: 1px solid rgba(102, 126, 234, 0.1);
+    }
+    
+    .bf-view-btn {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        border-radius: 8px;
+        background: #ffffff;
+        border: 2px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        color: #6b7280;
+        font-size: 14px;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .bf-view-btn:hover {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    }
+    
+    .bf-view-btn.bf-view-btn-active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: white;
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+    }
+    
+    .bf-view-btn.bf-view-btn-active:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
     /* Unique Booth Selector - Independent Style */
     .bf-booth-selector {
         max-height: 500px;
@@ -308,6 +516,167 @@
     
     .bf-booth-selector::-webkit-scrollbar-thumb:hover {
         background: #9ca3af;
+    }
+    
+    .bf-booth-item-wrapper {
+        transition: all 0.3s ease;
+        display: block;
+        opacity: 1;
+        box-sizing: border-box;
+    }
+    
+    /* Ensure view switcher controls booth item wrappers */
+    .bf-view-switcher.bf-mb-3 ~ .bf-booth-selector .bf-booths-container.bf-view-grid .bf-booth-item-wrapper,
+    .bf-view-switcher.bf-mb-3 ~ .bf-booth-selector .bf-booths-container.bf-view-list .bf-booth-item-wrapper,
+    .bf-view-switcher.bf-mb-3 ~ .bf-booth-selector .bf-booths-container.bf-view-card .bf-booth-item-wrapper {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    
+    .bf-booth-item-wrapper.bf-hidden {
+        display: none !important;
+    }
+    
+    /* Grid View (Default - 2 columns) - Controlled by view switcher */
+    .bf-view-switcher.bf-mb-3 ~ .bf-booth-selector .bf-booths-container.bf-view-grid .bf-booth-item-wrapper,
+    .bf-booths-container.bf-view-grid .bf-booth-item-wrapper {
+        flex: 0 0 50% !important;
+        max-width: 50% !important;
+    }
+    
+    .bf-view-switcher.bf-mb-3 ~ .bf-booth-selector .bf-booths-container.bf-view-grid .bf-booth-item-wrapper.bf-col-6,
+    .bf-booths-container.bf-view-grid .bf-booth-item-wrapper.bf-col-6 {
+        flex: 0 0 50% !important;
+        max-width: 50% !important;
+    }
+    
+    /* List View (1 column - full width) - Controlled by view switcher */
+    .bf-view-switcher.bf-mb-3 ~ .bf-booth-selector .bf-booths-container.bf-view-list .bf-booth-item-wrapper,
+    .bf-booths-container.bf-view-list .bf-booth-item-wrapper {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+    
+    .bf-view-switcher.bf-mb-3 ~ .bf-booth-selector .bf-booths-container.bf-view-list .bf-booth-item-wrapper.bf-col-12,
+    .bf-booths-container.bf-view-list .bf-booth-item-wrapper.bf-col-12 {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+    
+    .bf-booths-container.bf-view-list .bf-booth-option {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        min-height: auto;
+    }
+    
+    .bf-booths-container.bf-view-list .bf-booth-label {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        gap: 16px;
+        flex-direction: row;
+    }
+    
+    .bf-booths-container.bf-view-list .bf-booth-checkbox {
+        margin-right: 0;
+        flex-shrink: 0;
+        order: 1;
+    }
+    
+    .bf-booths-container.bf-view-list .bf-booth-content {
+        order: 2;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+    
+    .bf-booths-container.bf-view-list .bf-booth-header {
+        margin-bottom: 0;
+        flex: 1;
+    }
+    
+    .bf-booths-container.bf-view-list .bf-booth-category {
+        margin-top: 0;
+        margin-left: 16px;
+    }
+    
+    .bf-booths-container.bf-view-list .bf-booth-floor-plan {
+        margin-top: 4px;
+        margin-left: 16px;
+    }
+    
+    /* Card View (3 columns) - Controlled by view switcher */
+    .bf-view-switcher.bf-mb-3 ~ .bf-booth-selector .bf-booths-container.bf-view-card .bf-booth-item-wrapper,
+    .bf-booths-container.bf-view-card .bf-booth-item-wrapper {
+        flex: 0 0 33.333333% !important;
+        max-width: 33.333333% !important;
+    }
+    
+    .bf-view-switcher.bf-mb-3 ~ .bf-booth-selector .bf-booths-container.bf-view-card .bf-booth-item-wrapper.bf-col-4,
+    .bf-booths-container.bf-view-card .bf-booth-item-wrapper.bf-col-4 {
+        flex: 0 0 33.333333% !important;
+        max-width: 33.333333% !important;
+    }
+    
+    @media (max-width: 1200px) {
+        .bf-view-switcher.bf-mb-3 ~ .bf-booth-selector .bf-booths-container.bf-view-card .bf-booth-item-wrapper,
+        .bf-view-switcher.bf-mb-3 ~ .bf-booth-selector .bf-booths-container.bf-view-card .bf-booth-item-wrapper.bf-col-4,
+        .bf-booths-container.bf-view-card .bf-booth-item-wrapper,
+        .bf-booths-container.bf-view-card .bf-booth-item-wrapper.bf-col-4 {
+            flex: 0 0 50% !important;
+            max-width: 50% !important;
+        }
+    }
+    
+    .bf-booths-container.bf-view-card .bf-booth-option {
+        padding: 20px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .bf-booths-container.bf-view-card .bf-booth-label {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+    
+    .bf-booths-container.bf-view-card .bf-booth-checkbox {
+        margin-bottom: 12px;
+        margin-right: 0;
+        order: 1;
+    }
+    
+    .bf-booths-container.bf-view-card .bf-booth-content {
+        order: 2;
+        width: 100%;
+    }
+    
+    .bf-booths-container.bf-view-card .bf-booth-header {
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 12px;
+        align-items: center;
+    }
+    
+    .bf-booths-container.bf-view-card .bf-booth-number {
+        font-size: 1.3rem;
+    }
+    
+    .bf-booths-container.bf-view-card .bf-booth-price {
+        font-size: 1.4rem;
+    }
+    
+    .bf-booths-container.bf-view-card .bf-booth-category {
+        margin-top: 8px;
+    }
+    
+    .bf-booths-container.bf-view-card .bf-booth-floor-plan {
+        margin-top: 6px;
     }
     
     .bf-booth-option {
@@ -372,7 +741,73 @@
         width: 100%;
         margin: 0;
         display: flex;
+        align-items: flex-start;
+    }
+    
+    .bf-booth-content {
+        flex: 1;
+        width: 100%;
+    }
+    
+    .bf-booth-header {
+        display: flex;
+        justify-content: space-between;
         align-items: center;
+        margin-bottom: 8px;
+    }
+    
+    .bf-booth-number {
+        font-size: 1.1rem;
+    }
+    
+    .bf-booth-price {
+        font-size: 1.2rem;
+    }
+    
+    .bf-booth-category {
+        margin-top: 8px;
+    }
+    
+    .bf-booth-floor-plan {
+        margin-top: 6px;
+    }
+    
+    .bf-floor-plan-label {
+        font-size: 12px;
+        color: #9ca3af;
+        display: flex;
+        align-items: center;
+    }
+    
+    .bf-floor-plan-label i {
+        font-size: 11px;
+        opacity: 0.7;
+    }
+    
+    /* List View Specific Styles */
+    .bf-booths-container.bf-view-list .bf-booth-header {
+        margin-bottom: 0;
+        flex: 1;
+    }
+    
+    .bf-booths-container.bf-view-list .bf-booth-category {
+        margin-top: 4px;
+        margin-left: 0;
+    }
+    
+    /* Card View Specific Styles */
+    .bf-booths-container.bf-view-card .bf-booth-header {
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+    
+    .bf-booths-container.bf-view-card .bf-booth-number {
+        font-size: 1.3rem;
+    }
+    
+    .bf-booths-container.bf-view-card .bf-booth-price {
+        font-size: 1.4rem;
     }
     
     /* Unique Selected Booths Summary - Independent Style */
@@ -387,6 +822,328 @@
             0 1px 3px rgba(0, 0, 0, 0.08);
         border: 0.5px solid rgba(0, 0, 0, 0.06);
         box-sizing: border-box;
+    }
+    
+    /* Unique Booking Type Views - Independent Style */
+    .bf-booking-type-view {
+        display: none;
+    }
+    
+    .bf-booking-type-view.bf-active {
+        display: block;
+    }
+    
+    /* Icon View */
+    .bf-booking-type-options-icon {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    
+    .bf-booking-type-option-icon {
+        flex: 1;
+        min-width: 100px;
+        cursor: pointer;
+        background: #ffffff;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 20px 16px;
+        text-align: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .bf-booking-type-option-icon::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .bf-booking-type-option-icon:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+    }
+    
+    .bf-booking-type-option-icon:hover::before {
+        opacity: 1;
+    }
+    
+    .bf-booking-type-option-icon.bf-selected {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: white;
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .bf-booking-type-option-icon.bf-selected::before {
+        opacity: 0;
+    }
+    
+    .bf-booking-type-icon-wrapper {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 12px;
+        font-size: 24px;
+        color: #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .bf-booking-type-option-icon.bf-selected .bf-booking-type-icon-wrapper {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+    
+    .bf-booking-type-label {
+        display: none;
+    }
+    
+    /* List View */
+    .bf-booking-type-options-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .bf-booking-type-option-list {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        cursor: pointer;
+        background: #ffffff;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 16px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .bf-booking-type-option-list::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .bf-booking-type-option-list:hover {
+        border-color: #667eea;
+        transform: translateX(4px);
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
+    }
+    
+    .bf-booking-type-option-list:hover::before {
+        opacity: 1;
+    }
+    
+    .bf-booking-type-option-list.bf-selected {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border-color: #667eea;
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.2);
+    }
+    
+    .bf-booking-type-option-list.bf-selected::before {
+        opacity: 1;
+    }
+    
+    .bf-booking-type-list-icon {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 10px;
+        font-size: 20px;
+        color: #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .bf-booking-type-option-list.bf-selected .bf-booking-type-list-icon {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .bf-booking-type-list-content {
+        flex: 1;
+    }
+    
+    .bf-booking-type-list-title {
+        font-weight: 600;
+        font-size: 15px;
+        color: #111827;
+        margin-bottom: 4px;
+    }
+    
+    .bf-booking-type-list-desc {
+        display: none;
+    }
+    
+    .bf-booking-type-list-check {
+        width: 24px;
+        height: 24px;
+        min-width: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #667eea;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+    
+    .bf-booking-type-option-list.bf-selected .bf-booking-type-list-check {
+        opacity: 1;
+        color: #667eea;
+    }
+    
+    /* Card View */
+    .bf-booking-type-options-card {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    
+    .bf-booking-type-option-card {
+        flex: 1;
+        min-width: 180px;
+        cursor: pointer;
+        background: #ffffff;
+        border: 2px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 20px;
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+    }
+    
+    .bf-booking-type-option-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .bf-booking-type-option-card:hover {
+        border-color: #667eea;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+    }
+    
+    .bf-booking-type-option-card:hover::before {
+        opacity: 1;
+    }
+    
+    .bf-booking-type-option-card.bf-selected {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        border-color: #667eea;
+        box-shadow: 0 8px 28px rgba(102, 126, 234, 0.3);
+    }
+    
+    .bf-booking-type-option-card.bf-selected::before {
+        opacity: 1;
+    }
+    
+    .bf-booking-type-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+    
+    .bf-booking-type-card-icon {
+        width: 56px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 14px;
+        font-size: 28px;
+        color: #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .bf-booking-type-option-card.bf-selected .bf-booking-type-card-icon {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .bf-booking-type-card-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: #e5e7eb;
+        color: #6b7280;
+    }
+    
+    .bf-booking-type-card-badge.bf-premium {
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        color: white;
+    }
+    
+    .bf-booking-type-card-badge.bf-temp {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        color: white;
+    }
+    
+    .bf-booking-type-card-title {
+        font-weight: 600;
+        font-size: 16px;
+        color: #111827;
+        margin-bottom: 8px;
+    }
+    
+    .bf-booking-type-card-desc {
+        display: none;
+    }
+    
+    .bf-booking-type-card-check {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #667eea;
+        border-radius: 50%;
+        color: white;
+        font-size: 14px;
+        opacity: 0;
+        transform: scale(0);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .bf-booking-type-option-card.bf-selected .bf-booking-type-card-check {
+        opacity: 1;
+        transform: scale(1);
     }
     
     .bf-booths-summary-title {
@@ -471,6 +1228,155 @@
     .bf-summary-value-amount {
         font-size: 20px;
         color: #22c55e;
+    }
+    
+    /* Unique Floor Plan Cards - Independent Style */
+    .bf-floor-plan-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 16px;
+    }
+    
+    .bf-floor-plan-card {
+        background: #ffffff;
+        border: 2px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 20px;
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+    }
+    
+    .bf-floor-plan-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .bf-floor-plan-card:hover {
+        border-color: #667eea;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+    }
+    
+    .bf-floor-plan-card:hover::before {
+        opacity: 1;
+    }
+    
+    .bf-floor-plan-card.bf-selected {
+        border-color: #667eea;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+        box-shadow: 0 8px 28px rgba(102, 126, 234, 0.3);
+    }
+    
+    .bf-floor-plan-card.bf-selected::before {
+        opacity: 1;
+    }
+    
+    .bf-floor-plan-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+    
+    .bf-floor-plan-card-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 12px;
+        font-size: 24px;
+        color: #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .bf-floor-plan-card.bf-selected .bf-floor-plan-card-icon {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .bf-floor-plan-card-badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .bf-floor-plan-card-badge.bf-badge-default {
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        color: white;
+    }
+    
+    .bf-floor-plan-card-badge.bf-badge-all {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        color: white;
+    }
+    
+    .bf-floor-plan-card-title {
+        font-weight: 600;
+        font-size: 16px;
+        color: #111827;
+        margin-bottom: 12px;
+    }
+    
+    .bf-floor-plan-card-info {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .bf-floor-plan-info-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #6b7280;
+    }
+    
+    .bf-floor-plan-info-item i {
+        font-size: 12px;
+        width: 16px;
+        text-align: center;
+    }
+    
+    .bf-floor-plan-card-check {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #667eea;
+        border-radius: 50%;
+        color: white;
+        font-size: 14px;
+        opacity: 0;
+        transform: scale(0);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .bf-floor-plan-card.bf-selected .bf-floor-plan-card-check {
+        opacity: 1;
+        transform: scale(1);
+    }
+    
+    @media (max-width: 768px) {
+        .bf-floor-plan-cards {
+            grid-template-columns: 1fr;
+        }
     }
     
     /* Unique Alerts - Independent Style */
@@ -706,6 +1612,13 @@
         max-width: 33.333333%;
     }
     
+    @media (max-width: 1200px) {
+        .bf-col-4 {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+    }
+    
     .bf-col-12 {
         flex: 0 0 100%;
         max-width: 100%;
@@ -786,6 +1699,267 @@
     
     .bf-font-weight-normal {
         font-weight: 400;
+    }
+    
+    /* Unique Zone Selector - Independent Style */
+    .bf-zone-selector {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 12px;
+    }
+    
+    .bf-zone-btn {
+        padding: 12px 20px;
+        border-radius: 10px;
+        border: 2px solid #e5e7eb;
+        background: #ffffff;
+        color: #6b7280;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .bf-zone-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .bf-zone-btn:hover {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.05);
+        color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    }
+    
+    .bf-zone-btn:hover::before {
+        opacity: 1;
+    }
+    
+    .bf-zone-btn.bf-zone-btn-active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: white;
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+        font-weight: 600;
+    }
+    
+    .bf-zone-btn.bf-zone-btn-active::before {
+        opacity: 0;
+    }
+    
+    .bf-zone-btn.bf-zone-btn-active:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .bf-zone-btn i {
+        font-size: 14px;
+        transition: transform 0.3s ease;
+    }
+    
+    .bf-zone-btn:hover i {
+        transform: scale(1.1);
+    }
+    
+    .bf-zone-label {
+        font-size: 13px;
+        font-weight: 600;
+        margin: 0 4px;
+    }
+    
+    .bf-zone-count {
+        margin-left: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        opacity: 0.8;
+        background: rgba(0, 0, 0, 0.1);
+        padding: 2px 6px;
+        border-radius: 10px;
+    }
+    
+    .bf-zone-btn.bf-zone-btn-active .bf-zone-count {
+        opacity: 0.9;
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Unique Booth Info - Independent Style */
+    .bf-booth-info {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        background: rgba(102, 126, 234, 0.08);
+        border-radius: 8px;
+        border: 1px solid rgba(102, 126, 234, 0.15);
+        margin-top: 8px;
+        gap: 12px;
+    }
+    
+    .bf-booth-info small {
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        color: #6b7280;
+        flex: 1;
+    }
+    
+    .bf-booth-info strong {
+        color: #667eea;
+        font-weight: 600;
+        margin: 0 4px;
+    }
+    
+    .bf-booth-info i {
+        color: #667eea;
+        font-size: 14px;
+    }
+    
+    /* Interactive Icons - Independent Style */
+    .bf-interactive-icon {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        min-height: 32px;
+        border-radius: 8px;
+        background: rgba(102, 126, 234, 0.1);
+        border: 1px solid rgba(102, 126, 234, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        color: #667eea;
+        font-size: 14px;
+        position: relative;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .bf-interactive-icon:hover {
+        background: rgba(102, 126, 234, 0.2);
+        border-color: #667eea;
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+        color: #667eea;
+    }
+    
+    .bf-interactive-icon:active {
+        transform: translateY(0) scale(0.95);
+        box-shadow: 0 2px 6px rgba(102, 126, 234, 0.2);
+    }
+    
+    .bf-interactive-icon i {
+        transition: transform 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .bf-interactive-icon:hover i {
+        transform: scale(1.1);
+    }
+    
+    .bf-interactive-icon.bf-icon-refresh:hover i {
+        animation: bf-spin 1s linear infinite;
+    }
+    
+    .bf-interactive-icon.bf-icon-filter:hover i {
+        animation: bf-pulse 1.5s ease-in-out infinite;
+    }
+    
+    .bf-interactive-icon.bf-icon-view:hover i {
+        animation: bf-bounce 0.6s ease-in-out;
+    }
+    
+    @keyframes bf-spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    
+    @keyframes bf-pulse {
+        0%, 100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.2);
+            opacity: 0.8;
+        }
+    }
+    
+    @keyframes bf-bounce {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-4px);
+        }
+    }
+    
+    /* Tooltip for interactive icons */
+    .bf-interactive-icon[data-tooltip] {
+        position: relative;
+    }
+    
+    .bf-interactive-icon[data-tooltip]:hover::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        margin-bottom: 8px;
+        padding: 6px 10px;
+        background: #1a1a1a;
+        color: white;
+        font-size: 12px;
+        white-space: nowrap;
+        border-radius: 6px;
+        pointer-events: none;
+        z-index: 1000;
+        animation: bf-fadeIn 0.2s ease;
+    }
+    
+    .bf-interactive-icon[data-tooltip]:hover::before {
+        content: '';
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        margin-bottom: 2px;
+        border: 4px solid transparent;
+        border-top-color: #1a1a1a;
+        pointer-events: none;
+        z-index: 1000;
+    }
+    
+    @keyframes bf-fadeIn {
+        from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-4px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
     }
     
     /* Unique Client Search Result - Independent Style */
@@ -1019,10 +2193,137 @@
         color: white;
     }
     
+    /* Unique Layout Switcher - Independent Style */
+    .bf-layout-switcher {
+        display: flex;
+        align-items: center;
+        padding: 6px 10px;
+        background: rgba(102, 126, 234, 0.05);
+        border-radius: 8px;
+        border: 1px solid rgba(102, 126, 234, 0.1);
+        margin-right: 12px;
+    }
+    
+    .bf-layout-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        padding: 0;
+        border-radius: 6px;
+        background: #ffffff;
+        border: 1.5px solid #e5e7eb;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        color: #6b7280;
+        font-size: 13px;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .bf-layout-btn:hover {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+        transform: translateY(-1px);
+    }
+    
+    .bf-layout-btn.bf-layout-btn-active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: white;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.25);
+    }
+    
+    .bf-layout-btn.bf-layout-btn-active:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        transform: translateY(-1px) scale(1.02);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
+    }
+    
+    .bf-layout-btn i {
+        font-size: 13px;
+    }
+    
     /* Unique Card Body - Independent Style */
     .bf-card-body {
         padding: 24px;
         box-sizing: border-box;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Default Layout */
+    .bf-card-body.bf-layout-default {
+        padding: 24px;
+    }
+    
+    /* Minimal Layout */
+    .bf-card-body.bf-layout-minimal {
+        padding: 12px 16px;
+    }
+    
+    .bf-card-body.bf-layout-minimal .bf-form-section {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    
+    .bf-card-body.bf-layout-minimal .bf-form-section-title {
+        font-size: 14px;
+        margin-bottom: 12px;
+    }
+    
+    .bf-card-body.bf-layout-minimal .bf-form-group {
+        margin-bottom: 14px;
+    }
+    
+    .bf-card-body.bf-layout-minimal .bf-form-label {
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+    
+    .bf-card-body.bf-layout-minimal .bf-form-control {
+        padding: 12px;
+        font-size: 14px;
+    }
+    
+    .bf-card-body.bf-layout-minimal .bf-btn {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+    
+    /* Expand Layout */
+    .bf-card-body.bf-layout-expand {
+        padding: 32px 28px;
+    }
+    
+    .bf-card-body.bf-layout-expand .bf-form-section {
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    
+    .bf-card-body.bf-layout-expand .bf-form-section-title {
+        font-size: 17px;
+        margin-bottom: 18px;
+    }
+    
+    .bf-card-body.bf-layout-expand .bf-form-group {
+        margin-bottom: 20px;
+    }
+    
+    .bf-card-body.bf-layout-expand .bf-form-label {
+        font-size: 15px;
+        margin-bottom: 10px;
+    }
+    
+    .bf-card-body.bf-layout-expand .bf-form-control {
+        padding: 18px;
+        font-size: 16px;
+    }
+    
+    .bf-card-body.bf-layout-expand .bf-btn {
+        padding: 14px 24px;
+        font-size: 15px;
     }
     
     /* Unique Card Footer - Independent Style */
@@ -1104,22 +2405,53 @@
         <div class="bf-card-main">
             <div class="bf-card-header">
                 <h3 class="bf-card-header-title">
-                    <i class="fas fa-calendar-plus bf-card-header-title-icon"></i>Create New Booking
+                    <i class="fas fa-calendar-plus bf-card-header-title-icon"></i>New Booking
                 </h3>
-                <div class="bf-d-flex bf-gap-2">
+                <div class="bf-d-flex bf-gap-2 bf-align-items-center">
+                    <!-- Layout Type Switcher -->
+                    <div class="bf-layout-switcher">
+                        <div class="bf-d-flex bf-align-items-center bf-gap-2">
+                            <button type="button" class="bf-layout-btn bf-layout-btn-active" data-layout="default" onclick="switchCardLayout('default')" title="Default Layout">
+                                <i class="fas fa-th"></i>
+                            </button>
+                            <button type="button" class="bf-layout-btn" data-layout="minimal" onclick="switchCardLayout('minimal')" title="Minimal Layout">
+                                <i class="fas fa-compress"></i>
+                            </button>
+                            <button type="button" class="bf-layout-btn" data-layout="expand" onclick="switchCardLayout('expand')" title="Expand Layout">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Form Section View Switcher -->
+                    <div class="bf-section-view-switcher">
+                        <div class="bf-d-flex bf-align-items-center bf-gap-2">
+                            <button type="button" class="bf-section-view-btn bf-section-view-btn-active" data-view="default" onclick="switchFormSectionView('default')" title="Default View">
+                                <i class="fas fa-square"></i>
+                            </button>
+                            <button type="button" class="bf-section-view-btn" data-view="tiny" onclick="switchFormSectionView('tiny')" title="Tiny View">
+                                <i class="fas fa-compress"></i>
+                            </button>
+                            <button type="button" class="bf-section-view-btn" data-view="compact" onclick="switchFormSectionView('compact')" title="Compact View">
+                                <i class="fas fa-compress-arrows-alt"></i>
+                            </button>
+                            <button type="button" class="bf-section-view-btn" data-view="expanded" onclick="switchFormSectionView('expanded')" title="Expanded View">
+                                <i class="fas fa-expand-arrows-alt"></i>
+                            </button>
+                        </div>
+                    </div>
                     @if(isset($currentFloorPlan) && $currentFloorPlan)
-                    <a href="{{ route('booths.index', ['view' => 'canvas', 'floor_plan_id' => $currentFloorPlan->id]) }}" class="bf-btn bf-btn-info bf-btn-sm">
-                        <i class="fas fa-map-marked-alt bf-mr-2"></i>View Floor Plan Canvas
+                    <a href="{{ route('booths.index', ['view' => 'canvas', 'floor_plan_id' => $currentFloorPlan->id]) }}" class="bf-btn bf-btn-info bf-btn-sm" title="View Floor Plan Canvas">
+                        <i class="fas fa-map-marked-alt"></i>
                     </a>
                     @endif
-                    <a href="{{ route('books.index') }}" class="bf-btn bf-btn-secondary bf-btn-sm">
-                        <i class="fas fa-arrow-left bf-mr-2"></i>Back to Bookings
+                    <a href="{{ route('books.index') }}" class="bf-btn bf-btn-secondary bf-btn-sm" title="Back to Bookings">
+                        <i class="fas fa-arrow-left"></i>
                     </a>
                 </div>
             </div>
         <form action="{{ route('books.store') }}" method="POST" id="bookingForm">
             @csrf
-            <div class="bf-card-body">
+            <div class="bf-card-body bf-layout-default" id="bfCardBody">
                 @if(isset($currentFloorPlan) && $currentFloorPlan)
                 <div class="bf-alert bf-alert-info bf-mb-4">
                     <div class="bf-d-flex bf-justify-content-between bf-align-items-center">
@@ -1128,25 +2460,46 @@
                             <strong>Booking for Floor Plan:</strong> {{ $currentFloorPlan->name }}
                             @if($currentFloorPlan->event) - {{ $currentFloorPlan->event->title }} @endif
                         </div>
-                        <a href="{{ route('books.create') }}" class="bf-btn bf-btn-secondary bf-btn-sm">
-                            <i class="fas fa-times bf-mr-2"></i>Clear Filter
-                        </a>
+                    <a href="{{ route('books.create') }}" class="bf-btn bf-btn-secondary bf-btn-sm" title="Clear Filter">
+                        <i class="fas fa-times"></i>
+                    </a>
                     </div>
                 </div>
                 @endif
 
                 <!-- Floor Plan Selection -->
                 @if(isset($floorPlans) && $floorPlans->count() > 0)
-                <div class="bf-form-section">
-                    <h6 class="bf-form-section-title">
-                        <i class="fas fa-map bf-form-section-title-icon"></i>Floor Plan (Optional Filter)
-                    </h6>
+                <div class="bf-form-section bf-section-view-default">
+                    <div class="bf-d-flex bf-justify-content-between bf-align-items-center bf-mb-3">
+                        <h6 class="bf-form-section-title bf-mb-0">
+                            <i class="fas fa-map bf-form-section-title-icon"></i>Floor Plan
+                        </h6>
+                        <!-- Section View Switcher for Floor Plan -->
+                        <div class="bf-section-view-switcher">
+                            <div class="bf-d-flex bf-align-items-center bf-gap-2">
+                                <button type="button" class="bf-section-view-btn bf-section-view-btn-active" data-view="default" onclick="switchFormSectionView('default')" title="Default View">
+                                    <i class="fas fa-square"></i>
+                                </button>
+                                <button type="button" class="bf-section-view-btn" data-view="tiny" onclick="switchFormSectionView('tiny')" title="Tiny View">
+                                    <i class="fas fa-compress"></i>
+                                </button>
+                                <button type="button" class="bf-section-view-btn" data-view="compact" onclick="switchFormSectionView('compact')" title="Compact View">
+                                    <i class="fas fa-compress-arrows-alt"></i>
+                                </button>
+                                <button type="button" class="bf-section-view-btn" data-view="expanded" onclick="switchFormSectionView('expanded')" title="Expanded View">
+                                    <i class="fas fa-expand-arrows-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <div class="bf-row">
                         <div class="bf-col bf-col-12">
                             <div class="bf-form-group">
-                                <label for="floor_plan_filter" class="bf-form-label bf-font-weight-bold">Filter Booths by Floor Plan</label>
-                                <select class="bf-form-control" id="floor_plan_filter" name="floor_plan_filter" onchange="filterByFloorPlan(this.value)">
-                                    <option value="">All Floor Plans</option>
+                                <label for="floor_plan_filter" class="bf-form-label bf-font-weight-bold">
+                                    <i class="fas fa-filter bf-mr-2"></i>Floor Plan
+                                </label>
+                                <select class="bf-form-control" id="floor_plan_filter" name="floor_plan_filter" onchange="filterByFloorPlan(this.value)" title="Filter booths by floor plan">
+                                    <option value="">All</option>
                                     @foreach($floorPlans as $fp)
                                         <option value="{{ $fp->id }}" {{ (isset($floorPlanId) && $floorPlanId == $fp->id) ? 'selected' : '' }}>
                                             {{ $fp->name }}
@@ -1155,7 +2508,6 @@
                                         </option>
                                     @endforeach
                                 </select>
-                                <small class="bf-text-muted bf-mt-2"><i class="fas fa-info-circle bf-mr-2"></i>Select a floor plan to filter available booths, or leave blank to see all booths</small>
                             </div>
                         </div>
                     </div>
@@ -1163,9 +2515,9 @@
                 @endif
 
                 <!-- Client Selection -->
-                <div class="bf-form-section bf-client-search-section">
+                <div class="bf-form-section bf-section-view-default bf-client-search-section">
                     <h6 class="bf-form-section-title">
-                        <i class="fas fa-building bf-form-section-title-icon"></i>Client Information
+                        <i class="fas fa-building bf-form-section-title-icon"></i>Client
                     </h6>
                     <input type="hidden" id="clientid" name="clientid" value="{{ old('clientid') }}" required>
                     
@@ -1180,8 +2532,8 @@
                                     </div>
                                     <small id="selectedClientDetails" class="bf-selected-client-details"></small>
                                 </div>
-                                <button type="button" class="bf-btn bf-btn-secondary bf-btn-sm bf-ml-2" id="btnClearClient">
-                                    <i class="fas fa-times bf-mr-2"></i>Change Client
+                                <button type="button" class="bf-btn bf-btn-secondary bf-btn-sm bf-ml-2" id="btnClearClient" title="Change Client">
+                                    <i class="fas fa-times"></i>
                                 </button>
                             </div>
                         </div>
@@ -1191,7 +2543,9 @@
                     <div id="clientSearchContainer">
                         <div class="bf-row">
                             <div class="bf-col bf-col-12">
-                                <label for="clientSearchInline" class="bf-form-label bf-font-weight-bold">Search Client <span class="bf-text-danger">*</span></label>
+                                <label for="clientSearchInline" class="bf-form-label bf-font-weight-bold">
+                                    <i class="fas fa-user bf-mr-2"></i>Client <span class="bf-text-danger">*</span>
+                                </label>
                                 <div class="bf-client-search-wrapper">
                                     <div class="bf-input-group">
                                         <div class="bf-input-group-prepend">
@@ -1202,11 +2556,11 @@
                                         <input type="text" 
                                                class="bf-form-control @error('clientid') is-invalid @enderror" 
                                                id="clientSearchInline" 
-                                               placeholder="Type client name, company, email, or phone number..." 
+                                               placeholder="Search client..." 
                                                autocomplete="off">
                                         <div class="bf-input-group-append">
-                                            <button type="button" class="bf-btn bf-btn-primary" id="btnSearchSelectClient" data-toggle="modal" data-target="#searchClientModal">
-                                                <i class="fas fa-search-plus bf-mr-2"></i>Advanced Search
+                                            <button type="button" class="bf-btn bf-btn-primary" id="btnSearchSelectClient" data-toggle="modal" data-target="#searchClientModal" title="Advanced Search">
+                                                <i class="fas fa-search-plus"></i>
                                             </button>
                                         </div>
                                     </div>
@@ -1225,12 +2579,9 @@
                                     <div class="bf-text-danger bf-mt-2">{{ $message }}</div>
                                 @enderror
                                 
-                                <div class="bf-d-flex bf-justify-content-between bf-align-items-center bf-mt-2">
-                                    <small class="bf-text-muted bf-mb-0">
-                                        <i class="fas fa-info-circle bf-mr-2"></i>Start typing to see instant suggestions
-                                    </small>
-                                    <button type="button" class="bf-btn bf-btn-success bf-btn-sm" data-toggle="modal" data-target="#createClientModal">
-                                        <i class="fas fa-plus bf-mr-2"></i>Create New Client
+                                <div class="bf-d-flex bf-justify-content-end bf-mt-2">
+                                    <button type="button" class="bf-btn bf-btn-success bf-btn-sm" data-toggle="modal" data-target="#createClientModal" title="Create New Client">
+                                        <i class="fas fa-plus"></i>
                                     </button>
                                 </div>
                             </div>
@@ -1239,14 +2590,16 @@
                 </div>
 
                 <!-- Booking Details -->
-                <div class="bf-form-section">
+                <div class="bf-form-section bf-section-view-default">
                     <h6 class="bf-form-section-title">
-                        <i class="fas fa-calendar-alt bf-form-section-title-icon"></i>Booking Details
+                        <i class="fas fa-calendar-alt bf-form-section-title-icon"></i>Details
                     </h6>
                     <div class="bf-row">
                         <div class="bf-col bf-col-6">
                             <div class="bf-form-group">
-                                <label for="date_book" class="bf-form-label bf-font-weight-bold">Booking Date & Time <span class="bf-text-danger">*</span></label>
+                                <label for="date_book" class="bf-form-label bf-font-weight-bold">
+                                    <i class="fas fa-calendar-alt bf-mr-2"></i>Date & Time <span class="bf-text-danger">*</span>
+                                </label>
                                 <input type="datetime-local" 
                                        class="bf-form-control @error('date_book') is-invalid @enderror" 
                                        id="date_book" 
@@ -1260,13 +2613,135 @@
                         </div>
                         <div class="bf-col bf-col-6">
                             <div class="bf-form-group">
-                                <label for="type" class="bf-form-label bf-font-weight-bold">Booking Type</label>
-                                <select class="bf-form-control @error('type') is-invalid @enderror" id="type" name="type">
+                                <div class="bf-d-flex bf-justify-content-between bf-align-items-center bf-mb-3">
+                                    <label for="type" class="bf-form-label bf-font-weight-bold bf-mb-0">
+                                        <i class="fas fa-tag bf-mr-2"></i>Type
+                                    </label>
+                                    <!-- View Switcher -->
+                                    <div class="bf-view-switcher" style="padding: 6px 10px;">
+                                        <div class="bf-d-flex bf-align-items-center bf-gap-2">
+                                            <button type="button" class="bf-view-btn bf-view-btn-active" data-view="icon" onclick="switchBookingTypeView('icon')" title="Icon View">
+                                                <i class="fas fa-th-large"></i>
+                                            </button>
+                                            <button type="button" class="bf-view-btn" data-view="list" onclick="switchBookingTypeView('list')" title="List View">
+                                                <i class="fas fa-list"></i>
+                                            </button>
+                                            <button type="button" class="bf-view-btn" data-view="card" onclick="switchBookingTypeView('card')" title="Card View">
+                                                <i class="fas fa-th"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Hidden select for form submission -->
+                                <select class="bf-form-control @error('type') is-invalid @enderror" id="type" name="type" style="display: none;">
                                     <option value="1" {{ old('type', 1) == 1 ? 'selected' : '' }}>Regular</option>
                                     <option value="2" {{ old('type') == 2 ? 'selected' : '' }}>Special</option>
                                     <option value="3" {{ old('type') == 3 ? 'selected' : '' }}>Temporary</option>
                                 </select>
-                                <small class="bf-text-muted bf-mt-2"><i class="fas fa-info-circle bf-mr-2"></i>Select the type of booking</small>
+                                
+                                <!-- Icon View -->
+                                <div class="bf-booking-type-view bf-booking-type-icon-view bf-active" data-view="icon">
+                                    <div class="bf-booking-type-options-icon">
+                                        <div class="bf-booking-type-option-icon {{ old('type', 1) == 1 ? 'bf-selected' : '' }}" data-value="1" onclick="selectBookingType(1)" title="Regular Booking">
+                                            <div class="bf-booking-type-icon-wrapper">
+                                                <i class="fas fa-calendar-check"></i>
+                                            </div>
+                                        </div>
+                                        <div class="bf-booking-type-option-icon {{ old('type') == 2 ? 'bf-selected' : '' }}" data-value="2" onclick="selectBookingType(2)" title="Special Booking">
+                                            <div class="bf-booking-type-icon-wrapper">
+                                                <i class="fas fa-star"></i>
+                                            </div>
+                                        </div>
+                                        <div class="bf-booking-type-option-icon {{ old('type') == 3 ? 'bf-selected' : '' }}" data-value="3" onclick="selectBookingType(3)" title="Temporary Booking">
+                                            <div class="bf-booking-type-icon-wrapper">
+                                                <i class="fas fa-clock"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- List View -->
+                                <div class="bf-booking-type-view bf-booking-type-list-view" data-view="list">
+                                    <div class="bf-booking-type-options-list">
+                                        <div class="bf-booking-type-option-list {{ old('type', 1) == 1 ? 'bf-selected' : '' }}" data-value="1" onclick="selectBookingType(1)">
+                                            <div class="bf-booking-type-list-icon">
+                                                <i class="fas fa-calendar-check"></i>
+                                            </div>
+                                            <div class="bf-booking-type-list-content">
+                                                <div class="bf-booking-type-list-title">Regular</div>
+                                            </div>
+                                            <div class="bf-booking-type-list-check">
+                                                <i class="fas fa-check-circle"></i>
+                                            </div>
+                                        </div>
+                                        <div class="bf-booking-type-option-list {{ old('type') == 2 ? 'bf-selected' : '' }}" data-value="2" onclick="selectBookingType(2)">
+                                            <div class="bf-booking-type-list-icon">
+                                                <i class="fas fa-star"></i>
+                                            </div>
+                                            <div class="bf-booking-type-list-content">
+                                                <div class="bf-booking-type-list-title">Special</div>
+                                            </div>
+                                            <div class="bf-booking-type-list-check">
+                                                <i class="fas fa-check-circle"></i>
+                                            </div>
+                                        </div>
+                                        <div class="bf-booking-type-option-list {{ old('type') == 3 ? 'bf-selected' : '' }}" data-value="3" onclick="selectBookingType(3)">
+                                            <div class="bf-booking-type-list-icon">
+                                                <i class="fas fa-clock"></i>
+                                            </div>
+                                            <div class="bf-booking-type-list-content">
+                                                <div class="bf-booking-type-list-title">Temporary</div>
+                                            </div>
+                                            <div class="bf-booking-type-list-check">
+                                                <i class="fas fa-check-circle"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Card View -->
+                                <div class="bf-booking-type-view bf-booking-type-card-view" data-view="card">
+                                    <div class="bf-booking-type-options-card">
+                                        <div class="bf-booking-type-option-card {{ old('type', 1) == 1 ? 'bf-selected' : '' }}" data-value="1" onclick="selectBookingType(1)">
+                                            <div class="bf-booking-type-card-header">
+                                                <div class="bf-booking-type-card-icon">
+                                                    <i class="fas fa-calendar-check"></i>
+                                                </div>
+                                                <div class="bf-booking-type-card-badge">Standard</div>
+                                            </div>
+                                            <div class="bf-booking-type-card-title">Regular</div>
+                                            <div class="bf-booking-type-card-check">
+                                                <i class="fas fa-check"></i>
+                                            </div>
+                                        </div>
+                                        <div class="bf-booking-type-option-card {{ old('type') == 2 ? 'bf-selected' : '' }}" data-value="2" onclick="selectBookingType(2)">
+                                            <div class="bf-booking-type-card-header">
+                                                <div class="bf-booking-type-card-icon">
+                                                    <i class="fas fa-star"></i>
+                                                </div>
+                                                <div class="bf-booking-type-card-badge bf-premium">Premium</div>
+                                            </div>
+                                            <div class="bf-booking-type-card-title">Special</div>
+                                            <div class="bf-booking-type-card-check">
+                                                <i class="fas fa-check"></i>
+                                            </div>
+                                        </div>
+                                        <div class="bf-booking-type-option-card {{ old('type') == 3 ? 'bf-selected' : '' }}" data-value="3" onclick="selectBookingType(3)">
+                                            <div class="bf-booking-type-card-header">
+                                                <div class="bf-booking-type-card-icon">
+                                                    <i class="fas fa-clock"></i>
+                                                </div>
+                                                <div class="bf-booking-type-card-badge bf-temp">Temporary</div>
+                                            </div>
+                                            <div class="bf-booking-type-card-title">Temporary</div>
+                                            <div class="bf-booking-type-card-check">
+                                                <i class="fas fa-check"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                                 @error('type')
                                     <div class="bf-text-danger bf-mt-2">{{ $message }}</div>
                                 @enderror
@@ -1275,30 +2750,107 @@
                     </div>
                 </div>
 
-                <!-- Booth Selection -->
+                <!-- Zone Selection -->
+                @if(isset($boothsByCategory) && count($boothsByCategory) > 0)
                 <div class="bf-form-section">
-                    <div class="bf-d-flex bf-justify-content-between bf-align-items-center bf-mb-4">
-                        <h6 class="bf-form-section-title bf-mb-0">
-                            <i class="fas fa-cube bf-form-section-title-icon"></i>Select Booths <span class="bf-text-danger">*</span>
-                        </h6>
-                        <div class="bf-d-flex bf-gap-2">
-                            <button type="button" class="bf-btn bf-btn-primary bf-btn-sm" onclick="selectAllBooths()">
-                                <i class="fas fa-check-double bf-mr-2"></i>Select All
+                    <h6 class="bf-form-section-title">
+                        <i class="fas fa-th-large bf-form-section-title-icon"></i>Zone
+                    </h6>
+                    <div class="bf-zone-selector">
+                        <button type="button" class="bf-zone-btn bf-zone-btn-active" data-zone="all" onclick="filterByZone('all')" title="All Zones">
+                            <i class="fas fa-th"></i>
+                            <span class="bf-zone-count">{{ $booths->count() }}</span>
+                        </button>
+                        @foreach($boothsByCategory as $zoneKey => $zoneData)
+                            @php
+                                $zoneName = $zoneData['category']->name;
+                                $zoneBooths = $zoneData['booths'];
+                                $zoneCount = $zoneBooths->count();
+                            @endphp
+                            <button type="button" class="bf-zone-btn" data-zone="{{ $zoneName }}" onclick="filterByZone('{{ $zoneName }}')" title="Zone {{ $zoneName }}">
+                                <i class="fas fa-cube"></i>
+                                <span class="bf-zone-label">{{ $zoneName }}</span>
+                                <span class="bf-zone-count">{{ $zoneCount }}</span>
                             </button>
-                            <button type="button" class="bf-btn bf-btn-secondary bf-btn-sm" onclick="clearSelection()">
-                                <i class="fas fa-times bf-mr-2"></i>Clear
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+                <!-- Booth Selection -->
+                <div class="bf-form-section bf-section-view-default">
+                    <div class="bf-d-flex bf-justify-content-between bf-align-items-center bf-mb-4">
+                        <div>
+                            <h6 class="bf-form-section-title bf-mb-0">
+                                <i class="fas fa-cube bf-form-section-title-icon"></i>Booths <span class="bf-text-danger">*</span>
+                            </h6>
+                            <div class="bf-booth-info bf-mt-2">
+                                <small class="bf-text-muted">
+                                    <i class="fas fa-info-circle bf-mr-2"></i>
+                                    <strong id="bf-total-booths-count">{{ $booths->count() }}</strong> <span id="bf-booths-text">{{ $booths->count() == 1 ? 'booth' : 'booths' }}</span>
+                                    @if(isset($currentFloorPlan) && $currentFloorPlan)
+                                        · <strong>{{ $currentFloorPlan->name }}</strong>
+                                    @endif
+                                    <span id="bf-zone-filter-text" class="bf-ml-2" style="display: none;">
+                                        · Zone <strong id="bf-selected-zone-name"></strong>
+                                    </span>
+                                </small>
+                                <div class="bf-d-flex bf-gap-2">
+                                    <button type="button" class="bf-interactive-icon bf-icon-refresh" data-tooltip="Refresh Booths" onclick="refreshBooths()" title="Refresh booth list">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                    @if(isset($floorPlans) && $floorPlans->count() > 0)
+                                    <button type="button" class="bf-interactive-icon bf-icon-filter" data-tooltip="Filter by Floor Plan" data-toggle="modal" data-target="#floorPlanModal" title="Filter by floor plan">
+                                        <i class="fas fa-filter"></i>
+                                    </button>
+                                    @endif
+                                    @if(isset($currentFloorPlan) && $currentFloorPlan)
+                                    <a href="{{ route('booths.index', ['view' => 'canvas', 'floor_plan_id' => $currentFloorPlan->id]) }}" class="bf-interactive-icon bf-icon-view" data-tooltip="View Floor Plan" title="View floor plan canvas">
+                                        <i class="fas fa-map"></i>
+                                    </a>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bf-d-flex bf-gap-2">
+                            <button type="button" class="bf-btn bf-btn-primary bf-btn-sm" onclick="selectAllBooths()" title="Select All Booths">
+                                <i class="fas fa-check-double"></i>
+                            </button>
+                            <button type="button" class="bf-btn bf-btn-secondary bf-btn-sm" onclick="clearSelection()" title="Clear Selection">
+                                <i class="fas fa-times"></i>
                             </button>
                         </div>
                     </div>
                     
                     <div class="bf-row">
                         <div class="bf-col bf-col-8">
+                            <!-- View Switcher -->
+                            <div class="bf-view-switcher bf-mb-3">
+                                <div class="bf-d-flex bf-align-items-center bf-gap-2">
+                                    <button type="button" class="bf-view-btn bf-view-btn-active" data-view="grid" onclick="switchBoothView('grid')" title="Grid View">
+                                        <i class="fas fa-th"></i>
+                                    </button>
+                                    <button type="button" class="bf-view-btn" data-view="list" onclick="switchBoothView('list')" title="List View">
+                                        <i class="fas fa-list"></i>
+                                    </button>
+                                    <button type="button" class="bf-view-btn" data-view="card" onclick="switchBoothView('card')" title="Card View">
+                                        <i class="fas fa-th-large"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
                             <div class="bf-booth-selector" id="boothSelector">
                                 @if($booths->count() > 0)
-                                    <div class="bf-row">
+                                    <div class="bf-row bf-booths-container bf-view-grid" id="bf-booths-container">
                                         @foreach($booths as $booth)
-                                        <div class="bf-col bf-col-6 bf-mb-2">
-                                            <div class="bf-booth-option" data-booth-id="{{ $booth->id }}" data-price="{{ $booth->price }}">
+                                        @php
+                                            // Extract zone from booth number (first letter)
+                                            $boothNumber = trim($booth->booth_number);
+                                            $firstChar = strtoupper(substr($boothNumber, 0, 1));
+                                            $boothZone = ctype_alpha($firstChar) ? $firstChar : '#';
+                                        @endphp
+                                        <div class="bf-col bf-col-6 bf-booth-item-wrapper" data-zone="{{ $boothZone }}">
+                                            <div class="bf-booth-option" data-booth-id="{{ $booth->id }}" data-price="{{ $booth->price }}" data-zone="{{ $boothZone }}">
                                                 <label class="bf-booth-label">
                                                     <input type="checkbox" 
                                                            name="booth_ids[]" 
@@ -1306,22 +2858,31 @@
                                                            class="bf-booth-checkbox"
                                                            {{ in_array($booth->id, old('booth_ids', [])) ? 'checked' : '' }}
                                                            onchange="updateSelection()">
-                                                    <div class="bf-d-flex bf-justify-content-between bf-align-items-center bf-mb-2">
-                                                        <div>
-                                                            <strong class="bf-text-primary" style="font-size: 1.1rem;">{{ $booth->booth_number }}</strong>
-                                                            <span class="bf-badge bf-badge-{{ $booth->getStatusColor() == 'success' ? 'success' : ($booth->getStatusColor() == 'warning' ? 'warning' : ($booth->getStatusColor() == 'danger' ? 'danger' : 'info')) }} bf-ml-2">
-                                                                {{ $booth->getStatusLabel() }}
-                                                            </span>
+                                                    <div class="bf-booth-content">
+                                                        <div class="bf-booth-header">
+                                                            <div>
+                                                                <strong class="bf-text-primary bf-booth-number">{{ $booth->booth_number }}</strong>
+                                                                <span class="bf-badge bf-badge-{{ $booth->getStatusColor() == 'success' ? 'success' : ($booth->getStatusColor() == 'warning' ? 'warning' : ($booth->getStatusColor() == 'danger' ? 'danger' : 'info')) }} bf-ml-2">
+                                                                    {{ $booth->getStatusLabel() }}
+                                                                </span>
+                                                            </div>
+                                                            <strong class="bf-text-success bf-booth-price">${{ number_format($booth->price, 2) }}</strong>
                                                         </div>
-                                                        <strong class="bf-text-success" style="font-size: 1.2rem;">${{ number_format($booth->price, 2) }}</strong>
+                                                        @if($booth->category)
+                                                        <div class="bf-booth-category">
+                                                            <small class="bf-text-muted">
+                                                                <i class="fas fa-folder bf-mr-2"></i>{{ $booth->category->name }}
+                                                            </small>
+                                                        </div>
+                                                        @endif
+                                                        @if($booth->floorPlan)
+                                                        <div class="bf-booth-floor-plan">
+                                                            <small class="bf-text-muted bf-floor-plan-label">
+                                                                <i class="fas fa-map-marked-alt bf-mr-2"></i>{{ $booth->floorPlan->name }}
+                                                            </small>
+                                                        </div>
+                                                        @endif
                                                     </div>
-                                                    @if($booth->category)
-                                                    <div class="bf-mt-2">
-                                                        <small class="bf-text-muted">
-                                                            <i class="fas fa-folder bf-mr-2"></i>{{ $booth->category->name }}
-                                                        </small>
-                                                    </div>
-                                                    @endif
                                                 </label>
                                             </div>
                                         </div>
@@ -1368,8 +2929,8 @@
                 </div>
             </div>
             <div class="bf-card-footer">
-                <button type="submit" class="bf-btn bf-btn-primary" id="submitBtn">
-                    <i class="fas fa-save bf-mr-2"></i>Create Booking
+                <button type="submit" class="bf-btn bf-btn-primary" id="submitBtn" title="Create Booking">
+                    <i class="fas fa-save"></i>
                 </button>
                 <a href="{{ route('books.index') }}" class="bf-btn bf-btn-secondary">Cancel</a>
                 <span id="selectionWarning" class="bf-text-danger bf-ml-2" style="display: none; font-weight: 600;">
@@ -1431,6 +2992,95 @@
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">
                     <i class="fas fa-times mr-1"></i>Close
                 </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floor Plan Selection Modal -->
+<div class="modal fade" id="floorPlanModal" tabindex="-1" role="dialog" aria-labelledby="floorPlanModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 20px 24px;">
+                <h5 class="modal-title" id="floorPlanModalLabel" style="font-weight: 600; font-size: 18px;">
+                    <i class="fas fa-map-marked-alt mr-2"></i>Select Floor Plan
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.9;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 24px; max-height: 70vh; overflow-y: auto;">
+                @if(isset($floorPlans) && $floorPlans->count() > 0)
+                <div class="bf-floor-plan-cards">
+                    <!-- All Floor Plans Option -->
+                    <div class="bf-floor-plan-card {{ !isset($floorPlanId) || $floorPlanId == '' ? 'bf-selected' : '' }}" onclick="selectFloorPlan('')" style="cursor: pointer;">
+                        <div class="bf-floor-plan-card-header">
+                            <div class="bf-floor-plan-card-icon">
+                                <i class="fas fa-th"></i>
+                            </div>
+                            <div class="bf-floor-plan-card-badge bf-badge-all">All</div>
+                        </div>
+                        <div class="bf-floor-plan-card-title">All Floor Plans</div>
+                        <div class="bf-floor-plan-card-info">
+                            <div class="bf-floor-plan-info-item">
+                                <i class="fas fa-cube"></i>
+                                <span>{{ $booths->count() }} Booths</span>
+                            </div>
+                        </div>
+                        <div class="bf-floor-plan-card-check">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+                    
+                    @foreach($floorPlans as $fp)
+                    @php
+                        $fpBooths = \App\Models\Booth::where('floor_plan_id', $fp->id)->whereIn('status', [\App\Models\Booth::STATUS_AVAILABLE, \App\Models\Booth::STATUS_HIDDEN])->get();
+                        $fpStats = $fp->getStats();
+                    @endphp
+                    <div class="bf-floor-plan-card {{ (isset($floorPlanId) && $floorPlanId == $fp->id) ? 'bf-selected' : '' }}" onclick="selectFloorPlan('{{ $fp->id }}')" style="cursor: pointer;">
+                        <div class="bf-floor-plan-card-header">
+                            <div class="bf-floor-plan-card-icon">
+                                <i class="fas fa-map"></i>
+                            </div>
+                            @if($fp->is_default)
+                            <div class="bf-floor-plan-card-badge bf-badge-default">Default</div>
+                            @endif
+                        </div>
+                        <div class="bf-floor-plan-card-title">{{ $fp->name }}</div>
+                        <div class="bf-floor-plan-card-info">
+                            @if($fp->event)
+                            <div class="bf-floor-plan-info-item">
+                                <i class="fas fa-calendar"></i>
+                                <span>{{ $fp->event->title }}</span>
+                            </div>
+                            @endif
+                            <div class="bf-floor-plan-info-item">
+                                <i class="fas fa-cube"></i>
+                                <span>{{ $fpStats['total'] }} Total</span>
+                            </div>
+                            <div class="bf-floor-plan-info-item">
+                                <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                                <span>{{ $fpStats['available'] }} Available</span>
+                            </div>
+                            @if($fpStats['occupied'] > 0)
+                            <div class="bf-floor-plan-info-item">
+                                <i class="fas fa-user-check" style="color: #667eea;"></i>
+                                <span>{{ $fpStats['occupied'] }} Occupied</span>
+                            </div>
+                            @endif
+                        </div>
+                        <div class="bf-floor-plan-card-check">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                @else
+                <div class="bf-alert bf-alert-warning bf-text-center" style="padding: 32px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem;"></i>
+                    <p class="bf-mb-0 bf-mt-2 bf-font-weight-bold">No floor plans available.</p>
+                </div>
+                @endif
             </div>
         </div>
     </div>
@@ -1573,10 +3223,366 @@
 @push('scripts')
 <script>
 function filterByFloorPlan(floorPlanId) {
+    // Clear zone selection when floor plan changes
+    localStorage.removeItem('bf-selected-zone');
+    localStorage.setItem('bf-selected-floor-plan-id', floorPlanId || '');
+    
     if (floorPlanId) {
         window.location.href = '{{ route("books.create") }}?floor_plan_id=' + floorPlanId;
     } else {
         window.location.href = '{{ route("books.create") }}';
+    }
+}
+
+// Select floor plan from modal
+function selectFloorPlan(floorPlanId) {
+    // Update selected state in modal
+    $('.bf-floor-plan-card').removeClass('bf-selected');
+    if (floorPlanId === '') {
+        $('.bf-floor-plan-card').first().addClass('bf-selected');
+    } else {
+        $('.bf-floor-plan-card').each(function() {
+            const onclickAttr = $(this).attr('onclick');
+            if (onclickAttr && onclickAttr.includes("'" + floorPlanId + "'")) {
+                $(this).addClass('bf-selected');
+            }
+        });
+    }
+    
+    // Close modal
+    $('#floorPlanModal').modal('hide');
+    
+    // Apply filter
+    filterByFloorPlan(floorPlanId);
+}
+
+// Select floor plan from modal
+function selectFloorPlan(floorPlanId) {
+    // Update selected state in modal
+    $('.bf-floor-plan-card').removeClass('bf-selected');
+    if (floorPlanId === '') {
+        $('.bf-floor-plan-card').first().addClass('bf-selected');
+    } else {
+        $('.bf-floor-plan-card').each(function() {
+            if ($(this).attr('onclick').includes("'" + floorPlanId + "'")) {
+                $(this).addClass('bf-selected');
+            }
+        });
+    }
+    
+    // Close modal
+    $('#floorPlanModal').modal('hide');
+    
+    // Apply filter
+    filterByFloorPlan(floorPlanId);
+}
+
+// Refresh booths list
+function refreshBooths() {
+    const floorPlanId = $('#floor_plan_filter').val() || '';
+    const url = floorPlanId 
+        ? '{{ route("books.create") }}?floor_plan_id=' + floorPlanId
+        : '{{ route("books.create") }}';
+    
+    // Show loading state
+    const refreshIcon = $('.bf-icon-refresh i');
+    refreshIcon.addClass('fa-spin');
+    
+    // Save current zone selection before refresh
+    const currentZone = $('.bf-zone-btn.bf-zone-btn-active').data('zone') || 'all';
+    localStorage.setItem('bf-selected-zone', currentZone);
+    
+    // Reload page after a brief delay to show animation
+    setTimeout(function() {
+        window.location.href = url;
+    }, 300);
+}
+
+// Filter booths by zone
+function filterByZone(zoneName) {
+    // Save selected zone to localStorage
+    localStorage.setItem('bf-selected-zone', zoneName);
+    
+    // Apply zone filter with animation
+    applyZoneFilter(zoneName, true);
+}
+
+// Switch booth view layout
+function switchBoothView(viewType) {
+    // Save view preference
+    localStorage.setItem('bf-booth-view', viewType);
+    
+    // Update active view button (only in booth selector section)
+    $('.bf-view-switcher.bf-mb-3 ~ .bf-booth-selector').siblings('.bf-view-switcher').find('.bf-view-btn').removeClass('bf-view-btn-active');
+    $('.bf-view-switcher.bf-mb-3').find('.bf-view-btn').removeClass('bf-view-btn-active');
+    $('.bf-view-switcher.bf-mb-3').find('.bf-view-btn[data-view="' + viewType + '"]').addClass('bf-view-btn-active');
+    
+    // Update container class
+    const $container = $('#bf-booths-container');
+    $container.removeClass('bf-view-grid bf-view-list bf-view-card');
+    $container.addClass('bf-view-' + viewType);
+    
+    // Update column classes based on view with smooth transition
+    const $wrappers = $('.bf-booth-item-wrapper:not(.bf-hidden)');
+    
+    $wrappers.css({
+        'opacity': '0.5',
+        'transform': 'scale(0.98)'
+    });
+    
+    setTimeout(function() {
+        if (viewType === 'grid') {
+            // Grid: 2 columns
+            $wrappers.removeClass('bf-col-6 bf-col-12 bf-col-4').addClass('bf-col bf-col-6');
+        } else if (viewType === 'list') {
+            // List: 1 column (full width)
+            $wrappers.removeClass('bf-col-6 bf-col-12 bf-col-4').addClass('bf-col bf-col-12');
+        } else if (viewType === 'card') {
+            // Card: 3 columns
+            $wrappers.removeClass('bf-col-6 bf-col-12 bf-col-4').addClass('bf-col bf-col-4');
+        }
+        
+        $wrappers.css({
+            'opacity': '1',
+            'transform': 'scale(1)'
+        });
+    }, 150);
+}
+
+// Restore view preference on page load
+function restoreBoothView() {
+    const savedView = localStorage.getItem('bf-booth-view') || 'grid';
+    
+    // Wait for DOM to be ready
+    setTimeout(function() {
+        const $viewBtn = $('.bf-view-switcher.bf-mb-3').find('.bf-view-btn[data-view="' + savedView + '"]');
+        if ($viewBtn.length > 0) {
+            switchBoothView(savedView);
+        } else {
+            // Default to grid if saved view doesn't exist
+            switchBoothView('grid');
+        }
+    }, 100);
+}
+
+// Switch booking type view layout
+function switchBookingTypeView(viewType) {
+    // Save view preference
+    localStorage.setItem('bf-booking-type-view', viewType);
+    
+    // Update active view button (only in booking type section)
+    $('.bf-form-group .bf-view-switcher .bf-view-btn').removeClass('bf-view-btn-active');
+    $('.bf-form-group .bf-view-switcher .bf-view-btn[data-view="' + viewType + '"]').addClass('bf-view-btn-active');
+    
+    // Hide all views
+    $('.bf-booking-type-view').removeClass('bf-active');
+    
+    // Show selected view
+    $('.bf-booking-type-view[data-view="' + viewType + '"]').addClass('bf-active');
+}
+
+// Select booking type
+function selectBookingType(value) {
+    // Update hidden select
+    $('#type').val(value);
+    
+    // Remove selected class from all options
+    $('.bf-booking-type-option-icon, .bf-booking-type-option-list, .bf-booking-type-option-card').removeClass('bf-selected');
+    
+    // Add selected class to clicked option in all views
+    $('.bf-booking-type-option-icon[data-value="' + value + '"], .bf-booking-type-option-list[data-value="' + value + '"], .bf-booking-type-option-card[data-value="' + value + '"]').addClass('bf-selected');
+}
+
+// Restore booking type view preference on page load
+function restoreBookingTypeView() {
+    const savedView = localStorage.getItem('bf-booking-type-view') || 'icon';
+    
+    // Wait for DOM to be ready
+    setTimeout(function() {
+        if ($('.bf-form-group .bf-view-switcher .bf-view-btn[data-view="' + savedView + '"]').length > 0) {
+            switchBookingTypeView(savedView);
+        } else {
+            // Default to icon if saved view doesn't exist
+            switchBookingTypeView('icon');
+        }
+    }, 100);
+}
+
+// Switch card body layout
+function switchCardLayout(layoutType) {
+    // Save layout preference
+    localStorage.setItem('bf-card-layout', layoutType);
+    
+    // Update active layout button
+    $('.bf-layout-btn').removeClass('bf-layout-btn-active');
+    $('.bf-layout-btn[data-layout="' + layoutType + '"]').addClass('bf-layout-btn-active');
+    
+    // Update card body class
+    const $cardBody = $('#bfCardBody');
+    $cardBody.removeClass('bf-layout-default bf-layout-minimal bf-layout-expand');
+    $cardBody.addClass('bf-layout-' + layoutType);
+}
+
+// Restore card layout preference on page load
+function restoreCardLayout() {
+    const savedLayout = localStorage.getItem('bf-card-layout') || 'default';
+    
+    // Wait for DOM to be ready
+    setTimeout(function() {
+        const $layoutBtn = $('.bf-layout-btn[data-layout="' + savedLayout + '"]');
+        if ($layoutBtn.length > 0) {
+            switchCardLayout(savedLayout);
+        } else {
+            // Default to default if saved layout doesn't exist
+            switchCardLayout('default');
+        }
+    }, 100);
+}
+
+// Switch form section view
+function switchFormSectionView(viewType) {
+    // Save view preference
+    localStorage.setItem('bf-section-view', viewType);
+    
+    // Update active view button
+    $('.bf-section-view-btn').removeClass('bf-section-view-btn-active');
+    $('.bf-section-view-btn[data-view="' + viewType + '"]').addClass('bf-section-view-btn-active');
+    
+    // Update all form sections
+    const $sections = $('.bf-form-section');
+    $sections.removeClass('bf-section-view-default bf-section-view-tiny bf-section-view-compact bf-section-view-expanded');
+    $sections.addClass('bf-section-view-' + viewType);
+}
+
+// Restore form section view preference on page load
+function restoreFormSectionView() {
+    const savedView = localStorage.getItem('bf-section-view') || 'default';
+    
+    // Wait for DOM to be ready
+    setTimeout(function() {
+        const $viewBtn = $('.bf-section-view-btn[data-view="' + savedView + '"]');
+        if ($viewBtn.length > 0) {
+            switchFormSectionView(savedView);
+        } else {
+            // Default to default if saved view doesn't exist
+            switchFormSectionView('default');
+        }
+    }, 100);
+}
+
+// Restore zone selection on page load
+function restoreZoneSelection() {
+    const savedZone = localStorage.getItem('bf-selected-zone');
+    const floorPlanId = $('#floor_plan_filter').val() || '';
+    const currentFloorPlanId = '{{ isset($floorPlanId) ? $floorPlanId : "" }}';
+    const actualFloorPlanId = floorPlanId || currentFloorPlanId;
+    
+    // Check if floor plan has changed (if so, reset zone filter)
+    const savedFloorPlanId = localStorage.getItem('bf-selected-floor-plan-id');
+    if (savedFloorPlanId && savedFloorPlanId !== actualFloorPlanId && actualFloorPlanId !== '') {
+        // Floor plan changed, reset zone filter
+        localStorage.removeItem('bf-selected-zone');
+        localStorage.setItem('bf-selected-floor-plan-id', actualFloorPlanId);
+        return;
+    }
+    
+    // Save current floor plan ID
+    if (actualFloorPlanId) {
+        localStorage.setItem('bf-selected-floor-plan-id', actualFloorPlanId);
+    }
+    
+    // Wait for zone buttons to be available
+    setTimeout(function() {
+        // Restore zone selection if exists and zone button is available
+        if (savedZone && $('.bf-zone-btn[data-zone="' + savedZone + '"]').length > 0) {
+            // Apply zone filter without animation on initial load
+            applyZoneFilter(savedZone, false);
+        } else {
+            // No saved zone or zone doesn't exist, default to 'all'
+            localStorage.setItem('bf-selected-zone', 'all');
+            applyZoneFilter('all', false);
+        }
+    }, 200);
+}
+
+// Apply zone filter (with optional animation)
+function applyZoneFilter(zoneName, animate = true) {
+    // Update active zone button
+    $('.bf-zone-btn').removeClass('bf-zone-btn-active');
+    $('.bf-zone-btn[data-zone="' + zoneName + '"]').addClass('bf-zone-btn-active');
+    
+    // Filter booth items
+    const boothWrappers = $('.bf-booth-item-wrapper');
+    let visibleCount = 0;
+    
+    if (zoneName === 'all') {
+        // Show all booths
+        boothWrappers.each(function() {
+            const $wrapper = $(this);
+            $wrapper.removeClass('bf-hidden');
+            if (animate) {
+                $wrapper.fadeIn(300);
+            } else {
+                $wrapper.show();
+            }
+            visibleCount++;
+        });
+        $('#bf-zone-filter-text').hide();
+    } else {
+        // Show only booths in selected zone
+        boothWrappers.each(function() {
+            const $wrapper = $(this);
+            if ($wrapper.data('zone') === zoneName) {
+                $wrapper.removeClass('bf-hidden');
+                if (animate) {
+                    $wrapper.fadeIn(300);
+                } else {
+                    $wrapper.show();
+                }
+                visibleCount++;
+            } else {
+                $wrapper.addClass('bf-hidden');
+                if (animate) {
+                    $wrapper.fadeOut(200);
+                } else {
+                    $wrapper.hide();
+                }
+            }
+        });
+        
+        // Update zone filter text
+        $('#bf-selected-zone-name').text(zoneName);
+        if (animate) {
+            $('#bf-zone-filter-text').fadeIn(200);
+        } else {
+            $('#bf-zone-filter-text').show();
+        }
+    }
+    
+    // Update booth count display
+    if (animate) {
+        const $countElement = $('#bf-total-booths-count');
+        const $textElement = $('#bf-booths-text');
+        
+        $countElement.fadeOut(100, function() {
+            $(this).text(visibleCount).fadeIn(100);
+        });
+        
+        $textElement.fadeOut(100, function() {
+            $(this).text(visibleCount === 1 ? 'booth' : 'booths').fadeIn(100);
+        });
+    } else {
+        $('#bf-total-booths-count').text(visibleCount);
+        $('#bf-booths-text').text(visibleCount === 1 ? 'booth' : 'booths');
+    }
+    
+    // Update selection if needed
+    if (animate) {
+        setTimeout(function() {
+            updateSelection();
+        }, 350);
+    } else {
+        updateSelection();
     }
 }
 
@@ -1708,6 +3714,21 @@ $(document).ready(function() {
 
     // Client Search & Select Functionality
 $(document).ready(function() {
+    // Restore card layout preference on page load
+    restoreCardLayout();
+    
+    // Restore form section view preference on page load
+    restoreFormSectionView();
+    
+    // Restore booth view preference on page load
+    restoreBoothView();
+    
+    // Restore booking type view preference on page load
+    restoreBookingTypeView();
+    
+    // Restore zone selection on page load
+    restoreZoneSelection();
+    
     let clientSearchTimeout;
     let inlineSearchTimeout;
     let selectedClient = null;
@@ -2250,7 +4271,8 @@ function updateSelection() {
 }
 
 function selectAllBooths() {
-    $('.bf-booth-checkbox').prop('checked', true);
+    // Only select visible booths (respects zone filter)
+    $('.bf-booth-item-wrapper:not(.bf-hidden) .bf-booth-checkbox').prop('checked', true);
     updateSelection();
 }
 

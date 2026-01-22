@@ -3121,6 +3121,13 @@
                         <input type="text" class="form-control" id="zoneNameInput" maxlength="3" placeholder="e.g., A or B or ABC" required>
                         <small class="form-text text-muted">Letters only, 1-3 characters. The first booth will be created as ZoneName + 01 (e.g., A01).</small>
                     </div>
+                    <div class="form-group">
+                        <label for="zoneAboutInput">
+                            <i class="fas fa-info-circle"></i> Zone About
+                        </label>
+                        <textarea class="form-control" id="zoneAboutInput" rows="3" placeholder="Enter description or information about this zone..."></textarea>
+                        <small class="form-text text-muted">Optional: Add a description or important information about this zone.</small>
+                    </div>
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle"></i> We will automatically create the first booth for this zone (e.g., A01) so that the zone appears immediately.
                     </div>
@@ -6012,6 +6019,7 @@ const FloorPlanDesigner = {
         // Reset form
         document.getElementById('addZoneForm').reset();
         document.getElementById('zoneNameInput').value = '';
+        document.getElementById('zoneAboutInput').value = '';
         
         // Show modal
         $('#addZoneModal').modal('show');
@@ -6022,6 +6030,7 @@ const FloorPlanDesigner = {
             const originalText = btn.html();
             
             let zoneName = document.getElementById('zoneNameInput').value.trim().toUpperCase();
+            let zoneAbout = document.getElementById('zoneAboutInput').value.trim();
             
             if (!zoneName || !/^[A-Z]{1,3}$/.test(zoneName)) {
                 customAlert('Please enter a valid zone name (letters only, 1-3 characters).', 'warning');
@@ -6046,7 +6055,8 @@ const FloorPlanDesigner = {
                 from: 1,
                 to: 1,
                 format: 2,
-                floor_plan_id: floorPlanId
+                floor_plan_id: floorPlanId,
+                zone_about: zoneAbout
             };
             
             fetch('/booths/create-in-zone/' + zoneName, {

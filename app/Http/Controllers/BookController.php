@@ -18,8 +18,8 @@ class BookController extends Controller
      */
     public function index(Request $request)
     {
-        // If AJAX request for lazy loading
-        if ($request->ajax() && $request->has('page')) {
+        // If AJAX request for lazy loading (check for page parameter or X-Requested-With header)
+        if (($request->ajax() || $request->wantsJson() || $request->hasHeader('X-Requested-With')) && $request->has('page')) {
             return $this->lazyLoad($request);
         }
 
@@ -61,9 +61,10 @@ class BookController extends Controller
      */
     public function lazyLoad(Request $request)
     {
+        // Use exact same query structure as index method
         $query = Book::with(['client', 'user']);
         
-        // Search functionality
+        // Search functionality (exact same as index)
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('client', function($q) use ($search) {
@@ -74,7 +75,7 @@ class BookController extends Controller
             });
         }
         
-        // Date filter
+        // Date filter (exact same as index)
         if ($request->filled('date_from')) {
             $query->whereDate('date_book', '>=', $request->date_from);
         }
@@ -82,18 +83,20 @@ class BookController extends Controller
             $query->whereDate('date_book', '<=', $request->date_to);
         }
         
-        // Type filter
+        // Type filter (exact same as index)
         if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
         
+        // Use same ordering and limit as initial load
         $page = $request->input('page', 1);
-        $perPage = 20;
+        $perPage = 20; // Same as initial load limit(20)
         $offset = ($page - 1) * $perPage;
         
         // Get total before pagination
         $total = $query->count();
         
+        // Use exact same ordering as index method
         $books = $query->latest('date_book')->offset($offset)->limit($perPage)->get();
         $hasMore = ($offset + $books->count()) < $total;
         
@@ -101,21 +104,32 @@ class BookController extends Controller
         $html = '';
         
         foreach ($books as $book) {
+            // Ensure relationships are loaded (same as initial load)
+            if (!$book->relationLoaded('client')) {
+                $book->load('client');
+            }
+            if (!$book->relationLoaded('user')) {
+                $book->load('user');
+            }
+            
+            // Calculate booth count (same logic as main view)
             $boothIds = json_decode($book->boothid, true) ?? [];
             $boothCount = count($boothIds);
-            $typeBadge = 'badge-modern-primary';
+            
+            // Determine type badge and class (same logic as main view)
             $typeClass = 'regular';
+            $typeBadge = 'badge-modern-primary';
             if ($book->type == 2) {
-                $typeBadge = 'badge-modern-warning';
                 $typeClass = 'special';
+                $typeBadge = 'badge-modern-warning';
             } elseif ($book->type == 3) {
-                $typeBadge = 'badge-modern-danger';
                 $typeClass = 'temporary';
+                $typeBadge = 'badge-modern-danger';
             }
             
             if ($view === 'table') {
-                // Table row HTML
-                $html .= view('books.partials.table-row', compact('book', 'boothCount', 'typeBadge'))->render();
+                // Table row HTML - partial will calculate everything internally to match main view exactly
+                $html .= view('books.partials.table-row', compact('book'))->render();
             } else {
                 // Card HTML
                 $html .= view('books.partials.card-item', compact('book', 'boothCount', 'typeBadge', 'typeClass'))->render();
@@ -127,8 +141,10 @@ class BookController extends Controller
             'html' => $html,
             'hasMore' => $hasMore,
             'total' => $total,
-            'loaded' => $offset + $books->count()
-        ]);
+            'loaded' => $offset + $books->count(),
+            'page' => $page,
+            'perPage' => $perPage
+        ], 200, [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     /**

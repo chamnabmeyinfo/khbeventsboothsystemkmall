@@ -1545,6 +1545,7 @@ class BoothController extends Controller
                 'to' => 'nullable|integer|min:1|max:9999',
                 'format' => 'nullable|integer|min:1|max:4',
                 'floor_plan_id' => 'required|exists:floor_plans,id',
+                'zone_about' => 'nullable|string|max:500',
             ]);
 
             $floorPlanId = $validated['floor_plan_id'];
@@ -1735,6 +1736,16 @@ class BoothController extends Controller
                         'errors' => $errors
                     ], 500);
                 }
+            }
+
+            // Save zone_about if provided (even if empty, to allow clearing it)
+            if ($request->has('zone_about')) {
+                $zoneAbout = $request->input('zone_about');
+                $existingSettings = ZoneSetting::getZoneDefaults($zoneName, $floorPlanId);
+                $settingsToSave = array_merge($existingSettings, [
+                    'zone_about' => $zoneAbout ?: null
+                ]);
+                ZoneSetting::saveZoneSettings($zoneName, $settingsToSave, $floorPlanId);
             }
 
             // Success - at least one booth was created
@@ -2103,11 +2114,12 @@ class BoothController extends Controller
                 'width' => $settingsToSave['width'] ?? $existingSettings['width'] ?? 80,
                 'height' => $settingsToSave['height'] ?? $existingSettings['height'] ?? 50,
                 'rotation' => $settingsToSave['rotation'] ?? $existingSettings['rotation'] ?? 0,
-                'zIndex' => $settingsToSave['zIndex'] ?? $existingSettings['zIndex'] ?? 10,
-                'borderRadius' => $settingsToSave['borderRadius'] ?? $existingSettings['borderRadius'] ?? 6,
-                'borderWidth' => $settingsToSave['borderWidth'] ?? $existingSettings['borderWidth'] ?? 2,
+                'z_index' => $settingsToSave['zIndex'] ?? $settingsToSave['z_index'] ?? $existingSettings['zIndex'] ?? $existingSettings['z_index'] ?? 10,
+                'border_radius' => $settingsToSave['borderRadius'] ?? $settingsToSave['border_radius'] ?? $existingSettings['borderRadius'] ?? $existingSettings['border_radius'] ?? 6,
+                'border_width' => $settingsToSave['borderWidth'] ?? $settingsToSave['border_width'] ?? $existingSettings['borderWidth'] ?? $existingSettings['border_width'] ?? 2,
                 'opacity' => $settingsToSave['opacity'] ?? $existingSettings['opacity'] ?? 1.0,
                 'price' => $settingsToSave['price'] ?? $existingSettings['price'] ?? 500,
+                'zone_about' => $settingsToSave['zone_about'] ?? $existingSettings['zone_about'] ?? null,
                 'background_color' => $settingsToSave['background_color'] ?? $existingSettings['background_color'] ?? null,
                 'border_color' => $settingsToSave['border_color'] ?? $existingSettings['border_color'] ?? null,
                 'text_color' => $settingsToSave['text_color'] ?? $existingSettings['text_color'] ?? null,
@@ -2586,6 +2598,11 @@ class BoothController extends Controller
      */
     public function managementTable(Request $request)
     {
+        // If AJAX request for lazy loading
+        if (($request->ajax() || $request->wantsJson() || $request->hasHeader('X-Requested-With')) && $request->has('page')) {
+            return $this->lazyLoadBooths($request);
+        }
+
         $query = Booth::with(['client', 'category', 'subCategory', 'boothType', 'floorPlan', 'user']);
         
         // Search
@@ -2628,7 +2645,9 @@ class BoothController extends Controller
         $sortDir = $request->input('sort_dir', 'asc');
         $query->orderBy($sortBy, $sortDir);
         
-        $booths = $query->paginate(50)->withQueryString();
+        // Get initial 50 records for lazy loading
+        $booths = $query->limit(50)->get();
+        $total = $query->count();
         
         // Get filter options
         $floorPlans = FloorPlan::where('is_active', true)->orderBy('name')->get();

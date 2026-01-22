@@ -9,6 +9,11 @@ class ClientController extends Controller
 {
     public function index(Request $request)
     {
+        // If AJAX request for lazy loading
+        if (($request->ajax() || $request->wantsJson() || $request->hasHeader('X-Requested-With')) && $request->has('page')) {
+            return $this->lazyLoad($request);
+        }
+
         $query = Client::withCount(['booths', 'books']);
         
         // Search functionality
@@ -37,7 +42,9 @@ class ClientController extends Controller
             $query->orderBy('company', 'asc');
         }
         
-        $clients = $query->paginate(20)->withQueryString();
+        // Get initial 20 records for lazy loading
+        $clients = $query->limit(20)->get();
+        $total = $query->count();
         
         // Get statistics
         $stats = [
@@ -54,7 +61,78 @@ class ClientController extends Controller
             ->orderBy('company')
             ->pluck('company');
         
-        return view('clients.index', compact('clients', 'sortBy', 'sortDir', 'stats', 'companies'));
+        return view('clients.index', compact('clients', 'total', 'sortBy', 'sortDir', 'stats', 'companies'));
+    }
+
+    /**
+     * Lazy load clients (AJAX endpoint)
+     */
+    public function lazyLoad(Request $request)
+    {
+        // Use exact same query structure as index method
+        $query = Client::withCount(['booths', 'books']);
+        
+        // Search functionality (exact same as index)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('company', 'like', "%{$search}%")
+                  ->orWhere('phone_number', 'like', "%{$search}%")
+                  ->orWhere('position', 'like', "%{$search}%");
+            });
+        }
+        
+        // Filter by company (exact same as index)
+        if ($request->filled('company')) {
+            $query->where('company', 'like', "%{$request->company}%");
+        }
+        
+        // Sort functionality (exact same as index)
+        $sortBy = $request->get('sort_by', 'company');
+        $sortDir = $request->get('sort_dir', 'asc');
+        
+        if (in_array($sortBy, ['company', 'name', 'position', 'phone_number'])) {
+            $query->orderBy($sortBy, $sortDir);
+        } else {
+            $query->orderBy('company', 'asc');
+        }
+        
+        // Use same ordering and limit as initial load
+        $page = $request->input('page', 1);
+        $perPage = 20; // Same as initial load limit(20)
+        $offset = ($page - 1) * $perPage;
+        
+        // Get total before pagination
+        $total = $query->count();
+        
+        // Use exact same ordering as index method
+        $clients = $query->offset($offset)->limit($perPage)->get();
+        $hasMore = ($offset + $clients->count()) < $total;
+        
+        $html = '';
+        foreach ($clients as $client) {
+            // Ensure relationships are loaded (same as initial load)
+            if (!$client->relationLoaded('booths')) {
+                $client->load('booths');
+            }
+            if (!$client->relationLoaded('books')) {
+                $client->load('books');
+            }
+            
+            // Table row HTML - partial will calculate everything internally to match main view exactly
+            $html .= view('clients.partials.table-row', compact('client'))->render();
+        }
+        
+        return response()->json([
+            'success' => true,
+            'html' => $html,
+            'hasMore' => $hasMore,
+            'total' => $total,
+            'loaded' => $offset + $clients->count(),
+            'page' => $page,
+            'perPage' => $perPage
+        ], 200, [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     public function create()
