@@ -50,11 +50,57 @@ class BookController extends Controller
             $query->where('type', $request->type);
         }
         
+        // Group By filter
+        $groupBy = $request->input('group_by', 'none'); // none, name, date
+        $dateRange = $request->input('date_range', 'all'); // all, today, 3days, 7days, 14days, more
+        
+        // Apply date range filter if specified
+        if ($dateRange !== 'all') {
+            $now = now();
+            switch ($dateRange) {
+                case 'today':
+                    $query->whereDate('date_book', $now->toDateString());
+                    break;
+                case '3days':
+                    $query->whereDate('date_book', '>=', $now->copy()->subDays(3)->toDateString());
+                    break;
+                case '7days':
+                    $query->whereDate('date_book', '>=', $now->copy()->subDays(7)->toDateString());
+                    break;
+                case '14days':
+                    $query->whereDate('date_book', '>=', $now->copy()->subDays(14)->toDateString());
+                    break;
+                case 'more':
+                    $query->whereDate('date_book', '<', $now->copy()->subDays(14)->toDateString());
+                    break;
+            }
+        }
+        
         // Get initial 20 records for lazy loading
         $books = $query->latest('date_book')->limit(20)->get();
         $total = $query->count();
         
-        return view('books.index', compact('books', 'total'));
+        // Group bookings if group_by is specified
+        $groupedBooks = [];
+        if ($groupBy === 'name' && $books->count() > 0) {
+            foreach ($books as $book) {
+                $groupKey = $book->client ? ($book->client->company ?? $book->client->name ?? 'Unknown') : 'Unknown';
+                if (!isset($groupedBooks[$groupKey])) {
+                    $groupedBooks[$groupKey] = [];
+                }
+                $groupedBooks[$groupKey][] = $book;
+            }
+        } elseif ($groupBy === 'date' && $books->count() > 0) {
+            foreach ($books as $book) {
+                $groupKey = $book->date_book->format('Y-m-d');
+                if (!isset($groupedBooks[$groupKey])) {
+                    $groupedBooks[$groupKey] = [];
+                }
+                $groupedBooks[$groupKey][] = $book;
+            }
+        }
+        
+        return view('books.index', compact('books', 'total', 'groupBy', 'dateRange', 'groupedBooks'));
     }
 
     /**
@@ -89,6 +135,31 @@ class BookController extends Controller
             $query->where('type', $request->type);
         }
         
+        // Group By filter (exact same as index)
+        $dateRange = $request->input('date_range', 'all');
+        
+        // Apply date range filter if specified
+        if ($dateRange !== 'all') {
+            $now = now();
+            switch ($dateRange) {
+                case 'today':
+                    $query->whereDate('date_book', $now->toDateString());
+                    break;
+                case '3days':
+                    $query->whereDate('date_book', '>=', $now->copy()->subDays(3)->toDateString());
+                    break;
+                case '7days':
+                    $query->whereDate('date_book', '>=', $now->copy()->subDays(7)->toDateString());
+                    break;
+                case '14days':
+                    $query->whereDate('date_book', '>=', $now->copy()->subDays(14)->toDateString());
+                    break;
+                case 'more':
+                    $query->whereDate('date_book', '<', $now->copy()->subDays(14)->toDateString());
+                    break;
+            }
+        }
+        
         // Use same ordering and limit as initial load
         $page = $request->input('page', 1);
         $perPage = 20; // Same as initial load limit(20)
@@ -102,6 +173,7 @@ class BookController extends Controller
         $hasMore = ($offset + $books->count()) < $total;
         
         $view = $request->input('view', 'table'); // 'table' or 'card'
+        $groupBy = $request->input('group_by', 'none');
         $html = '';
         
         foreach ($books as $book) {
@@ -117,7 +189,7 @@ class BookController extends Controller
             $boothIds = json_decode($book->boothid, true) ?? [];
             $boothCount = count($boothIds);
             
-            // Determine type badge and class (same logic as main view)
+            // Determine type class and badge
             $typeClass = 'regular';
             $typeBadge = 'badge-modern-primary';
             if ($book->type == 2) {
@@ -128,36 +200,29 @@ class BookController extends Controller
                 $typeBadge = 'badge-modern-danger';
             }
             
+            try {
+                $statusSetting = $book->statusSetting ?? \App\Models\BookingStatusSetting::getByCode($book->status ?? 1);
+                $statusColor = $statusSetting ? $statusSetting->status_color : '#6c757d';
+                $statusTextColor = $statusSetting && $statusSetting->text_color ? $statusSetting->text_color : '#ffffff';
+                $statusName = $statusSetting ? $statusSetting->status_name : 'Pending';
+            } catch (\Exception $e) {
+                $statusColor = '#6c757d';
+                $statusTextColor = '#ffffff';
+                $statusName = 'Pending';
+            }
+            
+            $totalAmount = $book->total_amount ?? \App\Models\Booth::whereIn('id', $boothIds)->sum('price');
+            $paidAmount = $book->paid_amount ?? 0;
+            $balanceAmount = $book->balance_amount ?? ($totalAmount - $paidAmount);
+            
             if ($view === 'table') {
-                // Compact card HTML for table view (now using card/icon view)
-                $boothIds = json_decode($book->boothid, true) ?? [];
-                $boothCount = count($boothIds);
-                $typeClass = 'regular';
-                $typeBadge = 'badge-modern-primary';
-                if ($book->type == 2) {
-                    $typeClass = 'special';
-                    $typeBadge = 'badge-modern-warning';
-                } elseif ($book->type == 3) {
-                    $typeClass = 'temporary';
-                    $typeBadge = 'badge-modern-danger';
+                // Check if we're in grouped mode - if so, render table row, otherwise compact card
+                if ($groupBy !== 'none') {
+                    $html .= view('books.partials.table-row', compact('book', 'boothCount', 'statusColor', 'statusTextColor', 'statusName', 'totalAmount', 'balanceAmount'))->render();
+                } else {
+                    // Table row HTML - render compact card partial
+                    $html .= view('books.partials.compact-card', compact('book', 'boothCount', 'typeClass', 'typeBadge', 'statusColor', 'statusTextColor', 'statusName', 'totalAmount', 'balanceAmount'))->render();
                 }
-                
-                try {
-                    $statusSetting = $book->statusSetting ?? \App\Models\BookingStatusSetting::getByCode($book->status ?? 1);
-                    $statusColor = $statusSetting ? $statusSetting->status_color : '#6c757d';
-                    $statusTextColor = $statusSetting && $statusSetting->text_color ? $statusSetting->text_color : '#ffffff';
-                    $statusName = $statusSetting ? $statusSetting->status_name : 'Pending';
-                } catch (\Exception $e) {
-                    $statusColor = '#6c757d';
-                    $statusTextColor = '#ffffff';
-                    $statusName = 'Pending';
-                }
-                
-                $totalAmount = $book->total_amount ?? \App\Models\Booth::whereIn('id', $boothIds)->sum('price');
-                $paidAmount = $book->paid_amount ?? 0;
-                $balanceAmount = $book->balance_amount ?? ($totalAmount - $paidAmount);
-                
-                $html .= view('books.partials.compact-card', compact('book', 'boothCount', 'typeClass', 'typeBadge', 'statusColor', 'statusTextColor', 'statusName', 'totalAmount', 'balanceAmount'))->render();
             } else {
                 // Card HTML
                 $html .= view('books.partials.card-item', compact('book', 'boothCount', 'typeBadge', 'typeClass'))->render();
@@ -517,6 +582,73 @@ class BookController extends Controller
         } catch (\Exception $e) {
             // Fallback if table doesn't exist or is empty
             $statusSettings = collect([]);
+        }
+        
+        // Return JSON for AJAX requests (popup)
+        if (request()->ajax() || request()->wantsJson()) {
+            try {
+                $statusSetting = $book->statusSetting ?? \App\Models\BookingStatusSetting::getByCode($book->status ?? 1);
+                $statusColor = $statusSetting ? $statusSetting->status_color : '#6c757d';
+                $statusTextColor = $statusSetting && $statusSetting->text_color ? $statusSetting->text_color : '#ffffff';
+                $statusName = $statusSetting ? $statusSetting->status_name : 'Pending';
+            } catch (\Exception $e) {
+                $statusColor = '#6c757d';
+                $statusTextColor = '#ffffff';
+                $statusName = 'Pending';
+            }
+            
+            return response()->json([
+                'success' => true,
+                'book' => [
+                    'id' => $book->id,
+                    'date_book' => $book->date_book ? $book->date_book->format('F d, Y h:i A') : 'N/A',
+                    'date_book_date' => $book->date_book ? $book->date_book->format('F d, Y') : 'N/A',
+                    'date_book_time' => $book->date_book ? $book->date_book->format('h:i A') : 'N/A',
+                    'type' => $book->type,
+                    'type_name' => $book->type == 1 ? 'Regular' : ($book->type == 2 ? 'Special' : ($book->type == 3 ? 'Temporary' : 'Unknown')),
+                    'status' => $book->status ?? 1,
+                    'status_name' => $statusName,
+                    'status_color' => $statusColor,
+                    'status_text_color' => $statusTextColor,
+                    'total_amount' => $book->total_amount ?? $booths->sum('price') ?? 0,
+                    'paid_amount' => $book->paid_amount ?? 0,
+                    'balance_amount' => $book->balance_amount ?? (($book->total_amount ?? $booths->sum('price') ?? 0) - ($book->paid_amount ?? 0)),
+                    'notes' => $book->notes ?? '',
+                    'user' => $book->user ? [
+                        'id' => $book->user->id,
+                        'username' => $book->user->username,
+                        'avatar' => $book->user->avatar
+                    ] : null,
+                    'client' => $book->client ? [
+                        'id' => $book->client->id,
+                        'name' => $book->client->name,
+                        'company' => $book->client->company ?? '',
+                        'position' => $book->client->position ?? '',
+                        'phone_number' => $book->client->phone_number ?? '',
+                        'email' => $book->client->email ?? '',
+                        'address' => $book->client->address ?? ''
+                    ] : null,
+                    'booths' => $booths->map(function($booth) {
+                        return [
+                            'id' => $booth->id,
+                            'booth_number' => $booth->booth_number,
+                            'price' => $booth->price ?? 0,
+                            'category' => $booth->category ? $booth->category->name : null,
+                            'floor_plan' => $booth->floorPlan ? $booth->floorPlan->name : null
+                        ];
+                    })->toArray(),
+                    'booth_count' => count($booths),
+                    'payments' => $payments->map(function($payment) {
+                        return [
+                            'id' => $payment->id,
+                            'amount' => $payment->amount,
+                            'paid_at' => $payment->paid_at ? $payment->paid_at->format('F d, Y h:i A') : 'N/A',
+                            'payment_method' => $payment->payment_method ?? 'N/A',
+                            'user' => $payment->user ? $payment->user->username : 'System'
+                        ];
+                    })->toArray()
+                ]
+            ]);
         }
         
         return view('books.show', compact('book', 'booths', 'payments', 'statusSettings'));

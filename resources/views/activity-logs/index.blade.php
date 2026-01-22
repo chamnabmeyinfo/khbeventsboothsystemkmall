@@ -258,10 +258,44 @@
         </form>
     </div>
 
+    <!-- Activity Info Modal -->
+    <div class="modal fade" id="activityInfoModal" tabindex="-1" role="dialog" aria-labelledby="activityInfoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document" style="max-width: 900px;">
+            <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);">
+                <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 16px 16px 0 0; padding: 20px 30px;">
+                    <h5 class="modal-title" id="activityInfoModalLabel" style="font-weight: 700; font-size: 1.25rem;">
+                        <i class="fas fa-history mr-2"></i>Activity Log Details
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; opacity: 0.9; font-size: 1.5rem;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="padding: 30px; max-height: 70vh; overflow-y: auto;">
+                    <div id="activityInfoContent">
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="sr-only">Loading...</span>
+                            </div>
+                            <p class="mt-3 text-muted">Loading activity information...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #e2e8f0; padding: 20px 30px; border-radius: 0 0 16px 16px;">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" style="border-radius: 8px; padding: 10px 24px;">
+                        <i class="fas fa-times mr-1"></i>Close
+                    </button>
+                    <a href="#" id="activityViewFullLink" class="btn btn-primary" style="border-radius: 8px; padding: 10px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                        <i class="fas fa-external-link-alt mr-1"></i>View Full Details
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- List View -->
     <div id="listView" class="view-content">
         @forelse($logs as $log)
-        <div class="log-item {{ strtolower($log->action) }}" onclick="window.location='{{ route('activity-logs.show', $log) }}'">
+        <div class="log-item {{ strtolower($log->action) }}" onclick="showActivityInfo({{ $log->id }})" style="cursor: pointer;">
             <div class="d-flex align-items-start">
                 <div class="log-icon {{ strtolower($log->action) }} mr-3">
                     @if($log->action == 'created')
@@ -398,6 +432,257 @@
 
 @push('scripts')
 <script>
+// Activity Info Modal Function
+function showActivityInfo(logId) {
+    $('#activityInfoModal').modal('show');
+    $('#activityInfoContent').html('<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div><p class="mt-3 text-muted">Loading activity information...</p></div>');
+    
+    // Fetch activity log details via AJAX
+    fetch(`{{ url('activity-logs') }}/${logId}`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success && data.log) {
+            const log = data.log;
+            let html = `
+                <div class="row">
+                    <!-- Activity Information -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card" style="border-left: 4px solid #667eea; border-radius: 12px;">
+                            <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px 12px 0 0;">
+                                <h6 class="mb-0"><i class="fas fa-info-circle mr-2"></i>Activity Information</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3 pb-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-muted"><i class="fas fa-hashtag mr-2"></i>Log ID:</span>
+                                        <strong class="text-primary">#${log.id}</strong>
+                                    </div>
+                                </div>
+                                <div class="mb-3 pb-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted"><i class="fas fa-bolt mr-2"></i>Action:</span>
+                                        <span class="badge ${log.action == 'created' ? 'badge-success' : (log.action == 'updated' ? 'badge-info' : (log.action == 'deleted' ? 'badge-danger' : 'badge-secondary'))}">
+                                            ${log.action.charAt(0).toUpperCase() + log.action.slice(1)}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="mb-3 pb-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="text-muted"><i class="fas fa-calendar mr-2"></i>Date:</span>
+                                        <strong>${log.created_at_date}</strong>
+                                    </div>
+                                    <small class="text-muted ml-4">${log.created_at_time}</small>
+                                </div>
+                                <div class="mb-3 pb-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted"><i class="fas fa-folder mr-2"></i>Module:</span>
+                                        <strong>${log.model_type || 'N/A'}</strong>
+                                    </div>
+                                </div>
+                                ${log.model_id ? `
+                                <div class="mb-3 pb-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted"><i class="fas fa-key mr-2"></i>Model ID:</span>
+                                        <strong>#${log.model_id}</strong>
+                                    </div>
+                                </div>
+                                ` : ''}
+                                <div class="mb-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <span class="text-muted"><i class="fas fa-align-left mr-2"></i>Description:</span>
+                                        <span class="text-right" style="max-width: 60%;">${log.description || 'No description'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Information -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card" style="border-left: 4px solid #48bb78; border-radius: 12px;">
+                            <div class="card-header" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; border-radius: 12px 12px 0 0;">
+                                <h6 class="mb-0"><i class="fas fa-user mr-2"></i>User Information</h6>
+                            </div>
+                            <div class="card-body">
+            `;
+            
+            if (log.user) {
+                html += `
+                                <div class="mb-3 pb-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted"><i class="fas fa-user mr-2"></i>Username:</span>
+                                        <strong>${log.user.username}</strong>
+                                    </div>
+                                </div>
+                                <div class="mb-3 pb-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted"><i class="fas fa-shield-alt mr-2"></i>Role:</span>
+                                        <span class="badge ${log.user.is_admin ? 'badge-danger' : 'badge-info'}">
+                                            ${log.user.is_admin ? 'Admin' : 'User'}
+                                        </span>
+                                    </div>
+                                </div>
+                `;
+            } else {
+                html += `
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-server fa-2x mb-2"></i>
+                                    <p>System Activity</p>
+                                </div>
+                `;
+            }
+            
+            html += `
+                                ${log.ip_address ? `
+                                <div class="mb-3 pb-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted"><i class="fas fa-network-wired mr-2"></i>IP Address:</span>
+                                        <code>${log.ip_address}</code>
+                                    </div>
+                                </div>
+                                ` : ''}
+                                ${log.route ? `
+                                <div class="mb-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted"><i class="fas fa-route mr-2"></i>Route:</span>
+                                        <code style="font-size: 0.75rem;">${log.route}</code>
+                                    </div>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Show old_values and new_values if they exist
+            if (log.old_values && Object.keys(log.old_values).length > 0 || log.new_values && Object.keys(log.new_values).length > 0) {
+                html += `
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card" style="border-left: 4px solid #4299e1; border-radius: 12px;">
+                            <div class="card-header" style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; border-radius: 12px 12px 0 0;">
+                                <h6 class="mb-0"><i class="fas fa-exchange-alt mr-2"></i>Changes</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                `;
+                
+                if (log.old_values && Object.keys(log.old_values).length > 0) {
+                    html += `
+                                    <div class="col-md-6">
+                                        <h6 class="text-danger mb-3"><i class="fas fa-arrow-left mr-1"></i>Old Values</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-bordered">
+                                                <thead class="thead-light">
+                                                    <tr>
+                                                        <th>Field</th>
+                                                        <th>Value</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                    `;
+                    for (const [key, value] of Object.entries(log.old_values)) {
+                        html += `
+                                                    <tr>
+                                                        <td><strong>${key}</strong></td>
+                                                        <td>${value !== null && value !== undefined ? (typeof value === 'object' ? JSON.stringify(value) : String(value)) : '<em>null</em>'}</td>
+                                                    </tr>
+                        `;
+                    }
+                    html += `
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                    `;
+                }
+                
+                if (log.new_values && Object.keys(log.new_values).length > 0) {
+                    html += `
+                                    <div class="col-md-6">
+                                        <h6 class="text-success mb-3"><i class="fas fa-arrow-right mr-1"></i>New Values</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-bordered">
+                                                <thead class="thead-light">
+                                                    <tr>
+                                                        <th>Field</th>
+                                                        <th>Value</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                    `;
+                    for (const [key, value] of Object.entries(log.new_values)) {
+                        html += `
+                                                    <tr>
+                                                        <td><strong>${key}</strong></td>
+                                                        <td>${value !== null && value !== undefined ? (typeof value === 'object' ? JSON.stringify(value) : String(value)) : '<em>null</em>'}</td>
+                                                    </tr>
+                        `;
+                    }
+                    html += `
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                    `;
+                }
+                
+                html += `
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }
+            
+            if (log.user_agent) {
+                html += `
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="card" style="border-left: 4px solid #ed8936; border-radius: 12px;">
+                            <div class="card-header" style="background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%); color: white; border-radius: 12px 12px 0 0;">
+                                <h6 class="mb-0"><i class="fas fa-desktop mr-2"></i>Technical Details</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <span class="text-muted"><i class="fas fa-info-circle mr-2"></i>User Agent:</span>
+                                        <code style="font-size: 0.75rem; max-width: 70%; word-break: break-all;">${log.user_agent}</code>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }
+            
+            $('#activityInfoContent').html(html);
+            $('#activityViewFullLink').attr('href', `{{ url('activity-logs') }}/${logId}`);
+        } else {
+            $('#activityInfoContent').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle mr-2"></i>Failed to load activity information. Please try again.</div>');
+        }
+    })
+    .catch(error => {
+        console.error('Error loading activity info:', error);
+        $('#activityInfoContent').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle mr-2"></i>Error loading activity information. Please try again.</div>');
+    });
+}
+
 function switchView(view) {
     if (view === 'list') {
         $('#listView').show();

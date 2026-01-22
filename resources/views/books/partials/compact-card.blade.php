@@ -54,9 +54,9 @@
             @endif
         </div>
         <div class="compact-card-actions" onclick="event.stopPropagation()">
-            <a href="{{ route('books.show', $book) }}" class="btn btn-info btn-sm" title="View">
+            <button type="button" class="btn btn-info btn-sm" onclick="showBookingInfo({{ $book->id }})" title="View">
                 <i class="fas fa-eye"></i>
-            </a>
+            </button>
             @if(auth()->user()->isAdmin())
             <button type="button" class="btn btn-danger btn-sm" onclick="deleteBooking({{ $book->id }})" title="Delete">
                 <i class="fas fa-trash"></i>

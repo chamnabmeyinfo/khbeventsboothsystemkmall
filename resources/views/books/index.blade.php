@@ -6,6 +6,37 @@
 
 @push('styles')
 <style>
+    /* Group Section Styles */
+    .group-section {
+        margin-bottom: 24px;
+    }
+    
+    .group-header {
+        border-radius: 12px 12px 0 0;
+        margin-bottom: 0;
+    }
+    
+    .group-header h5 {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .group-header .badge {
+        font-size: 0.875rem;
+        padding: 6px 12px;
+    }
+    
+    /* Table View Styles */
+    #bookingsTable tbody tr {
+        transition: all 0.2s ease;
+    }
+    
+    #bookingsTable tbody tr:hover {
+        background-color: #f8f9fa;
+        transform: translateX(2px);
+    }
+    
     /* Khmer Font Support for Bookings Page */
     .compact-booking-card,
     .booking-card-modern,
@@ -1328,6 +1359,27 @@
                     </div>
                 </div>
                 <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="font-weight-600 mb-2"><i class="fas fa-layer-group mr-1 text-primary"></i>Group By</label>
+                        <select name="group_by" id="groupBySelect" class="form-control form-control-modern">
+                            <option value="none" {{ request('group_by', 'none') == 'none' ? 'selected' : '' }}>No Grouping</option>
+                            <option value="name" {{ request('group_by') == 'name' ? 'selected' : '' }}>Group By Name</option>
+                            <option value="date" {{ request('group_by') == 'date' ? 'selected' : '' }}>Group By Date</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3" id="dateRangeContainer" style="display: {{ request('group_by') == 'date' ? 'block' : 'none' }};">
+                        <label class="font-weight-600 mb-2"><i class="fas fa-calendar-alt mr-1 text-primary"></i>Date Range</label>
+                        <select name="date_range" id="dateRangeSelect" class="form-control form-control-modern">
+                            <option value="all" {{ request('date_range', 'all') == 'all' ? 'selected' : '' }}>All Dates</option>
+                            <option value="today" {{ request('date_range') == 'today' ? 'selected' : '' }}>Today / Now</option>
+                            <option value="3days" {{ request('date_range') == '3days' ? 'selected' : '' }}>Last 3 Days</option>
+                            <option value="7days" {{ request('date_range') == '7days' ? 'selected' : '' }}>Last 7 Days</option>
+                            <option value="14days" {{ request('date_range') == '14days' ? 'selected' : '' }}>Last 14 Days</option>
+                            <option value="more" {{ request('date_range') == 'more' ? 'selected' : '' }}>More than 14 Days</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col-12">
                         <button type="button" onclick="performInstantSearch()" class="btn btn-modern btn-modern-primary" id="applyFiltersBtn">
                             <i class="fas fa-filter mr-2"></i>Apply Filters
@@ -1349,123 +1401,326 @@
         </div>
     </div>
 
-    <!-- Table View (Compact Card/Icon View) -->
+    <!-- Table View -->
     <div id="tableView" class="view-content">
-        <div class="compact-card-view" id="compactBookingsContainer">
-            @forelse($books as $book)
-            @php
-                $boothIds = json_decode($book->boothid, true) ?? [];
-                $boothCount = count($boothIds);
-                $typeClass = 'regular';
-                $typeBadge = 'badge-modern-primary';
-                if ($book->type == 2) {
-                    $typeClass = 'special';
-                    $typeBadge = 'badge-modern-warning';
-                } elseif ($book->type == 3) {
-                    $typeClass = 'temporary';
-                    $typeBadge = 'badge-modern-danger';
-                }
-                try {
-                    $statusSetting = $book->statusSetting ?? \App\Models\BookingStatusSetting::getByCode($book->status ?? 1);
-                    $statusColor = $statusSetting ? $statusSetting->status_color : '#6c757d';
-                    $statusTextColor = $statusSetting && $statusSetting->text_color ? $statusSetting->text_color : '#ffffff';
-                    $statusName = $statusSetting ? $statusSetting->status_name : 'Pending';
-                } catch (\Exception $e) {
-                    $statusColor = '#6c757d';
-                    $statusTextColor = '#ffffff';
-                    $statusName = 'Pending';
-                }
-                $totalAmount = $book->total_amount ?? \App\Models\Booth::whereIn('id', $boothIds)->sum('price');
-                $paidAmount = $book->paid_amount ?? 0;
-                $balanceAmount = $book->balance_amount ?? ($totalAmount - $paidAmount);
-            @endphp
-            <div class="compact-booking-card {{ $typeClass }}" onclick="window.location='{{ route('books.show', $book) }}'">
-                <div class="compact-card-header">
-                    <div class="compact-card-id">
-                        <i class="fas fa-hashtag"></i>
-                        <span>#{{ $book->id }}</span>
+        @if(isset($groupedBooks) && !empty($groupedBooks) && $groupBy !== 'none')
+            <!-- Grouped View -->
+            @if($groupBy === 'name')
+                @foreach($groupedBooks as $groupName => $groupBooks)
+                <div class="group-section mb-4">
+                    <div class="group-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 20px; border-radius: 12px 12px 0 0; margin-bottom: 0;">
+                        <h5 class="mb-0">
+                            <i class="fas fa-building mr-2"></i>{{ $groupName }}
+                            <span class="badge badge-light ml-2">{{ count($groupBooks) }} {{ count($groupBooks) == 1 ? 'Booking' : 'Bookings' }}</span>
+                        </h5>
                     </div>
-                    <span class="compact-card-badge {{ $typeBadge }}" style="background: {{ $statusColor }}; color: {{ $statusTextColor }};">
-                        {{ $statusName }}
-                    </span>
+                    <div class="card" style="border-radius: 0 0 12px 12px; border-top: none;">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Status</th>
+                                            <th>Client</th>
+                                            <th>Booths</th>
+                                            <th>Date & Time</th>
+                                            <th>Amount</th>
+                                            <th>Balance</th>
+                                            <th>User</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($groupBooks as $book)
+                                        @php
+                                            $boothIds = json_decode($book->boothid, true) ?? [];
+                                            $boothCount = count($boothIds);
+                                            try {
+                                                $statusSetting = $book->statusSetting ?? \App\Models\BookingStatusSetting::getByCode($book->status ?? 1);
+                                                $statusColor = $statusSetting ? $statusSetting->status_color : '#6c757d';
+                                                $statusTextColor = $statusSetting && $statusSetting->text_color ? $statusSetting->text_color : '#ffffff';
+                                                $statusName = $statusSetting ? $statusSetting->status_name : 'Pending';
+                                            } catch (\Exception $e) {
+                                                $statusColor = '#6c757d';
+                                                $statusTextColor = '#ffffff';
+                                                $statusName = 'Pending';
+                                            }
+                                            $totalAmount = $book->total_amount ?? \App\Models\Booth::whereIn('id', $boothIds)->sum('price');
+                                            $paidAmount = $book->paid_amount ?? 0;
+                                            $balanceAmount = $book->balance_amount ?? ($totalAmount - $paidAmount);
+                                        @endphp
+                                        <tr onclick="window.location='{{ route('books.show', $book) }}'" style="cursor: pointer;">
+                                            <td><strong>#{{ $book->id }}</strong></td>
+                                            <td>
+                                                <span class="badge" style="background: {{ $statusColor }}; color: {{ $statusTextColor }};">
+                                                    {{ $statusName }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <strong>{{ $book->client ? ($book->client->company ?? $book->client->name) : 'N/A' }}</strong>
+                                                @if($book->client && $book->client->name && $book->client->company)
+                                                <br><small class="text-muted">{{ $book->client->name }}</small>
+                                                @endif
+                                            </td>
+                                            <td>{{ $boothCount }} {{ $boothCount == 1 ? 'Booth' : 'Booths' }}</td>
+                                            <td>
+                                                {{ $book->date_book->format('M d, Y') }}<br>
+                                                <small class="text-muted">{{ $book->date_book->format('h:i A') }}</small>
+                                            </td>
+                                            <td><strong style="color: #10b981;">${{ number_format($totalAmount, 2) }}</strong></td>
+                                            <td>
+                                                @if($balanceAmount > 0)
+                                                <span style="color: #f59e0b;">${{ number_format($balanceAmount, 2) }}</span>
+                                                @else
+                                                <span class="text-success">Paid</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($book->user)
+                                                <x-avatar :avatar="$book->user->avatar" :name="$book->user->username" :size="'xs'" :type="$book->user->isAdmin() ? 'admin' : 'user'" :shape="'circle'" />
+                                                <small>{{ $book->user->username }}</small>
+                                                @else
+                                                <i class="fas fa-server text-muted"></i> System
+                                                @endif
+                                            </td>
+                                            <td onclick="event.stopPropagation()">
+                                                <div class="btn-group btn-group-sm">
+                                                    <button type="button" class="btn btn-info" onclick="showBookingInfo({{ $book->id }})" title="View">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    @if(auth()->user()->isAdmin())
+                                                    <button type="button" class="btn btn-danger" onclick="deleteBooking({{ $book->id }})" title="Delete">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="compact-card-content">
-                    <div class="compact-card-row">
-                        <i class="fas fa-building"></i>
-                        <strong>{{ $book->client ? ($book->client->company ?? $book->client->name) : 'N/A' }}</strong>
+                @endforeach
+            @elseif($groupBy === 'date')
+                @foreach($groupedBooks as $groupDate => $groupBooks)
+                <div class="group-section mb-4">
+                    <div class="group-header" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; padding: 16px 20px; border-radius: 12px 12px 0 0; margin-bottom: 0;">
+                        <h5 class="mb-0">
+                            <i class="fas fa-calendar mr-2"></i>{{ \Carbon\Carbon::parse($groupDate)->format('F d, Y') }}
+                            <span class="badge badge-light ml-2">{{ count($groupBooks) }} {{ count($groupBooks) == 1 ? 'Booking' : 'Bookings' }}</span>
+                        </h5>
                     </div>
-                    @if($book->client && $book->client->name && $book->client->company)
-                    <div class="compact-card-row">
-                        <i class="fas fa-user"></i>
-                        <span>{{ $book->client->name }}</span>
-                    </div>
-                    @endif
-                    <div class="compact-card-row">
-                        <i class="fas fa-cube"></i>
-                        <span>{{ $boothCount }} {{ $boothCount == 1 ? 'Booth' : 'Booths' }}</span>
-                    </div>
-                    <div class="compact-card-row">
-                        <i class="fas fa-calendar"></i>
-                        <span>{{ $book->date_book->format('M d, Y') }}</span>
-                        <i class="fas fa-clock ml-2"></i>
-                        <span>{{ $book->date_book->format('h:i A') }}</span>
-                    </div>
-                    <div class="compact-card-row">
-                        <i class="fas fa-dollar-sign"></i>
-                        <strong style="color: #10b981;">${{ number_format($totalAmount, 2) }}</strong>
-                        @if($balanceAmount > 0)
-                        <span style="color: #f59e0b; margin-left: 8px;">Balance: ${{ number_format($balanceAmount, 2) }}</span>
-                        @endif
+                    <div class="card" style="border-radius: 0 0 12px 12px; border-top: none;">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Status</th>
+                                            <th>Client</th>
+                                            <th>Booths</th>
+                                            <th>Time</th>
+                                            <th>Amount</th>
+                                            <th>Balance</th>
+                                            <th>User</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($groupBooks as $book)
+                                        @php
+                                            $boothIds = json_decode($book->boothid, true) ?? [];
+                                            $boothCount = count($boothIds);
+                                            try {
+                                                $statusSetting = $book->statusSetting ?? \App\Models\BookingStatusSetting::getByCode($book->status ?? 1);
+                                                $statusColor = $statusSetting ? $statusSetting->status_color : '#6c757d';
+                                                $statusTextColor = $statusSetting && $statusSetting->text_color ? $statusSetting->text_color : '#ffffff';
+                                                $statusName = $statusSetting ? $statusSetting->status_name : 'Pending';
+                                            } catch (\Exception $e) {
+                                                $statusColor = '#6c757d';
+                                                $statusTextColor = '#ffffff';
+                                                $statusName = 'Pending';
+                                            }
+                                            $totalAmount = $book->total_amount ?? \App\Models\Booth::whereIn('id', $boothIds)->sum('price');
+                                            $paidAmount = $book->paid_amount ?? 0;
+                                            $balanceAmount = $book->balance_amount ?? ($totalAmount - $paidAmount);
+                                        @endphp
+                                        <tr onclick="window.location='{{ route('books.show', $book) }}'" style="cursor: pointer;">
+                                            <td><strong>#{{ $book->id }}</strong></td>
+                                            <td>
+                                                <span class="badge" style="background: {{ $statusColor }}; color: {{ $statusTextColor }};">
+                                                    {{ $statusName }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <strong>{{ $book->client ? ($book->client->company ?? $book->client->name) : 'N/A' }}</strong>
+                                                @if($book->client && $book->client->name && $book->client->company)
+                                                <br><small class="text-muted">{{ $book->client->name }}</small>
+                                                @endif
+                                            </td>
+                                            <td>{{ $boothCount }} {{ $boothCount == 1 ? 'Booth' : 'Booths' }}</td>
+                                            <td>{{ $book->date_book->format('h:i A') }}</td>
+                                            <td><strong style="color: #10b981;">${{ number_format($totalAmount, 2) }}</strong></td>
+                                            <td>
+                                                @if($balanceAmount > 0)
+                                                <span style="color: #f59e0b;">${{ number_format($balanceAmount, 2) }}</span>
+                                                @else
+                                                <span class="text-success">Paid</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($book->user)
+                                                <x-avatar :avatar="$book->user->avatar" :name="$book->user->username" :size="'xs'" :type="$book->user->isAdmin() ? 'admin' : 'user'" :shape="'circle'" />
+                                                <small>{{ $book->user->username }}</small>
+                                                @else
+                                                <i class="fas fa-server text-muted"></i> System
+                                                @endif
+                                            </td>
+                                            <td onclick="event.stopPropagation()">
+                                                <div class="btn-group btn-group-sm">
+                                                    <button type="button" class="btn btn-info" onclick="showBookingInfo({{ $book->id }})" title="View">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    @if(auth()->user()->isAdmin())
+                                                    <button type="button" class="btn btn-danger" onclick="deleteBooking({{ $book->id }})" title="Delete">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="compact-card-footer">
-                    <div class="compact-card-row">
-                        @if($book->user)
-                        <x-avatar 
-                            :avatar="$book->user->avatar" 
-                            :name="$book->user->username" 
-                            :size="'xs'" 
-                            :type="$book->user->isAdmin() ? 'admin' : 'user'"
-                            :shape="'circle'"
-                        />
-                        <span style="font-size: 0.75rem; color: #6b7280;">{{ $book->user->username }}</span>
-                        @else
-                        <i class="fas fa-server" style="color: #6b7280;"></i>
-                        <span style="font-size: 0.75rem; color: #6b7280;">System</span>
-                        @endif
+                @endforeach
+            @endif
+        @else
+            <!-- Standard Table View (No Grouping) -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-list mr-2"></i>All Bookings</h3>
+                    <div class="card-tools">
+                        <span class="badge badge-primary">{{ $total ?? count($books) }} Total</span>
                     </div>
-                    <div class="compact-card-actions" onclick="event.stopPropagation()">
-                        <a href="{{ route('books.show', $book) }}" class="btn btn-info btn-sm" title="View">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                        @if(auth()->user()->isAdmin())
-                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteBooking({{ $book->id }})" title="Delete">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                        @endif
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="bookingsTable">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Status</th>
+                                    <th>Client</th>
+                                    <th>Booths</th>
+                                    <th>Date & Time</th>
+                                    <th>Amount</th>
+                                    <th>Balance</th>
+                                    <th>User</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBookingsBody">
+                                @forelse($books as $book)
+                                @php
+                                    $boothIds = json_decode($book->boothid, true) ?? [];
+                                    $boothCount = count($boothIds);
+                                    try {
+                                        $statusSetting = $book->statusSetting ?? \App\Models\BookingStatusSetting::getByCode($book->status ?? 1);
+                                        $statusColor = $statusSetting ? $statusSetting->status_color : '#6c757d';
+                                        $statusTextColor = $statusSetting && $statusSetting->text_color ? $statusSetting->text_color : '#ffffff';
+                                        $statusName = $statusSetting ? $statusSetting->status_name : 'Pending';
+                                    } catch (\Exception $e) {
+                                        $statusColor = '#6c757d';
+                                        $statusTextColor = '#ffffff';
+                                        $statusName = 'Pending';
+                                    }
+                                    $totalAmount = $book->total_amount ?? \App\Models\Booth::whereIn('id', $boothIds)->sum('price');
+                                    $paidAmount = $book->paid_amount ?? 0;
+                                    $balanceAmount = $book->balance_amount ?? ($totalAmount - $paidAmount);
+                                @endphp
+                                <tr onclick="window.location='{{ route('books.show', $book) }}'" style="cursor: pointer;">
+                                    <td><strong>#{{ $book->id }}</strong></td>
+                                    <td>
+                                        <span class="badge" style="background: {{ $statusColor }}; color: {{ $statusTextColor }};">
+                                            {{ $statusName }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <strong>{{ $book->client ? ($book->client->company ?? $book->client->name) : 'N/A' }}</strong>
+                                        @if($book->client && $book->client->name && $book->client->company)
+                                        <br><small class="text-muted">{{ $book->client->name }}</small>
+                                        @endif
+                                    </td>
+                                    <td>{{ $boothCount }} {{ $boothCount == 1 ? 'Booth' : 'Booths' }}</td>
+                                    <td>
+                                        {{ $book->date_book->format('M d, Y') }}<br>
+                                        <small class="text-muted">{{ $book->date_book->format('h:i A') }}</small>
+                                    </td>
+                                    <td><strong style="color: #10b981;">${{ number_format($totalAmount, 2) }}</strong></td>
+                                    <td>
+                                        @if($balanceAmount > 0)
+                                        <span style="color: #f59e0b;">${{ number_format($balanceAmount, 2) }}</span>
+                                        @else
+                                        <span class="text-success">Paid</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($book->user)
+                                        <x-avatar :avatar="$book->user->avatar" :name="$book->user->username" :size="'xs'" :type="$book->user->isAdmin() ? 'admin' : 'user'" :shape="'circle'" />
+                                        <small>{{ $book->user->username }}</small>
+                                        @else
+                                        <i class="fas fa-server text-muted"></i> System
+                                        @endif
+                                    </td>
+                                    <td onclick="event.stopPropagation()">
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-info" onclick="showBookingInfo({{ $book->id }})" title="View">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            @if(auth()->user()->isAdmin())
+                                            <button type="button" class="btn btn-danger" onclick="deleteBooking({{ $book->id }})" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="9" class="text-center py-5">
+                                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted">No bookings found</p>
+                                    </td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-            @empty
-            <div style="grid-column: 1 / -1; text-center; padding: 40px;">
-                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                <p class="text-muted">No bookings found</p>
+            <!-- Lazy Loading Trigger -->
+            <div id="tableLazyLoadTrigger" style="height: 20px; margin: 10px 0;"></div>
+            <!-- Lazy Loading Spinner -->
+            <div id="tableLazyLoadSpinner" class="text-center py-3" style="display: none;">
+                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <span class="ml-2 text-muted">Loading more bookings...</span>
             </div>
-            @endforelse
-        </div>
-        <!-- Lazy Loading Trigger -->
-        <div id="tableLazyLoadTrigger" style="height: 20px; margin: 10px 0;"></div>
-        <!-- Lazy Loading Spinner -->
-        <div id="tableLazyLoadSpinner" class="text-center py-3" style="display: none;">
-            <div class="spinner-border spinner-border-sm text-primary" role="status">
-                <span class="sr-only">Loading...</span>
+            <!-- Lazy Loading End -->
+            <div id="tableLazyLoadEnd" class="text-center py-3" style="display: none;">
+                <span class="text-muted">No more bookings to load</span>
             </div>
-            <span class="ml-2 text-muted">Loading more bookings...</span>
-        </div>
-        <!-- Lazy Loading End -->
-        <div id="tableLazyLoadEnd" class="text-center py-3" style="display: none;">
-            <span class="text-muted">No more bookings to load</span>
-        </div>
+        @endif
     </div>
 
     <!-- Card View -->
@@ -1568,9 +1823,9 @@
                     </div>
                     <div class="booking-card-footer">
                         <div class="btn-group btn-group-sm w-100" role="group">
-                            <a href="{{ route('books.show', $book) }}" class="btn btn-info" onclick="event.stopPropagation()" style="border-radius: 12px 0 0 12px;">
+                            <button type="button" class="btn btn-info" onclick="event.stopPropagation(); showBookingInfo({{ $book->id }});" style="border-radius: 12px 0 0 12px;">
                                 <i class="fas fa-eye mr-1"></i>View
-                            </a>
+                            </button>
                             @if(auth()->user()->isAdmin())
                             <button type="button" class="btn btn-danger" onclick="event.stopPropagation(); deleteBooking({{ $book->id }});" style="border-radius: 0 12px 12px 0;">
                                 <i class="fas fa-trash mr-1"></i>Delete
@@ -1612,6 +1867,40 @@
 
 {{-- Modal removed - direct navigation to create page instead --}}
 {{-- @include('books.modal-create') --}}
+
+<!-- Booking Info Modal -->
+<div class="modal fade" id="bookingInfoModal" tabindex="-1" role="dialog" aria-labelledby="bookingInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document" style="max-width: 900px;">
+        <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 16px 16px 0 0; padding: 20px 30px;">
+                <h5 class="modal-title" id="bookingInfoModalLabel" style="font-weight: 700; font-size: 1.25rem;">
+                    <i class="fas fa-calendar-check mr-2"></i>Booking Information
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; opacity: 0.9; font-size: 1.5rem;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 30px; max-height: 70vh; overflow-y: auto;">
+                <div id="bookingInfoContent">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Loading booking information...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #e2e8f0; padding: 20px 30px; border-radius: 0 0 16px 16px;">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" style="border-radius: 8px; padding: 10px 24px;">
+                    <i class="fas fa-times mr-1"></i>Close
+                </button>
+                <a href="#" id="bookingViewFullLink" class="btn btn-primary" style="border-radius: 8px; padding: 10px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                    <i class="fas fa-external-link-alt mr-1"></i>View Full Details
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Delete All Records Modal -->
 <div class="modal fade" id="deleteAllModal" tabindex="-1" role="dialog" aria-labelledby="deleteAllModalLabel" aria-hidden="true">
@@ -1665,6 +1954,243 @@
 
 @push('scripts')
 <script>
+// Booking Info Modal Function
+function showBookingInfo(bookingId) {
+    $('#bookingInfoModal').modal('show');
+    $('#bookingInfoContent').html('<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div><p class="mt-3 text-muted">Loading booking information...</p></div>');
+    
+    // Fetch booking details via AJAX
+    fetch(`{{ url('books') }}/${bookingId}`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success && data.book) {
+            const book = data.book;
+            let html = `
+                <div class="row">
+                    <!-- Booking Information -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card" style="border-left: 4px solid #667eea; border-radius: 12px;">
+                            <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px 12px 0 0;">
+                                <h6 class="mb-0"><i class="fas fa-calendar-check mr-2"></i>Booking Information</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3 pb-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-muted"><i class="fas fa-hashtag mr-2"></i>Booking ID:</span>
+                                        <strong class="text-primary">#${book.id}</strong>
+                                    </div>
+                                </div>
+                                <div class="mb-3 pb-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="text-muted"><i class="fas fa-calendar mr-2"></i>Booking Date:</span>
+                                        <strong>${book.date_book_date}</strong>
+                                    </div>
+                                    <small class="text-muted ml-4">${book.date_book_time}</small>
+                                </div>
+                                <div class="mb-3 pb-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted"><i class="fas fa-tag mr-2"></i>Type:</span>
+                                        <span class="badge ${book.type == 1 ? 'badge-primary' : (book.type == 2 ? 'badge-warning' : 'badge-danger')}">
+                                            ${book.type_name}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="mb-3 pb-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted"><i class="fas fa-user mr-2"></i>Booked By:</span>
+                                        <strong>${book.user ? book.user.username : 'System'}</strong>
+                                    </div>
+                                </div>
+                                <div class="mb-3 pb-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted"><i class="fas fa-cube mr-2"></i>Total Booths:</span>
+                                        <strong class="text-info">${book.booth_count}</strong>
+                                    </div>
+                                </div>
+                                <div class="mb-3 pb-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted"><i class="fas fa-dollar-sign mr-2"></i>Total Amount:</span>
+                                        <strong class="text-success">$${parseFloat(book.total_amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>
+                                    </div>
+                                </div>
+                                <div class="mb-3 pb-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted"><i class="fas fa-check-circle mr-2"></i>Paid Amount:</span>
+                                        <strong class="text-info">$${parseFloat(book.paid_amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted"><i class="fas fa-balance-scale mr-2"></i>Balance:</span>
+                                        <strong class="${parseFloat(book.balance_amount) > 0 ? 'text-warning' : 'text-success'}">
+                                            $${parseFloat(book.balance_amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                        </strong>
+                                    </div>
+                                </div>
+                                <div class="mb-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted"><i class="fas fa-info-circle mr-2"></i>Status:</span>
+                                        <span class="badge" style="background-color: ${book.status_color}; color: ${book.status_text_color};">
+                                            ${book.status_name}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Client Information -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card" style="border-left: 4px solid #48bb78; border-radius: 12px;">
+                            <div class="card-header" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; border-radius: 12px 12px 0 0;">
+                                <h6 class="mb-0"><i class="fas fa-building mr-2"></i>Client Information</h6>
+                            </div>
+                            <div class="card-body">
+            `;
+            
+            if (book.client) {
+                html += `
+                                <div class="mb-3 pb-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted"><i class="fas fa-building mr-2"></i>Company:</span>
+                                        <strong>${book.client.company || 'N/A'}</strong>
+                                    </div>
+                                </div>
+                                <div class="mb-3 pb-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted"><i class="fas fa-user mr-2"></i>Contact Name:</span>
+                                        <strong>${book.client.name || 'N/A'}</strong>
+                                    </div>
+                                </div>
+                                <div class="mb-3 pb-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted"><i class="fas fa-briefcase mr-2"></i>Position:</span>
+                                        <span>${book.client.position || 'N/A'}</span>
+                                    </div>
+                                </div>
+                                <div class="mb-3 pb-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted"><i class="fas fa-phone mr-2"></i>Phone:</span>
+                                        <a href="tel:${book.client.phone_number || ''}" class="text-primary">
+                                            ${book.client.phone_number || 'N/A'}
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="mb-3 pb-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted"><i class="fas fa-envelope mr-2"></i>Email:</span>
+                                        <a href="mailto:${book.client.email || ''}" class="text-primary">
+                                            ${book.client.email || 'N/A'}
+                                        </a>
+                                    </div>
+                                </div>
+                                ${book.client.address ? `
+                                <div class="mb-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <span class="text-muted"><i class="fas fa-map-marker-alt mr-2"></i>Address:</span>
+                                        <span class="text-right" style="max-width: 60%;">${book.client.address}</span>
+                                    </div>
+                                </div>
+                                ` : ''}
+                `;
+            } else {
+                html += `
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-user-slash fa-2x mb-2"></i>
+                                    <p>No client information available</p>
+                                </div>
+                `;
+            }
+            
+            html += `
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Booths Information -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card" style="border-left: 4px solid #4299e1; border-radius: 12px;">
+                            <div class="card-header" style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; border-radius: 12px 12px 0 0;">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-cube mr-2"></i>Booths in Booking (${book.booth_count})
+                                </h6>
+                            </div>
+                            <div class="card-body">
+            `;
+            
+            if (book.booths && book.booths.length > 0) {
+                html += '<div class="row">';
+                book.booths.forEach(booth => {
+                    html += `
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="border rounded p-3" style="background: #f8f9fa; transition: all 0.2s;">
+                                <h6 class="mb-2">
+                                    <i class="fas fa-cube mr-1 text-primary"></i>${booth.booth_number}
+                                </h6>
+                                ${booth.category ? `<small class="text-muted d-block mb-1"><i class="fas fa-folder mr-1"></i>${booth.category}</small>` : ''}
+                                ${booth.floor_plan ? `<small class="text-muted d-block mb-1"><i class="fas fa-map mr-1"></i>${booth.floor_plan}</small>` : ''}
+                                <div class="mt-2">
+                                    <strong class="text-success">$${parseFloat(booth.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            } else {
+                html += '<div class="text-center text-muted py-4"><i class="fas fa-cube fa-2x mb-2"></i><p>No booths in this booking</p></div>';
+            }
+            
+            html += `
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            if (book.notes) {
+                html += `
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="card" style="border-left: 4px solid #ed8936; border-radius: 12px;">
+                            <div class="card-header" style="background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%); color: white; border-radius: 12px 12px 0 0;">
+                                <h6 class="mb-0"><i class="fas fa-sticky-note mr-2"></i>Notes</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-0">${book.notes}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }
+            
+            $('#bookingInfoContent').html(html);
+            $('#bookingViewFullLink').attr('href', `{{ url('books') }}/${bookingId}`);
+        } else {
+            $('#bookingInfoContent').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle mr-2"></i>Failed to load booking information. Please try again.</div>');
+        }
+    })
+    .catch(error => {
+        console.error('Error loading booking info:', error);
+        $('#bookingInfoContent').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle mr-2"></i>Error loading booking information. Please try again.</div>');
+    });
+}
+
 // Make functions available globally immediately
 window.switchView = function(view) {
     currentView = view;
@@ -1758,13 +2284,17 @@ window.performInstantSearch = function() {
     const dateFrom = $('input[name="date_from"]').val();
     const dateTo = $('input[name="date_to"]').val();
     const type = $('select[name="type"]').val();
+    const groupBy = $('#groupBySelect').val() || 'none';
+    const dateRange = $('#dateRangeSelect').val() || 'all';
     
     // Update filter params
     filterParams = {
         search: searchQuery,
         date_from: dateFrom,
         date_to: dateTo,
-        type: type
+        type: type,
+        group_by: groupBy,
+        date_range: dateRange
     };
     
     // Reset lazy loading
@@ -1774,7 +2304,11 @@ window.performInstantSearch = function() {
     
     // Show loading indicator
     if (currentView === 'table') {
-        $('#compactBookingsContainer').html('<div style="grid-column: 1 / -1; text-center; padding: 40px;"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div><p class="mt-3 text-muted">Searching...</p></div>');
+        if (groupBy !== 'none') {
+            $('#tableBookingsBody').html('<tr><td colspan="9" class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div><p class="mt-3 text-muted">Searching...</p></td></tr>');
+        } else {
+            $('#compactBookingsContainer').html('<div style="grid-column: 1 / -1; text-center; padding: 40px;"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div><p class="mt-3 text-muted">Searching...</p></div>');
+        }
     } else {
         $('#cardBookingsContainer').html('<div class="col-12 text-center py-5"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div><p class="mt-3 text-muted">Searching...</p></div>');
     }
@@ -1794,6 +2328,14 @@ window.performInstantSearch = function() {
     if (dateFrom) params.append('date_from', dateFrom);
     if (dateTo) params.append('date_to', dateTo);
     if (type) params.append('type', type);
+    if (groupBy && groupBy !== 'none') params.append('group_by', groupBy);
+    if (dateRange && dateRange !== 'all') params.append('date_range', dateRange);
+    
+    // For grouped views, we need to reload the page to show grouped structure
+    if (groupBy !== 'none') {
+        window.location.href = '{{ route("books.index") }}?' + params.toString();
+        return;
+    }
     
     fetch('{{ route("books.index") }}?' + params.toString(), {
         method: 'GET',
@@ -1812,7 +2354,12 @@ window.performInstantSearch = function() {
     .then(data => {
         if (data.success && data.html) {
             if (currentView === 'table') {
-                $('#compactBookingsContainer').html(data.html);
+                // Check if we're in grouped mode - update table body or container
+                if (groupBy !== 'none') {
+                    $('#tableBookingsBody').html(data.html);
+                } else {
+                    $('#compactBookingsContainer').html(data.html);
+                }
             } else {
                 $('#cardBookingsContainer').html(data.html);
             }
@@ -1833,7 +2380,11 @@ window.performInstantSearch = function() {
         } else {
             // No results
             if (currentView === 'table') {
-                $('#compactBookingsContainer').html('<div style="grid-column: 1 / -1; text-center; padding: 40px;"><i class="fas fa-search fa-3x text-muted mb-3"></i><p class="text-muted">No bookings found matching your search</p></div>');
+                if (groupBy !== 'none') {
+                    $('#tableBookingsBody').html('<tr><td colspan="9" class="text-center py-5"><i class="fas fa-search fa-3x text-muted mb-3"></i><p class="text-muted">No bookings found matching your search</p></td></tr>');
+                } else {
+                    $('#compactBookingsContainer').html('<div style="grid-column: 1 / -1; text-center; padding: 40px;"><i class="fas fa-search fa-3x text-muted mb-3"></i><p class="text-muted">No bookings found matching your search</p></div>');
+                }
             } else {
                 $('#cardBookingsContainer').html('<div class="col-12 text-center py-5"><i class="fas fa-search fa-3x text-muted mb-3"></i><p class="text-muted">No bookings found matching your search</p></div>');
             }
@@ -1877,8 +2428,17 @@ $(document).ready(function() {
         search: '{{ request('search') }}',
         date_from: '{{ request('date_from') }}',
         date_to: '{{ request('date_to') }}',
-        type: '{{ request('type') }}'
+        type: '{{ request('type') }}',
+        group_by: '{{ request('group_by', 'none') }}',
+        date_range: '{{ request('date_range', 'all') }}'
     };
+    
+    // Initialize date range container visibility
+    if ($('#groupBySelect').val() === 'date') {
+        $('#dateRangeContainer').show();
+    } else {
+        $('#dateRangeContainer').hide();
+    }
     
     // Initialize lazy loading
     initLazyLoading();
@@ -1948,6 +2508,32 @@ $(document).ready(function() {
     }).on('blur', function() {
         $(this).closest('.input-group').removeClass('searching');
     });
+    
+    // Group By Change Handler
+    $('#groupBySelect').on('change', function() {
+        const groupBy = $(this).val();
+        const dateRangeContainer = $('#dateRangeContainer');
+        
+        // Show/hide date range container based on group by selection
+        if (groupBy === 'date') {
+            dateRangeContainer.slideDown(200);
+        } else {
+            dateRangeContainer.slideUp(200);
+        }
+        
+        // Trigger search if filters are applied
+        if ($('#instantSearchInput').val() || $('input[name="date_from"]').val() || $('input[name="date_to"]').val() || $('select[name="type"]').val()) {
+            performInstantSearch();
+        }
+    });
+    
+    // Date Range Change Handler
+    $('#dateRangeSelect').on('change', function() {
+        // Trigger search if group by date is selected
+        if ($('#groupBySelect').val() === 'date') {
+            performInstantSearch();
+        }
+    });
 });
 
 // Lazy Loading Observer (global to allow re-initialization)
@@ -2006,6 +2592,8 @@ function loadMoreBookings() {
     if (filterParams.date_from) params.append('date_from', filterParams.date_from);
     if (filterParams.date_to) params.append('date_to', filterParams.date_to);
     if (filterParams.type) params.append('type', filterParams.type);
+    if (filterParams.group_by && filterParams.group_by !== 'none') params.append('group_by', filterParams.group_by);
+    if (filterParams.date_range && filterParams.date_range !== 'all') params.append('date_range', filterParams.date_range);
     params.append('view', currentView);
     
     fetch('{{ route("books.index") }}?' + params.toString(), {
@@ -2025,8 +2613,12 @@ function loadMoreBookings() {
         .then(data => {
             if (data.success && data.html) {
                 if (currentView === 'table') {
-                    // Append new compact cards to container
-                    $('#compactBookingsContainer').append(data.html);
+                    // Check if we're in grouped mode - append to table body or container
+                    if (filterParams.group_by && filterParams.group_by !== 'none') {
+                        $('#tableBookingsBody').append(data.html);
+                    } else {
+                        $('#compactBookingsContainer').append(data.html);
+                    }
                 } else {
                     // Append new cards to card container
                     $('#cardBookingsContainer').append(data.html);

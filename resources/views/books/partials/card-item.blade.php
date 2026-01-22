@@ -81,9 +81,9 @@
         </div>
         <div class="booking-card-footer">
             <div class="btn-group btn-group-sm w-100" role="group">
-                <a href="{{ route('books.show', $book) }}" class="btn btn-info" onclick="event.stopPropagation()" style="border-radius: 12px 0 0 12px;">
+                <button type="button" class="btn btn-info" onclick="event.stopPropagation(); showBookingInfo({{ $book->id }});" style="border-radius: 12px 0 0 12px;">
                     <i class="fas fa-eye mr-1"></i>View
-                </a>
+                </button>
                 @if(auth()->user()->isAdmin())
                 <button type="button" class="btn btn-danger" onclick="event.stopPropagation(); deleteBooking({{ $book->id }});" style="border-radius: 0 12px 12px 0;">
                     <i class="fas fa-trash mr-1"></i>Delete

@@ -73,6 +73,40 @@ class ActivityLogController extends Controller
     public function show(ActivityLog $activityLog)
     {
         $activityLog->load('user');
+        
+        // Return JSON for AJAX requests (popup)
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'log' => [
+                    'id' => $activityLog->id,
+                    'action' => $activityLog->action,
+                    'description' => $activityLog->description ?? 'No description',
+                    'model_type' => $activityLog->model_type ? class_basename($activityLog->model_type) : null,
+                    'model_id' => $activityLog->model_id,
+                    'old_values' => $activityLog->old_values,
+                    'new_values' => $activityLog->new_values,
+                    'ip_address' => $activityLog->ip_address,
+                    'user_agent' => $activityLog->user_agent,
+                    'route' => $activityLog->route,
+                    'created_at' => $activityLog->created_at->format('F d, Y h:i:s A'),
+                    'created_at_date' => $activityLog->created_at->format('F d, Y'),
+                    'created_at_time' => $activityLog->created_at->format('h:i:s A'),
+                    'user' => $activityLog->user ? [
+                        'id' => $activityLog->user->id,
+                        'username' => $activityLog->user->username,
+                        'avatar' => $activityLog->user->avatar,
+                        'is_admin' => $activityLog->user->isAdmin()
+                    ] : null,
+                    'model' => $activityLog->model ? [
+                        'id' => $activityLog->model->id,
+                        'name' => method_exists($activityLog->model, 'name') ? $activityLog->model->name : null,
+                        'title' => method_exists($activityLog->model, 'title') ? $activityLog->model->title : null,
+                    ] : null
+                ]
+            ]);
+        }
+        
         return view('activity-logs.show', compact('activityLog'));
     }
 
