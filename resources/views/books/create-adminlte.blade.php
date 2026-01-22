@@ -7,296 +7,559 @@
 @push('styles')
 <style>
     /* ============================================
-       MODERN BOOKING CREATE PAGE DESIGN 2026
-       Glassmorphism + Gradients + Smooth Animations
+       BOOKING FORM - UNIQUE INDEPENDENT STYLESHEET
+       Each element has its own independent style
+       No dependency on global styles
        ============================================ */
     
+    /* Unique CSS Variables - Independent */
     :root {
-        --booking-primary: #667eea;
-        --booking-secondary: #764ba2;
-        --booking-success: #1cc88a;
-        --booking-warning: #f6c23e;
-        --booking-danger: #e74a3b;
-        --booking-info: #36b9cc;
+        --bf-primary: #667eea;
+        --bf-secondary: #764ba2;
+        --bf-success: #22c55e;
+        --bf-warning: #f59e0b;
+        --bf-danger: #ef4444;
+        --bf-info: #06b6d4;
+        --bf-gray-50: #f9fafb;
+        --bf-gray-100: #f3f4f6;
+        --bf-gray-200: #e5e7eb;
+        --bf-gray-300: #d1d5db;
+        --bf-gray-600: #6b7280;
+        --bf-gray-700: #374151;
+        --bf-gray-900: #1a1a1a;
     }
     
-    /* Modern Form Sections */
-    .form-section {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(102, 126, 234, 0.1);
-        border-radius: 16px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 
-            0 8px 32px rgba(0, 0, 0, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.8);
-        transition: all 0.3s ease;
+    /* Unique Container - Independent Style */
+    .bf-container-fluid {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    .bf-container-fluid.bf-py-4 {
+        padding-top: 24px;
+        padding-bottom: 24px;
+    }
+    
+    /* Unique Page Background - Independent */
+    .bf-page-wrapper {
+        background: #f5f7fa;
+        min-height: calc(100vh - 57px);
+        padding: 24px;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         position: relative;
-        overflow: visible; /* Changed from hidden to allow dropdowns */
-        z-index: 1;
+        box-sizing: border-box;
     }
     
-    .form-section::before {
+    .bf-page-wrapper::before {
         content: '';
-        position: absolute;
+        position: fixed;
         top: 0;
         left: 0;
-        width: 4px;
-        height: 100%;
-        background: linear-gradient(180deg, var(--booking-primary) 0%, var(--booking-secondary) 100%);
+        right: 0;
+        height: 300px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        z-index: 0;
+        opacity: 0.05;
+        pointer-events: none;
     }
     
-    .form-section:hover {
+    /* Unique Form Section - Independent Style */
+    .bf-form-section {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 16px;
         box-shadow: 
-            0 12px 48px rgba(102, 126, 234, 0.12),
-            inset 0 1px 0 rgba(255, 255, 255, 0.9);
-        transform: translateY(-2px);
+            0 2px 8px rgba(0, 0, 0, 0.04),
+            0 1px 3px rgba(0, 0, 0, 0.08);
+        border: 0.5px solid rgba(0, 0, 0, 0.06);
+        position: relative;
+        overflow: visible;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
     }
     
-    .form-section h6 {
-        color: #1a1a2e;
-        font-weight: 700;
-        margin-bottom: 1.5rem;
-        font-size: 1.1rem;
-        letter-spacing: 0.3px;
+    .bf-form-section:hover {
+        box-shadow: 
+            0 4px 12px rgba(0, 0, 0, 0.06),
+            0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .bf-form-section-title {
+        font-size: 17px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        letter-spacing: -0.2px;
+        margin-top: 0;
+        padding: 0;
+    }
+    
+    .bf-form-section-title-icon {
+        color: #667eea;
+        font-size: 20px;
+        width: 24px;
+        min-width: 24px;
+        text-align: center;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        flex-shrink: 0;
+    }
+    
+    /* Unique Main Card - Independent Style */
+    .bf-card-main {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 
+            0 2px 8px rgba(0, 0, 0, 0.04),
+            0 1px 3px rgba(0, 0, 0, 0.08);
+        border: 0.5px solid rgba(0, 0, 0, 0.06);
+        overflow: visible;
+        position: relative;
+        box-sizing: border-box;
+    }
+    
+    .bf-card-header {
+        background: #ffffff;
+        border-bottom: 0.5px solid rgba(0, 0, 0, 0.06);
+        padding: 20px 24px;
+        font-weight: 600;
+        border-radius: 16px 16px 0 0;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .bf-card-header-title {
+        margin: 0;
+        color: #1a1a1a;
+        font-weight: 600;
+        font-size: 22px;
+        letter-spacing: -0.3px;
         display: flex;
         align-items: center;
     }
     
-    .form-section h6 i {
-        background: linear-gradient(135deg, var(--booking-primary) 0%, var(--booking-secondary) 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-right: 0.75rem;
-        font-size: 1.2rem;
+    .bf-card-header-title-icon {
+        color: #667eea;
+        margin-right: 10px;
+        font-size: 22px;
     }
     
-    /* Modern Card */
-    .card-modern {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(102, 126, 234, 0.1);
-        border-radius: 16px;
-        box-shadow: 
-            0 8px 32px rgba(0, 0, 0, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.8);
-        overflow: visible; /* Changed from hidden to allow dropdowns */
-        position: relative;
-        z-index: 1;
-    }
-    
-    .card-header-modern {
-        background: linear-gradient(135deg, 
-            rgba(102, 126, 234, 0.1) 0%,
-            rgba(118, 75, 162, 0.1) 100%);
-        border-bottom: 1px solid rgba(102, 126, 234, 0.2);
-        padding: 1.5rem;
-        font-weight: 700;
-    }
-    
-    .card-header-modern h3 {
+    /* Unique Form Controls - Independent Style */
+    .bf-form-control {
+        width: 100%;
+        padding: 16px;
+        border-radius: 12px;
+        border: 1.5px solid #e5e7eb;
+        background: #f9fafb;
+        font-size: 16px;
+        color: #1a1a1a;
+        transition: all 0.2s ease;
+        -webkit-appearance: none;
+        appearance: none;
+        font-weight: 400;
+        box-sizing: border-box;
+        font-family: inherit;
         margin: 0;
-        color: #1a1a2e;
-        font-weight: 800;
-        background: linear-gradient(135deg, var(--booking-primary) 0%, var(--booking-secondary) 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
     }
     
-    /* Modern Form Controls */
-    .form-control-modern {
+    .bf-form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .bf-form-control::placeholder {
+        color: #9ca3af;
+        font-weight: 400;
+    }
+    
+    .bf-form-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        color: #6b7280;
+        margin-bottom: 8px;
+        letter-spacing: -0.1px;
+        margin-top: 0;
+    }
+    
+    .bf-form-group {
+        margin-bottom: 24px;
+        box-sizing: border-box;
+    }
+    
+    .bf-form-group:last-child {
+        margin-bottom: 0;
+    }
+    
+    /* Unique Buttons - Independent Style */
+    .bf-btn {
         border-radius: 12px;
-        border: 2px solid rgba(102, 126, 234, 0.1);
-        padding: 0.75rem 1rem;
-        transition: all 0.3s ease;
-        font-size: 0.95rem;
-    }
-    
-    .form-control-modern:focus {
-        border-color: var(--booking-primary);
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        transform: translateY(-1px);
-    }
-    
-    /* Modern Buttons */
-    .btn-modern {
-        border-radius: 12px;
-        padding: 0.75rem 1.5rem;
+        padding: 14px 24px;
         font-weight: 600;
-        letter-spacing: 0.3px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.2s ease;
         border: none;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        font-size: 16px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        box-sizing: border-box;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        font-family: inherit;
     }
     
-    .btn-modern:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    .bf-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
     
-    .btn-modern-primary {
-        background: linear-gradient(135deg, var(--booking-primary) 0%, var(--booking-secondary) 100%);
+    .bf-btn:active {
+        transform: scale(0.98);
+    }
+    
+    .bf-btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    .bf-btn-primary:hover {
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
         color: white;
     }
     
-    .btn-modern-primary:hover {
-        background: linear-gradient(135deg, var(--booking-secondary) 0%, var(--booking-primary) 100%);
+    .bf-btn-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .bf-btn-success:hover {
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
         color: white;
     }
     
-    .btn-modern-success {
-        background: linear-gradient(135deg, var(--booking-success) 0%, #17a673 100%);
+    .bf-btn-info {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+    }
+    
+    .bf-btn-info:hover {
+        box-shadow: 0 6px 16px rgba(6, 182, 212, 0.4);
         color: white;
     }
     
-    .btn-modern-info {
-        background: linear-gradient(135deg, var(--booking-info) 0%, #2c9faf 100%);
+    .bf-btn-secondary {
+        background: #6b7280;
         color: white;
+        box-shadow: 0 2px 8px rgba(107, 114, 128, 0.2);
     }
     
-    /* Booth Selector */
-    .booth-selector {
+    .bf-btn-secondary:hover {
+        background: #4b5563;
+        color: white;
+        box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+    }
+    
+    .bf-btn-sm {
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+    
+    /* Unique Booth Selector - Independent Style */
+    .bf-booth-selector {
         max-height: 500px;
         overflow-y: auto;
-        background: rgba(248, 249, 252, 0.5);
+        background: #f9fafb;
         border-radius: 12px;
-        padding: 1.5rem;
-        border: 2px solid rgba(102, 126, 234, 0.1);
+        padding: 16px;
+        border: 1.5px solid #e5e7eb;
+        box-sizing: border-box;
     }
     
-    .booth-selector::-webkit-scrollbar {
-        width: 8px;
+    .bf-booth-selector::-webkit-scrollbar {
+        width: 6px;
     }
     
-    .booth-selector::-webkit-scrollbar-track {
-        background: rgba(102, 126, 234, 0.05);
-        border-radius: 10px;
+    .bf-booth-selector::-webkit-scrollbar-track {
+        background: #f3f4f6;
+        border-radius: 3px;
     }
     
-    .booth-selector::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, var(--booking-primary) 0%, var(--booking-secondary) 100%);
-        border-radius: 10px;
+    .bf-booth-selector::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 3px;
     }
     
-    .booth-option {
+    .bf-booth-selector::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af;
+    }
+    
+    .bf-booth-option {
         cursor: pointer;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         background: white;
-        border: 2px solid rgba(102, 126, 234, 0.1) !important;
-        border-radius: 12px;
-        padding: 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 16px;
         position: relative;
         overflow: hidden;
+        box-sizing: border-box;
+        margin-bottom: 12px;
     }
     
-    .booth-option::before {
+    .bf-booth-option:last-child {
+        margin-bottom: 0;
+    }
+    
+    .bf-booth-option::before {
         content: '';
         position: absolute;
         top: 0;
         left: 0;
-        width: 4px;
-        height: 100%;
-        background: linear-gradient(180deg, var(--booking-primary) 0%, var(--booking-secondary) 100%);
-        transform: scaleY(0);
-        transition: transform 0.3s ease;
-    }
-    
-    .booth-option:hover {
+        right: 0;
+        bottom: 0;
         background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
-        border-color: var(--booking-primary) !important;
-        transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+        opacity: 0;
+        transition: opacity 0.3s ease;
     }
     
-    .booth-option:hover::before {
-        transform: scaleY(1);
+    .bf-booth-option:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
     }
     
-    .booth-option.selected {
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-        border-color: var(--booking-primary) !important;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    .bf-booth-option:hover::before {
+        opacity: 1;
     }
     
-    .booth-option.selected::before {
-        transform: scaleY(1);
+    .bf-booth-option.bf-selected {
+        border-color: #667eea;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
     }
     
-    .booth-option input[type="checkbox"] {
-        margin-right: 0.75rem;
+    .bf-booth-option.bf-selected::before {
+        opacity: 1;
+    }
+    
+    .bf-booth-checkbox {
+        margin-right: 12px;
         cursor: pointer;
         width: 20px;
         height: 20px;
-        accent-color: var(--booking-primary);
+        accent-color: #667eea;
     }
     
-    .booth-option label {
+    .bf-booth-label {
         cursor: pointer;
         width: 100%;
         margin: 0;
+        display: flex;
+        align-items: center;
     }
     
-    /* Selected Booths Summary */
-    .selected-booths-summary {
+    /* Unique Selected Booths Summary - Independent Style */
+    .bf-booths-summary {
         position: sticky;
         top: 20px;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        padding: 1.5rem;
+        background: #ffffff;
+        padding: 20px;
         border-radius: 16px;
         box-shadow: 
-            0 8px 32px rgba(0, 0, 0, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.8);
-        border: 1px solid rgba(102, 126, 234, 0.1);
+            0 2px 8px rgba(0, 0, 0, 0.04),
+            0 1px 3px rgba(0, 0, 0, 0.08);
+        border: 0.5px solid rgba(0, 0, 0, 0.06);
+        box-sizing: border-box;
     }
     
-    .selected-booths-summary h6 {
-        color: #1a1a2e;
-        font-weight: 700;
-        margin-bottom: 1rem;
-        font-size: 1rem;
+    .bf-booths-summary-title {
+        font-size: 17px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        letter-spacing: -0.2px;
+        margin-top: 0;
+        padding: 0;
     }
     
-    /* Modern Alert */
-    .alert-modern {
+    .bf-booths-summary-title-icon {
+        color: #667eea;
+        font-size: 20px;
+    }
+    
+    .bf-booths-list {
+        max-height: 300px;
+        overflow-y: auto;
+        min-height: 100px;
+        margin-bottom: 16px;
+    }
+    
+    .bf-booth-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        padding: 12px;
+        background: #f9fafb;
         border-radius: 12px;
+        border: 1.5px solid #e5e7eb;
+        box-sizing: border-box;
+    }
+    
+    .bf-booth-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .bf-summary-divider {
         border: none;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-top: 0.5px solid rgba(0, 0, 0, 0.06);
+        margin: 16px 0;
     }
     
-    .alert-modern-info {
-        background: linear-gradient(135deg, rgba(54, 185, 204, 0.1) 0%, rgba(44, 159, 175, 0.1) 100%);
-        border-left: 4px solid var(--booking-info);
-        color: #1a1a2e;
+    .bf-summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px;
+        margin-bottom: 12px;
+        border-radius: 8px;
+        box-sizing: border-box;
     }
     
-    /* Client Search Modal */
-    .modal-content-modern {
+    .bf-summary-row-total {
+        background: rgba(102, 126, 234, 0.05);
+    }
+    
+    .bf-summary-row-amount {
+        background: rgba(34, 197, 94, 0.1);
+    }
+    
+    .bf-summary-label {
+        font-weight: 600;
+        color: #1a1a1a;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .bf-summary-value {
+        font-weight: 600;
+        font-size: 18px;
+    }
+    
+    .bf-summary-value-amount {
+        font-size: 20px;
+        color: #22c55e;
+    }
+    
+    /* Unique Alerts - Independent Style */
+    .bf-alert {
+        border-radius: 12px;
+        border: 1.5px solid;
+        padding: 16px;
+        margin-bottom: 16px;
+        box-sizing: border-box;
+    }
+    
+    .bf-alert-info {
+        background: rgba(6, 182, 212, 0.1);
+        border-color: #06b6d4;
+        color: #0e7490;
+    }
+    
+    .bf-alert-warning {
+        background: rgba(245, 158, 11, 0.1);
+        border-color: #f59e0b;
+        color: #92400e;
+    }
+    
+    .bf-alert-success {
+        background: rgba(34, 197, 94, 0.1);
+        border-color: #22c55e;
+        color: #15803d;
+    }
+    
+    /* Unique Modal - Independent Style */
+    .bf-modal-content {
         border-radius: 16px;
-        border: none;
-        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+        border: 0.5px solid rgba(0, 0, 0, 0.06);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
         overflow: hidden;
+        background: #ffffff;
     }
     
-    .modal-header-modern {
-        background: linear-gradient(135deg, var(--booking-primary) 0%, var(--booking-secondary) 100%);
+    .bf-modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        padding: 1.5rem;
+        padding: 20px 24px;
         border: none;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
     
-    .modal-header-modern .close {
+    .bf-modal-title {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .bf-modal-close {
         color: white;
         opacity: 0.9;
         text-shadow: none;
+        font-size: 24px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
     }
     
-    .modal-header-modern .close:hover {
+    .bf-modal-close:hover {
         opacity: 1;
+    }
+    
+    .bf-modal-body {
+        padding: 24px;
+        box-sizing: border-box;
+    }
+    
+    .bf-modal-footer {
+        padding: 16px 24px;
+        border-top: 0.5px solid rgba(0, 0, 0, 0.06);
+        background: rgba(102, 126, 234, 0.05);
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
     }
     
     /* Client Search Wrapper - Redesigned */
@@ -308,69 +571,87 @@
         isolation: isolate;
     }
     
-    .input-group-modern {
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    /* Unique Input Group - Independent Style */
+    .bf-input-group {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         border-radius: 12px;
-        overflow: visible; /* Changed from hidden to allow dropdown */
+        overflow: visible;
         position: relative;
         background: white;
+        border: 1.5px solid #e5e7eb;
+        display: flex;
+        align-items: stretch;
+        box-sizing: border-box;
     }
     
-    .input-group-modern .input-group-prepend {
+    .bf-input-group-prepend {
+        display: flex;
+        align-items: center;
         border-right: none;
     }
     
-    .input-group-modern .input-group-text {
+    .bf-input-group-text {
         border-radius: 12px 0 0 12px;
-        border: 2px solid rgba(102, 126, 234, 0.1);
-        border-right: none;
-        background: white;
-        padding: 0.75rem 1rem;
+        border: none;
+        border-right: 1.5px solid #e5e7eb;
+        background: #f9fafb;
+        padding: 16px;
         z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6b7280;
     }
     
-    .input-group-modern .form-control {
-        border-left: none;
-        border-right: none;
-        border-top: 2px solid rgba(102, 126, 234, 0.1);
-        border-bottom: 2px solid rgba(102, 126, 234, 0.1);
-        padding: 0.75rem 1rem;
-        background: white;
+    .bf-input-group .bf-form-control {
+        border: none;
+        padding: 16px;
+        background: #f9fafb;
         z-index: 1;
+        font-size: 16px;
+        flex: 1;
     }
     
-    .input-group-modern .form-control:focus {
-        border-color: var(--booking-primary);
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+    .bf-input-group .bf-form-control:focus {
+        box-shadow: none;
+        background: #ffffff;
         z-index: 2;
     }
     
-    .input-group-modern .input-group-append {
+    .bf-input-group:focus-within {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        background: #ffffff;
+    }
+    
+    .bf-input-group-append {
+        display: flex;
+        align-items: center;
         border-left: none;
     }
     
-    .input-group-modern .input-group-append .btn {
+    .bf-input-group-append .bf-btn {
         border-radius: 0 12px 12px 0;
-        border-left: 2px solid rgba(102, 126, 234, 0.1);
+        border-left: 1.5px solid #e5e7eb;
         z-index: 1;
+        margin: 0;
     }
     
-    /* Client Results Dropdown - Fixed Positioning */
-    .client-results-dropdown {
+    /* Unique Client Results Dropdown - Independent Style */
+    .bf-client-results-dropdown {
         position: absolute;
         top: calc(100% + 0.5rem);
         left: 0;
         right: 0;
-        z-index: 9999; /* Very high z-index to ensure it's on top */
-        animation: slideDown 0.2s ease-out;
-        /* Ensure it doesn't get clipped */
+        z-index: 9999;
+        animation: bf-slideDown 0.15s ease-out;
         pointer-events: auto;
     }
     
-    @keyframes slideDown {
+    @keyframes bf-slideDown {
         from {
             opacity: 0;
-            transform: translateY(-10px);
+            transform: translateY(-5px);
         }
         to {
             opacity: 1;
@@ -378,101 +659,195 @@
         }
     }
     
-    .client-results-dropdown .card-modern {
+    .bf-client-results-dropdown .bf-card-main {
         max-height: 400px;
         overflow-y: auto;
         overflow-x: hidden;
-        box-shadow: 
-            0 12px 48px rgba(0, 0, 0, 0.2),
-            0 4px 16px rgba(102, 126, 234, 0.15);
-        border: 2px solid rgba(102, 126, 234, 0.25);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        border: 1px solid #e5e7eb;
         margin: 0;
         background: white;
-        /* Ensure it's above everything */
         position: relative;
         z-index: 9999;
     }
     
-    .client-results-dropdown .card-body {
-        padding: 0.75rem;
+    .bf-client-results-dropdown .bf-card-body {
+        padding: 8px;
     }
     
-    /* Ensure form sections don't overlap */
-    .form-section {
-        position: relative;
-        z-index: 1;
-        overflow: visible; /* Allow dropdowns to show */
+    /* Unique Row - Independent Style */
+    .bf-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-left: -12px;
+        margin-right: -12px;
+        box-sizing: border-box;
     }
     
-    /* Container adjustments */
-    .container-fluid {
-        position: relative;
-        z-index: 1;
+    .bf-col {
+        flex: 1;
+        padding-left: 12px;
+        padding-right: 12px;
+        box-sizing: border-box;
     }
     
-    .card-modern {
-        position: relative;
-        z-index: 1;
-        overflow: visible; /* Allow dropdowns */
+    .bf-col-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
     }
     
-    .card-body {
-        position: relative;
-        z-index: 1;
-        overflow: visible; /* Allow dropdowns */
+    .bf-col-8 {
+        flex: 0 0 66.666667%;
+        max-width: 66.666667%;
     }
     
-    /* Client Search Result Item */
-    .client-search-result {
-        border: 2px solid rgba(102, 126, 234, 0.1);
-        border-radius: 10px;
-        padding: 0.875rem 1rem;
-        margin-bottom: 0.5rem;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    .bf-col-4 {
+        flex: 0 0 33.333333%;
+        max-width: 33.333333%;
+    }
+    
+    .bf-col-12 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    
+    /* Unique Flex Utilities - Independent Style */
+    .bf-d-flex {
+        display: flex;
+    }
+    
+    .bf-justify-content-between {
+        justify-content: space-between;
+    }
+    
+    .bf-align-items-center {
+        align-items: center;
+    }
+    
+    .bf-gap-2 {
+        gap: 8px;
+    }
+    
+    .bf-gap-3 {
+        gap: 12px;
+    }
+    
+    .bf-mb-0 {
+        margin-bottom: 0;
+    }
+    
+    .bf-mb-2 {
+        margin-bottom: 8px;
+    }
+    
+    .bf-mb-3 {
+        margin-bottom: 12px;
+    }
+    
+    .bf-mb-4 {
+        margin-bottom: 16px;
+    }
+    
+    .bf-mt-2 {
+        margin-top: 8px;
+    }
+    
+    .bf-ml-2 {
+        margin-left: 8px;
+    }
+    
+    .bf-mr-2 {
+        margin-right: 8px;
+    }
+    
+    .bf-text-center {
+        text-align: center;
+    }
+    
+    .bf-text-muted {
+        color: #6b7280;
+    }
+    
+    .bf-text-danger {
+        color: #ef4444;
+    }
+    
+    .bf-text-success {
+        color: #22c55e;
+    }
+    
+    .bf-text-primary {
+        color: #667eea;
+    }
+    
+    .bf-font-weight-bold {
+        font-weight: 600;
+    }
+    
+    .bf-font-weight-normal {
+        font-weight: 400;
+    }
+    
+    /* Unique Client Search Result - Independent Style */
+    .bf-client-result {
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 10px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
         background: white;
         display: flex;
         align-items: center;
         justify-content: space-between;
         position: relative;
-        overflow: hidden;
+        box-sizing: border-box;
     }
     
-    .client-search-result::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 4px;
-        background: linear-gradient(180deg, var(--booking-primary) 0%, var(--booking-secondary) 100%);
-        transform: scaleY(0);
-        transition: transform 0.25s ease;
+    .bf-client-result:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
     }
     
-    .client-search-result:hover {
-        border-color: var(--booking-primary);
+    .bf-client-result.bf-highlighted {
+        border-color: #667eea;
         background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
-        transform: translateX(4px);
-        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
     }
     
-    .client-search-result:hover::before {
-        transform: scaleY(1);
-    }
-    
-    .client-search-result.highlighted {
-        border-color: var(--booking-primary);
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.12) 0%, rgba(118, 75, 162, 0.12) 100%);
-        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.25);
-    }
-    
-    .client-search-result.highlighted::before {
-        transform: scaleY(1);
-    }
-    
-    .client-search-result:last-child {
+    .bf-client-result:last-child {
         margin-bottom: 0;
+    }
+    
+    .bf-client-result-content {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .bf-client-result-name {
+        color: #1a1a1a;
+        font-weight: 700;
+        font-size: 15px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .bf-client-result-details {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-top: 8px;
+    }
+    
+    .bf-client-result-detail {
+        display: flex;
+        align-items: center;
+        font-size: 13px;
+        color: #6b7280;
+        gap: 8px;
     }
     
     /* Client Result Content */
@@ -586,31 +961,80 @@
         to { transform: rotate(360deg); }
     }
     
-    /* Selected Client Info Card */
-    .selected-client-card {
-        background: linear-gradient(135deg, rgba(28, 200, 138, 0.08) 0%, rgba(23, 166, 115, 0.08) 100%);
-        border: 2px solid rgba(28, 200, 138, 0.3);
+    /* Unique Selected Client Card - Independent Style */
+    .bf-selected-client-card {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+        border: 2px solid #22c55e;
         border-radius: 12px;
-        padding: 1.25rem;
-        box-shadow: 0 4px 12px rgba(28, 200, 138, 0.1);
+        padding: 16px;
+        box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
+        box-sizing: border-box;
+        margin-bottom: 16px;
     }
     
-    .selected-client-card strong {
-        color: #1a1a2e;
-        font-size: 1.05rem;
+    .bf-selected-client-name {
+        color: #1a1a1a;
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 8px;
     }
     
-    .selected-client-card small {
-        color: #6c757d;
-        font-size: 0.9rem;
+    .bf-selected-client-details {
+        color: #6b7280;
+        font-size: 14px;
     }
     
-    /* Badge Modern */
-    .badge-modern {
-        padding: 0.4rem 0.8rem;
+    /* Unique Badge - Independent Style */
+    .bf-badge {
+        padding: 6px 12px;
         border-radius: 8px;
         font-weight: 600;
-        font-size: 0.8rem;
+        font-size: 13px;
+        display: inline-block;
+        line-height: 1;
+    }
+    
+    .bf-badge-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .bf-badge-success {
+        background: #22c55e;
+        color: white;
+    }
+    
+    .bf-badge-warning {
+        background: #f59e0b;
+        color: white;
+    }
+    
+    .bf-badge-danger {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .bf-badge-info {
+        background: #06b6d4;
+        color: white;
+    }
+    
+    /* Unique Card Body - Independent Style */
+    .bf-card-body {
+        padding: 24px;
+        box-sizing: border-box;
+    }
+    
+    /* Unique Card Footer - Independent Style */
+    .bf-card-footer {
+        background: #ffffff;
+        border-top: 0.5px solid rgba(0, 0, 0, 0.06);
+        padding: 20px 24px;
+        border-radius: 0 0 16px 16px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        gap: 12px;
     }
     
     /* Prevent body overflow issues */
@@ -618,77 +1042,94 @@
         overflow-x: hidden;
     }
     
-    /* Ensure dropdown doesn't get cut off */
+    /* Unique Client Search Wrapper - Independent Style */
+    .bf-client-search-wrapper {
+        margin-bottom: 0;
+        position: relative;
+        z-index: 100;
+        isolation: isolate;
+    }
+    
+    .bf-form-section.bf-client-search-section {
+        z-index: 10;
+    }
+    
+    /* Responsive adjustments */
     @media (max-width: 768px) {
-        .client-results-dropdown {
-            left: -1rem;
-            right: -1rem;
-            margin-left: 1rem;
-            margin-right: 1rem;
+        .bf-client-results-dropdown {
+            left: -16px;
+            right: -16px;
+            margin-left: 16px;
+            margin-right: 16px;
         }
         
-        .form-section {
-            padding: 1.25rem;
-            margin-bottom: 1.5rem;
+        .bf-form-section {
+            padding: 16px;
+            margin-bottom: 16px;
         }
         
-        .selected-booths-summary {
+        .bf-booths-summary {
             position: relative;
             top: 0;
-            margin-top: 1.5rem;
+            margin-top: 16px;
         }
         
-        .client-results-dropdown .card-modern {
+        .bf-client-results-dropdown .bf-card-main {
             max-height: 300px;
+        }
+        
+        .bf-col-6,
+        .bf-col-8,
+        .bf-col-4 {
+            flex: 0 0 100%;
+            max-width: 100%;
         }
     }
     
     /* Additional spacing for dropdown */
-    .client-results-dropdown {
-        margin-top: 0.5rem;
+    .bf-client-results-dropdown {
+        margin-top: 8px;
     }
     
-    /* Ensure proper stacking */
-    .form-section:has(.client-search-wrapper) {
-        z-index: 10;
-    }
-    
-    /* Fallback for browsers that don't support :has() */
-    .form-section.client-search-section {
-        z-index: 10;
+    /* Prevent body overflow issues */
+    body {
+        overflow-x: hidden;
     }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid">
-    <div class="card-modern">
-        <div class="card-header-modern d-flex justify-content-between align-items-center">
-            <h3 class="m-0"><i class="fas fa-calendar-plus mr-2"></i>Create New Booking</h3>
-            <div>
-                @if(isset($currentFloorPlan) && $currentFloorPlan)
-                <a href="{{ route('booths.index', ['view' => 'canvas', 'floor_plan_id' => $currentFloorPlan->id]) }}" class="btn btn-modern btn-modern-info btn-sm mr-2">
-                    <i class="fas fa-map-marked-alt mr-1"></i>View Floor Plan Canvas
-                </a>
-                @endif
-                <a href="{{ route('books.index') }}" class="btn btn-modern btn-sm" style="background: #6c757d; color: white;">
-                    <i class="fas fa-arrow-left mr-1"></i>Back to Bookings
-                </a>
+<div class="bf-page-wrapper">
+    <div class="bf-container-fluid bf-py-4">
+        <div class="bf-card-main">
+            <div class="bf-card-header">
+                <h3 class="bf-card-header-title">
+                    <i class="fas fa-calendar-plus bf-card-header-title-icon"></i>Create New Booking
+                </h3>
+                <div class="bf-d-flex bf-gap-2">
+                    @if(isset($currentFloorPlan) && $currentFloorPlan)
+                    <a href="{{ route('booths.index', ['view' => 'canvas', 'floor_plan_id' => $currentFloorPlan->id]) }}" class="bf-btn bf-btn-info bf-btn-sm">
+                        <i class="fas fa-map-marked-alt bf-mr-2"></i>View Floor Plan Canvas
+                    </a>
+                    @endif
+                    <a href="{{ route('books.index') }}" class="bf-btn bf-btn-secondary bf-btn-sm">
+                        <i class="fas fa-arrow-left bf-mr-2"></i>Back to Bookings
+                    </a>
+                </div>
             </div>
-        </div>
         <form action="{{ route('books.store') }}" method="POST" id="bookingForm">
             @csrf
-            <div class="card-body" style="padding: 2rem; position: relative; z-index: 1; overflow: visible;">
+            <div class="bf-card-body">
                 @if(isset($currentFloorPlan) && $currentFloorPlan)
-                <div class="alert alert-modern alert-modern-info mb-4">
-                    <div class="d-flex justify-content-between align-items-center">
+                <div class="bf-alert bf-alert-info bf-mb-4">
+                    <div class="bf-d-flex bf-justify-content-between bf-align-items-center">
                         <div>
-                            <i class="fas fa-map mr-2"></i>
+                            <i class="fas fa-map bf-mr-2"></i>
                             <strong>Booking for Floor Plan:</strong> {{ $currentFloorPlan->name }}
                             @if($currentFloorPlan->event) - {{ $currentFloorPlan->event->title }} @endif
                         </div>
-                        <a href="{{ route('books.create') }}" class="btn btn-sm btn-outline-secondary">
-                            <i class="fas fa-times mr-1"></i>Clear Filter
+                        <a href="{{ route('books.create') }}" class="bf-btn bf-btn-secondary bf-btn-sm">
+                            <i class="fas fa-times bf-mr-2"></i>Clear Filter
                         </a>
                     </div>
                 </div>
@@ -696,13 +1137,15 @@
 
                 <!-- Floor Plan Selection -->
                 @if(isset($floorPlans) && $floorPlans->count() > 0)
-                <div class="form-section">
-                    <h6><i class="fas fa-map mr-2"></i>Floor Plan (Optional Filter)</h6>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label for="floor_plan_filter" class="form-label font-weight-bold">Filter Booths by Floor Plan</label>
-                                <select class="form-control form-control-modern" id="floor_plan_filter" name="floor_plan_filter" onchange="filterByFloorPlan(this.value)">
+                <div class="bf-form-section">
+                    <h6 class="bf-form-section-title">
+                        <i class="fas fa-map bf-form-section-title-icon"></i>Floor Plan (Optional Filter)
+                    </h6>
+                    <div class="bf-row">
+                        <div class="bf-col bf-col-12">
+                            <div class="bf-form-group">
+                                <label for="floor_plan_filter" class="bf-form-label bf-font-weight-bold">Filter Booths by Floor Plan</label>
+                                <select class="bf-form-control" id="floor_plan_filter" name="floor_plan_filter" onchange="filterByFloorPlan(this.value)">
                                     <option value="">All Floor Plans</option>
                                     @foreach($floorPlans as $fp)
                                         <option value="{{ $fp->id }}" {{ (isset($floorPlanId) && $floorPlanId == $fp->id) ? 'selected' : '' }}>
@@ -712,7 +1155,7 @@
                                         </option>
                                     @endforeach
                                 </select>
-                                <small class="form-text text-muted mt-1"><i class="fas fa-info-circle mr-1"></i>Select a floor plan to filter available booths, or leave blank to see all booths</small>
+                                <small class="bf-text-muted bf-mt-2"><i class="fas fa-info-circle bf-mr-2"></i>Select a floor plan to filter available booths, or leave blank to see all booths</small>
                             </div>
                         </div>
                     </div>
@@ -720,23 +1163,25 @@
                 @endif
 
                 <!-- Client Selection -->
-                <div class="form-section client-search-section">
-                    <h6><i class="fas fa-building mr-2"></i>Client Information</h6>
+                <div class="bf-form-section bf-client-search-section">
+                    <h6 class="bf-form-section-title">
+                        <i class="fas fa-building bf-form-section-title-icon"></i>Client Information
+                    </h6>
                     <input type="hidden" id="clientid" name="clientid" value="{{ old('clientid') }}" required>
                     
                     <!-- Selected Client Display -->
-                    <div id="selectedClientInfo" class="mb-3" style="display: none;">
-                        <div class="selected-client-card">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="flex-grow-1">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="fas fa-check-circle text-success mr-2" style="font-size: 1.2rem;"></i>
-                                        <strong id="selectedClientName" class="d-block mb-0" style="font-size: 1.05rem; color: #1a1a2e;"></strong>
+                    <div id="selectedClientInfo" class="bf-mb-3" style="display: none;">
+                        <div class="bf-selected-client-card">
+                            <div class="bf-d-flex bf-justify-content-between bf-align-items-center">
+                                <div style="flex: 1;">
+                                    <div class="bf-d-flex bf-align-items-center bf-mb-2">
+                                        <i class="fas fa-check-circle bf-text-success bf-mr-2" style="font-size: 1.2rem;"></i>
+                                        <strong id="selectedClientName" class="bf-selected-client-name bf-mb-0"></strong>
                                     </div>
-                                    <small id="selectedClientDetails" class="text-muted d-block ml-4"></small>
+                                    <small id="selectedClientDetails" class="bf-selected-client-details"></small>
                                 </div>
-                                <button type="button" class="btn btn-sm btn-outline-danger ml-3" id="btnClearClient">
-                                    <i class="fas fa-times mr-1"></i>Change Client
+                                <button type="button" class="bf-btn bf-btn-secondary bf-btn-sm bf-ml-2" id="btnClearClient">
+                                    <i class="fas fa-times bf-mr-2"></i>Change Client
                                 </button>
                             </div>
                         </div>
@@ -744,48 +1189,48 @@
                     
                     <!-- Client Search (shown when no client selected) -->
                     <div id="clientSearchContainer">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <label for="clientSearchInline" class="form-label font-weight-bold">Search Client <span class="text-danger">*</span></label>
-                                <div class="client-search-wrapper">
-                                    <div class="input-group input-group-modern">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text bg-white border-right-0">
-                                                <i class="fas fa-search text-muted" id="searchIcon"></i>
+                        <div class="bf-row">
+                            <div class="bf-col bf-col-12">
+                                <label for="clientSearchInline" class="bf-form-label bf-font-weight-bold">Search Client <span class="bf-text-danger">*</span></label>
+                                <div class="bf-client-search-wrapper">
+                                    <div class="bf-input-group">
+                                        <div class="bf-input-group-prepend">
+                                            <span class="bf-input-group-text">
+                                                <i class="fas fa-search bf-text-muted" id="searchIcon"></i>
                                             </span>
                                         </div>
                                         <input type="text" 
-                                               class="form-control form-control-modern border-left-0 @error('clientid') is-invalid @enderror" 
+                                               class="bf-form-control @error('clientid') is-invalid @enderror" 
                                                id="clientSearchInline" 
                                                placeholder="Type client name, company, email, or phone number..." 
                                                autocomplete="off">
-                                        <div class="input-group-append">
-                                            <button type="button" class="btn btn-modern btn-modern-primary" id="btnSearchSelectClient" data-toggle="modal" data-target="#searchClientModal">
-                                                <i class="fas fa-search-plus mr-1"></i>Advanced Search
+                                        <div class="bf-input-group-append">
+                                            <button type="button" class="bf-btn bf-btn-primary" id="btnSearchSelectClient" data-toggle="modal" data-target="#searchClientModal">
+                                                <i class="fas fa-search-plus bf-mr-2"></i>Advanced Search
                                             </button>
                                         </div>
                                     </div>
                                     
                                     <!-- Inline Search Results Dropdown - Fixed Positioning -->
-                                    <div id="inlineClientResults" class="client-results-dropdown" style="display: none;">
-                                        <div class="card-modern">
-                                            <div class="card-body p-0">
-                                                <div id="inlineClientResultsList" class="p-2"></div>
+                                    <div id="inlineClientResults" class="bf-client-results-dropdown" style="display: none;">
+                                        <div class="bf-card-main">
+                                            <div class="bf-card-body" style="padding: 8px;">
+                                                <div id="inlineClientResultsList"></div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 @error('clientid')
-                                    <div class="invalid-feedback d-block mt-2">{{ $message }}</div>
+                                    <div class="bf-text-danger bf-mt-2">{{ $message }}</div>
                                 @enderror
                                 
-                                <div class="d-flex justify-content-between align-items-center mt-2">
-                                    <small class="form-text text-muted mb-0">
-                                        <i class="fas fa-info-circle mr-1"></i>Start typing to see instant suggestions
+                                <div class="bf-d-flex bf-justify-content-between bf-align-items-center bf-mt-2">
+                                    <small class="bf-text-muted bf-mb-0">
+                                        <i class="fas fa-info-circle bf-mr-2"></i>Start typing to see instant suggestions
                                     </small>
-                                    <button type="button" class="btn btn-modern btn-modern-success btn-sm" data-toggle="modal" data-target="#createClientModal">
-                                        <i class="fas fa-plus mr-1"></i>Create New Client
+                                    <button type="button" class="bf-btn bf-btn-success bf-btn-sm" data-toggle="modal" data-target="#createClientModal">
+                                        <i class="fas fa-plus bf-mr-2"></i>Create New Client
                                     </button>
                                 </div>
                             </div>
@@ -794,34 +1239,36 @@
                 </div>
 
                 <!-- Booking Details -->
-                <div class="form-section">
-                    <h6><i class="fas fa-calendar-alt mr-2"></i>Booking Details</h6>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="date_book" class="form-label font-weight-bold">Booking Date & Time <span class="text-danger">*</span></label>
+                <div class="bf-form-section">
+                    <h6 class="bf-form-section-title">
+                        <i class="fas fa-calendar-alt bf-form-section-title-icon"></i>Booking Details
+                    </h6>
+                    <div class="bf-row">
+                        <div class="bf-col bf-col-6">
+                            <div class="bf-form-group">
+                                <label for="date_book" class="bf-form-label bf-font-weight-bold">Booking Date & Time <span class="bf-text-danger">*</span></label>
                                 <input type="datetime-local" 
-                                       class="form-control form-control-modern @error('date_book') is-invalid @enderror" 
+                                       class="bf-form-control @error('date_book') is-invalid @enderror" 
                                        id="date_book" 
                                        name="date_book" 
                                        value="{{ old('date_book', now()->format('Y-m-d\TH:i')) }}" 
                                        required>
                                 @error('date_book')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    <div class="bf-text-danger bf-mt-2">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="type" class="form-label font-weight-bold">Booking Type</label>
-                                <select class="form-control form-control-modern @error('type') is-invalid @enderror" id="type" name="type">
+                        <div class="bf-col bf-col-6">
+                            <div class="bf-form-group">
+                                <label for="type" class="bf-form-label bf-font-weight-bold">Booking Type</label>
+                                <select class="bf-form-control @error('type') is-invalid @enderror" id="type" name="type">
                                     <option value="1" {{ old('type', 1) == 1 ? 'selected' : '' }}>Regular</option>
                                     <option value="2" {{ old('type') == 2 ? 'selected' : '' }}>Special</option>
                                     <option value="3" {{ old('type') == 3 ? 'selected' : '' }}>Temporary</option>
                                 </select>
-                                <small class="form-text text-muted mt-1"><i class="fas fa-info-circle mr-1"></i>Select the type of booking</small>
+                                <small class="bf-text-muted bf-mt-2"><i class="fas fa-info-circle bf-mr-2"></i>Select the type of booking</small>
                                 @error('type')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    <div class="bf-text-danger bf-mt-2">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
@@ -829,47 +1276,49 @@
                 </div>
 
                 <!-- Booth Selection -->
-                <div class="form-section">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h6 class="mb-0"><i class="fas fa-cube mr-2"></i>Select Booths <span class="text-danger">*</span></h6>
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-modern btn-sm" style="background: linear-gradient(135deg, var(--booking-primary) 0%, var(--booking-secondary) 100%); color: white;" onclick="selectAllBooths()">
-                                <i class="fas fa-check-double mr-1"></i>Select All
+                <div class="bf-form-section">
+                    <div class="bf-d-flex bf-justify-content-between bf-align-items-center bf-mb-4">
+                        <h6 class="bf-form-section-title bf-mb-0">
+                            <i class="fas fa-cube bf-form-section-title-icon"></i>Select Booths <span class="bf-text-danger">*</span>
+                        </h6>
+                        <div class="bf-d-flex bf-gap-2">
+                            <button type="button" class="bf-btn bf-btn-primary bf-btn-sm" onclick="selectAllBooths()">
+                                <i class="fas fa-check-double bf-mr-2"></i>Select All
                             </button>
-                            <button type="button" class="btn btn-modern btn-sm" style="background: #6c757d; color: white;" onclick="clearSelection()">
-                                <i class="fas fa-times mr-1"></i>Clear
+                            <button type="button" class="bf-btn bf-btn-secondary bf-btn-sm" onclick="clearSelection()">
+                                <i class="fas fa-times bf-mr-2"></i>Clear
                             </button>
                         </div>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="booth-selector" id="boothSelector">
+                    <div class="bf-row">
+                        <div class="bf-col bf-col-8">
+                            <div class="bf-booth-selector" id="boothSelector">
                                 @if($booths->count() > 0)
-                                    <div class="row">
+                                    <div class="bf-row">
                                         @foreach($booths as $booth)
-                                        <div class="col-md-6 mb-2">
-                                            <div class="booth-option border rounded p-2" data-booth-id="{{ $booth->id }}" data-price="{{ $booth->price }}">
-                                                <label class="mb-0 w-100" style="cursor: pointer;">
+                                        <div class="bf-col bf-col-6 bf-mb-2">
+                                            <div class="bf-booth-option" data-booth-id="{{ $booth->id }}" data-price="{{ $booth->price }}">
+                                                <label class="bf-booth-label">
                                                     <input type="checkbox" 
                                                            name="booth_ids[]" 
                                                            value="{{ $booth->id }}" 
-                                                           class="booth-checkbox"
+                                                           class="bf-booth-checkbox"
                                                            {{ in_array($booth->id, old('booth_ids', [])) ? 'checked' : '' }}
                                                            onchange="updateSelection()">
-                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <div class="bf-d-flex bf-justify-content-between bf-align-items-center bf-mb-2">
                                                         <div>
-                                                            <strong style="color: var(--booking-primary); font-size: 1.1rem;">{{ $booth->booth_number }}</strong>
-                                                            <span class="badge-modern ml-2" style="background: linear-gradient(135deg, {{ $booth->getStatusColor() == 'success' ? '#1cc88a' : ($booth->getStatusColor() == 'warning' ? '#f6c23e' : ($booth->getStatusColor() == 'danger' ? '#e74a3b' : '#36b9cc')) }} 0%, {{ $booth->getStatusColor() == 'success' ? '#17a673' : ($booth->getStatusColor() == 'warning' ? '#dda20a' : ($booth->getStatusColor() == 'danger' ? '#c23321' : '#2c9faf')) }} 100%); color: white;">
+                                                            <strong class="bf-text-primary" style="font-size: 1.1rem;">{{ $booth->booth_number }}</strong>
+                                                            <span class="bf-badge bf-badge-{{ $booth->getStatusColor() == 'success' ? 'success' : ($booth->getStatusColor() == 'warning' ? 'warning' : ($booth->getStatusColor() == 'danger' ? 'danger' : 'info')) }} bf-ml-2">
                                                                 {{ $booth->getStatusLabel() }}
                                                             </span>
                                                         </div>
-                                                        <strong style="color: var(--booking-success); font-size: 1.2rem;">${{ number_format($booth->price, 2) }}</strong>
+                                                        <strong class="bf-text-success" style="font-size: 1.2rem;">${{ number_format($booth->price, 2) }}</strong>
                                                     </div>
                                                     @if($booth->category)
-                                                    <div class="mt-2">
-                                                        <small class="text-muted">
-                                                            <i class="fas fa-folder mr-1" style="color: var(--booking-info);"></i>{{ $booth->category->name }}
+                                                    <div class="bf-mt-2">
+                                                        <small class="bf-text-muted">
+                                                            <i class="fas fa-folder bf-mr-2"></i>{{ $booth->category->name }}
                                                         </small>
                                                     </div>
                                                     @endif
@@ -879,50 +1328,58 @@
                                         @endforeach
                                     </div>
                                 @else
-                                    <div class="alert alert-modern alert-warning text-center py-4">
-                                        <i class="fas fa-exclamation-triangle mr-2" style="font-size: 2rem;"></i>
-                                        <p class="mb-0 mt-2"><strong>No available booths found.</strong></p>
+                                    <div class="bf-alert bf-alert-warning bf-text-center" style="padding: 32px;">
+                                        <i class="fas fa-exclamation-triangle bf-mr-2" style="font-size: 2rem;"></i>
+                                        <p class="bf-mb-0 bf-mt-2 bf-font-weight-bold">No available booths found.</p>
                                     </div>
                                 @endif
                             </div>
                             @error('booth_ids')
-                                <div class="text-danger mt-2">{{ $message }}</div>
+                                <div class="bf-text-danger bf-mt-2">{{ $message }}</div>
                             @enderror
                         </div>
-                        <div class="col-md-4">
-                            <div class="selected-booths-summary">
-                                <h6 class="mb-3"><i class="fas fa-list mr-2"></i>Selected Booths</h6>
-                                <div id="selectedBoothsList" class="mb-3" style="max-height: 300px; overflow-y: auto; min-height: 100px;">
-                                    <p class="text-muted text-center mb-0 py-4">No booths selected</p>
+                        <div class="bf-col bf-col-4">
+                            <div class="bf-booths-summary">
+                                <h6 class="bf-booths-summary-title">
+                                    <i class="fas fa-list bf-booths-summary-title-icon"></i>Selected Booths
+                                </h6>
+                                <div id="selectedBoothsList" class="bf-booths-list">
+                                    <p class="bf-text-muted bf-text-center bf-mb-0" style="padding: 32px 0;">No booths selected</p>
                                 </div>
-                                <hr style="border-color: rgba(102, 126, 234, 0.2);">
-                                <div class="d-flex justify-content-between align-items-center mb-3 p-2" style="background: rgba(102, 126, 234, 0.05); border-radius: 8px;">
-                                    <strong><i class="fas fa-cube mr-1"></i>Total Booths:</strong>
-                                    <span id="totalBooths" class="badge-modern badge-modern-primary" style="font-size: 1rem; padding: 0.5rem 1rem;">0</span>
+                                <hr class="bf-summary-divider">
+                                <div class="bf-summary-row bf-summary-row-total">
+                                    <strong class="bf-summary-label">
+                                        <i class="fas fa-cube bf-mr-2"></i>Total Booths:
+                                    </strong>
+                                    <span id="totalBooths" class="bf-badge bf-badge-primary">0</span>
                                 </div>
-                                <div class="d-flex justify-content-between align-items-center p-2" style="background: linear-gradient(135deg, rgba(28, 200, 138, 0.1) 0%, rgba(23, 166, 115, 0.1) 100%); border-radius: 8px;">
-                                    <strong><i class="fas fa-dollar-sign mr-1"></i>Total Amount:</strong>
-                                    <span id="totalAmount" class="font-weight-bold" style="font-size: 1.3rem; color: var(--booking-success);">$0.00</span>
+                                <div class="bf-summary-row bf-summary-row-amount">
+                                    <strong class="bf-summary-label">
+                                        <i class="fas fa-dollar-sign bf-mr-2"></i>Total Amount:
+                                    </strong>
+                                    <span id="totalAmount" class="bf-summary-value bf-summary-value-amount">$0.00</span>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <small class="form-text text-muted mt-2">
-                        <i class="fas fa-info-circle mr-1"></i>Click on booths to select them. You can select multiple booths.
+                    <small class="bf-text-muted bf-mt-2">
+                        <i class="fas fa-info-circle bf-mr-2"></i>Click on booths to select them. You can select multiple booths.
                     </small>
                 </div>
             </div>
-            <div class="card-footer" style="background: rgba(102, 126, 234, 0.05); border-top: 1px solid rgba(102, 126, 234, 0.1); padding: 1.5rem;">
-                <button type="submit" class="btn btn-modern btn-modern-primary" id="submitBtn">
-                    <i class="fas fa-save mr-1"></i>Create Booking
+            <div class="bf-card-footer">
+                <button type="submit" class="bf-btn bf-btn-primary" id="submitBtn">
+                    <i class="fas fa-save bf-mr-2"></i>Create Booking
                 </button>
-                <a href="{{ route('books.index') }}" class="btn btn-modern" style="background: #6c757d; color: white; margin-left: 0.5rem;">Cancel</a>
-                <span id="selectionWarning" class="text-danger ml-3" style="display: none; font-weight: 600;">
-                    <i class="fas fa-exclamation-triangle mr-1"></i>Please select at least one booth
+                <a href="{{ route('books.index') }}" class="bf-btn bf-btn-secondary">Cancel</a>
+                <span id="selectionWarning" class="bf-text-danger bf-ml-2" style="display: none; font-weight: 600;">
+                    <i class="fas fa-exclamation-triangle bf-mr-2"></i>Please select at least one booth
                 </span>
             </div>
         </form>
+        </div>
     </div>
+</div>
 </div>
 
 <!-- Search & Select Client Modal -->
@@ -952,7 +1409,7 @@
                             <button type="button" class="btn btn-modern btn-modern-primary" id="btnSearchClient">
                                 <i class="fas fa-search"></i> Search
                             </button>
-                            <button type="button" class="btn btn-modern" id="btnClearClientSearch" style="background: #6c757d; color: white; display: none;">
+                            <button type="button" class="btn btn-secondary" id="btnClearClientSearch" style="display: none;">
                                 <i class="fas fa-times"></i> Clear
                             </button>
                         </div>
@@ -970,8 +1427,8 @@
                     <p class="mb-0 mt-2"><strong>No clients found.</strong> You can create a new client using the "New Client" button.</p>
                 </div>
             </div>
-            <div class="modal-footer" style="background: rgba(102, 126, 234, 0.05); border-top: 1px solid rgba(102, 126, 234, 0.1);">
-                <button type="button" class="btn btn-modern" style="background: #6c757d; color: white;" data-dismiss="modal">
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
                     <i class="fas fa-times mr-1"></i>Close
                 </button>
             </div>
@@ -1366,7 +1823,7 @@ $(document).ready(function() {
                     detailsHTML += '</div>';
                     
                     // Build result item
-                    const item = $('<div class="client-search-result"></div>')
+                    const item = $('<div class="bf-client-result"></div>')
                         .html(
                             '<div class="client-result-content">' +
                                 '<div class="client-result-name">' +
@@ -1375,8 +1832,8 @@ $(document).ready(function() {
                                 '</div>' +
                                 detailsHTML +
                             '</div>' +
-                            '<button type="button" class="btn btn-modern btn-modern-primary select-client-inline-btn" data-client-id="' + client.id + '" title="Select this client">' +
-                                '<i class="fas fa-check"></i>' +
+                            '<button type="button" class="bf-btn bf-btn-primary bf-btn-sm" data-client-id="' + client.id + '" title="Select this client">' +
+                                '<i class="fas fa-check bf-mr-2"></i>Select' +
                             '</button>'
                         )
                         .data('client', client);
@@ -1385,10 +1842,10 @@ $(document).ready(function() {
                 });
                 
                 // Bind inline select button click
-                $(document).off('click', '.select-client-inline-btn').on('click', '.select-client-inline-btn', function(e) {
+                $(document).off('click', '#inlineClientResultsList .bf-btn').on('click', '#inlineClientResultsList .bf-btn', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    const client = $(this).closest('.client-search-result').data('client');
+                    const client = $(this).closest('.bf-client-result').data('client');
                     if (client) {
                         selectClient(client);
                         $('#inlineClientResults').hide();
@@ -1396,7 +1853,7 @@ $(document).ready(function() {
                 });
                 
                 // Bind inline result item click
-                $(document).off('click', '#inlineClientResultsList .client-search-result').on('click', '#inlineClientResultsList .client-search-result', function(e) {
+                $(document).off('click', '#inlineClientResultsList .bf-client-result').on('click', '#inlineClientResultsList .bf-client-result', function(e) {
                     if (!$(e.target).closest('.select-client-inline-btn').length) {
                         e.preventDefault();
                         const client = $(this).data('client');
@@ -1483,24 +1940,24 @@ $(document).ready(function() {
         const results = $('#inlineClientResults:visible');
         if (results.length === 0) return;
         
-        const items = results.find('.client-search-result');
+        const items = results.find('.bf-client-result');
         if (items.length === 0) return;
         
         let currentIndex = items.index(items.filter('.highlighted'));
         
         if (e.keyCode === 40) { // Down arrow
             e.preventDefault();
-            items.removeClass('highlighted');
+            items.removeClass('bf-highlighted');
             currentIndex = (currentIndex + 1) % items.length;
-            items.eq(currentIndex).addClass('highlighted').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            items.eq(currentIndex).addClass('bf-highlighted').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         } else if (e.keyCode === 38) { // Up arrow
             e.preventDefault();
-            items.removeClass('highlighted');
+            items.removeClass('bf-highlighted');
             currentIndex = currentIndex <= 0 ? items.length - 1 : currentIndex - 1;
-            items.eq(currentIndex).addClass('highlighted').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            items.eq(currentIndex).addClass('bf-highlighted').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         } else if (e.keyCode === 13) { // Enter
             e.preventDefault();
-            const highlighted = items.filter('.highlighted');
+            const highlighted = items.filter('.bf-highlighted');
             if (highlighted.length > 0) {
                 const client = highlighted.data('client');
                 if (client) {
@@ -1592,7 +2049,7 @@ $(document).ready(function() {
                     detailsHTML += '</div>';
                     
                     // Build result item
-                    const item = $('<div class="client-search-result"></div>')
+                    const item = $('<div class="bf-client-result"></div>')
                         .html(
                             '<div class="client-result-content">' +
                                 '<div class="client-result-name">' +
@@ -1601,8 +2058,8 @@ $(document).ready(function() {
                                 '</div>' +
                                 detailsHTML +
                             '</div>' +
-                            '<button type="button" class="btn btn-modern btn-modern-primary select-client-btn" data-client-id="' + client.id + '" title="Select this client">' +
-                                '<i class="fas fa-check mr-1"></i>Select' +
+                            '<button type="button" class="bf-btn bf-btn-primary bf-btn-sm" data-client-id="' + client.id + '" title="Select this client">' +
+                                '<i class="fas fa-check bf-mr-2"></i>Select' +
                             '</button>'
                         )
                         .data('client', client);
@@ -1611,16 +2068,16 @@ $(document).ready(function() {
                 });
                 
                 // Bind select button click
-                $('.select-client-btn').on('click', function(e) {
+                $('#clientSearchResultsList .bf-btn').on('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    const client = $(this).closest('.client-search-result').data('client');
+                    const client = $(this).closest('.bf-client-result').data('client');
                     selectClient(client);
                 });
                 
                 // Bind result item click
-                resultsList.find('.client-search-result').on('click', function(e) {
-                    if (!$(e.target).closest('.select-client-btn').length) {
+                resultsList.find('.bf-client-result').on('click', function(e) {
+                    if (!$(e.target).closest('.bf-btn').length) {
                         e.preventDefault();
                         const client = $(this).data('client');
                         selectClient(client);
@@ -1732,13 +2189,13 @@ $(document).ready(function() {
     updateSelection();
     
     // Also update when checkboxes change
-    $('.booth-checkbox').on('change', function() {
+    $('.bf-booth-checkbox').on('change', function() {
         updateSelection();
     });
 });
 
 // Select/Deselect booth options (delegated event handler for dynamic content)
-$(document).on('click', '.booth-option', function(e) {
+$(document).on('click', '.bf-booth-option', function(e) {
     if (e.target.type !== 'checkbox' && !$(e.target).closest('input').length) {
         const checkbox = $(this).find('input[type="checkbox"]');
         checkbox.prop('checked', !checkbox.prop('checked')).trigger('change');
@@ -1749,9 +2206,9 @@ function updateSelection() {
     const selected = [];
     let totalAmount = 0;
     
-    $('.booth-checkbox:checked').each(function() {
+    $('.bf-booth-checkbox:checked').each(function() {
         const boothId = $(this).val();
-        const boothOption = $(this).closest('.booth-option');
+        const boothOption = $(this).closest('.bf-booth-option');
         const boothNumber = boothOption.find('strong').text();
         const price = parseFloat(boothOption.data('price')) || 0;
         
@@ -1764,14 +2221,14 @@ function updateSelection() {
     if (selected.length > 0) {
         let html = '';
         selected.forEach(function(booth) {
-            html += '<div class="d-flex justify-content-between align-items-center mb-2 p-2" style="background: rgba(102, 126, 234, 0.05); border-radius: 8px; border: 1px solid rgba(102, 126, 234, 0.1);">';
-            html += '<div><i class="fas fa-cube mr-2" style="color: var(--booking-primary);"></i><strong>' + booth.number + '</strong></div>';
-            html += '<strong style="color: var(--booking-success); font-size: 1.1rem;">$' + booth.price.toFixed(2) + '</strong>';
+            html += '<div class="bf-booth-item">';
+            html += '<div><i class="fas fa-cube bf-mr-2 bf-text-primary"></i><strong>' + booth.number + '</strong></div>';
+            html += '<strong class="bf-text-success" style="font-size: 18px; font-weight: 600;">$' + booth.price.toFixed(2) + '</strong>';
             html += '</div>';
         });
         listContainer.html(html);
     } else {
-        listContainer.html('<p class="text-muted text-center mb-0">No booths selected</p>');
+        listContainer.html('<p class="bf-text-muted bf-text-center bf-mb-0" style="padding: 32px 0;">No booths selected</p>');
     }
     
     // Update summary
@@ -1779,8 +2236,8 @@ function updateSelection() {
     $('#totalAmount').text('$' + totalAmount.toFixed(2));
     
     // Update visual state
-    $('.booth-option').removeClass('selected');
-    $('.booth-checkbox:checked').closest('.booth-option').addClass('selected');
+    $('.bf-booth-option').removeClass('bf-selected');
+    $('.bf-booth-checkbox:checked').closest('.bf-booth-option').addClass('bf-selected');
     
     // Show/hide warning
     if (selected.length === 0) {
@@ -1793,12 +2250,12 @@ function updateSelection() {
 }
 
 function selectAllBooths() {
-    $('.booth-checkbox').prop('checked', true);
+    $('.bf-booth-checkbox').prop('checked', true);
     updateSelection();
 }
 
 function clearSelection() {
-    $('.booth-checkbox').prop('checked', false);
+    $('.bf-booth-checkbox').prop('checked', false);
     updateSelection();
 }
 
@@ -1838,7 +2295,7 @@ $('#bookingForm').on('submit', function(e) {
     }
     
     // Validate booth selection
-    const selectedCount = $('.booth-checkbox:checked').length;
+    const selectedCount = $('.bf-booth-checkbox:checked').length;
     if (selectedCount === 0) {
         e.preventDefault();
         e.stopPropagation();

@@ -1447,8 +1447,8 @@
 
 @push('scripts')
 <script>
-// View Toggle
-function switchView(view) {
+// Make functions available globally immediately
+window.switchView = function(view) {
     currentView = view;
     if (view === 'table') {
         $('#tableView').show();
@@ -1488,7 +1488,7 @@ let currentViewMode = 'default';
 let filterParams = {};
 
 // View Mode Toggle
-function switchViewMode(mode) {
+window.switchViewMode = function(mode) {
     currentViewMode = mode;
     
     // Remove all mode classes
@@ -1609,7 +1609,7 @@ function loadMoreBookings() {
 }
 
 // Toggle Filters
-function toggleFilters() {
+window.toggleFilters = function() {
     $('#filterSection').slideToggle();
     const icon = $('#filterToggleIcon');
     icon.toggleClass('fa-chevron-down fa-chevron-up');
@@ -1632,7 +1632,7 @@ function updateBulkActions() {
 }
 
 // Delete Booking
-function deleteBooking(id) {
+window.deleteBooking = function(id) {
     if (confirm('Are you sure you want to delete this booking? This action cannot be undone.')) {
         showLoading();
         fetch(`/books/${id}`, {
@@ -1672,15 +1672,17 @@ function deleteBooking(id) {
 }
 
 // Refresh Page
-function refreshPage() {
-    showLoading();
+window.refreshPage = function() {
+    if (typeof showLoading === 'function') {
+        showLoading();
+    }
     setTimeout(() => {
         location.reload();
     }, 500);
 }
 
 // Delete All Records Modal
-function showDeleteAllModal() {
+window.showDeleteAllModal = function() {
     $('#deleteAllModal').modal('show');
     $('#deleteAllPassword').val('');
     $('#confirmDeleteAll').prop('checked', false);
@@ -2530,7 +2532,6 @@ $(document).ready(function() {
         $('#modalInlineClientResults').hide();
     });
     */
-    });
 });
 </script>
 @endpush

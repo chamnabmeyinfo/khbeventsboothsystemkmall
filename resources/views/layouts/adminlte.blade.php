@@ -1446,6 +1446,65 @@
                 transform: translateX(0);
             }
         }
+        
+        /* ============================================
+           GLOBAL MODERN FORM DESIGN SYSTEM
+           Applies modern design to all form controls
+           ============================================ */
+        
+        /* Modern Form Controls - Global Application */
+        .form-control:not(.form-control-modern):not([class*="custom"]),
+        .form-control-modern,
+        select.form-control:not(.form-control-modern),
+        textarea.form-control:not(.form-control-modern) {
+            border-radius: 12px;
+            border: 2px solid rgba(102, 126, 234, 0.1);
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            background: white;
+        }
+        
+        .form-control:not(.form-control-modern):focus,
+        .form-control-modern:focus,
+        select.form-control:not(.form-control-modern):focus,
+        textarea.form-control:not(.form-control-modern):focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            outline: none;
+            transform: translateY(-1px);
+        }
+        
+        /* Ensure form-control-modern has priority */
+        .form-control-modern {
+            border-radius: 12px !important;
+            border: 2px solid rgba(102, 126, 234, 0.1) !important;
+            padding: 0.75rem 1rem !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .form-control-modern:focus {
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
+            transform: translateY(-1px);
+        }
+        
+        /* Select elements styling */
+        select.form-control:not(.form-control-modern),
+        select.form-control-modern {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+        
+        /* Textarea specific styling */
+        textarea.form-control:not(.form-control-modern),
+        textarea.form-control-modern {
+            min-height: 100px;
+            resize: vertical;
+        }
     </style>
     
     <!-- Mobile Design System -->
