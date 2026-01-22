@@ -1713,7 +1713,7 @@
                     </span>
                 </div>
                 <div class="pagination-controls">
-                    {{ $booths->links() }}
+                    <!-- Pagination removed - using lazy loading instead -->
                 </div>
             </div>
         </div>
@@ -1809,9 +1809,17 @@
         </div>
         @endforelse
         
-        @if($booths->hasPages())
-        <div class="mobile-pagination">
-            {{ $booths->links() }}
+        @if(isset($total) && $total > count($booths))
+        <!-- Mobile lazy loading will be handled by JavaScript -->
+        <div id="boothsMobileLazyLoadTrigger" style="height: 20px; margin: 10px 0;"></div>
+        <div id="boothsMobileLazyLoadSpinner" class="text-center py-3" style="display: none;">
+            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <span class="ml-2 text-muted">Loading more booths...</span>
+        </div>
+        <div id="boothsMobileLazyLoadEnd" class="text-center py-3" style="display: none;">
+            <span class="text-muted">No more booths to load</span>
         </div>
         @endif
     </div>
