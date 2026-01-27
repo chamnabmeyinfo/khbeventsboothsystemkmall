@@ -5651,6 +5651,9 @@ $(document).ready(function() {
             if (value !== currentFloorPlanId) {
                 filterByFloorPlan(value);
             }
+        } else if (typeof updateSelection === 'function') {
+            // Lock only Create new booking when no floor plan: update button state when floor plan changes in-place
+            updateSelection();
         }
     }
     
@@ -5691,6 +5694,11 @@ $(document).ready(function() {
     } else {
         // If no value selected, make sure "All" is selected
         $('.floor-plan-option-icon[data-value=""], .floor-plan-option-list[data-value=""], .floor-plan-option-card[data-value=""]').addClass('selected');
+    }
+
+    // Lock only Create new booking when no floor plan: ensure submit button state is correct after init
+    if (typeof updateSelection === 'function') {
+        updateSelection();
     }
 });
 
@@ -6282,19 +6290,22 @@ function updateSelection() {
         }
     }
     
-    // Update submit button state
+    // Update submit button state (lock only Create new booking when no floor plan)
     const submitBtn = document.getElementById('submitBtn');
     const clientId = document.getElementById('clientid').value;
-    
+    const floorPlanId = ($('#floor_plan_id').val() || $('#floor_plan_filter').val() || '').toString().trim();
+
     if (submitBtn) {
-        if (selected.length === 0 || !clientId || clientId === '') {
+        if (selected.length === 0 || !clientId || clientId === '' || !floorPlanId) {
             submitBtn.disabled = true;
             submitBtn.style.opacity = '0.5';
             submitBtn.style.cursor = 'not-allowed';
+            submitBtn.title = !floorPlanId ? 'Select a floor plan to create a booking' : '';
         } else {
             submitBtn.disabled = false;
             submitBtn.style.opacity = '1';
             submitBtn.style.cursor = 'pointer';
+            submitBtn.title = 'Create booking';
         }
     }
     

@@ -2320,11 +2320,122 @@
     font-size: 10px;
     font-family: 'Courier New', monospace;
 }
+
+/* No floor plan chosen: gate message + list (single responsive layout) */
+.no-floorplan-gate {
+    min-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    background: rgba(248, 250, 252, 0.98);
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+.no-floorplan-message {
+    flex-shrink: 0;
+    padding: 1rem 1.5rem;
+    background: #3b82f6;
+    color: #fff;
+    font-weight: 600;
+    font-size: 1rem;
+    text-align: center;
+    border-radius: 12px 12px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+@media (min-width: 576px) {
+    .no-floorplan-message { padding: 1.25rem 1.5rem; font-size: 1.125rem; }
+}
+.no-floorplan-list {
+    flex: 1;
+    min-height: 0;
+    padding: 1.5rem;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    max-height: 60vh;
+}
+@media (min-width: 576px) {
+    .no-floorplan-list { max-height: 65vh; }
+}
+.no-floorplan-list-title {
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 1rem;
+    font-size: 0.9375rem;
+}
+@media (min-width: 576px) {
+    .no-floorplan-list-title { font-size: 1rem; }
+}
+.no-floorplan-list-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.no-floorplan-item {
+    display: block;
+    padding: 1rem 1.25rem;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    color: #1a202c;
+    text-decoration: none;
+    transition: background 0.2s, border-color 0.2s;
+    min-height: 44px;
+    min-width: 44px;
+}
+.no-floorplan-item:hover {
+    background: #f7fafc;
+    border-color: #3b82f6;
+    color: #1a202c;
+}
+.no-floorplan-item strong { display: block; margin-bottom: 0.25rem; }
+.no-floorplan-item small { color: #718096; font-size: 0.875rem; }
+.no-floorplan-empty {
+    text-align: center;
+    color: #718096;
+    padding: 2rem 1rem;
+}
+.no-floorplan-empty a {
+    color: #3b82f6;
+    font-weight: 600;
+}
 </style>
 @endpush
 
 @section('content')
 <div class="container-fluid mt-2 mb-2">
+    @if(!isset($currentFloorPlan) || !$currentFloorPlan)
+    {{-- No floor plan chosen: show message at top and list at bottom; all other UI is hidden/blocked --}}
+    <div class="no-floorplan-gate" role="alert" aria-live="polite">
+        <div class="no-floorplan-message">
+            <i class="fas fa-map-marked-alt" aria-hidden="true"></i>
+            <span>Please choose a floor plan to continue. Buttons and tools are unavailable until you select one below.</span>
+        </div>
+        <div class="no-floorplan-list">
+            <p class="no-floorplan-list-title"><i class="fas fa-list mr-1"></i>Choose a floor plan</p>
+            @if(isset($floorPlans) && $floorPlans->count() > 0)
+            <div class="no-floorplan-list-items">
+                @foreach($floorPlans as $fp)
+                <a href="{{ route('booths.index', ['view' => 'canvas', 'floor_plan_id' => $fp->id]) }}" class="no-floorplan-item">
+                    <strong>{{ $fp->name }}</strong>
+                    @if($fp->is_default)<small>(Default)</small>@endif
+                    @if($fp->event)<small> — {{ $fp->event->title }}</small>@endif
+                    @if($fp->project_name)<small> — {{ $fp->project_name }}</small>@endif
+                </a>
+                @endforeach
+            </div>
+            @else
+            <div class="no-floorplan-empty">
+                <p class="mb-2">No floor plans are available.</p>
+                <a href="{{ route('floor-plans.index') }}">Create or manage floor plans</a>
+            </div>
+            @endif
+        </div>
+    </div>
+    @else
     <!-- Floor Plan Selector -->
     @if(isset($floorPlans) && $floorPlans->count() > 0)
     <div class="card mb-3" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.18); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);">
@@ -3739,6 +3850,7 @@
             </div>
         </div>
     </div>
+    @endif
 </div>
 @endsection
 
