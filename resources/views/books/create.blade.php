@@ -40,8 +40,11 @@
         min-height: 100%;
         padding-bottom: 120px;
         width: 100%;
+        max-width: 100vw;
         overflow-x: hidden;
         box-sizing: border-box;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
     }
 
     /* Constrain all content to container-fluid width; no horizontal overflow */
@@ -1049,11 +1052,15 @@
     }
     #createClientModal .modal-header { border-radius: 16px 16px 0 0; background: var(--bf-gradient) !important; }
 
-    /* ----- Responsive ----- */
+    /* ----- Responsive: mobile overflow containment ----- */
     @media (max-width: 991.98px) {
+        body { overflow-x: hidden; }
+        .content-wrapper { overflow-x: hidden; max-width: 100%; }
+        .content { overflow-x: hidden; max-width: 100%; box-sizing: border-box; }
+        .bf-booking-page .container-fluid.bf-container { padding: 0 12px 20px; }
         .bf-layout { flex-direction: column; }
         .bf-sidebar-col { display: none !important; width: 100%; position: static; }
-        .bf-main-col { min-width: 0; overflow-x: hidden; }
+        .bf-main-col { min-width: 0; overflow-x: hidden; max-width: 100%; }
         .bf-container { padding: 0 12px 20px; }
         .bf-client-block { padding: 16px; }
         .bf-steps { flex-wrap: wrap; justify-content: flex-start; padding: 14px 16px; }
@@ -1063,6 +1070,13 @@
         .bf-steps-help { font-size: 0.7rem; margin-top: 8px; }
         .bf-card-header, .bf-card-body { padding: 14px 16px; }
         .bf-zone-actions { width: 100%; justify-content: flex-end; }
+        /* Match Bootstrap .row margin to container padding so nothing goes off-screen */
+        .bf-booking-page .row { margin-left: -12px; margin-right: -12px; max-width: calc(100% + 24px); }
+        .bf-booking-page .row > [class*="col-"] { padding-left: 12px; padding-right: 12px; max-width: 100%; box-sizing: border-box; }
+        #boothGridArea { max-width: 100%; overflow-x: hidden; }
+        .bf-booth-grid { margin: 0 -6px; max-width: calc(100% + 12px); }
+        .bf-zone-tabs-wrap { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .bf-zone-tabs { margin: 0; padding: 0 2px; }
     }
     @media (max-width: 768px) {
         .bf-booth-toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
@@ -1087,12 +1101,12 @@
         .bf-booth-item { padding: 10px 8px; }
         .bf-booking-review { padding: 12px 16px; }
         .bf-booking-review-grid { gap: 12px 16px; }
-        .bf-summary-bar { bottom: 12px; width: calc(100% - 24px); flex-direction: column; align-items: stretch; padding: 14px 18px; }
+        .bf-summary-bar { bottom: 12px; left: 12px; right: 12px; width: auto; max-width: none; transform: none; flex-direction: column; align-items: stretch; padding: 14px 18px; box-sizing: border-box; }
         .bf-summary-status-text { margin-right: 0; margin-bottom: 4px; text-align: center; }
         .bf-summary-actions { justify-content: stretch; }
         .bf-btn-submit { flex: 1; min-height: 44px; }
         .bf-btn-clear { min-height: 44px; }
-        .bf-tour-tooltip { bottom: 16px; width: calc(100% - 24px); padding: 16px 18px; }
+        .bf-tour-tooltip { bottom: 16px; left: 12px; right: 12px; width: auto; max-width: none; transform: none; padding: 16px 18px; box-sizing: border-box; }
         .bf-tour-step-title { font-size: 1rem; }
     }
     .bf-back-to-top {
