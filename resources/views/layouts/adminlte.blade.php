@@ -2767,40 +2767,26 @@ $.widget.bridge('uibutton', $.ui.button);
     'use strict';
     
     function initMobileMenu() {
-        console.log('Initializing mobile menu...');
-        
         // Create overlay element if it doesn't exist
         if (!document.querySelector('.sidebar-overlay')) {
             const overlay = document.createElement('div');
             overlay.className = 'sidebar-overlay';
             document.body.appendChild(overlay);
             
-            // Close sidebar when overlay clicked
             overlay.addEventListener('click', function() {
-                console.log('Overlay clicked - closing sidebar');
                 document.body.classList.remove('sidebar-open');
             });
-            
-            console.log('Overlay created');
         }
         
         // Handle menu toggle button
         const menuToggle = document.querySelector('[data-widget="pushmenu"]');
         if (menuToggle) {
-            console.log('Menu toggle found');
-            
-            // Remove any existing listeners
             menuToggle.removeEventListener('click', handleMenuClick);
-            
-            // Add new listener
             menuToggle.addEventListener('click', handleMenuClick);
-        } else {
-            console.warn('Menu toggle button not found!');
         }
         
         // Close sidebar when navigation link clicked on mobile
         const navLinks = document.querySelectorAll('.main-sidebar .nav-link');
-        console.log('Found ' + navLinks.length + ' nav links');
         
         navLinks.forEach(function(link) {
             link.addEventListener('click', function() {
@@ -2822,18 +2808,10 @@ $.widget.bridge('uibutton', $.ui.button);
     
     // Menu click handler
     function handleMenuClick(e) {
-        console.log('Menu button clicked, window width:', window.innerWidth);
-        
         if (window.innerWidth <= 768) {
             e.preventDefault();
             e.stopPropagation();
-            
-            const isOpen = document.body.classList.contains('sidebar-open');
-            console.log('Sidebar is currently:', isOpen ? 'open' : 'closed');
-            
             document.body.classList.toggle('sidebar-open');
-            
-            console.log('Sidebar toggled to:', document.body.classList.contains('sidebar-open') ? 'open' : 'closed');
         }
     }
     
@@ -2844,18 +2822,15 @@ $.widget.bridge('uibutton', $.ui.button);
     
     // Initialize on DOM ready
     $(document).ready(function() {
-        console.log('DOM Ready - Starting mobile menu initialization');
         initMobileMenu();
         setVh();
         
         if (window.innerWidth <= 768) {
             document.body.classList.add('mobile-device');
-            console.log('Mobile device class added');
         }
         
         if ('ontouchstart' in window) {
             document.body.classList.add('touch-device');
-            console.log('Touch device class added');
         }
         
         // Force sidebar to be visible initially on desktop

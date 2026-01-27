@@ -1652,11 +1652,11 @@
 </section>
 
 <!-- FP Picker Modal -->
-<div class="modal fade" id="fpPickerModal" tabindex="-1" role="dialog">
+<div class="modal fade" id="fpPickerModal" tabindex="-1" role="dialog" aria-labelledby="fpPickerModalTitle" aria-modal="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content client-popup-card">
             <div class="modal-body p-4">
-                <h5 class="font-weight-bold mb-4">Choose Floor Plan</h5>
+                <h5 class="font-weight-bold mb-4" id="fpPickerModalTitle">Choose Floor Plan</h5>
                 <div class="d-flex flex-column gap-2">
                     @foreach($floorPlans as $fp)
                     <div class="p-3 border rounded-lg d-flex justify-content-between align-items-center click-animate" 
@@ -2592,6 +2592,9 @@
     }
 
     $('#btnFilterFP').on('click', () => $('#fpPickerModal').modal('show'));
+    $('#fpPickerModal').on('shown.bs.modal', function() {
+        $(this).attr('aria-hidden', 'false');
+    });
     window.selectFP = id => window.location.href = '{{ route("books.create") }}?floor_plan_id=' + id;
 
     $('#createClientForm').on('submit', function(e) {
