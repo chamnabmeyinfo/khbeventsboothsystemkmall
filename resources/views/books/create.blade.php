@@ -1166,6 +1166,27 @@
     .bf-booking-page .bf-hero-context,
     .bf-booking-page .bf-booth-number,
     .bf-booking-page .bf-selected-list { overflow-wrap: break-word; word-wrap: break-word; max-width: 100%; }
+
+    /* SweetAlert2 popup (aria-labelledby="swal2-title") at top of screen on this page */
+    .swal2-container {
+        align-items: flex-start !important;
+        padding-top: 1.25em !important;
+    }
+
+    /* Booking create settings modal */
+    #bfCreateSettingsModal .bf-setting-row { cursor: pointer; margin: 0; }
+    #bfCreateSettingsModal .bf-setting-toggle { width: 1.25rem; height: 1.25rem; cursor: pointer; }
+    #bfCreateSettingsModal .bf-settings-list .border-bottom:last-of-type { border-bottom: none !important; }
+
+    /* Lock screen pinch: reduce accidental zoom on touch devices */
+    body.bf-pinch-lock {
+        touch-action: manipulation;
+        -ms-touch-action: manipulation;
+    }
+    body.bf-pinch-lock .bf-booking-page,
+    body.bf-pinch-lock .container-fluid {
+        touch-action: manipulation;
+    }
 </style>
 @endpush
 
@@ -1183,7 +1204,7 @@
                 <div class="bf-step-divider" data-divider="2"></div>
                 <div class="bf-step" data-step="3"><span class="bf-step-num">3</span><span>Booths</span></div>
             </div>
-            <p class="bf-steps-help">Select client → set details → pick booths → review & create</p>
+            <p class="bf-steps-help" id="bfStepsHelp">Select client → set details → pick booths → review & create</p>
 
             <!-- Smart hero (Step 1: Select Floor plan) -->
             <div class="bf-hero" id="tourStep1">
@@ -1202,6 +1223,9 @@
                     @endif
                 </div>
                 <div class="bf-hero-actions">
+                    <button type="button" class="bf-hero-btn bf-hero-btn-outline click-animate" id="btnBookingSettings" title="Booking settings" aria-label="Open booking settings">
+                        <i class="fas fa-cog"></i> <span class="d-none d-md-inline">Settings</span>
+                    </button>
                     <button type="button" class="bf-hero-btn bf-hero-btn-outline click-animate" id="btnFilterFP" title="Change floor plan">
                         <i class="fas fa-map"></i> <span class="d-none d-md-inline">{{ $currentFloorPlan->name ?? 'Floor plan' }}</span>
                     </button>
@@ -1639,6 +1663,48 @@
     </div>
 </div>
 
+<!-- Booking create settings modal -->
+<div class="modal fade" id="bfCreateSettingsModal" tabindex="-1" role="dialog" aria-labelledby="bfCreateSettingsModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header border-0 py-3 px-4" style="background: var(--bf-gradient); color: white;">
+                <h5 class="modal-title font-weight-bold d-flex align-items-center gap-2" id="bfCreateSettingsModalTitle">
+                    <i class="fas fa-cog"></i> Booking create settings
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.9;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted small mb-4">Control what appears on this page and lock zoom on mobile.</p>
+                <div class="bf-settings-list">
+                    <label class="bf-setting-row d-flex align-items-center justify-content-between py-3 border-bottom">
+                        <span><i class="fas fa-list-ol text-primary mr-2"></i>Show step progress</span>
+                        <input type="checkbox" id="bfSettingShowSteps" class="bf-setting-toggle" data-setting="showSteps" checked>
+                    </label>
+                    <label class="bf-setting-row d-flex align-items-center justify-content-between py-3 border-bottom">
+                        <span><i class="fas fa-question-circle text-info mr-2"></i>Show help &amp; guide</span>
+                        <input type="checkbox" id="bfSettingShowHelp" class="bf-setting-toggle" data-setting="showHelp" checked>
+                    </label>
+                    <label class="bf-setting-row d-flex align-items-center justify-content-between py-3 border-bottom">
+                        <span><i class="fas fa-info-circle text-secondary mr-2"></i>Show status line</span>
+                        <input type="checkbox" id="bfSettingShowStatus" class="bf-setting-toggle" data-setting="showStatus" checked>
+                    </label>
+                    <label class="bf-setting-row d-flex align-items-center justify-content-between py-3">
+                        <span><i class="fas fa-compress-arrows-alt text-warning mr-2"></i>Lock screen pinch (no zoom)</span>
+                        <input type="checkbox" id="bfSettingLockPinch" class="bf-setting-toggle" data-setting="lockPinch">
+                    </label>
+                </div>
+                <p class="small text-muted mt-3 mb-0"><strong>Lock screen pinch</strong> prevents accidental zoom when using this page on touch devices.</p>
+            </div>
+            <div class="modal-footer border-0 py-3 px-4 bg-light">
+                <button type="button" class="btn btn-outline-secondary rounded-pill" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary rounded-pill click-animate" id="bfSettingsReset" style="background: var(--bf-gradient); border: none;">Reset to defaults</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -1663,7 +1729,77 @@
         return d.innerHTML;
     }
 
+    var bfCreateSettingsKey = 'bf_create_settings';
+    var bfCreateSettingsDefaults = { showSteps: true, showHelp: true, showStatus: true, lockPinch: false };
+
+    function getBookingCreateSettings() {
+        try {
+            var raw = localStorage.getItem(bfCreateSettingsKey);
+            if (raw) {
+                var o = JSON.parse(raw);
+                return {
+                    showSteps: o.showSteps !== undefined ? o.showSteps : bfCreateSettingsDefaults.showSteps,
+                    showHelp: o.showHelp !== undefined ? o.showHelp : bfCreateSettingsDefaults.showHelp,
+                    showStatus: o.showStatus !== undefined ? o.showStatus : bfCreateSettingsDefaults.showStatus,
+                    lockPinch: o.lockPinch !== undefined ? o.lockPinch : bfCreateSettingsDefaults.lockPinch
+                };
+            }
+        } catch (e) {}
+        return {
+            showSteps: bfCreateSettingsDefaults.showSteps,
+            showHelp: bfCreateSettingsDefaults.showHelp,
+            showStatus: bfCreateSettingsDefaults.showStatus,
+            lockPinch: bfCreateSettingsDefaults.lockPinch
+        };
+    }
+
+    function saveBookingCreateSettings(s) {
+        try { localStorage.setItem(bfCreateSettingsKey, JSON.stringify(s)); } catch (e) {}
+    }
+
+    function applyBookingCreateSettings(s) {
+        if (!s) s = getBookingCreateSettings();
+        $('#bfSteps, #bfStepsHelp').toggle(!!s.showSteps);
+        $('#bfQuickGuide').toggle(!!s.showHelp);
+        $('#bfSmartStatus').toggle(!!s.showStatus);
+        if (s.lockPinch) {
+            document.body.classList.add('bf-pinch-lock');
+        } else {
+            document.body.classList.remove('bf-pinch-lock');
+        }
+    }
+
+    function bindBookingCreateSettings() {
+        var s = getBookingCreateSettings();
+        $('#bfSettingShowSteps').prop('checked', s.showSteps);
+        $('#bfSettingShowHelp').prop('checked', s.showHelp);
+        $('#bfSettingShowStatus').prop('checked', s.showStatus);
+        $('#bfSettingLockPinch').prop('checked', s.lockPinch);
+    }
+
     $(document).ready(function() {
+        applyBookingCreateSettings();
+        bindBookingCreateSettings();
+
+        $('#btnBookingSettings').on('click', function() {
+            bindBookingCreateSettings();
+            $('#bfCreateSettingsModal').modal('show');
+        });
+        $('.bf-setting-toggle').on('change', function() {
+            var key = $(this).data('setting');
+            var val = $(this).prop('checked');
+            var s = getBookingCreateSettings();
+            s[key] = val;
+            saveBookingCreateSettings(s);
+            applyBookingCreateSettings(s);
+        });
+        $('#bfSettingsReset').on('click', function() {
+            saveBookingCreateSettings(bfCreateSettingsDefaults);
+            bindBookingCreateSettings();
+            applyBookingCreateSettings();
+            $('#bfCreateSettingsModal').modal('hide');
+        });
+
         // Init view modes
         const savedMode = localStorage.getItem('bf_create_mode') || 'default';
         applyViewMode(savedMode);
@@ -1729,6 +1865,10 @@
                 }
                 if ($('#fpPickerModal').hasClass('show') || $('#fpPickerModal').is(':visible')) {
                     $('#fpPickerModal').modal('hide');
+                    return;
+                }
+                if ($('#bfCreateSettingsModal').hasClass('show') || $('#bfCreateSettingsModal').is(':visible')) {
+                    $('#bfCreateSettingsModal').modal('hide');
                     return;
                 }
                 if ($('#bfQuickGuide').hasClass('help-open')) {
