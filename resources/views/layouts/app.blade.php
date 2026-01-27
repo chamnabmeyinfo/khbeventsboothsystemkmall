@@ -93,69 +93,12 @@
 </head>
 <body>
 <script>
-// Send screen width to server for device detection
+// Viewport-based responsiveness: no redirects or URL params. Layout is driven by CSS
+// media queries and, where server chooses a template, by User-Agent only.
 (function() {
-    const screenWidth = window.innerWidth || screen.width;
-    const isMobile = screenWidth <= 768;
-    const isTablet = screenWidth > 768 && screenWidth <= 1024;
-    
-    // Store in sessionStorage for subsequent requests
-    sessionStorage.setItem('screen_width', screenWidth);
-    sessionStorage.setItem('is_mobile', isMobile);
-    sessionStorage.setItem('is_tablet', isTablet);
-    
-    // Set cookie for server-side detection (expires in 1 hour)
-    const expires = new Date();
-    expires.setTime(expires.getTime() + (60 * 60 * 1000)); // 1 hour
-    document.cookie = 'screen_width=' + screenWidth + ';expires=' + expires.toUTCString() + ';path=/';
-    
-    // If on mobile and not already on mobile view, redirect with screen_width parameter
-    if (isMobile && !window.location.search.includes('screen_width') && !window.location.search.includes('mobile_view')) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('screen_width', screenWidth);
-        url.searchParams.set('mobile_view', '1');
-        // Only redirect if we're not already on a mobile view route
-        if (!url.pathname.includes('-mobile') && !document.querySelector('.modern-mobile-header')) {
-            // Don't redirect immediately - let the page load first, then check
-            setTimeout(function() {
-                if (!document.querySelector('.modern-mobile-header') && !document.querySelector('.mobile-booking-container')) {
-                    window.location.href = url.toString();
-                }
-            }, 100);
-        }
-    }
-    
-    // Intercept fetch requests to add header
-    if (window.fetch) {
-        const originalFetch = window.fetch;
-        window.fetch = function(...args) {
-            if (!args[1]) args[1] = {};
-            args[1].headers = args[1].headers || {};
-            if (typeof args[1].headers === 'object' && !(args[1].headers instanceof Headers)) {
-                args[1].headers['X-Screen-Width'] = screenWidth;
-            }
-            return originalFetch.apply(this, args);
-        };
-    }
-    
-    // Also intercept XMLHttpRequest
-    if (window.XMLHttpRequest) {
-        const originalOpen = XMLHttpRequest.prototype.open;
-        const originalSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
-        XMLHttpRequest.prototype.open = function(method, url, ...rest) {
-            this._url = url;
-            return originalOpen.apply(this, [method, url, ...rest]);
-        };
-        XMLHttpRequest.prototype.setRequestHeader = function(name, value) {
-            if (this._url && !this._screenWidthSent) {
-                try {
-                    originalSetRequestHeader.call(this, 'X-Screen-Width', screenWidth);
-                    this._screenWidthSent = true;
-                } catch(e) {}
-            }
-            return originalSetRequestHeader.apply(this, arguments);
-        };
-    }
+    // Optional: expose for any in-page logic that needs viewport width (e.g. feature flags).
+    const w = window.innerWidth || screen.width;
+    try { sessionStorage.setItem('viewport_width', w); } catch (e) {}
 })();
 </script>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary d-none d-md-block">
@@ -574,11 +517,21 @@
             width: 100% !important;
         }
         
-        /* Full width content */
+        /* Full width content - ensure vertical scroll is never locked on mobile */
+        html {
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch;
+        }
         body {
             overflow-x: hidden !important;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
             width: 100% !important;
             max-width: 100% !important;
+            /* Override contain from mobile-design-system/device-optimized to prevent scroll freeze */
+            contain: none !important;
+            touch-action: pan-y;
         }
         
         /* Hide any desktop-specific elements */

@@ -787,22 +787,9 @@ main.container-fluid,
 
 @push('scripts')
 <script>
-// Send screen width to server
+// Viewport-based: optional viewport width for in-page logic (no redirect/params)
 (function() {
-    const screenWidth = window.innerWidth;
-    sessionStorage.setItem('screen_width', screenWidth);
-    
-    if (window.fetch) {
-        const originalFetch = window.fetch;
-        window.fetch = function(...args) {
-            if (!args[1]) args[1] = {};
-            args[1].headers = args[1].headers || {};
-            if (typeof args[1].headers === 'object' && !(args[1].headers instanceof Headers)) {
-                args[1].headers['X-Screen-Width'] = screenWidth;
-            }
-            return originalFetch.apply(this, args);
-        };
-    }
+    try { sessionStorage.setItem('viewport_width', window.innerWidth); } catch (e) {}
 })();
 
 function refreshDashboard() {

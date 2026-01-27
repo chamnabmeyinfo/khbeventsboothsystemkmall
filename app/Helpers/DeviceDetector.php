@@ -14,42 +14,21 @@ class DeviceDetector
      */
     public static function detect(Request $request): string
     {
-        // Priority 0: Check for force_mobile parameter (for testing/debugging)
-        if ($request->query('force_mobile') === '1' || $request->query('mobile_view') === '1') {
-            return 'mobile';
-        }
-        
-        // Priority 1: Check X-Screen-Width header (sent by JavaScript on AJAX requests)
+        // Viewport-based: no redirects or URL params. Use X-Screen-Width header when present
+        // (e.g. from AJAX), otherwise User-Agent.
         $screenWidth = $request->header('X-Screen-Width');
-        
-        // Priority 2: Check cookie (set by JavaScript on page load)
-        if (!$screenWidth) {
-            $screenWidth = $request->cookie('screen_width');
-        }
-        
-        // Also check if user explicitly requested mobile view
-        $preferredView = $request->cookie('preferred_view');
-        if ($preferredView === 'mobile' && !$screenWidth) {
-            // If user prefers mobile but no screen width, assume mobile
-            return 'mobile';
-        }
-        
-        // Priority 3: Check query parameter (for initial page load)
-        if (!$screenWidth) {
-            $screenWidth = $request->query('screen_width');
-        }
-        
         if ($screenWidth && is_numeric($screenWidth)) {
             $width = (int) $screenWidth;
             if ($width <= 768) {
                 return 'mobile';
-            } elseif ($width <= 1024) {
+            }
+            if ($width <= 1024) {
                 return 'tablet';
             }
             return 'desktop';
         }
-        
-        // Fallback to User-Agent detection (more comprehensive)
+
+        // User-Agent detection (no query params or cookies)
         $userAgent = $request->header('User-Agent', '');
         
         // Mobile detection - comprehensive patterns

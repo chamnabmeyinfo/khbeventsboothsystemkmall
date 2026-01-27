@@ -150,12 +150,17 @@ body::before {
    Aggressive CSS to remove ALL old desktop UI
    ============================================ */
 
-/* Force Mobile View Isolation - Apply to ALL mobile views */
+/* Force Mobile View Isolation - Apply to ALL mobile views.
+   Ensure vertical scroll is never locked (override contain from global mobile CSS). */
 html,
 body {
     width: 100% !important;
     max-width: 100% !important;
     overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    contain: none !important;
+    touch-action: pan-y;
 }
 
 /* COMPLETELY HIDE ALL DESKTOP/OLD UI ELEMENTS - AGGRESSIVE */
@@ -5439,13 +5444,7 @@ button:not([type="submit"]):not([type="button"]),
             mobileContainer.style.display = 'block';
         }
         
-        // Set cookie for future requests
-        const expires = new Date();
-        expires.setTime(expires.getTime() + (60 * 60 * 1000));
-        document.cookie = 'screen_width=' + screenWidth + ';expires=' + expires.toUTCString() + ';path=/';
-        document.cookie = 'preferred_view=mobile;expires=' + expires.toUTCString() + ';path=/';
-        
-        console.log('📱 Mobile View Active - Screen Width:', screenWidth);
+        console.log('📱 Mobile view active (viewport-based)');
     }
     
     // Prevent zoom on input focus (iOS)
@@ -5472,19 +5471,7 @@ button:not([type="submit"]):not([type="button"]),
         mobileContainer.style.opacity = '1';
     }
     
-    if (isMobile && (!mobileHeader || !mobileContainer)) {
-        console.warn('⚠️ Mobile view elements not found. Reloading with mobile parameters...');
-        const url = new URL(window.location.href);
-        url.searchParams.set('screen_width', screenWidth);
-        url.searchParams.set('mobile_view', '1');
-        url.searchParams.set('force_mobile', '1');
-        // Only reload if we're definitely on mobile
-        if (screenWidth <= 768) {
-            setTimeout(function() {
-                window.location.href = url.toString();
-            }, 500);
-        }
-    } else if (isMobile && mobileHeader && mobileContainer) {
+    if (isMobile && mobileHeader && mobileContainer) {
         console.log('✅ Mobile view verified and active');
     }
     
