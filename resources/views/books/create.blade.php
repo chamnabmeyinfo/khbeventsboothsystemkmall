@@ -39,8 +39,21 @@
         background: linear-gradient(165deg, #f8fafc 0%, #f1f5f9 45%, #eef2ff 100%);
         min-height: 100%;
         padding-bottom: 120px;
+        width: 100%;
+        overflow-x: hidden;
+        box-sizing: border-box;
     }
 
+    /* Constrain all content to container-fluid width; no horizontal overflow */
+    .bf-booking-page .container-fluid.bf-container {
+        width: 100%;
+        max-width: 1320px;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 0 15px 32px;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
     .bf-container { padding: 0 15px 32px; max-width: 1320px; margin: 0 auto; box-sizing: border-box; }
 
     /* ----- Two-column layout (desktop) ----- */
@@ -49,8 +62,9 @@
         gap: 28px;
         align-items: start;
         margin-top: 8px;
+        max-width: 100%;
     }
-    .bf-main-col { flex: 1; min-width: 0; }
+    .bf-main-col { flex: 1; min-width: 0; overflow-x: hidden; }
     .bf-sidebar-col {
         width: 360px;
         flex-shrink: 0;
