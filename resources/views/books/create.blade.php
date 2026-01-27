@@ -602,21 +602,69 @@
     .bf-zone-name-btn:hover { color: var(--bf-primary); background: rgba(99, 102, 241, 0.08); }
     .bf-zone-name-btn:focus-visible { outline: 2px solid var(--bf-primary); outline-offset: 2px; }
     .bf-zone-name-btn i { font-size: 0.7em; opacity: 0.8; }
+    body.bf-zone-popover-open { overflow: hidden !important; }
+    .bf-zone-booths-popover-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 1049;
+        background: rgba(0, 0, 0, 0.35);
+        -webkit-tap-highlight-color: transparent;
+        cursor: pointer;
+        touch-action: none;
+    }
     .bf-zone-booths-popover {
         position: fixed;
         z-index: 1050;
         min-width: 200px;
         max-width: 320px;
         max-height: 240px;
-        overflow-y: auto;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
         background: white;
         border-radius: var(--bf-radius-sm);
         box-shadow: 0 10px 40px rgba(0,0,0,0.15), 0 0 0 1px var(--bf-gray-200);
-        padding: 12px 14px;
         font-size: 0.8125rem;
     }
-    .bf-zone-booths-popover-title { font-weight: 700; color: var(--bf-gray-800); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-    .bf-zone-booths-popover-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .bf-zone-booths-popover-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 14px;
+        flex-shrink: 0;
+        border-bottom: 1px solid var(--bf-gray-200);
+    }
+    .bf-zone-booths-popover-title { font-weight: 700; color: var(--bf-gray-800); display: flex; align-items: center; gap: 6px; margin: 0; }
+    .bf-zone-booths-popover-close {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        border: none;
+        background: var(--bf-gray-100);
+        color: var(--bf-gray-600);
+        font-size: 1.5rem;
+        line-height: 1;
+        cursor: pointer;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .bf-zone-booths-popover-close:hover { background: var(--bf-gray-200); color: var(--bf-gray-800); }
+    .bf-zone-booths-popover-close { touch-action: manipulation; }
+    .bf-zone-booths-popover-list {
+        padding: 12px 14px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        max-height: 200px;
+    }
     .bf-zone-booths-popover-list span {
         display: inline-block;
         padding: 4px 10px;
@@ -625,6 +673,41 @@
         font-weight: 600;
         color: var(--bf-gray-700);
         font-size: 0.75rem;
+    }
+    .bf-zone-booths-popover-handle {
+        display: none;
+        flex-shrink: 0;
+        padding: 10px 0 6px;
+        align-items: center;
+        justify-content: center;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+    .bf-zone-booths-popover-handle::before {
+        content: '';
+        width: 36px;
+        height: 4px;
+        background: var(--bf-gray-300);
+        border-radius: 2px;
+    }
+    @media (max-width: 767.98px) {
+        .bf-zone-booths-popover-handle { display: flex; min-height: 28px; cursor: pointer; }
+        .bf-zone-booths-popover {
+            min-width: 0;
+            max-width: none;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            top: auto;
+            max-height: 60vh;
+            border-radius: 16px 16px 0 0;
+            box-shadow: 0 -8px 32px rgba(0,0,0,0.2);
+        }
+        .bf-zone-booths-popover-list { max-height: 50vh; }
+        .bf-zone-booths-popover-close { width: 44px; height: 44px; min-width: 44px; min-height: 44px; font-size: 1.75rem; }
+        .bf-zone-btn { min-height: 44px; min-width: 44px; padding: 10px 14px; font-size: 0.8125rem; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+        .bf-zone-name-btn { min-height: 44px; padding: 10px 12px; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        .bf-booth-item { min-height: 56px; -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
     }
     .bf-zone-header { position: relative; }
     .bf-zone-actions { display: flex; gap: 4px; }
@@ -1440,8 +1523,13 @@
                                         <div class="bf-zone-show-more-wrap" data-zone="{{ $zoneName }}" style="display: none;"></div>
                                     </div>
                                 @endforeach
-                                <div id="bfZoneBoothsPopover" class="bf-zone-booths-popover" style="display: none;" role="dialog" aria-label="Booth IDs in zone">
-                                    <div class="bf-zone-booths-popover-title"><i class="fas fa-th-large"></i> <span id="bfZoneBoothsPopoverTitle">Zone</span></div>
+                                <div id="bfZoneBoothsPopoverBackdrop" class="bf-zone-booths-popover-backdrop" style="display: none;" aria-hidden="true" role="presentation"></div>
+                                <div id="bfZoneBoothsPopover" class="bf-zone-booths-popover" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="bfZoneBoothsPopoverTitle" aria-hidden="true">
+                                    <div class="bf-zone-booths-popover-handle" id="bfZoneBoothsPopoverHandle" aria-hidden="true" role="button" tabindex="-1" title="Tap to close"></div>
+                                    <div class="bf-zone-booths-popover-header">
+                                        <span class="bf-zone-booths-popover-title" id="bfZoneBoothsPopoverTitle"><i class="fas fa-th-large"></i> <span id="bfZoneBoothsPopoverTitleText">Zone</span></span>
+                                        <button type="button" class="bf-zone-booths-popover-close" id="bfZoneBoothsPopoverClose" aria-label="Close">×</button>
+                                    </div>
                                     <div class="bf-zone-booths-popover-list" id="bfZoneBoothsPopoverList"></div>
                                 </div>
                             @else
@@ -1855,8 +1943,7 @@
                 }
                 if ($('#bfZoneBoothsPopover').is(':visible')) {
                     e.preventDefault();
-                    $('#bfZoneBoothsPopover').hide().attr('aria-hidden', 'true');
-                    $('.bf-zone-name-btn').attr('aria-expanded', 'false');
+                    $(document).trigger('bf:hideZoneBoothsPopover');
                     return;
                 }
                 if ($('#createClientModal').hasClass('show') || $('#createClientModal').is(':visible')) {
@@ -2188,34 +2275,49 @@
 
     function initZoneBoothsPopover() {
         var $pop = $('#bfZoneBoothsPopover');
-        var $title = $('#bfZoneBoothsPopoverTitle');
+        var $backdrop = $('#bfZoneBoothsPopoverBackdrop');
+        var $titleText = $('#bfZoneBoothsPopoverTitleText');
         var $list = $('#bfZoneBoothsPopoverList');
         var openZone = null;
         if (!$pop.length) return;
 
         function hidePopover() {
             $pop.hide().attr('aria-hidden', 'true');
+            $backdrop.hide().attr('aria-hidden', 'true');
+            $('body').removeClass('bf-zone-popover-open');
             $('.bf-zone-name-btn').attr('aria-expanded', 'false');
             openZone = null;
         }
 
         function showPopover(zoneName, boothListStr, $btn) {
             var ids = (boothListStr || '').split(',').map(function(s) { return s.trim(); }).filter(Boolean);
-            $title.text('Booths in Zone ' + zoneName + ' (' + ids.length + ')');
+            $titleText.text('Booths in Zone ' + zoneName + ' (' + ids.length + ')');
             $list.empty();
             ids.forEach(function(id) {
                 $list.append('<span>' + escapeHtml(id) + '</span>');
             });
-            var r = $btn[0].getBoundingClientRect();
-            var padding = 8;
-            $pop.css({
-                top: (r.bottom + padding) + 'px',
-                left: Math.max(padding, Math.min(r.left, window.innerWidth - 320 - padding)) + 'px',
-                display: 'block'
-            }).attr('aria-hidden', 'false');
+            var isMobile = window.innerWidth <= 768;
+            if (isMobile) {
+                $pop.css({ display: 'block', top: 'auto', left: 0, right: 0, bottom: 0 });
+                $('body').addClass('bf-zone-popover-open');
+            } else {
+                var r = $btn[0].getBoundingClientRect();
+                var padding = 8;
+                $pop.css({
+                    top: (r.bottom + padding) + 'px',
+                    left: Math.max(padding, Math.min(r.left, window.innerWidth - 320 - padding)) + 'px',
+                    right: 'auto',
+                    bottom: 'auto',
+                    display: 'block'
+                });
+            }
+            $backdrop.show().attr('aria-hidden', 'false');
+            $pop.attr('aria-hidden', 'false');
             $btn.attr('aria-expanded', 'true');
             openZone = zoneName;
         }
+
+        $(document).on('bf:hideZoneBoothsPopover', hidePopover);
 
         $(document).on('click', '.bf-zone-name-btn', function(e) {
             e.stopPropagation();
@@ -2228,6 +2330,23 @@
             }
             showPopover(zone, booths, $btn);
         });
+
+        $('#bfZoneBoothsPopoverClose').on('click', function(e) { e.preventDefault(); hidePopover(); });
+        $('#bfZoneBoothsPopoverHandle').on('click', function(e) { e.preventDefault(); hidePopover(); });
+        $backdrop.on('click', function(e) { e.preventDefault(); hidePopover(); });
+        if ($backdrop[0]) {
+            $backdrop[0].addEventListener('touchend', function(ev) {
+                ev.preventDefault();
+                hidePopover();
+            }, { passive: false });
+        }
+        var handleEl = document.getElementById('bfZoneBoothsPopoverHandle');
+        if (handleEl) {
+            handleEl.addEventListener('touchend', function(ev) {
+                ev.preventDefault();
+                hidePopover();
+            }, { passive: false });
+        }
 
         $(document).on('click', function(e) {
             if ($pop.is(':visible') && !$(e.target).closest('#bfZoneBoothsPopover, .bf-zone-name-btn').length) {

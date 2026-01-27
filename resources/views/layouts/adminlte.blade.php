@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -1609,20 +1609,7 @@
     
     @stack('styles')
 
-    {{-- Block pinch-zoom on mobile (iOS Chrome/Safari ignore viewport; prevent gesture + multi-touch) --}}
-    <script>
-    (function() {
-        var opts = { passive: false };
-        function blockMultiTouch(e) {
-            if (e.touches && e.touches.length > 1) e.preventDefault();
-        }
-        document.addEventListener('gesturestart', function(e) { e.preventDefault(); }, opts);
-        document.addEventListener('gesturechange', function(e) { e.preventDefault(); }, opts);
-        document.addEventListener('gestureend', function(e) { e.preventDefault(); }, opts);
-        document.addEventListener('touchstart', blockMultiTouch, opts);
-        document.addEventListener('touchmove', blockMultiTouch, opts);
-    })();
-    </script>
+    {{-- Pinch-to-zoom allowed on mobile (viewport + no gesture blocking) --}}
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
 <!-- Modern Slide-Out Aside Menu - Mobile & Tablet -->
@@ -2889,8 +2876,8 @@ $.widget.bridge('uibutton', $.ui.button);
 })();
 </script>
 
-<!-- Modern Mobile Bottom Navigation - Global (Shows on Mobile & Tablet) -->
-<div class="d-md-none d-lg-none">
+<!-- Modern Mobile Bottom Navigation - Global (Always show on Mobile & Tablet, always sticky at bottom) -->
+<div class="modern-mobile-nav-wrapper">
     <!-- Menu Toggle Button for Aside Menu -->
     <button class="modern-menu-toggle" id="asideMenuToggle" aria-label="Open menu">
         <i class="fas fa-bars"></i>
