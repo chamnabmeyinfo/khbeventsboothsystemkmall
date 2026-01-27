@@ -9,226 +9,234 @@
    GLOBAL RESPONSIVE BASE
    ============================================ */
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 html {
-    font-size: 16px;
-    -webkit-text-size-adjust: 100%;
-    -ms-text-size-adjust: 100%;
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Khmer OS Battambang', 'KhmerOSBattambang', 'Hanuman', 'Hanuman-Regular', 'Noto Sans Khmer', 'Khmer OS', 'Khmer', sans-serif !important;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    line-height: 1.6;
-    color: #111827;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Khmer OS Battambang", "KhmerOSBattambang", "Hanuman",
+    "Hanuman-Regular", "Noto Sans Khmer", "Khmer OS", "Khmer", sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+  color: #111827;
 }
 
 /* Khmer Unicode Font Support */
 /* Auto-detect Khmer Unicode characters (U+1780-17FF) and apply Khmer fonts */
 * {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Khmer OS Battambang', 'KhmerOSBattambang', 'Hanuman', 'Hanuman-Regular', 'Noto Sans Khmer', 'Khmer OS', 'Khmer', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Khmer OS Battambang", "KhmerOSBattambang", "Hanuman",
+    "Hanuman-Regular", "Noto Sans Khmer", "Khmer OS", "Khmer", sans-serif;
 }
 
 /* Explicit Khmer text styling */
 [lang="km"],
 .khmer-text,
 *:lang(km) {
-    font-family: 'Khmer OS Battambang', 'KhmerOSBattambang', 'Hanuman', 'Hanuman-Regular', 'Noto Sans Khmer', 'Khmer OS', 'Khmer', sans-serif !important;
+  font-family:
+    "Khmer OS Battambang", "KhmerOSBattambang", "Hanuman", "Hanuman-Regular",
+    "Noto Sans Khmer", "Khmer OS", "Khmer", sans-serif !important;
 }
 
 /* Khmer Unicode Range Detection - Apply Khmer fonts for Khmer characters */
 @supports (font-variant-east-asian: normal) {
-    * {
-        font-variant-east-asian: normal;
-    }
+  * {
+    font-variant-east-asian: normal;
+  }
 }
 
 /* ============================================
    MOBILE OPTIMIZATIONS (≤768px)
    ============================================ */
 @media (max-width: 768px) {
-    /* Ensure all containers are full width on mobile */
-    .container,
-    .container-fluid {
-        padding-left: 16px !important;
-        padding-right: 16px !important;
-        max-width: 100% !important;
-    }
-    
-    /* Card improvements for mobile */
-    .card {
-        border-radius: 16px !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
-        margin-bottom: 16px !important;
-        border: none !important;
-    }
-    
-    .card-header {
-        padding: 16px !important;
-        font-size: 18px !important;
-        font-weight: 700 !important;
-        border-bottom: 2px solid #f3f4f6 !important;
-    }
-    
-    .card-body {
-        padding: 16px !important;
-    }
-    
-    /* Button improvements */
-    .btn {
-        padding: 12px 24px !important;
-        font-size: 16px !important;
-        font-weight: 600 !important;
-        border-radius: 12px !important;
-        min-height: 44px !important; /* Touch target size */
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 8px !important;
-    }
-    
-    /* Form inputs */
-    .form-control,
-    .form-select {
-        padding: 12px 16px !important;
-        font-size: 16px !important; /* Prevents zoom on iOS */
-        border-radius: 12px !important;
-        border: 2px solid #e5e7eb !important;
-        min-height: 44px !important;
-    }
-    
-    .form-control:focus,
-    .form-select:focus {
-        border-color: #6366f1 !important;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
-    }
-    
-    /* Tables - make scrollable on mobile */
-    .table-responsive {
-        border-radius: 12px !important;
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-    }
-    
-    .table {
-        font-size: 14px !important;
-    }
-    
-    .table th,
-    .table td {
-        padding: 12px 8px !important;
-        white-space: nowrap !important;
-    }
-    
-    /* Modal improvements */
-    .modal-dialog {
-        margin: 16px !important;
-        max-width: calc(100% - 32px) !important;
-    }
-    
-    .modal-content {
-        border-radius: 20px !important;
-        border: none !important;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
-    }
-    
-    .modal-header {
-        padding: 20px !important;
-        border-bottom: 2px solid #f3f4f6 !important;
-    }
-    
-    .modal-body {
-        padding: 20px !important;
-    }
-    
-    .modal-footer {
-        padding: 16px 20px !important;
-        border-top: 2px solid #f3f4f6 !important;
-    }
-    
-    /* Badge improvements */
-    .badge {
-        padding: 6px 12px !important;
-        font-size: 12px !important;
-        font-weight: 600 !important;
-        border-radius: 8px !important;
-    }
-    
-    /* Alert improvements */
-    .alert {
-        padding: 16px !important;
-        border-radius: 12px !important;
-        border: none !important;
-        font-size: 14px !important;
-    }
-    
-    /* Pagination */
-    .pagination {
-        gap: 8px !important;
-    }
-    
-    .page-link {
-        padding: 10px 16px !important;
-        border-radius: 8px !important;
-        min-width: 44px !important;
-        min-height: 44px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
+  /* Ensure all containers are full width on mobile */
+  .container,
+  .container-fluid {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    max-width: 100% !important;
+  }
+
+  /* Card improvements for mobile */
+  .card {
+    border-radius: 16px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    margin-bottom: 16px !important;
+    border: none !important;
+  }
+
+  .card-header {
+    padding: 16px !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    border-bottom: 2px solid #f3f4f6 !important;
+  }
+
+  .card-body {
+    padding: 16px !important;
+  }
+
+  /* Button improvements */
+  .btn {
+    padding: 12px 24px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border-radius: 12px !important;
+    min-height: 44px !important; /* Touch target size */
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+  }
+
+  /* Form inputs */
+  .form-control,
+  .form-select {
+    padding: 12px 16px !important;
+    font-size: 16px !important; /* Prevents zoom on iOS */
+    border-radius: 12px !important;
+    border: 2px solid #e5e7eb !important;
+    min-height: 44px !important;
+  }
+
+  .form-control:focus,
+  .form-select:focus {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+  }
+
+  /* Tables - make scrollable on mobile */
+  .table-responsive {
+    border-radius: 12px !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .table {
+    font-size: 14px !important;
+  }
+
+  .table th,
+  .table td {
+    padding: 12px 8px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Modal improvements */
+  .modal-dialog {
+    margin: 16px !important;
+    max-width: calc(100% - 32px) !important;
+  }
+
+  .modal-content {
+    border-radius: 20px !important;
+    border: none !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  .modal-header {
+    padding: 20px !important;
+    border-bottom: 2px solid #f3f4f6 !important;
+  }
+
+  .modal-body {
+    padding: 20px !important;
+  }
+
+  .modal-footer {
+    padding: 16px 20px !important;
+    border-top: 2px solid #f3f4f6 !important;
+  }
+
+  /* Badge improvements */
+  .badge {
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+  }
+
+  /* Alert improvements */
+  .alert {
+    padding: 16px !important;
+    border-radius: 12px !important;
+    border: none !important;
+    font-size: 14px !important;
+  }
+
+  /* Pagination */
+  .pagination {
+    gap: 8px !important;
+  }
+
+  .page-link {
+    padding: 10px 16px !important;
+    border-radius: 8px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
 }
 
 /* ============================================
    TABLET OPTIMIZATIONS (769px-1024px)
    ============================================ */
 @media (min-width: 769px) and (max-width: 1024px) {
-    .container-fluid {
-        padding-left: 24px !important;
-        padding-right: 24px !important;
-    }
-    
-    .card {
-        border-radius: 16px !important;
-        margin-bottom: 20px !important;
-    }
-    
-    .btn {
-        padding: 10px 20px !important;
-        font-size: 15px !important;
-    }
+  .container-fluid {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+
+  .card {
+    border-radius: 16px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .btn {
+    padding: 10px 20px !important;
+    font-size: 15px !important;
+  }
 }
 
 /* ============================================
    DESKTOP OPTIMIZATIONS (>1024px)
    ============================================ */
 @media (min-width: 1025px) {
-    .container-fluid {
-        max-width: 1400px !important;
-        margin: 0 auto !important;
-        padding: 24px !important;
-    }
-    
-    .card {
-        border-radius: 16px !important;
-        transition: all 0.3s ease !important;
-    }
-    
-    .card:hover {
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1) !important;
-        transform: translateY(-2px) !important;
-    }
-    
-    .btn {
-        transition: all 0.2s ease !important;
-    }
-    
-    .btn:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-    }
+  .container-fluid {
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+    padding: 24px !important;
+  }
+
+  .card {
+    border-radius: 16px !important;
+    transition: all 0.3s ease !important;
+  }
+
+  .card:hover {
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-2px) !important;
+  }
+
+  .btn {
+    transition: all 0.2s ease !important;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  }
 }
 
 /* ============================================
@@ -237,69 +245,69 @@ body {
 
 /* Focus states for keyboard navigation */
 *:focus-visible {
-    outline: 2px solid #6366f1 !important;
-    outline-offset: 2px !important;
+  outline: 2px solid #6366f1 !important;
+  outline-offset: 2px !important;
 }
 
 /* Loading states */
 .loading {
-    opacity: 0.6;
-    pointer-events: none;
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 /* Smooth scrolling */
 html {
-    scroll-behavior: smooth;
+  scroll-behavior: smooth;
 }
 
 /* Image optimization */
 img {
-    max-width: 100%;
-    height: auto;
-    display: block;
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
 /* Link improvements */
 a {
-    color: #6366f1;
-    text-decoration: none;
-    transition: color 0.2s ease;
+  color: #6366f1;
+  text-decoration: none;
+  transition: color 0.2s ease;
 }
 
 a:hover {
-    color: #4f46e5;
+  color: #4f46e5;
 }
 
 /* Consistent spacing */
 .mb-4 {
-    margin-bottom: 24px !important;
+  margin-bottom: 24px !important;
 }
 
 .mt-4 {
-    margin-top: 24px !important;
+  margin-top: 24px !important;
 }
 
 .p-4 {
-    padding: 24px !important;
+  padding: 24px !important;
 }
 
 /* Consistent colors */
 .text-primary {
-    color: #6366f1 !important;
+  color: #6366f1 !important;
 }
 
 .bg-primary {
-    background-color: #6366f1 !important;
+  background-color: #6366f1 !important;
 }
 
 .btn-primary {
-    background-color: #6366f1 !important;
-    border-color: #6366f1 !important;
+  background-color: #6366f1 !important;
+  border-color: #6366f1 !important;
 }
 
 .btn-primary:hover {
-    background-color: #4f46e5 !important;
-    border-color: #4f46e5 !important;
+  background-color: #4f46e5 !important;
+  border-color: #4f46e5 !important;
 }
 
 /* ============================================
@@ -309,110 +317,114 @@ a:hover {
    ============================================ */
 /* Wrapper: show on mobile + tablet (everywhere except desktop) */
 .modern-mobile-nav-wrapper {
-    display: none !important;
+  display: none !important;
 }
 @media (max-width: 1024px) {
-    .modern-mobile-nav-wrapper {
-        display: block !important;
-        visibility: visible !important;
-    }
+  .modern-mobile-nav-wrapper {
+    display: block !important;
+    visibility: visible !important;
+  }
 }
 @media (min-width: 1025px) {
-    .modern-mobile-nav-wrapper {
-        display: none !important;
-    }
+  .modern-mobile-nav-wrapper {
+    display: none !important;
+  }
 }
 
 /* Nav bar: always visible, always sticky at bottom !important */
 @media (max-width: 1024px) {
-    .modern-mobile-nav {
-        position: fixed !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        width: 100% !important;
-        max-width: 100vw !important;
-        display: flex !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        z-index: 99999 !important;
-        margin: 0 !important;
-        box-sizing: border-box !important;
-        background: rgba(255, 255, 255, 0.95) !important;
-        backdrop-filter: blur(20px) !important;
-        -webkit-backdrop-filter: blur(20px) !important;
-        border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
-        padding: 12px 16px !important;
-        padding-bottom: calc(12px + env(safe-area-inset-bottom, 0)) !important;
-        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1) !important;
-        flex-shrink: 0 !important;
-    }
+  .modern-mobile-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 99999 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+    padding: 12px 16px !important;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0)) !important;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1) !important;
+    flex-shrink: 0 !important;
+  }
 
-    /* Ensure body has padding at bottom for nav */
-    body {
-        padding-bottom: 80px !important;
-    }
+  /* Ensure body has padding at bottom for nav */
+  body {
+    padding-bottom: 80px !important;
+  }
 
-    /* Ensure content doesn't overlap nav */
-    .content-wrapper,
-    .content,
-    main {
-        padding-bottom: 100px !important;
-    }
+  /* Ensure content doesn't overlap nav */
+  .content-wrapper,
+  .content,
+  main {
+    padding-bottom: 100px !important;
+  }
 }
 
 /* Legacy breakpoint: keep sticky rules for ≤768px as well */
 @media (max-width: 768px) {
-    .modern-mobile-nav {
-        position: fixed !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        z-index: 99999 !important;
-        margin: 0 !important;
-        box-sizing: border-box !important;
-    }
+  .modern-mobile-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    z-index: 99999 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
 
-    body {
-        padding-bottom: 80px !important;
-    }
+  body {
+    padding-bottom: 80px !important;
+  }
 
-    .content-wrapper,
-    .content,
-    main {
-        padding-bottom: 100px !important;
-    }
+  .content-wrapper,
+  .content,
+  main {
+    padding-bottom: 100px !important;
+  }
 }
 
-/* Prevent horizontal scroll */
+/* Prevent horizontal scroll; allow vertical swipe/scroll on mobile */
 @media (max-width: 1024px) {
-    html, body {
-        overflow-x: hidden !important;
-        max-width: 100% !important;
-    }
+  html,
+  body {
+    overflow-x: hidden !important;
+    max-width: 100% !important;
+  }
+  html {
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 /* Print styles */
 @media print {
-    .no-print,
-    nav,
-    .sidebar,
-    .btn,
-    .pagination,
-    .modern-mobile-nav-wrapper,
-    .modern-mobile-nav {
-        display: none !important;
-    }
-    
-    body {
-        background: white !important;
-        padding-bottom: 0 !important;
-    }
-    
-    .card {
-        box-shadow: none !important;
-        border: 1px solid #e5e7eb !important;
-    }
+  .no-print,
+  nav,
+  .sidebar,
+  .btn,
+  .pagination,
+  .modern-mobile-nav-wrapper,
+  .modern-mobile-nav {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    padding-bottom: 0 !important;
+  }
+
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb !important;
+  }
 }

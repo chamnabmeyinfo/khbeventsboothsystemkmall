@@ -1133,6 +1133,35 @@
         border: none;
         box-shadow: 0 20px 60px rgba(0,0,0,0.15);
     }
+    #fpPickerModal .modal-body {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        max-height: 70vh;
+        touch-action: pan-y;
+    }
+    #fpPickerModal .fp-picker-option {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        min-height: 44px;
+        padding: 12px 16px;
+        text-align: left;
+        border: 1px solid var(--bf-gray-200, #e2e8f0);
+        border-radius: 8px;
+        background: white;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+        transition: background 0.15s, border-color 0.15s;
+    }
+    #fpPickerModal .fp-picker-option:hover,
+    #fpPickerModal .fp-picker-option:active {
+        background: var(--bf-gray-50, #f8fafc);
+        border-color: var(--bf-primary, #6366f1);
+    }
     #createClientModal .modal-header { border-radius: 16px 16px 0 0; background: var(--bf-gradient) !important; }
 
     /* ----- Responsive: mobile overflow containment ----- */
@@ -1657,16 +1686,15 @@
         <div class="modal-content client-popup-card">
             <div class="modal-body p-4">
                 <h5 class="font-weight-bold mb-4" id="fpPickerModalTitle">Choose Floor Plan</h5>
-                <div class="d-flex flex-column gap-2">
+                <div class="d-flex flex-column gap-2" id="fpPickerList">
                     @foreach($floorPlans as $fp)
-                    <div class="p-3 border rounded-lg d-flex justify-content-between align-items-center click-animate" 
-                         style="cursor: pointer;" onclick="selectFP({{ $fp->id }})">
+                    <button type="button" class="fp-picker-option click-animate" data-fp-id="{{ $fp->id }}" aria-label="Choose {{ $fp->name }}">
                         <div>
                             <div class="font-weight-bold">{{ $fp->name }}</div>
                             <div class="small text-muted">{{ $fp->event->title ?? 'General' }}</div>
                         </div>
-                        <i class="fas fa-chevron-right text-primary"></i>
-                    </div>
+                        <i class="fas fa-chevron-right text-primary" aria-hidden="true"></i>
+                    </button>
                     @endforeach
                 </div>
             </div>
@@ -2595,7 +2623,11 @@
     $('#fpPickerModal').on('shown.bs.modal', function() {
         $(this).attr('aria-hidden', 'false');
     });
-    window.selectFP = id => window.location.href = '{{ route("books.create") }}?floor_plan_id=' + id;
+    $(document).on('click', '#fpPickerModal .fp-picker-option', function() {
+        var id = $(this).data('fp-id');
+        if (id != null && typeof window.selectFP === 'function') window.selectFP(id);
+    });
+    window.selectFP = function(id) { window.location.href = '{{ route("books.create") }}?floor_plan_id=' + id; };
 
     $('#createClientForm').on('submit', function(e) {
         e.preventDefault();
