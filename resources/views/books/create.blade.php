@@ -1475,6 +1475,19 @@
 
 @push('scripts')
 <script>
+    var bfHasFloorPlan = {{ $currentFloorPlan ? 'true' : 'false' }};
+
+    function ensureFloorPlan() {
+        if (bfHasFloorPlan) return true;
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({ icon: 'warning', title: 'Select floor plan first', text: 'Please choose a floor plan to continue.' });
+        } else {
+            alert('Please select a floor plan first.');
+        }
+        $('#fpPickerModal').modal('show');
+        return false;
+    }
+
     function escapeHtml(s) {
         if (s == null || s === '') return '';
         var d = document.createElement('div');
@@ -1518,6 +1531,13 @@
         $('#bookingType, #bookingDateBook').on('change', function() { updateReview(); updateSteps(); updateSmartStatus(); });
         $('#bookingNotes').on('input', updateReview);
         $('#btnFilterFPEmpty').on('click', function() { $('#fpPickerModal').modal('show'); });
+        document.addEventListener('click', function(e) {
+            var t = e.target.closest && e.target.closest('[data-target="#createClientModal"]');
+            if (t && !bfHasFloorPlan) { e.preventDefault(); e.stopPropagation(); ensureFloorPlan(); }
+        }, true);
+        $(document).on('focus', '#clientSearchInline, #bookingType, #bookingDateBook, #bookingNotes', function() {
+            if (!ensureFloorPlan()) $(this).blur();
+        });
         $('#bookingForm').on('submit', onBookingSubmit);
         $('#bookingForm').on('reset', onBookingReset);
         $(document).on('keydown', function(e) {
@@ -1558,10 +1578,12 @@
             }
         });
         $('#btnJumpToBooths').on('click', function() {
+            if (!ensureFloorPlan()) return;
             var el = document.getElementById('boothGridArea');
             if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
         $('.bf-quick-date-btn').on('click', function() {
+            if (!ensureFloorPlan()) return;
             var action = $(this).data('set');
             var el = document.getElementById('bookingDateBook');
             if (!el) return;
@@ -1782,6 +1804,7 @@
 
     function initZoneActions() {
         $(document).on('click', '.bf-zone-select-all', function() {
+            if (!ensureFloorPlan()) return;
             var z = $(this).data('zone');
             $('.bf-booth-item-wrapper[data-zone="' + z + '"]').not('.bf-booth-hidden').each(function() {
                 var $chk = $(this).find('input[type="checkbox"]');
@@ -1790,6 +1813,7 @@
             updateSummary(); updateReview(); updateSteps();
         });
         $(document).on('click', '.bf-zone-clear', function() {
+            if (!ensureFloorPlan()) return;
             var z = $(this).data('zone');
             $('.bf-booth-item-wrapper[data-zone="' + z + '"]').find('input[type="checkbox"]').prop('checked', false).end().find('.bf-booth-item').removeClass('selected');
             updateSummary(); updateReview(); updateSteps();
@@ -1797,6 +1821,7 @@
     }
 
     function onBookingSubmit(e) {
+        if (!ensureFloorPlan()) { e.preventDefault(); return false; }
         if (!$('#clientid').val()) { e.preventDefault(); if (typeof Swal !== 'undefined') Swal.fire({ icon: 'warning', title: 'Select a client' }); return false; }
         if ($('.bf-booth-item-wrapper input:checked').length === 0) { e.preventDefault(); if (typeof Swal !== 'undefined') Swal.fire({ icon: 'warning', title: 'Select at least one booth' }); return false; }
         var $form = $('#bookingForm');
@@ -1882,6 +1907,7 @@
     }
 
     function toggleBooth(el) {
+        if (!ensureFloorPlan()) return;
         const $el = $(el).parent();
         const checkbox = $el.find('input[type="checkbox"]');
         const isChecked = !checkbox.prop('checked');
@@ -1968,7 +1994,7 @@
                     if (res && res.length > 0) {
                         res.forEach(c => {
                             const item = $(`<div class="bf-client-result-item click-animate"><div class="name">${escapeHtml(c.company || c.name)}</div><div class="meta">${escapeHtml(c.phone_number || c.email || '')}</div></div>`);
-                            item.on('click', () => selectClient(c));
+                            item.on('click', function() { if (!ensureFloorPlan()) return; selectClient(c); });
                             list.append(item);
                         });
                         $('#inlineClientResults').show();
@@ -2014,6 +2040,7 @@
 
     $('#createClientForm').on('submit', function(e) {
         e.preventDefault();
+        if (!ensureFloorPlan()) return false;
         const btn = $('#createClientSubmitBtn');
         const old = btn.html();
         btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
