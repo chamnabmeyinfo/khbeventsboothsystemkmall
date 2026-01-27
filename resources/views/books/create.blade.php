@@ -609,6 +609,27 @@
         100% { transform: scale(1); }
     }
     .bf-booth-item:focus-visible { outline: 2px solid var(--bf-primary); outline-offset: 2px; }
+    .bf-booth-item-wrapper.bf-booth-highlight .bf-booth-item {
+        box-shadow: 0 0 0 3px var(--bf-primary), 0 8px 24px rgba(99, 102, 241, 0.35);
+        animation: bf-booth-highlight-pulse 1.2s ease 2;
+    }
+    @keyframes bf-booth-highlight-pulse {
+        0%, 100% { box-shadow: 0 0 0 3px var(--bf-primary), 0 8px 24px rgba(99, 102, 241, 0.35); }
+        50% { box-shadow: 0 0 0 5px var(--bf-primary-light), 0 12px 28px rgba(99, 102, 241, 0.45); }
+    }
+    .bf-sidebar-booths .bf-sidebar-booth-item {
+        cursor: pointer;
+        padding: 6px 10px;
+        margin: -4px -8px 4px -8px;
+        border-radius: 8px;
+        transition: background 0.15s, color 0.15s;
+    }
+    .bf-sidebar-booths .bf-sidebar-booth-item:hover { background: var(--bf-gray-100); color: var(--bf-primary); }
+    .bf-sidebar-booths .bf-sidebar-booth-item:focus-visible { outline: 2px solid var(--bf-primary); outline-offset: 2px; }
+    .bf-tag-num { cursor: pointer; }
+    .bf-tag-num:hover { text-decoration: underline; }
+    .bf-tag-remove { cursor: pointer; color: var(--bf-gray-500); font-size: 0.9em; vertical-align: middle; }
+    .bf-tag-remove:hover { color: var(--bf-danger); }
     .bf-btn-submit:focus-visible, .bf-btn-clear:focus-visible { outline: 2px solid var(--bf-primary); outline-offset: 2px; }
     .bf-key-hint { font-size: 0.7rem; color: var(--bf-gray-400); margin-left: 8px; }
     @media (max-width: 767.98px) { .bf-key-hint { display: none; } }
@@ -1500,6 +1521,34 @@
         $('#bookingForm').on('submit', onBookingSubmit);
         $('#bookingForm').on('reset', onBookingReset);
         $(document).on('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if ($('#bfTourOverlay').is(':visible') || $('#bfTourTooltip').is(':visible')) {
+                    e.preventDefault();
+                    if (typeof endTour === 'function') endTour();
+                    return;
+                }
+                if ($('#bfZoneBoothsPopover').is(':visible')) {
+                    e.preventDefault();
+                    $('#bfZoneBoothsPopover').hide().attr('aria-hidden', 'true');
+                    $('.bf-zone-name-btn').attr('aria-expanded', 'false');
+                    return;
+                }
+                if ($('#createClientModal').hasClass('show') || $('#createClientModal').is(':visible')) {
+                    $('#createClientModal').modal('hide');
+                    return;
+                }
+                if ($('#fpPickerModal').hasClass('show') || $('#fpPickerModal').is(':visible')) {
+                    $('#fpPickerModal').modal('hide');
+                    return;
+                }
+                if ($('#bfQuickGuide').hasClass('help-open')) {
+                    e.preventDefault();
+                    $('#bfQuickGuide').removeClass('help-open');
+                    $('#bfBtnHelp').attr('aria-expanded', 'false').removeClass('active');
+                    try { sessionStorage.setItem('bf_help_open', 'false'); } catch (err) {}
+                    return;
+                }
+            }
             if (e.ctrlKey && e.key === 'Enter') {
                 var $btn = $('#btnSubmit');
                 if ($btn.length && $btn.is(':visible') && !$btn.prop('disabled')) {
@@ -1600,6 +1649,7 @@
 
     function updateSmartStatus() {
         var hasClient = $('#clientid').val() && $('#selectedClientUI').is(':visible');
+        var dateVal = ($('#bookingDateBook').val() || '').trim();
         var count = 0;
         $('.bf-booth-item-wrapper').each(function() { if ($(this).find('input').prop('checked')) count++; });
         var $line = $('#bfSmartStatus'), $text = $('#bfSmartStatusText'), $icon = $line.find('i').first();
@@ -1612,6 +1662,12 @@
             $text.text('Ready to create booking');
             if ($bar.length) { $bar.removeClass('pending').addClass('ready'); }
             if ($barText.length) $barText.text('Ready to book');
+        } else if (hasClient && count === 0 && !dateVal) {
+            $line.removeClass('start ready').addClass('pending');
+            $icon.attr('class', 'fas fa-calendar-alt');
+            $text.text('Set date & time, then pick booths');
+            if ($bar.length) { $bar.removeClass('ready').addClass('pending'); }
+            if ($barText.length) $barText.text('Set date & time');
         } else if (hasClient) {
             $line.removeClass('start ready').addClass('pending');
             $icon.attr('class', 'fas fa-hand-pointer');
@@ -1801,8 +1857,9 @@
                 $list.empty();
                 $('.bf-booth-item-wrapper').each(function() {
                     if ($(this).find('input').prop('checked')) {
+                        var id = $(this).data('id');
                         var num = $(this).data('number');
-                        $list.append('<div class="item">' + escapeHtml(String(num)) + '</div>');
+                        $list.append('<div class="item bf-sidebar-booth-item click-animate" data-booth-id="' + id + '" role="button" tabindex="0" title="Show in grid">' + escapeHtml(String(num)) + '</div>');
                     }
                 });
             }
@@ -1853,7 +1910,7 @@
                 total += price;
                 count++;
                 
-                list.append(`<span class="bf-tag click-animate" onclick="removeBooth(${id})">#${num} <i class="fas fa-times"></i></span>`);
+                list.append('<span class="bf-tag"><span class="bf-tag-num click-animate" data-booth-id="' + id + '" title="Show in grid">#' + escapeHtml(String(num)) + '</span> <button type="button" class="bf-tag-remove" onclick="removeBooth(' + id + ')" title="Remove" aria-label="Remove booth ' + escapeHtml(String(num)) + '"><i class="fas fa-times"></i></button></span>');
             }
         });
 
@@ -1873,6 +1930,29 @@
         $(`.bf-booth-item-wrapper[data-id="${id}"]`).find('input').prop('checked', false).parent().find('.bf-booth-item').removeClass('selected');
         updateSummary();
     };
+
+    window.scrollToBooth = function(id) {
+        var $w = $('.bf-booth-item-wrapper[data-id="' + id + '"]');
+        if (!$w.length) return;
+        $w[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        $w.removeClass('bf-booth-highlight').addClass('bf-booth-highlight');
+        window.clearTimeout(window._bfBoothHighlightTimer);
+        window._bfBoothHighlightTimer = window.setTimeout(function() {
+            $w.removeClass('bf-booth-highlight');
+        }, 1800);
+    };
+
+    $(document).on('click', '.bf-sidebar-booth-item', function() {
+        var id = $(this).data('booth-id');
+        if (id != null) scrollToBooth(id);
+    });
+    $(document).on('keydown', '.bf-sidebar-booth-item', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); scrollToBooth($(this).data('booth-id')); }
+    });
+    $(document).on('click', '.bf-tag-num', function() {
+        var id = $(this).data('booth-id');
+        if (id != null) scrollToBooth(id);
+    });
 
     function initClientSearch() {
         let timer;
