@@ -307,12 +307,9 @@ class BookController extends Controller
         
         // Get current floor plan if specified
         $currentFloorPlan = $floorPlanId ? \App\Models\FloorPlan::find($floorPlanId) : null;
-        
-        // Detect device type and serve appropriate view
-        $device = \App\Helpers\DeviceDetector::detect($request);
-        $viewName = \App\Helpers\DeviceDetector::getViewName('books.create', $request);
-        
-        return view($viewName, compact('clients', 'booths', 'categories', 'floorPlans', 'floorPlanId', 'currentFloorPlan', 'device', 'boothsByCategory'));
+
+        // Single responsive view: one template for all screen sizes (Laravel responsive approach)
+        return view('books.create', compact('clients', 'booths', 'categories', 'floorPlans', 'floorPlanId', 'currentFloorPlan', 'boothsByCategory'));
     }
 
     /**
@@ -367,6 +364,7 @@ class BookController extends Controller
             'booth_ids.*' => 'exists:booth,id',
             'date_book' => 'nullable|date',
             'type' => 'nullable|integer|in:1,2,3',
+            'notes' => 'nullable|string|max:2000',
         ]);
         
         // Auto-set date_book to current date/time if not provided
@@ -482,6 +480,10 @@ class BookController extends Controller
             
             if (Schema::hasColumn('book', 'balance_amount')) {
                 $bookingData['balance_amount'] = $totalAmount;
+            }
+
+            if (Schema::hasColumn('book', 'notes') && array_key_exists('notes', $validated)) {
+                $bookingData['notes'] = $validated['notes'] ?? null;
             }
             
             // Create booking with project/floor plan tracking

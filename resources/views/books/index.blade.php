@@ -5,10 +5,12 @@
 @push('styles')
 <style>
 /* ============================================
-   RESPONSIVE BOOKINGS PAGE - FOLLOWS SYSTEM DESIGN
+   BOOKINGS INDEX — SINGLE RESPONSIVE VIEW (Laravel)
+   One template for all viewports: CSS breakpoints only.
+   No separate desktop/tablet/mobile views or stylesheets.
    ============================================ */
 
-/* Base Styles - Common for all devices */
+/* Base styles */
 * {
     box-sizing: border-box;
 }
@@ -315,7 +317,7 @@
     visibility: hidden;
 }
 
-/* Responsive Design - Mobile First */
+/* Responsive breakpoints */
 @media (max-width: 768px) {
     .container-fluid {
         padding: 16px !important;
@@ -364,7 +366,6 @@
     }
 }
 
-/* Tablet Styles */
 @media (min-width: 769px) and (max-width: 1024px) {
     .container-fluid {
         padding: 24px !important;
@@ -375,7 +376,6 @@
     }
 }
 
-/* Desktop Styles */
 @media (min-width: 1025px) {
     .container-fluid {
         max-width: 1400px;

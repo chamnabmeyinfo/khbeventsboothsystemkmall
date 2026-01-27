@@ -166,6 +166,8 @@ return [
     | to the server if the browser has a HTTPS connection. This will keep
     | the cookie from being sent to you when it can't be done securely.
     |
+    | Production: set SESSION_SECURE_COOKIE=true in .env (see MONITORING.md).
+    |
     */
 
     'secure' => env('SESSION_SECURE_COOKIE', false),

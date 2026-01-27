@@ -150,10 +150,12 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'username' => 'required|string|max:45|unique:user,username',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => ['required', 'string', 'min:8', 'confirmed', 'regex:/^(?=.*[A-Za-z])(?=.*[0-9]).{8,}$/'],
             'type' => 'required|integer|in:1,2',
             'status' => 'required|integer|in:0,1',
             'role_id' => 'nullable|exists:roles,id',
+        ], [
+            'password.regex' => 'The password must be at least 8 characters and contain both letters and numbers.',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
@@ -273,7 +275,9 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         
         $validated = $request->validate([
-            'password' => 'required|string|min:6|confirmed',
+            'password' => ['required', 'string', 'min:8', 'confirmed', 'regex:/^(?=.*[A-Za-z])(?=.*[0-9]).{8,}$/'],
+        ], [
+            'password.regex' => 'The password must be at least 8 characters and contain both letters and numbers.',
         ]);
 
         $user->update([

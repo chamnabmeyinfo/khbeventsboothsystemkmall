@@ -30,13 +30,15 @@ class SecurityHeaders
         $response->headers->set('X-Content-Type-Options', 'nosniff');
 
         // CSP: allow same origin, inline scripts, and CDNs used by adminlte/app (jsdelivr, cloudflare, jquery, ionicons, datatables, fonts).
+        // font-src: ionicons are loaded from code.ionicframework.com when using CDN, or 'self' when using local vendor copy.
+        // connect-src: allow CDNs for source-map requests (.map) and other fetch/XHR to same CDNs as script/style.
         // Tighten later with nonces/hashes if you remove 'unsafe-inline' / 'unsafe-eval'.
         $csp = "default-src 'self'; "
             . "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://code.jquery.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net; "
             . "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://code.ionicframework.com https://cdn.datatables.net https://fonts.googleapis.com; "
             . "img-src 'self' data: https:; "
-            . "font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com https://cdnjs.cloudflare.com; "
-            . "connect-src 'self'; frame-ancestors 'self';";
+            . "font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com https://cdnjs.cloudflare.com https://code.ionicframework.com; "
+            . "connect-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; frame-ancestors 'self';";
         $response->headers->set('Content-Security-Policy', $csp);
 
         return $response;
