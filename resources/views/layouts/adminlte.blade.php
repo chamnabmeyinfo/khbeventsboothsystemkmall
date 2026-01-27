@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -1608,6 +1608,21 @@
     <link rel="stylesheet" href="{{ asset('css/global-mobile-enhancements.css') }}">
     
     @stack('styles')
+
+    {{-- Block pinch-zoom on mobile (iOS Chrome/Safari ignore viewport; prevent gesture + multi-touch) --}}
+    <script>
+    (function() {
+        var opts = { passive: false };
+        function blockMultiTouch(e) {
+            if (e.touches && e.touches.length > 1) e.preventDefault();
+        }
+        document.addEventListener('gesturestart', function(e) { e.preventDefault(); }, opts);
+        document.addEventListener('gesturechange', function(e) { e.preventDefault(); }, opts);
+        document.addEventListener('gestureend', function(e) { e.preventDefault(); }, opts);
+        document.addEventListener('touchstart', blockMultiTouch, opts);
+        document.addEventListener('touchmove', blockMultiTouch, opts);
+    })();
+    </script>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
 <!-- Modern Slide-Out Aside Menu - Mobile & Tablet -->
