@@ -1145,6 +1145,27 @@
         #boothGridArea.view-mode-expand .bf-booth-item-wrapper { width: 100%; }
         .bf-booth-view-switcher .bf-icon-btn { width: 44px; height: 44px; min-width: 44px; min-height: 44px; }
     }
+    /* Extra-small viewports (e.g. 320–360px): keep everything on screen */
+    @media (max-width: 399.98px) {
+        .bf-booking-page .container-fluid.bf-container,
+        .bf-container { padding: 0 10px 20px; }
+        .bf-booking-page .row { margin-left: -10px; margin-right: -10px; max-width: calc(100% + 20px); }
+        .bf-booking-page .row > [class*="col-"] { padding-left: 10px; padding-right: 10px; }
+        .bf-summary-bar { left: 10px; right: 10px; padding: 12px 14px; }
+        .bf-tour-tooltip { left: 10px; right: 10px; padding: 12px 14px; }
+        .bf-hero { padding: 16px; }
+        .bf-hero h1 { font-size: 1.2rem; }
+        .bf-hero-actions { gap: 8px; }
+        .bf-steps { padding: 12px; }
+        .bf-card-header, .bf-card-body { padding: 12px; }
+        .bf-client-block { padding: 12px; }
+        .bf-guide-btns, .bf-quick-guide-body { padding: 10px 12px; }
+    }
+    .bf-booking-page .bf-client-name,
+    .bf-booking-page .bf-client-meta,
+    .bf-booking-page .bf-hero-context,
+    .bf-booking-page .bf-booth-number,
+    .bf-booking-page .bf-selected-list { overflow-wrap: break-word; word-wrap: break-word; max-width: 100%; }
 </style>
 @endpush
 
