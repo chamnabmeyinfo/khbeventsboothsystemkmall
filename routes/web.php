@@ -39,7 +39,7 @@ Route::get('/', function () {
 // Client Portal (Public)
 Route::prefix('client-portal')->name('client-portal.')->group(function () {
     Route::get('/login', [\App\Http\Controllers\ClientPortalController::class, 'showLogin'])->name('login');
-    Route::post('/login', [\App\Http\Controllers\ClientPortalController::class, 'login'])->name('login.post');
+    Route::post('/login', [\App\Http\Controllers\ClientPortalController::class, 'login'])->middleware('throttle:5,1')->name('login.post');
     Route::post('/logout', [\App\Http\Controllers\ClientPortalController::class, 'logout'])->name('logout');
     
     Route::middleware(['client.portal'])->group(function () {

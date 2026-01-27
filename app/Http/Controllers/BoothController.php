@@ -2095,6 +2095,7 @@ class BoothController extends Controller
                 'borderWidth' => 'nullable|numeric|min:0|max:10',
                 'opacity' => 'nullable|numeric|min:0|max:1',
                 'price' => 'nullable|numeric|min:0',
+                'zone_about' => 'nullable|string|max:1000',
                 'background_color' => 'nullable|string|max:50',
                 'border_color' => 'nullable|string|max:50',
                 'text_color' => 'nullable|string|max:50',
@@ -2645,9 +2646,9 @@ class BoothController extends Controller
         $sortDir = $request->input('sort_dir', 'asc');
         $query->orderBy($sortBy, $sortDir);
         
-        // Get initial 50 records for lazy loading
-        $booths = $query->limit(50)->get();
-        $total = $query->count();
+        // Get initial 50 records for pagination
+        $booths = $query->paginate(50)->withQueryString();
+        $total = $booths->total();
         
         // Get filter options
         $floorPlans = FloorPlan::where('is_active', true)->orderBy('name')->get();

@@ -46,6 +46,9 @@ list-databases.php
 # Backup folders
 backup_*/
 
+# Project/internal documents (not in repo)
+/chamnabmey_documents/
+
 # Temporary documentation
 MOVE-TO-ROOT.md
 ORGANIZATION-COMPLETE.md

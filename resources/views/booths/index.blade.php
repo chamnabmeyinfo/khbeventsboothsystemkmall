@@ -7098,6 +7098,25 @@ const FloorPlanDesigner = {
         modalHtml += '<br><small>Each group has its own Save button. Changes will apply to all booths in this zone.</small>';
         modalHtml += '</p>';
         
+        // Group 0: Zone General Information (Zone About)
+        modalHtml += '<div style="background: #fff; border: 2px solid #10b981; border-radius: 12px; padding: 20px; margin-bottom: 20px;">';
+        modalHtml += '<h4 style="margin: 0 0 15px 0; color: #10b981; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">';
+        modalHtml += '<i class="fas fa-info-circle"></i> Zone Information';
+        modalHtml += '</h4>';
+        modalHtml += '<div style="margin-bottom: 15px;">';
+        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
+        modalHtml += '<i class="fas fa-file-alt"></i> Zone About / Description';
+        modalHtml += '</label>';
+        modalHtml += '<textarea id="zoneAbout" class="swal2-textarea" placeholder="Describe this zone, its features, location, benefits, etc." style="width: 100%; margin: 0; padding: 12px; border-radius: 8px; border: 1px solid #ddd; min-height: 100px;">' + (settings.zone_about || '') + '</textarea>';
+        modalHtml += '<small style="color: #999; display: block; margin-top: 5px;">This information helps users understand the zone features when booking.</small>';
+        modalHtml += '</div>';
+        modalHtml += '<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">';
+        modalHtml += '<button id="saveZoneInfoBtn" class="swal2-confirm swal2-styled" style="background-color: #10b981; width: 100%; padding: 12px; font-weight: 600;">';
+        modalHtml += '<i class="fas fa-save mr-2"></i>Save Zone Information';
+        modalHtml += '</button>';
+        modalHtml += '</div>';
+        modalHtml += '</div>'; // End Zone Information group
+        
         // Group 1: Shape & Layout Settings (W, H, R, Z)
         modalHtml += '<div style="background: #fff; border: 2px solid #667eea; border-radius: 12px; padding: 20px; margin-bottom: 20px;">';
         modalHtml += '<h4 style="margin: 0 0 15px 0; color: #667eea; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">';
@@ -7299,6 +7318,12 @@ const FloorPlanDesigner = {
                         }
                     });
                 }
+                
+                // Save Zone Information button
+                document.getElementById('saveZoneInfoBtn').addEventListener('click', function() {
+                    const zoneAbout = document.getElementById('zoneAbout').value.trim();
+                    self.saveZoneInfoSettings(zoneName, { zone_about: zoneAbout });
+                });
                 
                 // Save Shape & Layout button
                 document.getElementById('saveShapeLayoutBtn').addEventListener('click', function() {
@@ -7681,6 +7706,59 @@ const FloorPlanDesigner = {
                     text: 'Failed to save settings. Please try again.'
                 });
             });
+    },
+    
+    // Save Zone General Information (Zone About)
+    saveZoneInfoSettings: function(zoneName, infoSettings) {
+        const self = this;
+        const floorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
+        
+        if (!floorPlanId) {
+            Swal.fire({ icon: 'warning', title: 'Floor Plan Required', text: 'Please select a floor plan first.' });
+            return;
+        }
+        
+        const saveUrl = '/booths/zone-settings/' + encodeURIComponent(zoneName);
+        const requestData = {
+            floor_plan_id: floorPlanId,
+            zone_about: infoSettings.zone_about
+        };
+        
+        Swal.showLoading();
+        
+        fetch(saveUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 200) {
+                // Update cache
+                const cacheKey = floorPlanId + '_' + zoneName;
+                if (!self.zoneSettingsCache[cacheKey]) {
+                    self.zoneSettingsCache[cacheKey] = {};
+                }
+                self.zoneSettingsCache[cacheKey].zone_about = infoSettings.zone_about;
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Information Saved',
+                    text: 'Zone ' + zoneName + ' information has been updated successfully.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                throw new Error(data.message || 'Error saving information');
+            }
+        })
+        .catch(error => {
+            console.error('Error saving zone info:', error);
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to save zone information: ' + error.message });
+        });
     },
     
     // Apply settings to all booths in a zone
