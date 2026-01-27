@@ -41,7 +41,7 @@
         padding-bottom: 120px;
     }
 
-    .bf-container { padding: 0 0 32px; max-width: 1320px; margin: 0 auto; }
+    .bf-container { padding: 0 15px 32px; max-width: 1320px; margin: 0 auto; box-sizing: border-box; }
 
     /* ----- Two-column layout (desktop) ----- */
     .bf-layout {
@@ -345,6 +345,8 @@
         margin-bottom: 26px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         transition: border-color 0.25s, box-shadow 0.25s;
+        max-width: 100%;
+        box-sizing: border-box;
     }
     .bf-client-block.has-client {
         border-style: solid;
@@ -494,6 +496,74 @@
         align-items: center;
         flex-wrap: wrap;
         gap: 8px;
+    }
+    .bf-zone-header-toggle { display: inline-flex; align-items: center; gap: 6px; }
+    .bf-zone-chevron { display: none; color: var(--bf-gray-400); font-size: 0.75em; transition: transform 0.25s ease; }
+    /* Mobile: zone tabs + 20 booths per zone + swipe — tab style, less scroll */
+    .bf-zone-tabs-wrap { display: none; }
+    .bf-zone-tabs {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: 10px 0 8px;
+        margin: 0 -4px;
+    }
+    .bf-zone-tabs::-webkit-scrollbar { display: none; }
+    .bf-zone-tab {
+        flex-shrink: 0;
+        padding: 10px 16px;
+        border-radius: 999px;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        border: 1.5px solid var(--bf-gray-200);
+        background: white;
+        color: var(--bf-gray-600);
+        cursor: pointer;
+        transition: background 0.2s, border-color 0.2s, color 0.2s;
+        white-space: nowrap;
+    }
+    .bf-zone-tab:hover { background: var(--bf-gray-50); border-color: var(--bf-gray-300); }
+    .bf-zone-tab[aria-selected="true"] {
+        background: var(--bf-gradient);
+        border-color: transparent;
+        color: white;
+    }
+    .bf-zone-swipe-hint {
+        font-size: 0.7rem;
+        color: var(--bf-gray-400);
+        text-align: center;
+        padding: 4px 0 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+    .bf-zone-swipe-hint i { font-size: 0.75em; }
+    .bf-zone-show-more-wrap { text-align: center; padding: 12px 0; }
+    .bf-zone-show-more-btn {
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border: 1px solid var(--bf-primary);
+        background: rgba(99, 102, 241, 0.08);
+        color: var(--bf-primary);
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s;
+    }
+    .bf-zone-show-more-btn:hover { background: rgba(99, 102, 241, 0.15); color: var(--bf-primary-dark); }
+    @media (max-width: 767.98px) {
+        .bf-zones-tab-mode .bf-zone-tabs-wrap { display: block !important; }
+        .bf-zones-tab-mode .bf-zone-group { display: none !important; }
+        .bf-zones-tab-mode .bf-zone-group.bf-zone-active { display: block !important; }
+        .bf-zones-tab-mode .bf-zone-group .bf-zone-header { display: none; }
+        .bf-zones-tab-mode .bf-booth-item-wrapper.bf-booth-folded { display: none !important; }
+        .bf-booking-page { padding-bottom: 160px; }
+    }
+    @media (min-width: 768px) {
+        .bf-zone-tabs-wrap { display: none !important; }
     }
     .bf-zone-name-btn {
         display: inline-flex;
@@ -969,7 +1039,9 @@
     @media (max-width: 991.98px) {
         .bf-layout { flex-direction: column; }
         .bf-sidebar-col { display: none !important; width: 100%; position: static; }
-        .bf-container { padding: 0 0 20px; }
+        .bf-main-col { min-width: 0; overflow-x: hidden; }
+        .bf-container { padding: 0 12px 20px; }
+        .bf-client-block { padding: 16px; }
         .bf-steps { flex-wrap: wrap; justify-content: flex-start; padding: 14px 16px; }
         .bf-step { padding: 0 8px; }
         .bf-step > span:last-child { display: none; }
@@ -1008,6 +1080,34 @@
         .bf-btn-clear { min-height: 44px; }
         .bf-tour-tooltip { bottom: 16px; width: calc(100% - 24px); padding: 16px 18px; }
         .bf-tour-step-title { font-size: 1rem; }
+    }
+    .bf-back-to-top {
+        display: none;
+        position: fixed;
+        bottom: 90px;
+        right: 16px;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: var(--bf-gradient);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+        cursor: pointer;
+        z-index: 199;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s, opacity 0.2s;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .bf-back-to-top:hover { transform: translateY(-2px); }
+    .bf-back-to-top:focus-visible { outline: 2px solid var(--bf-primary); outline-offset: 2px; }
+    @media (min-width: 768px) {
+        .bf-back-to-top { display: none !important; }
+    }
+    @media (max-width: 767.98px) {
+        .bf-back-to-top { display: none; bottom: 88px; right: 12px; width: 44px; height: 44px; font-size: 1rem; }
+        .bf-back-to-top.bf-back-to-top-visible { display: flex !important; }
     }
     @media (max-width: 575.98px) {
         .bf-col-6 { width: 100%; }
@@ -1219,6 +1319,15 @@
                                     <input type="text" class="bf-booth-search" id="boothSearchInput" placeholder="Search booth number or zone..." autocomplete="off">
                                 </div>
 
+                                <div class="bf-zone-tabs-wrap" id="bfZoneTabsWrap" aria-hidden="true">
+                                    <div class="bf-zone-tabs" id="bfZoneTabs" role="tablist">
+                                        @foreach($zones as $zn => $zb)
+                                        <button type="button" class="bf-zone-tab" data-zone="{{ $zn }}" role="tab" aria-selected="false">{{ $zn }} ({{ count($zb) }})</button>
+                                        @endforeach
+                                    </div>
+                                    <div class="bf-zone-swipe-hint" aria-hidden="true"><i class="fas fa-arrows-alt-h"></i> Swipe to change zone</div>
+                                </div>
+
                                 @foreach($zones as $zoneName => $zoneBooths)
                                     @php
                                         $boothNumbers = array_map(function($b) { return $b->booth_number; }, $zoneBooths);
@@ -1226,22 +1335,26 @@
                                     @endphp
                                     <div class="bf-zone-group" data-zone="{{ $zoneName }}">
                                         <div class="bf-zone-header">
-                                            <button type="button" class="bf-zone-name-btn click-animate" title="Show booth IDs in this zone" data-zone="{{ $zoneName }}" data-booths="{{ e($boothListStr) }}" aria-expanded="false" aria-haspopup="true">
-                                                <i class="fas fa-layer-group"></i>
-                                                Zone {{ $zoneName }} <span class="opacity-50">({{ count($zoneBooths) }})</span>
-                                            </button>
+                                            <div class="bf-zone-header-toggle" role="button" tabindex="0" aria-expanded="false" aria-label="Expand or collapse zone {{ $zoneName }}">
+                                                <button type="button" class="bf-zone-name-btn click-animate" title="Show booth IDs in this zone" data-zone="{{ $zoneName }}" data-booths="{{ e($boothListStr) }}" aria-expanded="false" aria-haspopup="true">
+                                                    <i class="fas fa-layer-group"></i>
+                                                    Zone {{ $zoneName }} <span class="opacity-50">({{ count($zoneBooths) }})</span>
+                                                </button>
+                                                <span class="bf-zone-chevron" aria-hidden="true"><i class="fas fa-chevron-down"></i></span>
+                                            </div>
                                             <div class="bf-zone-actions">
                                                 <button type="button" class="bf-zone-btn bf-zone-btn-primary bf-zone-select-all" data-zone="{{ $zoneName }}" title="Select all in zone">Select all</button>
                                                 <button type="button" class="bf-zone-btn bf-zone-clear" data-zone="{{ $zoneName }}" title="Clear zone">Clear</button>
                                             </div>
                                         </div>
-                                        <div class="bf-booth-grid">
-                                            @foreach($zoneBooths as $booth)
+                                        <div class="bf-booth-grid" data-zone="{{ $zoneName }}" data-total="{{ count($zoneBooths) }}">
+                                            @foreach($zoneBooths as $idx => $booth)
                                                 <div class="bf-col bf-col-6 bf-mb-2 bf-booth-item-wrapper" 
                                                      data-id="{{ $booth->id }}" 
                                                      data-number="{{ $booth->booth_number }}" 
                                                      data-price="{{ $booth->price }}"
-                                                     data-zone="{{ $zoneName }}">
+                                                     data-zone="{{ $zoneName }}"
+                                                     data-booth-index="{{ $idx }}">
                                                     <div class="bf-booth-item click-animate" onclick="toggleBooth(this)">
                                                         <div class="bf-fp-label">{{ $currentFloorPlan->name ?? '' }}</div>
                                                         <div class="bf-booth-number">{{ $booth->booth_number }}</div>
@@ -1251,6 +1364,7 @@
                                                 </div>
                                             @endforeach
                                         </div>
+                                        <div class="bf-zone-show-more-wrap" data-zone="{{ $zoneName }}" style="display: none;"></div>
                                     </div>
                                 @endforeach
                                 <div id="bfZoneBoothsPopover" class="bf-zone-booths-popover" style="display: none;" role="dialog" aria-label="Booth IDs in zone">
@@ -1368,6 +1482,11 @@
                 </div>
             </div>
         </div>
+
+        <!-- Back to top FAB (mobile only): quick jump to top without long scroll -->
+        <button type="button" id="bfBackToTop" class="bf-back-to-top" aria-label="Back to top" style="display: none;">
+            <i class="fas fa-chevron-up"></i>
+        </button>
     </div>
 </section>
 
@@ -1520,8 +1639,10 @@
 
         initClientSearch();
         initBoothSearch();
+        initZoneAccordion();
         initZoneActions();
         initZoneBoothsPopover();
+        initBackToTop();
         initQuickGuide();
         initTutorial();
         updateSummary();
@@ -1746,6 +1867,133 @@
                 });
                 $(this).toggleClass('bf-zone-hidden', vis === 0);
             });
+            if (typeof isZoneTabMode === 'function' && isZoneTabMode() && typeof applyZoneTabMode === 'function') applyZoneTabMode();
+        });
+    }
+
+    var BF_BOOTHS_PER_PAGE = 20;
+
+    function isZoneTabMode() {
+        return window.innerWidth < 768;
+    }
+
+    function getZoneTabOrder() {
+        var list = [];
+        $('#boothGridArea .bf-zone-group:not(.bf-zone-hidden)').each(function() { list.push($(this).data('zone')); });
+        return list;
+    }
+
+    function setActiveZoneTab(zone) {
+        var $area = $('#boothGridArea');
+        var $tabs = $('#bfZoneTabs');
+        $area.find('.bf-zone-group').removeClass('bf-zone-active');
+        $area.find('.bf-zone-group[data-zone="' + zone + '"]').addClass('bf-zone-active');
+        $tabs.find('.bf-zone-tab').attr('aria-selected', 'false');
+        $tabs.find('.bf-zone-tab[data-zone="' + zone + '"]').attr('aria-selected', 'true');
+        $area.find('.bf-zone-tabs-wrap').attr('aria-hidden', 'false');
+    }
+
+    function applyZoneTabMode() {
+        var $area = $('#boothGridArea');
+        var tabMode = isZoneTabMode();
+        if (!$area.length) return;
+        if (tabMode) {
+            $area.addClass('bf-zones-tab-mode');
+            var order = getZoneTabOrder();
+            var first = order.length ? order[0] : null;
+            if (first) setActiveZoneTab(first);
+            applyBoothLimit();
+        } else {
+            $area.removeClass('bf-zones-tab-mode');
+            $area.find('.bf-booth-item-wrapper').removeClass('bf-booth-folded');
+            $area.find('.bf-zone-show-more-wrap').empty().hide();
+            $area.find('.bf-zone-tabs-wrap').attr('aria-hidden', 'true');
+        }
+    }
+
+    function applyBoothLimit() {
+        if (!isZoneTabMode()) return;
+        var limit = BF_BOOTHS_PER_PAGE;
+        $('#boothGridArea .bf-zone-group').each(function() {
+            var $grid = $(this).find('.bf-booth-grid');
+            var zone = $(this).data('zone');
+            var total = parseInt($grid.attr('data-total') || '0', 10);
+            var $wrappers = $grid.find('.bf-booth-item-wrapper');
+            var $moreWrap = $(this).find('.bf-zone-show-more-wrap');
+            $wrappers.removeClass('bf-booth-folded');
+            $moreWrap.empty().hide();
+            if (total <= limit) return;
+            $wrappers.each(function() {
+                var idx = parseInt($(this).data('booth-index') || '0', 10);
+                if (idx >= limit) $(this).addClass('bf-booth-folded');
+            });
+            var hidden = total - limit;
+            $moreWrap.html('<button type="button" class="bf-zone-show-more-btn click-animate" data-zone="' + zone + '" data-shown="' + limit + '">Show more (+' + hidden + ')</button>').show();
+        });
+    }
+
+    function expandBoothLimit(zone, currentlyShown) {
+        var limit = BF_BOOTHS_PER_PAGE;
+        var nextShown = currentlyShown + limit;
+        var $grid = $('#boothGridArea .bf-zone-group[data-zone="' + zone + '"] .bf-booth-grid');
+        var total = parseInt($grid.attr('data-total') || '0', 10);
+        $grid.find('.bf-booth-item-wrapper').each(function() {
+            var idx = parseInt($(this).data('booth-index') || '0', 10);
+            if (idx >= currentlyShown && idx < nextShown) $(this).removeClass('bf-booth-folded');
+        });
+        var $moreWrap = $('#boothGridArea .bf-zone-group[data-zone="' + zone + '"] .bf-zone-show-more-wrap');
+        if (nextShown >= total) {
+            $moreWrap.empty().hide();
+        } else {
+            var hidden = total - nextShown;
+            $moreWrap.html('<button type="button" class="bf-zone-show-more-btn click-animate" data-zone="' + zone + '" data-shown="' + nextShown + '">Show more (+' + hidden + ')</button>').show();
+        }
+    }
+
+    function initZoneAccordion() {
+        applyZoneTabMode();
+        $(window).on('resize', function() { applyZoneTabMode(); });
+        $(document).on('click', '.bf-zone-tab', function() {
+            var z = $(this).data('zone');
+            setActiveZoneTab(z);
+        });
+        $(document).on('click', '.bf-zone-show-more-btn', function() {
+            var z = $(this).data('zone');
+            var shown = parseInt($(this).data('shown') || '0', 10);
+            expandBoothLimit(z, shown);
+        });
+        var swipeStart = null;
+        $(document).on('touchstart', '#boothGridArea .bf-zones-tab-mode .bf-zone-group.bf-zone-active', function(e) {
+            if (e.touches.length === 1) swipeStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        });
+        $(document).on('touchend', '#boothGridArea .bf-zones-tab-mode .bf-zone-group.bf-zone-active', function(e) {
+            if (!swipeStart || !e.changedTouches || !e.changedTouches.length) return;
+            var end = e.changedTouches[0];
+            var dx = end.clientX - swipeStart.x;
+            var dy = end.clientY - swipeStart.y;
+            swipeStart = null;
+            if (Math.abs(dy) > 50 && Math.abs(dy) > Math.abs(dx)) return;
+            if (Math.abs(dx) < 50) return;
+            var order = getZoneTabOrder();
+            var current = $(this).data('zone');
+            var idx = order.indexOf(current);
+            if (dx < 0 && idx < order.length - 1) setActiveZoneTab(order[idx + 1]);
+            else if (dx > 0 && idx > 0) setActiveZoneTab(order[idx - 1]);
+        });
+    }
+
+    function initBackToTop() {
+        var $btn = $('#bfBackToTop');
+        var showAt = 400;
+        function updateVisibility() {
+            if (window.innerWidth >= 768) { $btn.removeClass('bf-back-to-top-visible'); return; }
+            if (window.pageYOffset > showAt) $btn.addClass('bf-back-to-top-visible');
+            else $btn.removeClass('bf-back-to-top-visible');
+        }
+        $(window).on('scroll', updateVisibility);
+        updateVisibility();
+        $btn.on('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
 
