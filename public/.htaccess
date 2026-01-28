@@ -1,6 +1,10 @@
-# Set PHP version to 8.3 for this project
-<IfModule mod_php.c>
-    AddHandler application/x-httpd-php83 .php
+# ============================================
+# PHP VERSION (cPanel / EasyApache 4)
+# ============================================
+# Forces PHP 8.1 on cPanel. Ignored on XAMPP (handler not present).
+# To use PHP 8.2 instead, change ea-php81 to ea-php82.
+<IfModule mime_module>
+    AddHandler application/x-httpd-ea-php81 .php
 </IfModule>
 
 <IfModule mod_rewrite.c>
