@@ -118,6 +118,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/booths/zone-settings/{zoneName}', [BoothController::class, 'saveZoneSettings'])->name('booths.save-zone-settings');
     Route::post('/booths/create-in-zone/{zoneName}', [BoothController::class, 'createBoothInZone'])->name('booths.create-in-zone');
     Route::post('/booths/delete-in-zone/{zoneName}', [BoothController::class, 'deleteBoothsInZone'])->name('booths.delete-in-zone');
+    Route::post('/booths/delete-by-ids', [BoothController::class, 'deleteBoothsByIds'])->name('booths.delete-by-ids');
     Route::post('/booths/book-booth', [BoothController::class, 'bookBooth'])->name('booths.book-booth');
     Route::post('/booths/{id}/upload-image', [BoothController::class, 'uploadBoothImage'])->name('booths.upload-image');
     

@@ -3285,6 +3285,11 @@
                                 <i class="fas fa-arrows-alt-h"></i> Delete Range
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="delete-by-ids-tab" data-toggle="tab" href="#delete-by-ids" role="tab">
+                                <i class="fas fa-hashtag"></i> By Booth ID(s)
+                            </a>
+                        </li>
                     </ul>
                     
                     <!-- Tab Content -->
@@ -3360,6 +3365,23 @@
                             </div>
                             <div class="alert alert-warning">
                                 <i class="fas fa-exclamation-triangle"></i> <strong>Warning:</strong> This will permanently delete all booths in the specified range. This action cannot be undone!
+                            </div>
+                        </div>
+
+                        <!-- By Booth ID(s) Tab - any zone, any floor plan -->
+                        <div class="tab-pane fade" id="delete-by-ids" role="tabpanel">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> Delete specific booths by their ID, from <strong>any zone and any floor plan</strong>. Use when you know the booth ID(s) and want to remove them regardless of current view.
+                            </div>
+                            <div class="form-group">
+                                <label for="deleteByBoothIdsInput">
+                                    <i class="fas fa-hashtag"></i> Booth ID(s) (comma-separated)
+                                </label>
+                                <input type="text" class="form-control" id="deleteByBoothIdsInput" placeholder="e.g. 123, 456, 789" autocomplete="off">
+                                <small class="form-text text-muted">Enter one or more booth IDs. They will be deleted from whichever zone and floor plan they belong to.</small>
+                            </div>
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i> <strong>Warning:</strong> This permanently deletes the booths. Booths with active bookings are skipped unless you force delete.
                             </div>
                         </div>
                     </div>
@@ -6361,18 +6383,18 @@ const FloorPlanDesigner = {
             const btn = $(this);
             const originalText = btn.html();
             
-            // Get current floor plan ID
+            // Get current floor plan ID (not required for "By Booth ID(s)" tab)
             const floorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
-            
-            if (!floorPlanId) {
-                customAlert('Floor plan ID is required to delete booths', 'error');
-                return;
-            }
             
             let requestData = {};
             let confirmMessage = '';
+            let deleteByIds = false;
             
             if (activeTab === '#delete-all') {
+                if (!floorPlanId) {
+                    customAlert('Floor plan ID is required to delete booths', 'error');
+                    return;
+                }
                 // Delete All mode
                 if (!document.getElementById('confirmDeleteAll').checked) {
                     customAlert('Please confirm that you want to delete all booths', 'warning');
@@ -6392,6 +6414,10 @@ const FloorPlanDesigner = {
                 };
                 
             } else if (activeTab === '#delete-specific') {
+                if (!floorPlanId) {
+                    customAlert('Floor plan ID is required to delete booths', 'error');
+                    return;
+                }
                 // Delete Specific mode
                 const selectedBooths = $('.delete-booth-checkbox:checked');
                 
@@ -6408,7 +6434,27 @@ const FloorPlanDesigner = {
                     floor_plan_id: floorPlanId
                 };
                 
+            } else if (activeTab === '#delete-by-ids') {
+                // Delete by booth ID(s) from any zone / any floor plan
+                const raw = (document.getElementById('deleteByBoothIdsInput').value || '').trim();
+                if (!raw) {
+                    customAlert('Please enter at least one booth ID (comma-separated)', 'warning');
+                    return;
+                }
+                const boothIds = raw.split(/[\s,]+/).map(function(s) { return parseInt(s, 10); }).filter(function(n) { return !isNaN(n) && n > 0; });
+                if (boothIds.length === 0) {
+                    customAlert('Please enter valid booth ID(s) (numbers, comma-separated)', 'warning');
+                    return;
+                }
+                confirmMessage = 'Are you sure you want to delete ' + boothIds.length + ' booth(s) by ID from any zone/floor plan? This cannot be undone!';
+                requestData = { booth_ids: boothIds };
+                deleteByIds = true;
+                
             } else if (activeTab === '#delete-range') {
+                if (!floorPlanId) {
+                    customAlert('Floor plan ID is required to delete booths', 'error');
+                    return;
+                }
                 // Delete Range mode
                 const from = parseInt(document.getElementById('deleteFrom').value) || 1;
                 const to = parseInt(document.getElementById('deleteTo').value) || 1;
@@ -6442,8 +6488,9 @@ const FloorPlanDesigner = {
             btn.prop('disabled', true);
             btn.html('<i class="fas fa-spinner fa-spin"></i> Deleting...');
             
+            var deleteUrl = deleteByIds ? '/booths/delete-by-ids' : ('/booths/delete-in-zone/' + zoneName);
             // Delete booths
-            fetch('/booths/delete-in-zone/' + zoneName, {
+            fetch(deleteUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -6455,7 +6502,7 @@ const FloorPlanDesigner = {
                 return response.json();
             })
             .then(function(data) {
-                if (data.status === 200) {
+                if (data.status === 200 || data.status === 206) {
                     // Close modal
                     $('#deleteBoothModal').modal('hide');
                     
@@ -6473,7 +6520,7 @@ const FloorPlanDesigner = {
                     if (data.errors && data.errors.length > 0) {
                         message += '<br><strong>Errors:</strong> ' + data.errors.length + ' booth(s) failed to delete.';
                     }
-                    customAlert(message, 'success');
+                    customAlert(message, data.status === 206 ? 'warning' : 'success');
                     
                     // Reload the page to reflect changes
                     setTimeout(function() {

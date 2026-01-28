@@ -2061,6 +2061,111 @@ class BoothController extends Controller
     }
 
     /**
+     * Delete specific booths by ID from any zone and any floor plan.
+     * Same safety and booking-handling logic as deleteBoothsInZone mode=specific,
+     * but does not require or filter by zone or floor_plan_id.
+     */
+    public function deleteBoothsByIds(Request $request)
+    {
+        if (!auth()->user()->hasPermission('booths.canvas.edit') && !auth()->user()->isAdmin()) {
+            return response()->json([
+                'status' => 403,
+                'message' => 'You do not have permission to edit canvas design.'
+            ], 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'booth_ids' => 'required|array',
+                'booth_ids.*' => 'exists:booth,id',
+                'force_delete_booked' => 'nullable|boolean',
+            ]);
+
+            $boothIds = $validated['booth_ids'];
+            $forceDelete = $validated['force_delete_booked'] ?? false;
+            $deletedBooths = [];
+            $bookedBooths = [];
+            $errors = [];
+
+            foreach ($boothIds as $boothId) {
+                try {
+                    $booth = Booth::findOrFail($boothId);
+                    $boothNumber = $booth->booth_number;
+                    $floorPlanId = $booth->floor_plan_id;
+                    $floorPlanName = $booth->floorPlan ? $booth->floorPlan->name : ('Floor Plan #' . $floorPlanId);
+
+                    if ($booth->bookid && !$forceDelete) {
+                        $bookedBooths[] = [
+                            'booth_number' => $boothNumber,
+                            'booth_id' => $booth->id,
+                            'floor_plan' => $floorPlanName,
+                            'status' => $booth->getStatusLabel(),
+                            'client' => $booth->client ? $booth->client->company : 'Unknown',
+                        ];
+                        continue;
+                    }
+
+                    if ($booth->bookid) {
+                        $book = Book::find($booth->bookid);
+                        if ($book) {
+                            $bookBoothIds = json_decode($book->boothid, true) ?? [];
+                            $bookBoothIds = array_filter($bookBoothIds, function ($id) use ($booth) {
+                                return (int) $id !== (int) $booth->id;
+                            });
+                            if (count($bookBoothIds) > 0) {
+                                $book->boothid = json_encode(array_values($bookBoothIds));
+                                $book->save();
+                            } else {
+                                $book->delete();
+                            }
+                        }
+                    }
+
+                    $booth->delete();
+                    $deletedBooths[] = ['booth_number' => $boothNumber, 'floor_plan' => $floorPlanName];
+                } catch (\Exception $e) {
+                    $errors[] = [
+                        'booth_id' => $boothId,
+                        'error' => $e->getMessage(),
+                    ];
+                }
+            }
+
+            $message = count($deletedBooths) . ' booth(s) deleted successfully from any zone/floor plan.';
+            if (count($bookedBooths) > 0) {
+                $message .= ' WARNING: ' . count($bookedBooths) . ' booth(s) with active bookings were SKIPPED.';
+            }
+            if (count($errors) > 0) {
+                $message .= ' ' . count($errors) . ' booth(s) failed to delete.';
+            }
+
+            return response()->json([
+                'status' => count($bookedBooths) > 0 ? 206 : 200,
+                'message' => $message,
+                'deleted' => array_column($deletedBooths, 'booth_number'),
+                'deleted_details' => $deletedBooths,
+                'booked_booths_skipped' => $bookedBooths,
+                'errors' => $errors,
+                'warning' => count($bookedBooths) > 0 ? 'Some booths with active bookings were not deleted to protect booking data.' : null,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error deleting booths by IDs: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error deleting booths: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Save zone settings (floor-plan-specific)
      */
     public function saveZoneSettings(Request $request, $zoneName)
