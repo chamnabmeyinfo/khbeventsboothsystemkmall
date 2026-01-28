@@ -25,7 +25,7 @@ You're already on the live server. Run these commands:
 
 ```bash
 # Navigate to your project directory
-cd ~/floorplan.khbevents.com
+cd ~/system.khbevents.com
 
 # Pull latest code from Git
 git pull origin main
@@ -92,7 +92,7 @@ composer install --no-dev --optimize-autoloader
 
 ## Step 7: Verify Deployment
 
-1. **Check your website** - Visit `https://floorplan.khbevents.com`
+1. **Check your website** - Visit `https://system.khbevents.com`
 2. **Test key features** - Login, check floor plans, etc.
 3. **Check error logs** if something doesn't work:
    ```bash
@@ -106,12 +106,14 @@ composer install --no-dev --optimize-autoloader
 **⚠️ WARNING**: Only do this if you want to **overwrite live data** with local data!
 
 ### Option A: Export Local Database
+
 1. On localhost, open phpMyAdmin
 2. Export your database with DROP statements
 3. Upload to cPanel
 4. Import via phpMyAdmin (see `database/EXPORT_LOCAL_TO_LIVE_CPANEL_GUIDE.md`)
 
 ### Option B: Use Command Line (SSH)
+
 ```bash
 # On localhost, export database
 mysqldump -u root -p khbeventskmallxmas > local_export.sql
@@ -126,10 +128,12 @@ mysql -u khbevents_admaebooths -p khbevents_aebooths < local_export.sql
 ## 🐛 Troubleshooting
 
 ### Error: "Nothing to migrate"
+
 - ✅ **This is OK!** It means all migrations are already applied
 - Your database is up to date
 
 ### Error: "Table already exists"
+
 - The migration has guards, but if you still get this:
   ```bash
   # Check which migrations have run
@@ -137,6 +141,7 @@ mysql -u khbevents_admaebooths -p khbevents_aebooths < local_export.sql
   ```
 
 ### Error: "Class not found"
+
 - Clear caches and re-run:
   ```bash
   /opt/alt/php82/usr/bin/php artisan config:clear
@@ -144,6 +149,7 @@ mysql -u khbevents_admaebooths -p khbevents_aebooths < local_export.sql
   ```
 
 ### Error: "Permission denied"
+
 - Check file permissions:
   ```bash
   chmod -R 755 storage bootstrap/cache
