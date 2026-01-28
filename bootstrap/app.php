@@ -12,6 +12,24 @@ $app = new Illuminate\Foundation\Application(
 
 /*
 |--------------------------------------------------------------------------
+| Clear services cache if it references missing Collision (dev-only package)
+|--------------------------------------------------------------------------
+| When production runs "composer install --no-dev", Collision is not installed
+| but a cached services.php may still reference it. Remove the cache so
+| Laravel can rediscover providers without Collision.
+*/
+$servicesPath = $app->basePath('bootstrap/cache/services.php');
+if (file_exists($servicesPath)) {
+    $content = @file_get_contents($servicesPath);
+    if ($content !== false
+        && str_contains($content, 'CollisionServiceProvider')
+        && !class_exists('NunoMaduro\Collision\Adapters\Laravel\CollisionServiceProvider', false)) {
+        @unlink($servicesPath);
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
 | Bind Important Interfaces
 |--------------------------------------------------------------------------
 */
