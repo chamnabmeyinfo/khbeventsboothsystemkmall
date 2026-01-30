@@ -9,17 +9,46 @@ use Illuminate\Support\Facades\File;
 use App\Models\Setting;
 use App\Models\CanvasSetting;
 use App\Models\BoothStatusSetting;
+use App\Models\FloorPlan;
+use App\Models\FloorPlanTickSetting;
 
 class SettingsController extends Controller
 {
     /**
      * Display settings page
      */
-    public function index()
+    public function index(Request $request)
     {
         $publicViewAllowCreate = Setting::getValue('public_view_allow_create_booking', true);
         $publicViewRestrictOwn = Setting::getValue('public_view_restrict_crud_to_own_booking', true);
-        return view('settings.index', compact('publicViewAllowCreate', 'publicViewRestrictOwn'));
+
+        $floorPlans = FloorPlan::where('is_active', true)
+            ->orderBy('is_default', 'desc')
+            ->orderBy('name', 'asc')
+            ->get(['id', 'name', 'is_default']);
+
+        $tickFloorPlanId = $request->input('tick_floor_plan_id', $request->old('tick_floor_plan_id'));
+        $tickSettings = FloorPlanTickSetting::getForFloorPlan($tickFloorPlanId ? (int) $tickFloorPlanId : null);
+        $showBookedTick = $tickSettings['show_tick'];
+        $bookedTickColor = $tickSettings['color'];
+        $bookedTickSize = $tickSettings['size'];
+        $bookedTickShape = $tickSettings['shape'];
+        $bookedTickPosition = $tickSettings['position'];
+        $bookedTickAnimation = $tickSettings['animation'];
+        $bookedTickBgColor = $tickSettings['bg_color'];
+        $bookedTickBorderWidth = $tickSettings['border_width'];
+        $bookedTickBorderColor = $tickSettings['border_color'];
+        $bookedTickFontSize = $tickSettings['font_size'];
+        $bookedTickSizeMode = $tickSettings['size_mode'];
+        $bookedTickRelativePercent = $tickSettings['relative_percent'];
+
+        return view('settings.index', compact(
+            'publicViewAllowCreate', 'publicViewRestrictOwn', 'showBookedTick',
+            'bookedTickColor', 'bookedTickSize', 'bookedTickShape', 'bookedTickPosition', 'bookedTickAnimation', 'bookedTickBgColor',
+            'bookedTickBorderWidth', 'bookedTickBorderColor', 'bookedTickFontSize',
+            'bookedTickSizeMode', 'bookedTickRelativePercent',
+            'floorPlans', 'tickFloorPlanId'
+        ));
     }
 
     /**
@@ -1057,15 +1086,110 @@ class SettingsController extends Controller
     {
         $allowCreate = $request->boolean('public_view_allow_create_booking');
         $restrictOwn = $request->boolean('public_view_restrict_crud_to_own_booking');
+        $showBookedTick = $request->boolean('booth_booked_show_tick');
+
+        $allowedSizes = ['small', 'medium', 'large'];
+        $allowedShapes = ['round', 'square'];
+        $allowedPositions = ['top-right', 'top-left', 'bottom-right', 'bottom-left', 'inside'];
+        $allowedAnimations = ['pulse', 'none'];
+
+        $tickColor = $request->input('booth_booked_tick_color', '#28a745');
+        if (!preg_match('/^#[0-9A-Fa-f]{6}$/', $tickColor)) {
+            $tickColor = '#28a745';
+        }
+        $tickSize = $request->input('booth_booked_tick_size', 'medium');
+        if (!in_array($tickSize, $allowedSizes, true)) {
+            $tickSize = 'medium';
+        }
+        $tickShape = $request->input('booth_booked_tick_shape', 'round');
+        if (!in_array($tickShape, $allowedShapes, true)) {
+            $tickShape = 'round';
+        }
+        $tickPosition = $request->input('booth_booked_tick_position', 'top-right');
+        if (!in_array($tickPosition, $allowedPositions, true)) {
+            $tickPosition = 'top-right';
+        }
+        $tickAnimation = $request->input('booth_booked_tick_animation', 'pulse');
+        if (!in_array($tickAnimation, $allowedAnimations, true)) {
+            $tickAnimation = 'pulse';
+        }
+
+        $tickBgColor = '';
+        if (!$request->boolean('booth_booked_tick_bg_none')) {
+            $tickBgColor = $request->input('booth_booked_tick_bg_color', '');
+            if ($tickBgColor !== '' && !preg_match('/^#[0-9A-Fa-f]{6}$/', $tickBgColor)) {
+                $tickBgColor = '';
+            }
+        }
+
+        $allowedBorderWidths = ['0', '1', '2', '3'];
+        $tickBorderWidth = $request->input('booth_booked_tick_border_width', '0');
+        if (!in_array($tickBorderWidth, $allowedBorderWidths, true)) {
+            $tickBorderWidth = '0';
+        }
+        $tickBorderColor = $request->input('booth_booked_tick_border_color', '#ffffff');
+        if (!preg_match('/^#[0-9A-Fa-f]{6}$/', $tickBorderColor)) {
+            $tickBorderColor = '#ffffff';
+        }
+        $allowedFontSizes = ['small', 'medium', 'large'];
+        $tickFontSize = $request->input('booth_booked_tick_font_size', 'medium');
+        if (!in_array($tickFontSize, $allowedFontSizes, true)) {
+            $tickFontSize = 'medium';
+        }
+
+        $allowedSizeModes = ['fixed', 'relative'];
+        $tickSizeMode = $request->input('booth_booked_tick_size_mode', 'fixed');
+        if (!in_array($tickSizeMode, $allowedSizeModes, true)) {
+            $tickSizeMode = 'fixed';
+        }
+        $allowedRelativePercents = ['8', '10', '12', '15', '20'];
+        $tickRelativePercent = $request->input('booth_booked_tick_relative_percent', '12');
+        if (!in_array($tickRelativePercent, $allowedRelativePercents, true)) {
+            $tickRelativePercent = '12';
+        }
+
         Setting::setValue('public_view_allow_create_booking', $allowCreate ? '1' : '0', 'boolean', 'Allow logged-in users with Create Bookings permission to create a booking from the public floor plan view.');
         Setting::setValue('public_view_restrict_crud_to_own_booking', $restrictOwn ? '1' : '0', 'boolean', 'When enabled, non-admin users can only view, edit, update, and delete their own bookings. Administrators can manage all bookings.');
+
+        $tickFloorPlanId = $request->input('tick_floor_plan_id');
+        $tickData = [
+            'show_tick' => $showBookedTick,
+            'color' => $tickColor,
+            'size' => $tickSize,
+            'shape' => $tickShape,
+            'position' => $tickPosition,
+            'animation' => $tickAnimation,
+            'bg_color' => $tickBgColor,
+            'border_width' => $tickBorderWidth,
+            'border_color' => $tickBorderColor,
+            'font_size' => $tickFontSize,
+            'size_mode' => $tickSizeMode,
+            'relative_percent' => $tickRelativePercent,
+        ];
+        if ($tickFloorPlanId && FloorPlan::where('id', (int) $tickFloorPlanId)->exists()) {
+            FloorPlanTickSetting::saveForFloorPlan((int) $tickFloorPlanId, $tickData);
+        } else {
+            Setting::setValue('booth_booked_show_tick', $showBookedTick ? '1' : '0', 'boolean', 'Show a tick (check) sign on booked booths on canvas and public view.');
+            Setting::setValue('booth_booked_tick_color', $tickColor, 'string', 'Color of the booked tick icon.');
+            Setting::setValue('booth_booked_tick_size', $tickSize, 'string', 'Size of the booked tick: small, medium, large.');
+            Setting::setValue('booth_booked_tick_shape', $tickShape, 'string', 'Shape of the tick container: round or square.');
+            Setting::setValue('booth_booked_tick_position', $tickPosition, 'string', 'Position of the tick: top-right, top-left, bottom-right, bottom-left, or inside the booth.');
+            Setting::setValue('booth_booked_tick_animation', $tickAnimation, 'string', 'Animation: pulse or none.');
+            Setting::setValue('booth_booked_tick_bg_color', $tickBgColor, 'string', 'Background color of the booked tick container (empty for transparent).');
+            Setting::setValue('booth_booked_tick_border_width', $tickBorderWidth, 'string', 'Border width of the booked tick container (0, 1, 2, 3 px).');
+            Setting::setValue('booth_booked_tick_border_color', $tickBorderColor, 'string', 'Border color of the booked tick container.');
+            Setting::setValue('booth_booked_tick_font_size', $tickFontSize, 'string', 'Font size of the booked tick icon: small, medium, large.');
+            Setting::setValue('booth_booked_tick_size_mode', $tickSizeMode, 'string', 'Tick size mode: fixed (Box size / Font size) or relative to booth width/height.');
+            Setting::setValue('booth_booked_tick_relative_percent', $tickRelativePercent, 'string', 'When size mode is relative: tick size as percentage of booth width (8, 10, 12, 15, 20).');
+        }
+
         if ($request->expectsJson()) {
             return response()->json([
                 'status' => 200,
                 'message' => 'Public view settings saved successfully.',
             ]);
         }
-        return back()->with('success', 'Public view settings saved successfully.');
+        return redirect()->route('settings.index', ['tick_floor_plan_id' => $tickFloorPlanId ?: null])->with('success', 'Public view settings saved successfully.');
     }
 }
 

@@ -10,6 +10,7 @@ use App\Models\BoothType;
 use App\Models\Book;
 use App\Models\ZoneSetting;
 use App\Models\FloorPlan;
+use App\Models\FloorPlanTickSetting;
 use App\Models\AffiliateClick;
 use App\Models\Setting;
 use Illuminate\Http\Request;
@@ -311,7 +312,21 @@ class BoothController extends Controller
             $statusSettings = collect([]);
             $statusColors = [];
         }
-        
+
+        $tickSettings = FloorPlanTickSetting::getForFloorPlan($floorPlanId ? (int) $floorPlanId : null);
+        $showBookedTick = $tickSettings['show_tick'];
+        $bookedTickColor = $tickSettings['color'];
+        $bookedTickSize = $tickSettings['size'];
+        $bookedTickShape = $tickSettings['shape'];
+        $bookedTickPosition = $tickSettings['position'];
+        $bookedTickAnimation = $tickSettings['animation'];
+        $bookedTickBgColor = $tickSettings['bg_color'];
+        $bookedTickBorderWidth = $tickSettings['border_width'];
+        $bookedTickBorderColor = $tickSettings['border_color'];
+        $bookedTickFontSize = $tickSettings['font_size'];
+        $bookedTickSizeMode = $tickSettings['size_mode'];
+        $bookedTickRelativePercent = $tickSettings['relative_percent'];
+
         return view('booths.index', compact(
             'booths',
             'boothsForJS',
@@ -344,7 +359,19 @@ class BoothController extends Controller
             'canvasWidth',
             'canvasHeight',
             'floorImage',
-            'canEditCanvas'
+            'canEditCanvas',
+            'showBookedTick',
+            'bookedTickColor',
+            'bookedTickSize',
+            'bookedTickShape',
+            'bookedTickPosition',
+            'bookedTickAnimation',
+            'bookedTickBgColor',
+            'bookedTickBorderWidth',
+            'bookedTickBorderColor',
+            'bookedTickFontSize',
+            'bookedTickSizeMode',
+            'bookedTickRelativePercent'
         ));
     }
 
@@ -2759,6 +2786,20 @@ class BoothController extends Controller
         $canSwitchToCanvasDesign = $authUser
             && ($authUser->hasPermission('booths.canvas.edit') || $authUser->isAdmin());
 
+        $tickSettings = FloorPlanTickSetting::getForFloorPlan((int) $id);
+        $showBookedTick = $tickSettings['show_tick'];
+        $bookedTickColor = $tickSettings['color'];
+        $bookedTickSize = $tickSettings['size'];
+        $bookedTickShape = $tickSettings['shape'];
+        $bookedTickPosition = $tickSettings['position'];
+        $bookedTickAnimation = $tickSettings['animation'];
+        $bookedTickBgColor = $tickSettings['bg_color'];
+        $bookedTickBorderWidth = $tickSettings['border_width'];
+        $bookedTickBorderColor = $tickSettings['border_color'];
+        $bookedTickFontSize = $tickSettings['font_size'];
+        $bookedTickSizeMode = $tickSettings['size_mode'];
+        $bookedTickRelativePercent = $tickSettings['relative_percent'];
+
         return view('booths.public-view', compact(
             'floorPlan',
             'booths',
@@ -2773,7 +2814,19 @@ class BoothController extends Controller
             'authUser',
             'canCreateBookingOnPublicView',
             'restrictCrudToOwnBooking',
-            'canSwitchToCanvasDesign'
+            'canSwitchToCanvasDesign',
+            'showBookedTick',
+            'bookedTickColor',
+            'bookedTickSize',
+            'bookedTickShape',
+            'bookedTickPosition',
+            'bookedTickAnimation',
+            'bookedTickBgColor',
+            'bookedTickBorderWidth',
+            'bookedTickBorderColor',
+            'bookedTickFontSize',
+            'bookedTickSizeMode',
+            'bookedTickRelativePercent'
         ));
     }
 

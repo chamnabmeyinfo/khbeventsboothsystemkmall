@@ -159,6 +159,125 @@
                         </div>
                         <small class="text-muted d-block mt-1">When enabled, users who are not Administrators can only view, edit, update, and delete <strong>their own</strong> bookings (bookings they created). Sales can only manage their own; they cannot edit or delete other sales&#39; bookings. Administrators can always manage all bookings.</small>
                     </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="booth_booked_show_tick" id="booth_booked_show_tick" value="1" {{ ($showBookedTick ?? true) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="booth_booked_show_tick">
+                                <strong>Show tick sign on booked booths (canvas and public view)</strong>
+                            </label>
+                        </div>
+                        <small class="text-muted d-block mt-1">When enabled, a check (✓) appears on booked booths on the canvas designer and on the public floor plan view.</small>
+                    </div>
+                    <div class="mb-3 ps-3 border-start border-2 border-secondary">
+                        <h6 class="mb-2">Booked tick appearance</h6>
+                        <div class="mb-3">
+                            <label class="form-label" for="tick_floor_plan_id">Apply to floor plan</label>
+                            <select class="form-select" name="tick_floor_plan_id" id="tick_floor_plan_id" style="max-width: 320px;">
+                                <option value="">Default (all floor plans)</option>
+                                @foreach($floorPlans ?? [] as $fp)
+                                    <option value="{{ $fp->id }}" {{ (isset($tickFloorPlanId) && (string)$tickFloorPlanId === (string)$fp->id) ? 'selected' : '' }}>{{ $fp->name }}{{ $fp->is_default ? ' (default)' : '' }}</option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted d-block mt-1">Choose &quot;Default&quot; to set global tick style (used when a floor plan has no own settings). Choose a floor plan to set tick style for that floor plan only.</small>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6 col-lg-4">
+                                <label class="form-label" for="booth_booked_tick_color">Tick color (font)</label>
+                                <div class="input-group">
+                                    <input type="color" class="form-control form-control-color" name="booth_booked_tick_color" id="booth_booked_tick_color" value="{{ old('booth_booked_tick_color', $bookedTickColor ?? '#28a745') }}" title="Tick color">
+                                    <input type="text" class="form-control" value="{{ old('booth_booked_tick_color', $bookedTickColor ?? '#28a745') }}" id="booth_booked_tick_color_hex" maxlength="7" pattern="#[0-9A-Fa-f]{6}" placeholder="#28a745" aria-label="Hex color">
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-4">
+                                <label class="form-label" for="booth_booked_tick_font_size">Font size</label>
+                                <select class="form-select" name="booth_booked_tick_font_size" id="booth_booked_tick_font_size">
+                                    <option value="small" {{ ($bookedTickFontSize ?? 'medium') === 'small' ? 'selected' : '' }}>Small</option>
+                                    <option value="medium" {{ ($bookedTickFontSize ?? 'medium') === 'medium' ? 'selected' : '' }}>Medium</option>
+                                    <option value="large" {{ ($bookedTickFontSize ?? 'medium') === 'large' ? 'selected' : '' }}>Large</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 col-lg-4">
+                                <label class="form-label" for="booth_booked_tick_size_mode">Overall size</label>
+                                <select class="form-select" name="booth_booked_tick_size_mode" id="booth_booked_tick_size_mode">
+                                    <option value="fixed" {{ ($bookedTickSizeMode ?? 'fixed') === 'fixed' ? 'selected' : '' }}>Fixed (use Box size / Font size below)</option>
+                                    <option value="relative" {{ ($bookedTickSizeMode ?? 'fixed') === 'relative' ? 'selected' : '' }}>Relative (% of booth width &amp; height)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 col-lg-4" id="booth_booked_tick_relative_wrap">
+                                <label class="form-label" for="booth_booked_tick_relative_percent">Tick size (% of booth width &amp; height)</label>
+                                <select class="form-select" name="booth_booked_tick_relative_percent" id="booth_booked_tick_relative_percent">
+                                    <option value="8" {{ ($bookedTickRelativePercent ?? '12') === '8' ? 'selected' : '' }}>8%</option>
+                                    <option value="10" {{ ($bookedTickRelativePercent ?? '12') === '10' ? 'selected' : '' }}>10%</option>
+                                    <option value="12" {{ ($bookedTickRelativePercent ?? '12') === '12' ? 'selected' : '' }}>12%</option>
+                                    <option value="15" {{ ($bookedTickRelativePercent ?? '12') === '15' ? 'selected' : '' }}>15%</option>
+                                    <option value="20" {{ ($bookedTickRelativePercent ?? '12') === '20' ? 'selected' : '' }}>20%</option>
+                                </select>
+                                <small class="text-muted">Tick box is this % of booth width and % of booth height.</small>
+                            </div>
+                            <div class="col-md-6 col-lg-4" id="booth_booked_tick_fixed_wrap">
+                                <label class="form-label" for="booth_booked_tick_size">Box size</label>
+                                <select class="form-select" name="booth_booked_tick_size" id="booth_booked_tick_size">
+                                    <option value="small" {{ ($bookedTickSize ?? 'medium') === 'small' ? 'selected' : '' }}>Small</option>
+                                    <option value="medium" {{ ($bookedTickSize ?? 'medium') === 'medium' ? 'selected' : '' }}>Medium</option>
+                                    <option value="large" {{ ($bookedTickSize ?? 'medium') === 'large' ? 'selected' : '' }}>Large</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 col-lg-4">
+                                <label class="form-label" for="booth_booked_tick_shape">Shape</label>
+                                <select class="form-select" name="booth_booked_tick_shape" id="booth_booked_tick_shape">
+                                    <option value="round" {{ ($bookedTickShape ?? 'round') === 'round' ? 'selected' : '' }}>Round</option>
+                                    <option value="square" {{ ($bookedTickShape ?? 'round') === 'square' ? 'selected' : '' }}>Square</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 col-lg-4">
+                                <label class="form-label" for="booth_booked_tick_position">Position</label>
+                                <select class="form-select" name="booth_booked_tick_position" id="booth_booked_tick_position">
+                                    <option value="top-right" {{ ($bookedTickPosition ?? 'top-right') === 'top-right' ? 'selected' : '' }}>Top right (outside)</option>
+                                    <option value="top-left" {{ ($bookedTickPosition ?? 'top-right') === 'top-left' ? 'selected' : '' }}>Top left (outside)</option>
+                                    <option value="bottom-right" {{ ($bookedTickPosition ?? 'top-right') === 'bottom-right' ? 'selected' : '' }}>Bottom right (outside)</option>
+                                    <option value="bottom-left" {{ ($bookedTickPosition ?? 'top-right') === 'bottom-left' ? 'selected' : '' }}>Bottom left (outside)</option>
+                                    <option value="inside" {{ ($bookedTickPosition ?? 'top-right') === 'inside' ? 'selected' : '' }}>Inside booth (top-right)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 col-lg-4">
+                                <label class="form-label" for="booth_booked_tick_animation">Animation</label>
+                                <select class="form-select" name="booth_booked_tick_animation" id="booth_booked_tick_animation">
+                                    <option value="pulse" {{ ($bookedTickAnimation ?? 'pulse') === 'pulse' ? 'selected' : '' }}>Pulse</option>
+                                    <option value="none" {{ ($bookedTickAnimation ?? 'pulse') === 'none' ? 'selected' : '' }}>None</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 col-lg-4">
+                                <label class="form-label">Background</label>
+                                <div class="mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="booth_booked_tick_bg_none" id="booth_booked_tick_bg_none" value="1" {{ empty($bookedTickBgColor ?? '') ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="booth_booked_tick_bg_none">No background (transparent)</label>
+                                    </div>
+                                </div>
+                                <div class="input-group" id="booth_booked_tick_bg_wrap">
+                                    <input type="color" class="form-control form-control-color" name="booth_booked_tick_bg_color" id="booth_booked_tick_bg_color" value="{{ old('booth_booked_tick_bg_color', !empty($bookedTickBgColor) ? $bookedTickBgColor : '#ffffff') }}" title="Tick background">
+                                    <input type="text" class="form-control" value="{{ old('booth_booked_tick_bg_color', !empty($bookedTickBgColor) ? $bookedTickBgColor : '#ffffff') }}" id="booth_booked_tick_bg_color_hex" maxlength="7" pattern="#[0-9A-Fa-f]{6}" placeholder="#ffffff" aria-label="Background hex">
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-4">
+                                <label class="form-label" for="booth_booked_tick_border_width">Border width</label>
+                                <select class="form-select" name="booth_booked_tick_border_width" id="booth_booked_tick_border_width">
+                                    <option value="0" {{ ($bookedTickBorderWidth ?? '0') === '0' ? 'selected' : '' }}>None</option>
+                                    <option value="1" {{ ($bookedTickBorderWidth ?? '0') === '1' ? 'selected' : '' }}>1px</option>
+                                    <option value="2" {{ ($bookedTickBorderWidth ?? '0') === '2' ? 'selected' : '' }}>2px</option>
+                                    <option value="3" {{ ($bookedTickBorderWidth ?? '0') === '3' ? 'selected' : '' }}>3px</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 col-lg-4">
+                                <label class="form-label" for="booth_booked_tick_border_color">Border color</label>
+                                <div class="input-group">
+                                    <input type="color" class="form-control form-control-color" name="booth_booked_tick_border_color" id="booth_booked_tick_border_color" value="{{ old('booth_booked_tick_border_color', $bookedTickBorderColor ?? '#ffffff') }}" title="Border color">
+                                    <input type="text" class="form-control" value="{{ old('booth_booked_tick_border_color', $bookedTickBorderColor ?? '#ffffff') }}" id="booth_booked_tick_border_color_hex" maxlength="7" pattern="#[0-9A-Fa-f]{6}" placeholder="#ffffff" aria-label="Border hex">
+                                </div>
+                            </div>
+                        </div>
+                        <small class="text-muted d-block mt-1">Customize how the booked tick looks on canvas and public view. Colors must be hex (e.g. #28a745).</small>
+                    </div>
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save me-1"></i>Save Public View Settings
                     </button>
@@ -577,6 +696,72 @@
         "showMethod": "fadeIn",
         "hideMethod": "fadeOut"
     };
+</script>
+<script>
+    // Sync booked tick color picker and hex input
+    (function() {
+        var colorEl = document.getElementById('booth_booked_tick_color');
+        var hexEl = document.getElementById('booth_booked_tick_color_hex');
+        if (colorEl && hexEl) {
+            colorEl.addEventListener('input', function() { hexEl.value = this.value; });
+            hexEl.addEventListener('input', function() {
+                if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) colorEl.value = this.value;
+            });
+        }
+        // Sync booked tick background color and toggle visibility
+        var bgNone = document.getElementById('booth_booked_tick_bg_none');
+        var bgColor = document.getElementById('booth_booked_tick_bg_color');
+        var bgHex = document.getElementById('booth_booked_tick_bg_color_hex');
+        var bgWrap = document.getElementById('booth_booked_tick_bg_wrap');
+        if (bgColor && bgHex) {
+            bgColor.addEventListener('input', function() { bgHex.value = this.value; });
+            bgHex.addEventListener('input', function() {
+                if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) bgColor.value = this.value;
+            });
+        }
+        if (bgNone && bgWrap && bgColor && bgHex) {
+            function toggleBgInputs() {
+                var off = bgNone.checked;
+                bgWrap.style.opacity = off ? '0.5' : '1';
+                bgWrap.style.pointerEvents = off ? 'none' : '';
+                bgColor.disabled = off;
+                bgHex.disabled = off;
+            }
+            bgNone.addEventListener('change', toggleBgInputs);
+            toggleBgInputs();
+        }
+        // Sync booked tick border color picker and hex input
+        var borderColorEl = document.getElementById('booth_booked_tick_border_color');
+        var borderHexEl = document.getElementById('booth_booked_tick_border_color_hex');
+        if (borderColorEl && borderHexEl) {
+            borderColorEl.addEventListener('input', function() { borderHexEl.value = this.value; });
+            borderHexEl.addEventListener('input', function() {
+                if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) borderColorEl.value = this.value;
+            });
+        }
+        // Apply to floor plan: reload to load that floor plan's tick settings
+        var tickFpEl = document.getElementById('tick_floor_plan_id');
+        if (tickFpEl) {
+            tickFpEl.addEventListener('change', function() {
+                var base = '{{ route("settings.index") }}';
+                var q = this.value ? '?tick_floor_plan_id=' + encodeURIComponent(this.value) : '';
+                window.location = base + q;
+            });
+        }
+        // Toggle overall size: fixed vs relative to booth
+        var sizeModeEl = document.getElementById('booth_booked_tick_size_mode');
+        var relativeWrap = document.getElementById('booth_booked_tick_relative_wrap');
+        var fixedWrap = document.getElementById('booth_booked_tick_fixed_wrap');
+        if (sizeModeEl && relativeWrap && fixedWrap) {
+            function toggleSizeMode() {
+                var isRelative = sizeModeEl.value === 'relative';
+                relativeWrap.style.display = isRelative ? 'block' : 'none';
+                fixedWrap.style.display = isRelative ? 'none' : 'block';
+            }
+            sizeModeEl.addEventListener('change', toggleSizeMode);
+            toggleSizeMode();
+        }
+    })();
 </script>
 <script>
     // Auto-dismiss alerts after 5 seconds

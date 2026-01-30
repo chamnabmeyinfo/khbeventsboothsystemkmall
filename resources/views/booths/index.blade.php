@@ -977,28 +977,64 @@
     animation: bookedGlow 2s ease-in-out infinite;
 }
 
+@if($showBookedTick ?? true)
+@php
+    $sizeMode = $bookedTickSizeMode ?? 'fixed';
+    $tickSize = $bookedTickSize ?? 'medium';
+    $tickSizePx = $tickSize === 'small' ? 10 : ($tickSize === 'large' ? 16 : 12);
+    $tickBox = $tickSizePx + 4;
+    $relativePercent = (string) ($bookedTickRelativePercent ?? '12');
+    $tickRadius = ($bookedTickShape ?? 'round') === 'round' ? '50%' : '2px';
+    $pos = $bookedTickPosition ?? 'top-right';
+    $ins = $pos === 'inside';
+    $tickTop = $ins ? '2px' : (in_array($pos, ['top-right', 'top-left'], true) ? '-8px' : 'auto');
+    $tickRight = $ins ? '2px' : (in_array($pos, ['top-right', 'bottom-right'], true) ? '-8px' : 'auto');
+    $tickBottom = $ins ? 'auto' : (in_array($pos, ['bottom-right', 'bottom-left'], true) ? '-8px' : 'auto');
+    $tickLeft = $ins ? 'auto' : (in_array($pos, ['top-left', 'bottom-left'], true) ? '-8px' : 'auto');
+    $tickColor = e($bookedTickColor ?? '#28a745');
+    $tickAnim = ($bookedTickAnimation ?? 'pulse') === 'pulse' ? 'bookedIconPulse 2s ease-in-out infinite' : 'none';
+    $tickBg = ($bookedTickBgColor ?? '') === '' || ($bookedTickBgColor ?? '') === 'transparent' ? 'transparent' : e($bookedTickBgColor);
+    $tickFontSize = $bookedTickFontSize ?? 'medium';
+    $tickFontSizePx = $tickFontSize === 'small' ? 10 : ($tickFontSize === 'large' ? 16 : 12);
+    $tickBorderW = $bookedTickBorderWidth ?? '0';
+    $tickBorderC = $tickBorderW !== '0' ? e($bookedTickBorderColor ?? '#ffffff') : 'transparent';
+@endphp
+/* Booked tick: customizable color, font size, box size (fixed or relative to booth), shape, position, background, border (canvas + sidebar). */
 .booth-number-item.booked::after,
 .dropped-booth.booked::after {
-    content: '\f00c';
-    font-family: 'Font Awesome 5 Free';
-    font-weight: 900;
+    content: '✓';
+    font-family: inherit;
+    font-weight: bold;
     position: absolute;
-    top: -6px;
-    right: -6px;
-    width: 18px;
-    height: 18px;
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    color: white;
-    border-radius: 50%;
+    top: {{ $tickTop }};
+    right: {{ $tickRight }};
+    bottom: {{ $tickBottom }};
+    left: {{ $tickLeft }};
+    @if($sizeMode === 'relative')
+    width: {{ $relativePercent }}%;
+    height: {{ $relativePercent }}%;
+    min-width: 12px;
+    min-height: 12px;
+    font-size: 0.55em;
+    @else
+    width: {{ $tickBox }}px;
+    height: {{ $tickBox }}px;
+    font-size: {{ $tickFontSizePx }}px;
+    @endif
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 10px;
-    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.5);
-    z-index: 100;
-    border: 2px solid white;
-    animation: bookedIconPulse 2s ease-in-out infinite;
+    line-height: 1;
+    border-radius: {{ $tickRadius }};
+    color: {{ $tickColor }};
+    background-color: {{ $tickBg }};
+    border-width: {{ $tickBorderW }}px;
+    border-style: solid;
+    border-color: {{ $tickBorderC }};
+    z-index: 99999;
+    animation: {{ $tickAnim }};
 }
+@endif
 
 @keyframes bookedGlow {
     0%, 100% {
