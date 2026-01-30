@@ -1894,12 +1894,16 @@
                     
                     let tooltipHTML = '<div class="tooltip-title"><i class="fas fa-store mr-1"></i>Booth ' + booth.booth_number + '</div>';
                     
-                    // Always show client logo if available (prioritize over booth image)
+                    // Customer / Client: show logo when available, else placeholder when booth is booked (has company)
                     if (booth.client_logo) {
-                        tooltipHTML += '<div style="margin-bottom: 12px; text-align: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;"><img src="' + booth.client_logo + '" alt="' + (booth.company || 'Client Logo') + '" style="max-width: 100%; max-height: 140px; border-radius: 6px; object-fit: contain; box-shadow: 0 4px 12px rgba(0,0,0,0.3); background: rgba(255,255,255,0.95); padding: 12px;"></div>';
+                        tooltipHTML += '<div class="booth-tooltip-customer-logo" style="margin-bottom: 12px; text-align: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;"><img src="' + booth.client_logo + '" alt="' + (booth.company || booth.client_name || 'Customer').replace(/"/g, '&quot;') + '" style="max-width: 100%; max-height: 140px; border-radius: 6px; object-fit: contain; box-shadow: 0 4px 12px rgba(0,0,0,0.3); background: rgba(255,255,255,0.95); padding: 12px;"></div>';
+                    } else if (booth.company || booth.client_name) {
+                        var customerLabel = booth.company || booth.client_name || 'Customer';
+                        var initial = (customerLabel || '?').toString().charAt(0).toUpperCase();
+                        tooltipHTML += '<div class="booth-tooltip-customer-placeholder" style="margin-bottom: 12px; text-align: center; padding: 12px; background: rgba(255,255,255,0.08); border-radius: 8px;"><span style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 700; font-size: 1.4rem;">' + initial + '</span><div style="margin-top: 8px; font-weight: 600; color: rgba(255,255,255,0.95);">' + (customerLabel || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div></div>';
                     }
-                    // Show booth image if available (and no client logo)
-                    else if (booth.booth_image) {
+                    // Booth image (only when no customer logo and no booked customer)
+                    if (!booth.client_logo && !(booth.company || booth.client_name) && booth.booth_image) {
                         tooltipHTML += '<div style="margin-bottom: 12px; text-align: center;"><img src="' + booth.booth_image + '" alt="Booth Preview" style="max-width: 100%; max-height: 140px; border-radius: 6px; object-fit: cover; box-shadow: 0 2px 6px rgba(0,0,0,0.2);"></div>';
                     }
                     
@@ -1970,8 +1974,8 @@
                     tooltip.innerHTML = tooltipHTML;
                     tooltip.style.display = 'block';
                     
-                    // Adjust max-width based on content
-                    if (booth.booth_image) {
+                    // Adjust max-width based on content (logo or image needs more space)
+                    if (booth.client_logo || booth.booth_image) {
                         tooltip.style.maxWidth = '360px';
                     } else {
                         tooltip.style.maxWidth = '320px';
@@ -2340,14 +2344,23 @@
             
             let html = '';
             
-            // Client Logo Preview (prioritize over booth image)
+            // Customer / Client: show logo when available, else placeholder when booth is booked
             if (booth.client_logo) {
-                html += '<div class="booth-detail-section" style="margin-bottom: 25px; text-align: center;">';
-                html += '<img src="' + booth.client_logo + '" alt="' + (booth.company || 'Client Logo') + '" style="max-width: 100%; max-height: 200px; border-radius: 12px; object-fit: contain; box-shadow: 0 4px 16px rgba(0,0,0,0.15); background: rgba(255,255,255,0.05); padding: 20px;">';
+                html += '<div class="booth-detail-section booth-detail-customer-logo" style="margin-bottom: 25px; text-align: center;">';
+                html += '<div style="display: inline-block; width: 160px; height: 160px; border-radius: 50%; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.15); background: rgba(0,0,0,0.02); border: 3px solid rgba(102,126,234,0.2);">';
+                html += '<img src="' + booth.client_logo + '" alt="' + (booth.company || booth.client_name || 'Customer').replace(/"/g, '&quot;') + '" style="width: 100%; height: 100%; object-fit: cover;">';
+                html += '</div>';
+                html += '</div>';
+            } else if (booth.company || booth.client_name) {
+                var customerLabel = booth.company || booth.client_name || 'Customer';
+                var initial = (customerLabel || '?').toString().charAt(0).toUpperCase();
+                html += '<div class="booth-detail-section booth-detail-customer-placeholder" style="margin-bottom: 25px; text-align: center; padding: 24px; background: linear-gradient(135deg, rgba(102,126,234,0.08) 0%, rgba(118,75,162,0.08) 100%); border-radius: 12px; border: 1px solid rgba(102,126,234,0.2);">';
+                html += '<span style="display: inline-flex; align-items: center; justify-content: center; width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 700; font-size: 1.8rem;">' + initial + '</span>';
+                html += '<div style="margin-top: 12px; font-weight: 700; font-size: 1.1rem; color: #212529;">' + (customerLabel || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
                 html += '</div>';
             }
-            // Booth Image Preview (if no client logo)
-            else if (booth.booth_image) {
+            // Booth Image Preview (only when no customer and no logo)
+            if (!booth.client_logo && !(booth.company || booth.client_name) && booth.booth_image) {
                 html += '<div class="booth-detail-section" style="margin-bottom: 25px;">';
                 html += '<img src="' + booth.booth_image + '" alt="Booth Preview" style="width: 100%; max-height: 350px; object-fit: cover; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);">';
                 html += '</div>';
@@ -2435,21 +2448,18 @@
                 html += '<div class="booth-detail-section">';
                 html += '<div class="booth-detail-section-title"><i class="fas fa-building"></i> Company & Category</div>';
                 
-                // Client logo shown at top if available, so we can show it here too if needed
                 if (booth.company) {
                     html += '<div class="booth-detail-row">';
                     html += '<span class="booth-detail-label"><i class="fas fa-building"></i> Company:</span>';
                     html += '<span class="booth-detail-value">' + booth.company + '</span>';
                     html += '</div>';
                 }
-                
-                // Show client logo in company section if not shown at top
-                if (booth.client_logo && !booth.booth_image) {
-                    html += '<div class="booth-detail-row" style="margin-top: 15px; text-align: center;">';
-                    html += '<img src="' + booth.client_logo + '" alt="' + (booth.company || 'Client Logo') + '" style="max-width: 200px; max-height: 150px; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: rgba(0,0,0,0.02); padding: 15px;">';
+                if (booth.client_name) {
+                    html += '<div class="booth-detail-row">';
+                    html += '<span class="booth-detail-label"><i class="fas fa-user"></i> Contact:</span>';
+                    html += '<span class="booth-detail-value">' + booth.client_name.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
                     html += '</div>';
                 }
-                
                 if (booth.category) {
                     html += '<div class="booth-detail-row">';
                     html += '<span class="booth-detail-label"><i class="fas fa-folder"></i> Category:</span>';

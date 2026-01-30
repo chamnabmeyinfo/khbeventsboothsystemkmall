@@ -2622,6 +2622,7 @@ class BoothController extends Controller
                 'id' => $booth->id,
                 'booth_number' => $booth->booth_number,
                 'company' => $booth->client ? $booth->client->company : '',
+                'client_name' => $booth->client ? ($booth->client->name ?? '') : '',
                 'client_logo' => $clientLogo,
                 'category' => $booth->category ? $booth->category->name : '',
                 'sub_category' => $booth->subCategory ? $booth->subCategory->name : '',
