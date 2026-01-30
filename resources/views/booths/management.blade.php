@@ -1291,11 +1291,23 @@
         align-items: center;
         flex-wrap: wrap;
         gap: 20px;
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 100;
+        padding: 12px 20px;
+        border-top: 1px solid #e5e7eb;
+        margin-top: 0;
+        box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
     }
     
     .pagination-info {
         display: flex;
         align-items: center;
+    }
+    
+    #boothsTable_info {
+        margin: 0;
     }
     
     .pagination-text {
@@ -1438,19 +1450,34 @@
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
     }
     
-    /* Settings Panel Animation */
+    /* Settings Panel Animation - Inside Table Card */
     #settingsPanel {
         animation: slideDown 0.3s ease-out;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    #settingsPanel[style*="display: none"] {
+        max-height: 0;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+    }
+    
+    #settingsPanel:not([style*="display: none"]) {
+        max-height: 500px;
     }
     
     @keyframes slideDown {
         from {
             opacity: 0;
             transform: translateY(-10px);
+            max-height: 0;
         }
         to {
             opacity: 1;
             transform: translateY(0);
+            max-height: 500px;
         }
     }
     
@@ -1777,35 +1804,6 @@
         </div>
     </div>
     
-    <!-- Expandable Settings Panel -->
-    <div class="d-none d-md-block mb-3" id="settingsPanel" style="display: none;">
-        <div class="card" style="border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;">
-            <div class="card-body" style="padding: 20px;">
-                <h5 class="mb-3" style="font-weight: 600; color: #1e293b;">
-                    <i class="fas fa-sliders-h mr-2"></i>Display Settings
-                </h5>
-                <div class="row">
-                    <div class="col-md-6">
-                        <label class="form-label font-weight-600">Column Visibility</label>
-                        <div class="d-flex flex-wrap gap-2" id="columnVisibilityControls">
-                            <!-- Will be populated by JavaScript -->
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label font-weight-600">Table Options</label>
-                        <div class="d-flex flex-wrap gap-2">
-                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="fitColumnsToContent()" style="border-radius: 8px;">
-                                <i class="fas fa-arrows-alt-h mr-1"></i>Fit Columns
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetColumnWidths()" style="border-radius: 8px;">
-                                <i class="fas fa-redo mr-1"></i>Reset Widths
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
     
     <!-- Modern Page Header (Legacy - Hidden) -->
     <div class="modern-page-header d-none" style="display: none !important;">
@@ -2196,7 +2194,41 @@
     </div>
 
     <!-- Booths Table - Desktop View -->
-    <div class="card table-modern d-none d-md-block">
+    <div class="card table-modern d-none d-md-block mb-3">
+        <!-- Settings Toggle Button - Top of Card -->
+        <div class="d-flex justify-content-end p-2" style="border-bottom: 1px solid #e5e7eb; background: #f8f9fa;">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.toggleSettingsPanel()" id="settingsToggleBtn" style="border-radius: 8px; padding: 6px 12px;">
+                <i class="fas fa-cog mr-1"></i>Table Settings
+                <i class="fas fa-chevron-down ml-1" id="settingsChevron"></i>
+            </button>
+        </div>
+        <!-- Expandable Settings Panel - Inside Table Card -->
+        <div class="d-none d-md-block" id="settingsPanel" style="display: none; border-bottom: 1px solid #e5e7eb;">
+            <div class="card-body" style="padding: 20px; background: #f8f9fa;">
+                <h5 class="mb-3" style="font-weight: 600; color: #1e293b;">
+                    <i class="fas fa-sliders-h mr-2"></i>Display Settings
+                </h5>
+                <div class="row">
+                    <div>
+                        <label class="form-label font-weight-600">Column Visibility</label>
+                        <div class="d-flex flex-wrap gap-2" id="columnVisibilityControls">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-6">
+                        <label class="form-label font-weight-600">Table Options</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.fitColumnsToContent()" style="border-radius: 8px;">
+                                <i class="fas fa-arrows-alt-h mr-1"></i>Fit Columns
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.resetColumnWidths()" style="border-radius: 8px;">
+                                <i class="fas fa-redo mr-1"></i>Reset Widths
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="card-body p-0">
             <div class="table-responsive" style="max-height: calc(100vh - 400px); overflow-y: auto;">
                 <table class="table table-hover mb-0" id="boothsTable" style="margin-bottom: 0;">
@@ -2280,7 +2312,7 @@
         @if(isset($booths) && $booths->total() > 0)
         <div class="card-footer-modern">
             <div class="pagination-wrapper">
-                <div class="pagination-info">
+                <div class="pagination-info" id="boothsTable_info" aria-describedby="boothsTable_info">
                     <span class="pagination-text">
                         <i class="fas fa-list mr-2"></i>
                         Showing <strong id="boothsShowing">{{ $booths->firstItem() ?? 0 }}</strong> - <strong id="boothsTo">{{ $booths->lastItem() ?? 0 }}</strong> of <strong id="boothsTotal">{{ $booths->total() }}</strong> booths
@@ -3759,8 +3791,8 @@ document.addEventListener('DOMContentLoaded', function() {
         per_page: boothsPerPage
     };
     
-    // Change Per Page Function
-    function changePerPage(perPage) {
+    // Change Per Page Function - Global scope
+    window.changePerPage = function(perPage) {
         const allowedPerPage = [10, 25, 50, 100, 200];
         if (!allowedPerPage.includes(parseInt(perPage))) {
             perPage = 50; // Default fallback
@@ -3788,8 +3820,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Lazy Loading Observer
     let boothsLazyLoadObserver = null;
     
-    // Switch Load Mode Function
-    function switchLoadMode(mode) {
+    // Switch Load Mode Function - Global scope
+    window.switchLoadMode = function(mode) {
         if (boothsLoadMode === mode) return;
         
         boothsLoadMode = mode;
@@ -3963,11 +3995,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Reapply column visibility to newly loaded rows
                 const savedVisibility = JSON.parse(localStorage.getItem('boothColumnVisibility') || '{}');
-                columnDefinitions.forEach((col, index) => {
-                    if (savedVisibility[col.key] === false) {
-                        toggleColumnVisibility(col.key, index, false);
-                    }
-                });
+                if (window.columnDefinitions) {
+                    window.columnDefinitions.forEach((col, index) => {
+                        if (savedVisibility[col.key] === false) {
+                            window.toggleColumnVisibility(col.key, index, false);
+                        }
+                    });
+                }
                 
                 boothsHasMoreData = data.hasMore !== false;
                 boothsCurrentPage = data.currentPage || boothsCurrentPage;
@@ -4063,9 +4097,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // ============================================
-    // SPACE MODE FUNCTIONS
+    // SPACE MODE FUNCTIONS - Global scope
     // ============================================
-    function setSpaceMode(mode) {
+    window.setSpaceMode = function(mode) {
         const container = document.getElementById('boothManagementContainer');
         const buttons = document.querySelectorAll('.space-mode-btn');
         
@@ -4141,9 +4175,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // ============================================
-    // SETTINGS PANEL FUNCTIONS
+    // SETTINGS PANEL FUNCTIONS - Global scope
     // ============================================
-    function toggleSettingsPanel() {
+    window.toggleSettingsPanel = function() {
         const panel = document.getElementById('settingsPanel');
         const chevron = document.getElementById('settingsChevron');
         
@@ -4159,9 +4193,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // ============================================
-    // COLUMN VISIBILITY FUNCTIONS
+    // COLUMN VISIBILITY FUNCTIONS - Global scope
     // ============================================
-    const columnDefinitions = [
+    window.columnDefinitions = [
         { key: 'checkbox', label: 'Checkbox', visible: true },
         { key: 'image', label: 'Image', visible: true },
         { key: 'booth_number', label: 'Booth #', visible: true },
@@ -4176,14 +4210,14 @@ document.addEventListener('DOMContentLoaded', function() {
         { key: 'actions', label: 'Actions', visible: true }
     ];
     
-    function initColumnVisibility() {
+    window.initColumnVisibility = function() {
         const controlsContainer = document.getElementById('columnVisibilityControls');
         if (!controlsContainer) return;
         
         // Load saved column visibility
         const savedVisibility = JSON.parse(localStorage.getItem('boothColumnVisibility') || '{}');
         
-        columnDefinitions.forEach((col, index) => {
+        window.columnDefinitions.forEach((col, index) => {
             const isVisible = savedVisibility[col.key] !== undefined ? savedVisibility[col.key] : col.visible;
             
             const checkbox = document.createElement('div');
@@ -4191,7 +4225,7 @@ document.addEventListener('DOMContentLoaded', function() {
             checkbox.innerHTML = `
                 <input class="form-check-input column-visibility-checkbox" type="checkbox" 
                        id="col_${col.key}" data-column="${col.key}" data-index="${index}"
-                       ${isVisible ? 'checked' : ''} onchange="toggleColumnVisibility('${col.key}', ${index})">
+                       ${isVisible ? 'checked' : ''} onchange="window.toggleColumnVisibility('${col.key}', ${index})">
                 <label class="form-check-label" for="col_${col.key}" style="font-size: 13px; cursor: pointer;">
                     ${col.label}
                 </label>
@@ -4199,11 +4233,11 @@ document.addEventListener('DOMContentLoaded', function() {
             controlsContainer.appendChild(checkbox);
             
             // Apply initial visibility
-            toggleColumnVisibility(col.key, index, isVisible);
+            window.toggleColumnVisibility(col.key, index, isVisible);
         });
     }
     
-    function toggleColumnVisibility(columnKey, index, forceVisible = null) {
+    window.toggleColumnVisibility = function(columnKey, index, forceVisible = null) {
         const checkbox = document.getElementById('col_' + columnKey);
         const isVisible = forceVisible !== null ? forceVisible : (checkbox ? checkbox.checked : true);
         
@@ -4229,10 +4263,10 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('boothColumnVisibility', JSON.stringify(savedVisibility));
     }
     
-    function initTableColumnSettings() {
+    window.initTableColumnSettings = function() {
         // Initialize column visibility from saved settings
         const savedVisibility = JSON.parse(localStorage.getItem('boothColumnVisibility') || '{}');
-        columnDefinitions.forEach((col, index) => {
+        window.columnDefinitions.forEach((col, index) => {
             if (savedVisibility[col.key] === false) {
                 toggleColumnVisibility(col.key, index, false);
             }
@@ -4240,9 +4274,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // ============================================
-    // TABLE COLUMN FITTING FUNCTIONS
+    // TABLE COLUMN FITTING FUNCTIONS - Global scope
     // ============================================
-    function fitColumnsToContent() {
+    window.fitColumnsToContent = function() {
         const table = document.getElementById('boothsTable');
         if (!table) return;
         
@@ -4287,7 +4321,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    function resetColumnWidths() {
+    window.resetColumnWidths = function() {
         const table = document.getElementById('boothsTable');
         if (!table) return;
         
