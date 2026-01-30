@@ -427,6 +427,12 @@ html, body {
 
 @section('content')
 <div class="container-fluid">
+    @if(!empty($restrictToOwnBookings))
+        <div class="alert alert-info mb-3" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>You are viewing only your own bookings.</strong> You can create, edit, update, and delete only the bookings you created. You cannot view or manage other users&#39; bookings. This is controlled in <a href="{{ route('settings.index') }}">Settings &rarr; Public View Actions</a>.
+        </div>
+    @endif
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-lg-3 col-md-6 mb-4">

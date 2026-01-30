@@ -337,6 +337,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/settings/view/clear', [SettingsController::class, 'clearView'])->name('settings.view.clear');
         Route::post('/settings/clear-all', [SettingsController::class, 'clearAll'])->name('settings.clear-all');
         Route::post('/settings/optimize', [SettingsController::class, 'optimize'])->name('settings.optimize');
+        Route::get('/settings/public-view', [SettingsController::class, 'getPublicViewSettings'])->name('settings.public-view');
+        Route::post('/settings/public-view', [SettingsController::class, 'savePublicViewSettings'])->name('settings.public-view.save');
         
         // Booth Default Settings API
         Route::get('/settings/booth-defaults', [SettingsController::class, 'getBoothDefaults'])->name('settings.booth-defaults');

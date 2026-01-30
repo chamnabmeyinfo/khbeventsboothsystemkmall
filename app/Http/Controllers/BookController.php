@@ -7,6 +7,7 @@ use App\Models\Client;
 use App\Models\Booth;
 use App\Models\Category;
 use App\Models\FloorPlan;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -25,6 +26,11 @@ class BookController extends Controller
         }
 
         $query = Book::with(['client', 'user']);
+
+        // Restrict to own bookings when setting is enabled (non-admin users only see their bookings)
+        if ($this->restrictToOwnBookings()) {
+            $query->where('userid', auth()->id());
+        }
         
         // Search functionality
         if ($request->filled('search')) {
@@ -99,8 +105,9 @@ class BookController extends Controller
                 $groupedBooks[$groupKey][] = $book;
             }
         }
-        
-        return view('books.index', compact('books', 'total', 'groupBy', 'dateRange', 'groupedBooks'));
+
+        $restrictToOwnBookings = $this->restrictToOwnBookings();
+        return view('books.index', compact('books', 'total', 'groupBy', 'dateRange', 'groupedBooks', 'restrictToOwnBookings'));
     }
 
     /**
@@ -110,6 +117,10 @@ class BookController extends Controller
     {
         // Use exact same query structure as index method
         $query = Book::with(['client', 'user']);
+
+        if ($this->restrictToOwnBookings()) {
+            $query->where('userid', auth()->id());
+        }
         
         // Search functionality (exact same as index)
         if ($request->filled('search')) {
@@ -559,6 +570,9 @@ class BookController extends Controller
      */
     public function show(Book $book)
     {
+        if (!$this->canManageBooking($book)) {
+            abort(403, 'You can only view your own bookings. This booking was created by another user.');
+        }
         $book->load(['client', 'user', 'payments', 'statusSetting']);
         
         // Calculate amounts if not set
@@ -699,6 +713,9 @@ class BookController extends Controller
      */
     public function edit(Book $book)
     {
+        if (!$this->canManageBooking($book)) {
+            abort(403, 'You can only edit your own bookings. This booking was created by another user.');
+        }
         $book->load(['client', 'user']);
         $boothIds = json_decode($book->boothid, true) ?? [];
         $currentBooths = !empty($boothIds) ? Booth::whereIn('id', $boothIds)->get() : collect([]);
@@ -715,6 +732,9 @@ class BookController extends Controller
      */
     public function update(Request $request, Book $book)
     {
+        if (!$this->canManageBooking($book)) {
+            abort(403, 'You can only update your own bookings. This booking was created by another user.');
+        }
         $validated = $request->validate([
             'clientid' => 'required|exists:client,id',
             'booth_ids' => 'required|array|min:1',
@@ -866,6 +886,12 @@ class BookController extends Controller
      */
     public function destroy(Book $book)
     {
+        if (!$this->canManageBooking($book)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You can only delete your own bookings. This booking was created by another user.',
+            ], 403);
+        }
         try {
             DB::beginTransaction();
 
@@ -1590,6 +1616,38 @@ class BookController extends Controller
             $countBoothCat = Booth::where('category_id', $categoryId)->count() + $boothCount;
             return $countBoothCat > $category->limit;
         }
+    }
+
+    /**
+     * Whether non-admin users are restricted to seeing only their own bookings (public view setting).
+     */
+    private function restrictToOwnBookings(): bool
+    {
+        if (!auth()->check()) {
+            return false;
+        }
+        if (auth()->user()->isAdmin()) {
+            return false;
+        }
+        return (bool) Setting::getValue('public_view_restrict_crud_to_own_booking', true);
+    }
+
+    /**
+     * Whether the current user can manage this booking (edit/update/delete).
+     * Admins can manage all; when "restrict to own" is on, others can only manage bookings they created.
+     */
+    private function canManageBooking(Book $book): bool
+    {
+        if (!auth()->check()) {
+            return false;
+        }
+        if (auth()->user()->isAdmin()) {
+            return true;
+        }
+        if (!(bool) Setting::getValue('public_view_restrict_crud_to_own_booking', true)) {
+            return true;
+        }
+        return (int) $book->userid === (int) auth()->id();
     }
 }
 

@@ -11,6 +11,7 @@ use App\Models\Book;
 use App\Models\ZoneSetting;
 use App\Models\FloorPlan;
 use App\Models\AffiliateClick;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\DebugLogger;
@@ -2684,7 +2685,15 @@ class BoothController extends Controller
             $statusSettings = collect([]);
             $statusColors = [];
         }
-        
+
+        // Public view actions for logged-in users (controlled by settings)
+        $authUser = auth()->user();
+        $allowCreateOnPublicView = Setting::getValue('public_view_allow_create_booking', true);
+        $canCreateBookingOnPublicView = $authUser
+            && $allowCreateOnPublicView
+            && $authUser->hasPermission('bookings.create');
+        $restrictCrudToOwnBooking = Setting::getValue('public_view_restrict_crud_to_own_booking', true);
+
         return view('booths.public-view', compact(
             'floorPlan',
             'booths',
@@ -2695,7 +2704,10 @@ class BoothController extends Controller
             'floorImageUrl',
             'floorImageExists',
             'statusSettings',
-            'statusColors'
+            'statusColors',
+            'authUser',
+            'canCreateBookingOnPublicView',
+            'restrictCrudToOwnBooking'
         ));
     }
 

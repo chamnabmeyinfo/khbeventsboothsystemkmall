@@ -17,7 +17,9 @@ class SettingsController extends Controller
      */
     public function index()
     {
-        return view('settings.index');
+        $publicViewAllowCreate = Setting::getValue('public_view_allow_create_booking', true);
+        $publicViewRestrictOwn = Setting::getValue('public_view_restrict_crud_to_own_booking', true);
+        return view('settings.index', compact('publicViewAllowCreate', 'publicViewRestrictOwn'));
     }
 
     /**
@@ -1035,6 +1037,35 @@ class SettingsController extends Controller
                 'message' => 'Error saving module display settings: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Get public view action settings (for logged-in users on public floor plan view).
+     */
+    public function getPublicViewSettings()
+    {
+        return response()->json([
+            'public_view_allow_create_booking' => Setting::getValue('public_view_allow_create_booking', true),
+            'public_view_restrict_crud_to_own_booking' => Setting::getValue('public_view_restrict_crud_to_own_booking', true),
+        ]);
+    }
+
+    /**
+     * Save public view action settings.
+     */
+    public function savePublicViewSettings(Request $request)
+    {
+        $allowCreate = $request->boolean('public_view_allow_create_booking');
+        $restrictOwn = $request->boolean('public_view_restrict_crud_to_own_booking');
+        Setting::setValue('public_view_allow_create_booking', $allowCreate ? '1' : '0', 'boolean', 'Allow logged-in users with Create Bookings permission to create a booking from the public floor plan view.');
+        Setting::setValue('public_view_restrict_crud_to_own_booking', $restrictOwn ? '1' : '0', 'boolean', 'When enabled, non-admin users can only view, edit, update, and delete their own bookings. Administrators can manage all bookings.');
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Public view settings saved successfully.',
+            ]);
+        }
+        return back()->with('success', 'Public view settings saved successfully.');
     }
 }
 

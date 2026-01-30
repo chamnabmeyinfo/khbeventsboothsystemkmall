@@ -222,6 +222,44 @@
         }
         
         /* Minimal Zoom Controls */
+        .header-action-link, .header-action-hint {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            transition: background 0.2s;
+        }
+        .header-action-link:hover {
+            background: rgba(255, 255, 255, 0.35);
+            color: white;
+        }
+        .header-action-text { white-space: nowrap; }
+        @media (max-width: 575.98px) {
+            .header-action-text { display: none; }
+        }
+        .btn-book-booth-public {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-book-booth-public:hover { color: white; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(40, 167, 69, 0.5); }
         .zoom-controls-simple {
             display: flex;
             align-items: center;
@@ -968,6 +1006,18 @@
             </div>
         </div>
         <div class="header-right">
+            @if($authUser ?? null)
+                <a href="{{ route('books.index') }}" class="header-action-link" title="My Bookings">
+                    <i class="fas fa-calendar-check"></i><span class="header-action-text">My Bookings</span>
+                </a>
+                @if($canCreateBookingOnPublicView ?? false)
+                    <span class="header-action-hint" title="You can create a booking from this page">Create booking</span>
+                @endif
+            @else
+                <a href="{{ url('/login?redirect=' . urlencode(request()->fullUrl())) }}" class="header-action-link" title="Login to create bookings">
+                    <i class="fas fa-sign-in-alt"></i><span class="header-action-text">Login</span>
+                </a>
+            @endif
             <!-- Simple Zoom Controls -->
             <div class="zoom-controls-simple">
                 <div class="zoom-label">Zoom:</div>
@@ -1117,6 +1167,11 @@
             // Return black for light colors, white for dark colors
             return luminance > 0.5 ? '#000000' : '#ffffff';
         }
+
+        // Public view actions (from server: allow logged-in user to create booking)
+        window.publicViewCanCreateBooking = @json($canCreateBookingOnPublicView ?? false);
+        window.publicViewFloorPlanId = @json($floorPlan->id ?? null);
+        window.publicViewBooksCreateUrl = @json(route('books.create'));
         
         let panzoomInstance;
         let zoomLevel = 1;
@@ -1856,6 +1911,16 @@
                 html += '<div class="booth-detail-section">';
                 html += '<div class="booth-detail-section-title"><i class="fas fa-sticky-note"></i> Additional Notes</div>';
                 html += '<div class="booth-detail-section-content" style="font-style: italic; color: #6c757d;">' + booth.notes.replace(/\n/g, '<br>') + '</div>';
+                html += '</div>';
+            }
+
+            // Book this booth (only when logged in with permission and booth is available or hidden)
+            const isAvailableForBooking = (booth.status == 1 || booth.status == 4);
+            if (window.publicViewCanCreateBooking && isAvailableForBooking && window.publicViewBooksCreateUrl && window.publicViewFloorPlanId) {
+                const bookUrl = window.publicViewBooksCreateUrl + '?floor_plan_id=' + window.publicViewFloorPlanId + '&booth_id=' + booth.id;
+                html += '<div class="booth-detail-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e9ecef;">';
+                html += '<a href="' + bookUrl + '" class="btn-book-booth-public"><i class="fas fa-calendar-plus"></i> Book this booth</a>';
+                html += '<p class="text-muted small mt-2 mb-0">You will be taken to the booking form with this booth pre-selected.</p>';
                 html += '</div>';
             }
             

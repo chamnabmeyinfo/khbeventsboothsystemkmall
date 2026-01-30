@@ -3999,6 +3999,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => {
+            // Ignore browser extension errors (they're harmless)
+            if (error.message && error.message.includes('message channel')) {
+                console.warn('Browser extension message channel error (harmless):', error.message);
+                return;
+            }
             console.error('Error loading more booths:', error);
             boothsHasMoreData = false;
             $('#boothsLazyLoadSpinner').hide();
@@ -4023,6 +4028,38 @@ document.addEventListener('DOMContentLoaded', function() {
         initSpaceMode();
         initColumnVisibility();
         initTableColumnSettings();
+        
+        // Global error handler to catch and suppress browser extension errors
+        window.addEventListener('error', function(event) {
+            // Suppress browser extension errors (they're harmless)
+            if (event.message && (
+                event.message.includes('message channel') ||
+                event.message.includes('runtime.lastError') ||
+                event.message.includes('Extension context invalidated')
+            )) {
+                event.preventDefault();
+                console.warn('Browser extension error suppressed (harmless):', event.message);
+                return false;
+            }
+        }, true);
+        
+        // Handle unhandled promise rejections (browser extension related)
+        window.addEventListener('unhandledrejection', function(event) {
+            if (event.reason && (
+                (typeof event.reason === 'string' && (
+                    event.reason.includes('message channel') ||
+                    event.reason.includes('runtime.lastError')
+                )) ||
+                (event.reason.message && (
+                    event.reason.message.includes('message channel') ||
+                    event.reason.message.includes('runtime.lastError')
+                ))
+            )) {
+                event.preventDefault();
+                console.warn('Browser extension promise rejection suppressed (harmless):', event.reason);
+                return false;
+            }
+        });
     });
     
     // ============================================

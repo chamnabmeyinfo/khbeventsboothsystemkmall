@@ -130,6 +130,44 @@
     </div>
 </div>
 
+<!-- Public view actions (logged-in users on public floor plan) -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-eye me-2"></i>Public View Actions</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Control what logged-in users can do on the public floor plan view (<code>/floor-plans/{id}/public</code>).</p>
+                <form id="publicViewSettingsForm" action="{{ route('settings.public-view.save') }}" method="POST">
+                    @csrf
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="public_view_allow_create_booking" id="public_view_allow_create_booking" value="1" {{ ($publicViewAllowCreate ?? true) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="public_view_allow_create_booking">
+                                <strong>Allow create booking on public view</strong>
+                            </label>
+                        </div>
+                        <small class="text-muted d-block mt-1">When enabled, logged-in users with &quot;Create Bookings&quot; permission can create a booking from the public floor plan page (e.g. Sales can book a booth from the public link).</small>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="public_view_restrict_crud_to_own_booking" id="public_view_restrict_crud_to_own_booking" value="1" {{ ($publicViewRestrictOwn ?? true) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="public_view_restrict_crud_to_own_booking">
+                                <strong>Restrict booking CRUD to own bookings (non-admin)</strong>
+                            </label>
+                        </div>
+                        <small class="text-muted d-block mt-1">When enabled, users who are not Administrators can only view, edit, update, and delete <strong>their own</strong> bookings (bookings they created). Sales can only manage their own; they cannot edit or delete other sales&#39; bookings. Administrators can always manage all bookings.</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Save Public View Settings
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row mt-4">
     <div class="col-md-12">
         <div class="card">
