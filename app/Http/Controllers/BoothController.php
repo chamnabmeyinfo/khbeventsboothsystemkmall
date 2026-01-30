@@ -2726,10 +2726,11 @@ class BoothController extends Controller
             });
         }
         
-        // Filter by floor plan
+        // Filter by floor plan (only if explicitly requested - default is all floor plans)
         if ($request->filled('floor_plan_id')) {
             $query->where('floor_plan_id', $request->floor_plan_id);
         }
+        // Note: By default, load booths from ALL floor plans (no filter applied)
         
         // Filter by status
         if ($request->filled('status')) {
@@ -2751,8 +2752,15 @@ class BoothController extends Controller
         $sortDir = $request->input('sort_dir', 'asc');
         $query->orderBy($sortBy, $sortDir);
         
-        // Get initial 50 records for pagination
-        $booths = $query->paginate(50)->withQueryString();
+        // Get per-page setting (validate allowed values: 10, 25, 50, 100, 200)
+        $perPage = $request->input('per_page', 50);
+        $allowedPerPage = [10, 25, 50, 100, 200];
+        if (!in_array((int)$perPage, $allowedPerPage)) {
+            $perPage = 50; // Default fallback
+        }
+        
+        // Get initial records for pagination
+        $booths = $query->paginate($perPage)->withQueryString();
         $total = $booths->total();
         
         // Get filter options
@@ -2787,8 +2795,91 @@ class BoothController extends Controller
             'stats',
             'sortBy',
             'sortDir',
-            'statusSettings'
+            'statusSettings',
+            'perPage'
         ));
+    }
+
+    /**
+     * Lazy load booths (AJAX endpoint)
+     */
+    public function lazyLoadBooths(Request $request)
+    {
+        // Use exact same query structure as managementTable method
+        $query = Booth::with(['client', 'category', 'subCategory', 'boothType', 'floorPlan', 'user']);
+        
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('booth_number', 'like', "%{$search}%")
+                  ->orWhereHas('client', function($clientQuery) use ($search) {
+                      $clientQuery->where('company', 'like', "%{$search}%")
+                                  ->orWhere('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('category', function($catQuery) use ($search) {
+                      $catQuery->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+        
+        // Filter by floor plan (only if explicitly requested - default is all floor plans)
+        if ($request->filled('floor_plan_id')) {
+            $query->where('floor_plan_id', $request->floor_plan_id);
+        }
+        
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        
+        // Filter by booth type
+        if ($request->filled('booth_type_id')) {
+            $query->where('booth_type_id', $request->booth_type_id);
+        }
+        
+        // Filter by category
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+        
+        // Sort
+        $sortBy = $request->input('sort_by', 'booth_number');
+        $sortDir = $request->input('sort_dir', 'asc');
+        $query->orderBy($sortBy, $sortDir);
+        
+        // Use same pagination as initial load
+        $page = $request->input('page', 1);
+        // Get per-page setting (validate allowed values: 10, 25, 50, 100, 200)
+        $perPage = $request->input('per_page', 50);
+        $allowedPerPage = [10, 25, 50, 100, 200];
+        if (!in_array((int)$perPage, $allowedPerPage)) {
+            $perPage = 50; // Default fallback
+        }
+        $offset = ($page - 1) * $perPage;
+        
+        // Get total before pagination
+        $total = $query->count();
+        
+        // Get booths for current page
+        $booths = $query->offset($offset)->limit($perPage)->get();
+        $hasMore = ($offset + $booths->count()) < $total;
+        
+        // Render table rows
+        $html = '';
+        foreach ($booths as $booth) {
+            $html .= view('booths.partials.table-row', ['booth' => $booth])->render();
+        }
+        
+        return response()->json([
+            'success' => true,
+            'html' => $html,
+            'hasMore' => $hasMore,
+            'currentPage' => $page,
+            'total' => $total,
+            'perPage' => $perPage,
+            'loaded' => $offset + $booths->count()
+        ]);
     }
 
     /**

@@ -13,14 +13,75 @@
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
     }
     
+    /* Full Width Layout - Starting from Right Edge of Sidebar */
+    @media (min-width: 769px) and (max-width: 1024px) {
+        /* Tablet: Sidebar is 200px */
+        .content-wrapper {
+            margin-left: 200px !important;
+            width: calc(100% - 200px) !important;
+            max-width: calc(100% - 200px) !important;
+        }
+        
+        .content {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        
+        .content .container-fluid {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding-left: 24px !important;
+            padding-right: 24px !important;
+        }
+    }
+    
+    @media (min-width: 1025px) {
+        /* Desktop: Use CSS variable for sidebar width (250px) */
+        .content-wrapper {
+            margin-left: var(--sidebar-width, 250px) !important;
+            width: calc(100% - var(--sidebar-width, 250px)) !important;
+            max-width: calc(100% - var(--sidebar-width, 250px)) !important;
+        }
+        
+        .content {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        
+        .content .container-fluid {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding-left: 24px !important;
+            padding-right: 24px !important;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .content-wrapper {
+            margin-left: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        
+        .content .container-fluid {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+    }
+    
     @media (min-width: 769px) {
         body {
             background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%) !important;
         }
         
         .container-fluid {
-            max-width: 1400px !important;
-            margin: 0 auto !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            margin: 0 !important;
             padding: 24px !important;
         }
     }
@@ -109,6 +170,8 @@
         }
         
         .container-fluid {
+            max-width: 100% !important;
+            width: 100% !important;
             padding: 20px !important;
         }
     }
@@ -161,19 +224,39 @@
     }
     
     .booth-image-preview {
-        width: 60px !important;
-        height: 60px !important;
+        width: 56px !important;
+        height: 56px !important;
         object-fit: cover !important;
         border-radius: 12px !important;
-        border: 2px solid #e5e7eb !important;
+        border: 2px solid #e2e8f0 !important;
         cursor: pointer !important;
-        transition: all 0.3s ease !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
     
     .booth-image-preview:hover {
-        transform: scale(1.1) !important;
-        border-color: #6366f1 !important;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+        transform: scale(1.08) !important;
+        border-color: #667eea !important;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25) !important;
+    }
+    
+    /* Table Scrollbar Styling */
+    .table-responsive::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 4px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
     }
     
     /* Modern Stat Cards - Matching Dashboard */
@@ -940,69 +1023,174 @@
     }
     
     /* Modern Table */
+    /* Modern Table Card Design */
     .table-modern {
         background: white !important;
-        border-radius: 24px !important;
+        border-radius: 20px !important;
         overflow: hidden !important;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !important;
-        border: 1px solid #e5e7eb !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+        border: none !important;
+        transition: all 0.3s ease !important;
+        margin-bottom: 24px !important;
     }
     
+    .table-modern:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+    }
+    
+    .table-modern .card-body {
+        padding: 0 !important;
+        background: transparent !important;
+    }
+    
+    /* Modern Table Header */
     .table-modern thead {
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
         color: white !important;
+        position: relative !important;
+    }
+    
+    .table-modern thead::after {
+        content: '' !important;
+        position: absolute !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 2px !important;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent) !important;
     }
     
     .table-modern thead th {
         border: none !important;
-        padding: 20px 16px !important;
-        font-weight: 700 !important;
+        padding: 18px 20px !important;
+        font-weight: 600 !important;
         text-transform: uppercase !important;
-        font-size: 12px !important;
-        letter-spacing: 0.1em !important;
+        font-size: 11px !important;
+        letter-spacing: 0.5px !important;
+        color: rgba(255, 255, 255, 0.95) !important;
+        white-space: nowrap !important;
+        position: relative !important;
+    }
+    
+    .table-modern thead th:first-child {
+        padding-left: 24px !important;
+    }
+    
+    .table-modern thead th:last-child {
+        padding-right: 24px !important;
+    }
+    
+    .table-modern thead th input[type="checkbox"] {
+        width: 18px !important;
+        height: 18px !important;
+        cursor: pointer !important;
+        accent-color: white !important;
+    }
+    
+    /* Modern Table Body */
+    .table-modern tbody {
+        background: white !important;
     }
     
     .table-modern tbody tr {
-        transition: all 0.2s ease !important;
-        border-bottom: 1px solid #f3f4f6 !important;
-    }
-    
-    .table-modern tbody tr:hover {
-        background: #f8f9fc !important;
-        transform: translateX(4px) !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        background: white !important;
     }
     
     .table-modern tbody tr:last-child {
         border-bottom: none !important;
     }
     
+    .table-modern tbody tr:hover {
+        background: linear-gradient(90deg, #f8fafc 0%, #f1f5f9 100%) !important;
+        box-shadow: inset 4px 0 0 #667eea !important;
+        transform: translateX(2px) !important;
+    }
+    
+    .table-modern tbody tr:active {
+        background: #f1f5f9 !important;
+        transform: translateX(0) !important;
+    }
+    
     .table-modern tbody td {
-        padding: 16px !important;
+        padding: 18px 20px !important;
         vertical-align: middle !important;
-        color: #374151 !important;
+        color: #1e293b !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        border: none !important;
+    }
+    
+    .table-modern tbody td:first-child {
+        padding-left: 24px !important;
+    }
+    
+    .table-modern tbody td:last-child {
+        padding-right: 24px !important;
+    }
+    
+    /* Empty State */
+    .table-modern tbody tr td[colspan] {
+        padding: 60px 20px !important;
+        text-align: center !important;
+        color: #94a3b8 !important;
+    }
+    
+    .table-modern tbody tr td[colspan] i {
+        color: #cbd5e1 !important;
+        margin-bottom: 16px !important;
+    }
+    
+    .table-modern tbody tr td[colspan] p {
+        color: #64748b !important;
+        font-size: 15px !important;
+        margin: 0 !important;
     }
     
     /* Modern Action Buttons */
     .action-buttons {
         display: flex !important;
-        gap: 8px !important;
+        gap: 6px !important;
+        justify-content: center !important;
     }
     
     .btn-action {
-        width: 40px !important;
-        height: 40px !important;
+        width: 36px !important;
+        height: 36px !important;
         padding: 0 !important;
-        border-radius: 12px !important;
+        border-radius: 10px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        transition: all 0.2s ease !important;
-        font-size: 14px !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        font-size: 13px !important;
+        border: none !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
     }
     
     .btn-action:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        transform: translateY(-2px) scale(1.05) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    .btn-action:active {
+        transform: translateY(0) scale(0.98) !important;
+    }
+    
+    .btn-action.btn-info {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+        color: white !important;
+    }
+    
+    .btn-action.btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+    }
+    
+    .btn-action.btn-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+        color: white !important;
     }
     
     /* Modern Badges */
@@ -1189,6 +1377,83 @@
         font-size: 0.85rem;
     }
     
+    /* Improved Pagination Icons - Replace big arrows with cleaner icons */
+    .pagination .page-link:not(.page-link-text) {
+        min-width: 40px;
+        padding: 10px 12px;
+    }
+    
+    .pagination .page-link .fa-chevron-left,
+    .pagination .page-link .fa-chevron-right {
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .pagination .page-link .fa-angle-double-left,
+    .pagination .page-link .fa-angle-double-right {
+        font-size: 14px;
+        font-weight: 600;
+    }
+    
+    /* Space Mode Styles */
+    .space-mode-minimal .table-modern tbody td {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+    }
+    
+    .space-mode-minimal .table-modern thead th {
+        padding: 12px 16px !important;
+        font-size: 10px !important;
+    }
+    
+    .space-mode-minimal .dashboard-metric-card {
+        padding: 12px !important;
+    }
+    
+    .space-mode-minimal .metric-value {
+        font-size: 22px !important;
+    }
+    
+    .space-mode-expand .table-modern tbody td {
+        padding: 24px 28px !important;
+        font-size: 16px !important;
+    }
+    
+    .space-mode-expand .table-modern thead th {
+        padding: 24px 28px !important;
+        font-size: 13px !important;
+    }
+    
+    .space-mode-expand .dashboard-metric-card {
+        padding: 24px !important;
+    }
+    
+    .space-mode-expand .metric-value {
+        font-size: 36px !important;
+    }
+    
+    /* Dashboard Metric Card Hover Effects */
+    .dashboard-metric-card:hover {
+        transform: translateY(-4px) scale(1.02) !important;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    /* Settings Panel Animation */
+    #settingsPanel {
+        animation: slideDown 0.3s ease-out;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
     @media (max-width: 768px) {
         .pagination-wrapper {
             flex-direction: column;
@@ -1226,6 +1491,57 @@
         border-radius: 8px;
     }
     
+    /* Load Mode Toggle Button Styles */
+    .load-mode-btn {
+        background: #f8f9fa !important;
+        color: #495057 !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .load-mode-btn:hover {
+        background: #e9ecef !important;
+        color: #212529 !important;
+    }
+    
+    .load-mode-btn.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
+    }
+    
+    .load-mode-btn.active:hover {
+        background: linear-gradient(135deg, #5568d3 0%, #6a3d8f 100%) !important;
+        transform: translateY(-1px) !important;
+    }
+    
+    /* Per Page Selector Styles */
+    #boothsPerPage {
+        transition: all 0.3s ease !important;
+        border: 1px solid #dee2e6 !important;
+    }
+    
+    #boothsPerPage:hover {
+        border-color: #667eea !important;
+        box-shadow: 0 2px 4px rgba(102, 126, 234, 0.1) !important;
+    }
+    
+    #boothsPerPage:focus {
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+        outline: none !important;
+    }
+    
+    @media (max-width: 768px) {
+        .d-flex.align-items-center.gap-2 {
+            flex-wrap: wrap !important;
+        }
+        
+        #boothsPerPage {
+            min-width: 60px !important;
+            font-size: 0.85rem !important;
+        }
+    }
+    
     /* Modern Modal Styles */
     .modal-header {
         background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
@@ -1256,6 +1572,7 @@
         overflow-x: hidden !important;
         flex: 1 1 auto !important;
         padding: 30px !important;
+        position: relative !important;
     }
     
     #boothModal .modal-footer {
@@ -1413,9 +1730,85 @@
 @endpush
 
 @section('content')
-<div class="container-fluid">
-    <!-- Modern Page Header -->
-    <div class="modern-page-header d-none d-md-block">
+<div class="container-fluid" id="boothManagementContainer" data-space-mode="default">
+    <!-- Top Control Bar - Desktop -->
+    <div class="d-none d-md-block mb-3">
+        <div class="card" style="border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;">
+            <div class="card-body" style="padding: 16px 20px;">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <!-- Left: Title and Space Mode Toggle -->
+                    <div class="d-flex align-items-center gap-3">
+                        <div>
+                            <h3 class="mb-0" style="font-size: 24px; font-weight: 700; color: #1e293b;">
+                                <i class="fas fa-store mr-2" style="color: #667eea;"></i>Booth Management
+                            </h3>
+                            <small class="text-muted">Manage and organize all your booth listings</small>
+                        </div>
+                        
+                        <!-- Space Mode Toggle -->
+                        <div class="btn-group" role="group" style="border-radius: 10px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <button type="button" class="btn btn-sm space-mode-btn active" data-mode="default" onclick="setSpaceMode('default')" style="padding: 8px 16px; font-weight: 600; border: none; background: #667eea; color: white;">
+                                <i class="fas fa-th"></i> Default
+                            </button>
+                            <button type="button" class="btn btn-sm space-mode-btn" data-mode="minimal" onclick="setSpaceMode('minimal')" style="padding: 8px 16px; font-weight: 600; border: none; background: #f8f9fa; color: #495057;">
+                                <i class="fas fa-compress"></i> Minimal
+                            </button>
+                            <button type="button" class="btn btn-sm space-mode-btn" data-mode="expand" onclick="setSpaceMode('expand')" style="padding: 8px 16px; font-weight: 600; border: none; background: #f8f9fa; color: #495057;">
+                                <i class="fas fa-expand"></i> Expand
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Right: Actions -->
+                    <div class="d-flex gap-2 align-items-center">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleSettingsPanel()" id="settingsToggleBtn" style="border-radius: 10px; padding: 8px 16px;">
+                            <i class="fas fa-cog mr-1"></i>Settings
+                            <i class="fas fa-chevron-down ml-1" id="settingsChevron"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="openStatusSettingsModal()" style="border-radius: 10px; padding: 8px 16px;">
+                            <i class="fas fa-tags mr-1"></i>Status Settings
+                        </button>
+                        <a href="{{ url('/booths?view=canvas') }}" class="btn btn-sm btn-primary" style="border-radius: 10px; padding: 8px 16px;">
+                            <i class="fas fa-map mr-1"></i>Canvas View
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Expandable Settings Panel -->
+    <div class="d-none d-md-block mb-3" id="settingsPanel" style="display: none;">
+        <div class="card" style="border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;">
+            <div class="card-body" style="padding: 20px;">
+                <h5 class="mb-3" style="font-weight: 600; color: #1e293b;">
+                    <i class="fas fa-sliders-h mr-2"></i>Display Settings
+                </h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-600">Column Visibility</label>
+                        <div class="d-flex flex-wrap gap-2" id="columnVisibilityControls">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-600">Table Options</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="fitColumnsToContent()" style="border-radius: 8px;">
+                                <i class="fas fa-arrows-alt-h mr-1"></i>Fit Columns
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetColumnWidths()" style="border-radius: 8px;">
+                                <i class="fas fa-redo mr-1"></i>Reset Widths
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modern Page Header (Legacy - Hidden) -->
+    <div class="modern-page-header d-none" style="display: none !important;">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <div>
                 <h2><i class="fas fa-store me-2"></i>Booth Management</h2>
@@ -1450,8 +1843,105 @@
         </div>
     </div>
 
-    <!-- Modern Statistics Cards - Desktop -->
-    <div class="row mb-4 d-none d-md-flex">
+    <!-- Mini Dashboard - Desktop -->
+    <div class="d-none d-md-block mb-4" id="miniDashboard">
+        <div class="card" style="border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e5e7eb; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">
+            <div class="card-body" style="padding: 20px;">
+                <div class="row g-3">
+                    <!-- Total Booths -->
+                    <div class="col-md-2 col-lg-2">
+                        <div class="dashboard-metric-card" style="background: white; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e5e7eb; transition: all 0.2s ease;">
+                            <div class="metric-icon" style="font-size: 24px; color: #667eea; margin-bottom: 8px;">
+                                <i class="fas fa-store"></i>
+                            </div>
+                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: #1e293b; line-height: 1.2;">
+                                {{ number_format($stats['total']) }}
+                            </div>
+                            <div class="metric-label" style="font-size: 12px; color: #64748b; font-weight: 600; margin-top: 4px;">
+                                Total Booths
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Available -->
+                    <div class="col-md-2 col-lg-2">
+                        <div class="dashboard-metric-card success" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 4px rgba(16,185,129,0.2); border: 1px solid #10b981; transition: all 0.2s ease;">
+                            <div class="metric-icon" style="font-size: 24px; color: white; margin-bottom: 8px;">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: white; line-height: 1.2;">
+                                {{ number_format($stats['available']) }}
+                            </div>
+                            <div class="metric-label" style="font-size: 12px; color: rgba(255,255,255,0.9); font-weight: 600; margin-top: 4px;">
+                                Available
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Reserved -->
+                    <div class="col-md-2 col-lg-2">
+                        <div class="dashboard-metric-card warning" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 4px rgba(245,158,11,0.2); border: 1px solid #f59e0b; transition: all 0.2s ease;">
+                            <div class="metric-icon" style="font-size: 24px; color: white; margin-bottom: 8px;">
+                                <i class="fas fa-bookmark"></i>
+                            </div>
+                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: white; line-height: 1.2;">
+                                {{ number_format($stats['reserved']) }}
+                            </div>
+                            <div class="metric-label" style="font-size: 12px; color: rgba(255,255,255,0.9); font-weight: 600; margin-top: 4px;">
+                                Reserved
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Confirmed -->
+                    <div class="col-md-2 col-lg-2">
+                        <div class="dashboard-metric-card info" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 4px rgba(6,182,212,0.2); border: 1px solid #06b6d4; transition: all 0.2s ease;">
+                            <div class="metric-icon" style="font-size: 24px; color: white; margin-bottom: 8px;">
+                                <i class="fas fa-check-double"></i>
+                            </div>
+                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: white; line-height: 1.2;">
+                                {{ number_format($stats['confirmed']) }}
+                            </div>
+                            <div class="metric-label" style="font-size: 12px; color: rgba(255,255,255,0.9); font-weight: 600; margin-top: 4px;">
+                                Confirmed
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Paid -->
+                    <div class="col-md-2 col-lg-2">
+                        <div class="dashboard-metric-card danger" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 4px rgba(239,68,68,0.2); border: 1px solid #ef4444; transition: all 0.2s ease;">
+                            <div class="metric-icon" style="font-size: 24px; color: white; margin-bottom: 8px;">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: white; line-height: 1.2;">
+                                {{ number_format($stats['paid']) }}
+                            </div>
+                            <div class="metric-label" style="font-size: 12px; color: rgba(255,255,255,0.9); font-weight: 600; margin-top: 4px;">
+                                Paid
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Occupancy Rate -->
+                    <div class="col-md-2 col-lg-2">
+                        @php
+                            $occupancyRate = $stats['total'] > 0 ? round((($stats['total'] - $stats['available']) / $stats['total']) * 100, 1) : 0;
+                        @endphp
+                        <div class="dashboard-metric-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 4px rgba(102,126,234,0.2); border: 1px solid #667eea; transition: all 0.2s ease;">
+                            <div class="metric-icon" style="font-size: 24px; color: white; margin-bottom: 8px;">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: white; line-height: 1.2;">
+                                {{ $occupancyRate }}%
+                            </div>
+                            <div class="metric-label" style="font-size: 12px; color: rgba(255,255,255,0.9); font-weight: 600; margin-top: 4px;">
+                                Occupancy
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modern Statistics Cards - Desktop (Legacy - Hidden) -->
+    <div class="row mb-4 d-none" style="display: none !important;">
         <div class="col-md-2">
             <div class="modern-stat-card">
                 <div class="modern-stat-value">{{ number_format($stats['total']) }}</div>
@@ -1568,66 +2058,95 @@
         </div>
     </div>
 
-    <!-- Filter Bar - Desktop -->
-    <div class="filter-bar d-none d-md-block">
-        <form method="GET" action="{{ route('booths.index', ['view' => 'table']) }}" id="filterForm">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label"><i class="fas fa-search mr-1"></i>Search</label>
-                    <input type="text" name="search" class="form-control" placeholder="Booth number, company, category..." value="{{ request('search') }}">
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label"><i class="fas fa-map mr-1"></i>Floor Plan</label>
-                    <select name="floor_plan_id" class="form-control">
-                        <option value="">All Floor Plans</option>
-                        @foreach($floorPlans as $fp)
-                            <option value="{{ $fp->id }}" {{ request('floor_plan_id') == $fp->id ? 'selected' : '' }}>
-                                {{ $fp->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label"><i class="fas fa-tag mr-1"></i>Status</label>
-                    <select name="status" class="form-control">
-                        <option value="">All Status</option>
-                        <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Available</option>
-                        <option value="2" {{ request('status') == '2' ? 'selected' : '' }}>Confirmed</option>
-                        <option value="3" {{ request('status') == '3' ? 'selected' : '' }}>Reserved</option>
-                        <option value="4" {{ request('status') == '4' ? 'selected' : '' }}>Hidden</option>
-                        <option value="5" {{ request('status') == '5' ? 'selected' : '' }}>Paid</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label"><i class="fas fa-building mr-1"></i>Booth Type</label>
-                    <select name="booth_type_id" class="form-control">
-                        <option value="">All Types</option>
-                        @foreach($boothTypes as $type)
-                            <option value="{{ $type->id }}" {{ request('booth_type_id') == $type->id ? 'selected' : '' }}>
-                                {{ $type->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label"><i class="fas fa-folder mr-1"></i>Category</label>
-                    <select name="category_id" class="form-control">
-                        <option value="">All Categories</option>
-                        @foreach($categories as $cat)
-                            <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>
-                                {{ $cat->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-1">
-                    <label class="form-label">&nbsp;</label>
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-filter"></i> Filter
+    <!-- Advanced Filter Bar - Desktop -->
+    <div class="d-none d-md-block mb-3">
+        <div class="card" style="border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;">
+            <div class="card-body" style="padding: 20px;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0" style="font-weight: 600; color: #1e293b;">
+                        <i class="fas fa-filter mr-2"></i>Advanced Filters
+                    </h5>
+                    <button type="button" class="btn btn-sm btn-link text-danger" onclick="clearAllFilters()" style="text-decoration: none; padding: 0;">
+                        <i class="fas fa-times-circle mr-1"></i>Clear All
                     </button>
                 </div>
+                <form method="GET" action="{{ route('booths.index', ['view' => 'table']) }}" id="filterForm">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label" style="font-weight: 600; color: #475569;">
+                                <i class="fas fa-search mr-1"></i>Search
+                            </label>
+                            <input type="text" name="search" class="form-control" placeholder="Booth number, company, category..." value="{{ request('search') }}" style="border-radius: 10px;">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label" style="font-weight: 600; color: #475569;">
+                                <i class="fas fa-map mr-1"></i>Floor Plan
+                            </label>
+                            <select name="floor_plan_id" class="form-control" style="border-radius: 10px;">
+                                <option value="">All Floor Plans</option>
+                                @foreach($floorPlans as $fp)
+                                    <option value="{{ $fp->id }}" {{ request('floor_plan_id') == $fp->id ? 'selected' : '' }}>
+                                        {{ $fp->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label" style="font-weight: 600; color: #475569;">
+                                <i class="fas fa-info-circle mr-1"></i>Status
+                            </label>
+                            <select name="status" class="form-control" style="border-radius: 10px;">
+                                <option value="">All Status</option>
+                                @if(isset($statusSettings) && $statusSettings->count() > 0)
+                                    @foreach($statusSettings as $status)
+                                        <option value="{{ $status->status_code }}" {{ request('status') == $status->status_code ? 'selected' : '' }}>
+                                            {{ $status->status_name }}
+                                        </option>
+                                    @endforeach
+                                @endif
+                                <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Available</option>
+                                <option value="2" {{ request('status') == '2' ? 'selected' : '' }}>Confirmed</option>
+                                <option value="3" {{ request('status') == '3' ? 'selected' : '' }}>Reserved</option>
+                                <option value="4" {{ request('status') == '4' ? 'selected' : '' }}>Hidden</option>
+                                <option value="5" {{ request('status') == '5' ? 'selected' : '' }}>Paid</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label" style="font-weight: 600; color: #475569;">
+                                <i class="fas fa-building mr-1"></i>Booth Type
+                            </label>
+                            <select name="booth_type_id" class="form-control" style="border-radius: 10px;">
+                                <option value="">All Types</option>
+                                @foreach($boothTypes as $type)
+                                    <option value="{{ $type->id }}" {{ request('booth_type_id') == $type->id ? 'selected' : '' }}>
+                                        {{ $type->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label" style="font-weight: 600; color: #475569;">
+                                <i class="fas fa-folder mr-1"></i>Category
+                            </label>
+                            <select name="category_id" class="form-control" style="border-radius: 10px;">
+                                <option value="">All Categories</option>
+                                @foreach($categories as $cat)
+                                    <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>
+                                        {{ $cat->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label" style="font-weight: 600; color: #475569;">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary w-100" style="border-radius: 10px; font-weight: 600;">
+                                <i class="fas fa-filter mr-1"></i>Filter
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
-        </form>
+        </div>
     </div>
 
     <!-- Modern Actions Bar -->
@@ -1645,7 +2164,29 @@
                         <i class="fas fa-trash mr-1"></i>Bulk Delete
                     </button>
                 </div>
-                <div>
+                <div class="d-flex gap-2 flex-wrap align-items-center">
+                    <!-- Load Mode Toggle -->
+                    <div class="btn-group" role="group" style="border-radius: 12px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <button type="button" id="lazyLoadModeBtn" class="btn btn-sm load-mode-btn active" onclick="switchLoadMode('lazy')" style="border-radius: 0; padding: 10px 16px; font-weight: 600; border: none;">
+                            <i class="fas fa-sync-alt mr-1"></i>Lazy Load
+                        </button>
+                        <button type="button" id="paginationModeBtn" class="btn btn-sm load-mode-btn" onclick="switchLoadMode('pagination')" style="border-radius: 0; padding: 10px 16px; font-weight: 600; border: none;">
+                            <i class="fas fa-list mr-1"></i>Pagination
+                        </button>
+                    </div>
+                    <!-- Rows Per Page Selector -->
+                    <div class="d-flex align-items-center gap-2" style="background: #f8f9fa; padding: 8px 12px; border-radius: 12px; border: 1px solid #e5e7eb;">
+                        <label for="boothsPerPage" class="mb-0" style="font-weight: 600; color: #495057; font-size: 0.9rem; white-space: nowrap;">
+                            <i class="fas fa-list-ol mr-1"></i>Rows:
+                        </label>
+                        <select id="boothsPerPage" class="form-control form-control-sm" onchange="changePerPage(this.value)" style="border-radius: 8px; border: 1px solid #dee2e6; padding: 6px 10px; font-weight: 600; min-width: 70px; cursor: pointer;">
+                            <option value="10" {{ (request('per_page', $perPage ?? 50) == 10) ? 'selected' : '' }}>10</option>
+                            <option value="25" {{ (request('per_page', $perPage ?? 50) == 25) ? 'selected' : '' }}>25</option>
+                            <option value="50" {{ (request('per_page', $perPage ?? 50) == 50) ? 'selected' : '' }}>50</option>
+                            <option value="100" {{ (request('per_page', $perPage ?? 50) == 100) ? 'selected' : '' }}>100</option>
+                            <option value="200" {{ (request('per_page', $perPage ?? 50) == 200) ? 'selected' : '' }}>200</option>
+                        </select>
+                    </div>
                     <a href="{{ route('booths.index', ['view' => 'table', 'export' => 'csv']) }}" class="btn btn-info" style="border-radius: 12px; padding: 10px 20px; font-weight: 600;">
                         <i class="fas fa-download mr-1"></i>Export CSV
                     </a>
@@ -1657,63 +2198,196 @@
     <!-- Booths Table - Desktop View -->
     <div class="card table-modern d-none d-md-block">
         <div class="card-body p-0">
-            <table class="table table-hover mb-0" id="boothsTable">
-                <thead>
-                    <tr>
-                        <th width="40">
-                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
-                        </th>
-                        <th>Image</th>
-                        <th>Booth #</th>
-                        <th>Type</th>
-                        <th>Floor Plan</th>
-                        <th>Company</th>
-                        <th>Category</th>
-                        <th>Status</th>
-                        <th>Price</th>
-                        <th>Area</th>
-                        <th>Capacity</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBoothsBody">
-                    @forelse($booths as $booth)
-                        @include('booths.partials.table-row', ['booth' => $booth])
-                    @empty
-                    <tr>
-                        <td colspan="12" class="text-center py-5">
-                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">No booths found. Create your first booth!</p>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+            <div class="table-responsive" style="max-height: calc(100vh - 400px); overflow-y: auto;">
+                <table class="table table-hover mb-0" id="boothsTable" style="margin-bottom: 0;">
+                    <thead style="position: sticky; top: 0; z-index: 10;">
+                        <tr>
+                            <th width="50" style="min-width: 50px;" data-column="checkbox" data-column-index="0">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" style="cursor: pointer; width: 18px; height: 18px;">
+                                </div>
+                            </th>
+                            <th style="min-width: 80px;" data-column="image" data-column-index="1">
+                                <i class="fas fa-image mr-1"></i>Image
+                            </th>
+                            <th style="min-width: 100px;" data-column="booth_number" data-column-index="2">
+                                <i class="fas fa-hashtag mr-1"></i>Booth #
+                            </th>
+                            <th style="min-width: 100px;" data-column="type" data-column-index="3">
+                                <i class="fas fa-tag mr-1"></i>Type
+                            </th>
+                            <th style="min-width: 120px;" data-column="floor_plan" data-column-index="4">
+                                <i class="fas fa-building mr-1"></i>Floor Plan
+                            </th>
+                            <th style="min-width: 150px;" data-column="company" data-column-index="5">
+                                <i class="fas fa-briefcase mr-1"></i>Company
+                            </th>
+                            <th style="min-width: 120px;" data-column="category" data-column-index="6">
+                                <i class="fas fa-folder mr-1"></i>Category
+                            </th>
+                            <th style="min-width: 100px;" data-column="status" data-column-index="7">
+                                <i class="fas fa-info-circle mr-1"></i>Status
+                            </th>
+                            <th style="min-width: 100px;" data-column="price" data-column-index="8">
+                                <i class="fas fa-dollar-sign mr-1"></i>Price
+                            </th>
+                            <th style="min-width: 90px;" data-column="area" data-column-index="9">
+                                <i class="fas fa-ruler-combined mr-1"></i>Area
+                            </th>
+                            <th style="min-width: 100px;" data-column="capacity" data-column-index="10">
+                                <i class="fas fa-users mr-1"></i>Capacity
+                            </th>
+                            <th style="min-width: 120px; text-align: center;" data-column="actions" data-column-index="11">
+                                <i class="fas fa-cog mr-1"></i>Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBoothsBody">
+                        @forelse($booths as $booth)
+                            @include('booths.partials.table-row', ['booth' => $booth])
+                        @empty
+                        <tr>
+                            <td colspan="12" class="text-center py-5">
+                                <div style="padding: 40px 20px;">
+                                    <i class="fas fa-inbox" style="font-size: 64px; color: #cbd5e1; margin-bottom: 20px; display: block;"></i>
+                                    <h5 style="color: #64748b; font-weight: 600; margin-bottom: 8px;">No booths found</h5>
+                                    <p style="color: #94a3b8; font-size: 14px; margin: 0;">Create your first booth to get started!</p>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
         <!-- Lazy Loading Trigger -->
-        <div id="boothsLazyLoadTrigger" style="height: 20px; margin: 10px 0;"></div>
+        <div id="boothsLazyLoadTrigger" style="height: 20px; margin: 0;"></div>
         <!-- Lazy Loading Spinner -->
-        <div id="boothsLazyLoadSpinner" class="text-center py-3" style="display: none;">
-            <div class="spinner-border spinner-border-sm text-primary" role="status">
-                <span class="sr-only">Loading...</span>
+        <div id="boothsLazyLoadSpinner" class="text-center py-4" style="display: none; background: #f8fafc; border-top: 1px solid #e2e8f0;">
+            <div class="d-flex align-items-center justify-content-center gap-2">
+                <div class="spinner-border spinner-border-sm text-primary" role="status" style="width: 20px; height: 20px;">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <span style="color: #64748b; font-size: 14px; font-weight: 500;">Loading more booths...</span>
             </div>
-            <span class="ml-2 text-muted">Loading more booths...</span>
         </div>
         <!-- Lazy Loading End -->
-        <div id="boothsLazyLoadEnd" class="text-center py-3" style="display: none;">
-            <span class="text-muted">No more booths to load</span>
+        <div id="boothsLazyLoadEnd" class="text-center py-4" style="display: none; background: #f8fafc; border-top: 1px solid #e2e8f0;">
+            <span style="color: #94a3b8; font-size: 14px; font-weight: 500;">
+                <i class="fas fa-check-circle mr-2"></i>All booths loaded
+            </span>
         </div>
-        @if(isset($total) && $total > 0)
+        @if(isset($booths) && $booths->total() > 0)
         <div class="card-footer-modern">
             <div class="pagination-wrapper">
                 <div class="pagination-info">
                     <span class="pagination-text">
                         <i class="fas fa-list mr-2"></i>
-                        Showing <strong>{{ count($booths) }}</strong> of <strong>{{ $total }}</strong> booths
+                        Showing <strong id="boothsShowing">{{ $booths->firstItem() ?? 0 }}</strong> - <strong id="boothsTo">{{ $booths->lastItem() ?? 0 }}</strong> of <strong id="boothsTotal">{{ $booths->total() }}</strong> booths
                     </span>
                 </div>
-                <div class="pagination-controls">
-                    <!-- Pagination removed - using lazy loading instead -->
+                <div class="pagination-controls" id="boothsPaginationControls">
+                    <!-- Pagination links - always rendered but shown/hidden based on mode -->
+                    @if(isset($booths) && $booths->hasPages())
+                    <div id="boothsPaginationLinks" style="display: none;">
+                        <nav aria-label="Booth pagination">
+                            <ul class="pagination mb-0">
+                                <!-- First Page -->
+                                @if($booths->onFirstPage())
+                                    <li class="page-item disabled">
+                                        <span class="page-link" aria-label="First" style="min-width: 40px; padding: 10px 12px;">
+                                            <i class="fas fa-angle-double-left" style="font-size: 12px;"></i>
+                                        </span>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <span class="page-link" aria-label="Previous" style="min-width: 40px; padding: 10px 12px;">
+                                            <i class="fas fa-chevron-left" style="font-size: 12px;"></i>
+                                        </span>
+                                    </li>
+                                @else
+                                    @php
+                                        $queryParams = request()->except('page');
+                                        $firstUrl = $booths->url(1);
+                                        $prevUrl = $booths->previousPageUrl();
+                                        if (!empty($queryParams)) {
+                                            $firstUrl .= (strpos($firstUrl, '?') !== false ? '&' : '?') . http_build_query($queryParams);
+                                            $prevUrl .= (strpos($prevUrl, '?') !== false ? '&' : '?') . http_build_query($queryParams);
+                                        }
+                                    @endphp
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ $firstUrl }}" aria-label="First" style="min-width: 40px; padding: 10px 12px;">
+                                            <i class="fas fa-angle-double-left" style="font-size: 12px;"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ $prevUrl }}" aria-label="Previous" style="min-width: 40px; padding: 10px 12px;">
+                                            <i class="fas fa-chevron-left" style="font-size: 12px;"></i>
+                                        </a>
+                                    </li>
+                                @endif
+                                
+                                <!-- Page Numbers -->
+                                @php
+                                    $currentPage = $booths->currentPage();
+                                    $lastPage = $booths->lastPage();
+                                    $startPage = max(1, $currentPage - 2);
+                                    $endPage = min($lastPage, $currentPage + 2);
+                                @endphp
+                                @foreach($booths->getUrlRange($startPage, $endPage) as $page => $url)
+                                    @php
+                                        $queryParams = request()->except('page');
+                                        if (!empty($queryParams)) {
+                                            $url .= (strpos($url, '?') !== false ? '&' : '?') . http_build_query($queryParams);
+                                        }
+                                    @endphp
+                                    @if($page == $currentPage)
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ $page }}</span>
+                                        </li>
+                                    @else
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                                        </li>
+                                    @endif
+                                @endforeach
+                                
+                                <!-- Last Page -->
+                                @if($booths->hasMorePages())
+                                    @php
+                                        $queryParams = request()->except('page');
+                                        $nextUrl = $booths->nextPageUrl();
+                                        $lastUrl = $booths->url($lastPage);
+                                        if (!empty($queryParams)) {
+                                            $nextUrl .= (strpos($nextUrl, '?') !== false ? '&' : '?') . http_build_query($queryParams);
+                                            $lastUrl .= (strpos($lastUrl, '?') !== false ? '&' : '?') . http_build_query($queryParams);
+                                        }
+                                    @endphp
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ $nextUrl }}" aria-label="Next" style="min-width: 40px; padding: 10px 12px;">
+                                            <i class="fas fa-chevron-right" style="font-size: 12px;"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ $lastUrl }}" aria-label="Last" style="min-width: 40px; padding: 10px 12px;">
+                                            <i class="fas fa-angle-double-right" style="font-size: 12px;"></i>
+                                        </a>
+                                    </li>
+                                @else
+                                    <li class="page-item disabled">
+                                        <span class="page-link" aria-label="Next" style="min-width: 40px; padding: 10px 12px;">
+                                            <i class="fas fa-chevron-right" style="font-size: 12px;"></i>
+                                        </span>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <span class="page-link" aria-label="Last" style="min-width: 40px; padding: 10px 12px;">
+                                            <i class="fas fa-angle-double-right" style="font-size: 12px;"></i>
+                                        </span>
+                                    </li>
+                                @endif
+                            </ul>
+                        </nav>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -2233,19 +2907,45 @@ function openCreateModal() {
 
 // Edit Booth
 function editBooth(id) {
+    if (!id) {
+        console.error('editBooth called without id');
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Booth ID is required',
+                confirmButtonText: 'OK'
+            });
+        } else {
+            alert('Booth ID is required');
+        }
+        return;
+    }
+    
     currentBoothId = id;
     $('#modalTitleText').text('Edit Booth');
     
+    // Show modal immediately with form (form should already be in DOM)
+    $('#boothModal').modal('show');
+    
+    // Show loading overlay on modal body
+    const modalBody = $('#boothModal .modal-body');
+    const originalContent = modalBody.html();
+    modalBody.prepend('<div id="boothEditLoading" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.9); z-index: 1000; display: flex; align-items: center; justify-content: center; border-radius: 12px;"><div class="text-center"><div class="spinner-border text-primary mb-2" role="status"><span class="sr-only">Loading...</span></div><p class="text-muted">Loading booth data...</p></div></div>');
+    
+    // Use the proper route helper or construct URL correctly
+    const url = `{{ url('/booths') }}/${id}?json=1`;
+    
     // Fetch booth data with proper headers to ensure JSON response
-    // Use the JSON endpoint to ensure we always get JSON
-    fetch(`/booths/${id}?json=1`, {
+    fetch(url, {
         method: 'GET',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-        }
+        },
+        credentials: 'same-origin'
     })
         .then(response => {
             // Check if response is actually JSON
@@ -2253,35 +2953,41 @@ function editBooth(id) {
             if (!contentType || !contentType.includes('application/json')) {
                 return response.text().then(text => {
                     console.error('Expected JSON but got:', text.substring(0, 200));
-                    throw new Error('Server returned HTML instead of JSON. Check console for details.');
+                    throw new Error('Server returned HTML instead of JSON. Please check the console for details.');
                 });
             }
             
             if (!response.ok) {
                 return response.json().then(err => {
                     throw new Error(err.message || `HTTP error! status: ${response.status}`);
+                }).catch(() => {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 });
             }
             return response.json();
         })
         .then(data => {
+            // Remove loading overlay
+            $('#boothEditLoading').remove();
+            
             // Check if we got an error response
             if (data.error) {
                 throw new Error(data.message || data.error);
             }
             
-            $('#boothId').val(data.id);
-            $('#booth_number').val(data.booth_number);
-            $('#floor_plan_id').val(data.floor_plan_id);
-            $('#booth_type_id').val(data.booth_type_id);
-            $('#type').val(data.type);
-            $('#price').val(data.price);
-            $('#status').val(data.status);
-            $('#client_id').val(data.client_id);
-            $('#category_id').val(data.category_id);
-            $('#area_sqm').val(data.area_sqm);
-            $('#capacity').val(data.capacity);
-            $('#electricity_power').val(data.electricity_power);
+            // Populate form fields
+            $('#boothId').val(data.id || '');
+            $('#booth_number').val(data.booth_number || '');
+            $('#floor_plan_id').val(data.floor_plan_id || '');
+            $('#booth_type_id').val(data.booth_type_id || '');
+            $('#type').val(data.type || '');
+            $('#price').val(data.price || '');
+            $('#status').val(data.status || '');
+            $('#client_id').val(data.client_id || '');
+            $('#category_id').val(data.category_id || '');
+            $('#area_sqm').val(data.area_sqm || '');
+            $('#capacity').val(data.capacity || '');
+            $('#electricity_power').val(data.electricity_power || '');
             $('#description').val(data.description || '');
             $('#features').val(data.features || '');
             $('#notes').val(data.notes || '');
@@ -2296,16 +3002,32 @@ function editBooth(id) {
             
             // Reset to first tab
             $('#basic-tab').tab('show');
-            $('#boothModal').modal('show');
+            
+            // Ensure modal is shown (in case it was closed)
+            if (!$('#boothModal').hasClass('show')) {
+                $('#boothModal').modal('show');
+            }
         })
         .catch(error => {
             console.error('Error loading booth:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Failed to load booth data',
-                text: error.message || 'An unexpected error occurred. Please try again.',
-                confirmButtonText: 'OK'
-            });
+            
+            // Remove loading overlay
+            $('#boothEditLoading').remove();
+            
+            // Close modal
+            $('#boothModal').modal('hide');
+            
+            // Show error message
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Failed to load booth data',
+                    text: error.message || 'An unexpected error occurred. Please try again.',
+                    confirmButtonText: 'OK'
+                });
+            } else {
+                alert('Failed to load booth data: ' + (error.message || 'An unexpected error occurred. Please try again.'));
+            }
         });
 }
 
@@ -3019,10 +3741,13 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('.quick-filter-btn[onclick*="all"]')?.classList.add('active');
     }
     
-    // Lazy Loading Variables
-    let boothsCurrentPage = 1;
+    // Load Mode Variables
+    let boothsLoadMode = localStorage.getItem('boothsLoadMode') || 'lazy'; // 'lazy' or 'pagination'
+    let boothsCurrentPage = {{ $booths->currentPage() ?? 1 }};
     let boothsIsLoading = false;
-    let boothsHasMoreData = {{ ($total ?? 0) > count($booths) ? 'true' : 'false' }};
+    let boothsTotal = {{ $booths->total() ?? 0 }};
+    let boothsPerPage = {{ request('per_page', $perPage ?? 50) }};
+    let boothsHasMoreData = {{ ($booths->hasMorePages() ?? false) ? 'true' : 'false' }};
     let boothsFilterParams = {
         search: '{{ request('search') }}',
         floor_plan_id: '{{ request('floor_plan_id') }}',
@@ -3030,14 +3755,141 @@ document.addEventListener('DOMContentLoaded', function() {
         booth_type_id: '{{ request('booth_type_id') }}',
         category_id: '{{ request('category_id') }}',
         sort_by: '{{ request('sort_by', 'booth_number') }}',
-        sort_dir: '{{ request('sort_dir', 'asc') }}'
+        sort_dir: '{{ request('sort_dir', 'asc') }}',
+        per_page: boothsPerPage
     };
+    
+    // Change Per Page Function
+    function changePerPage(perPage) {
+        const allowedPerPage = [10, 25, 50, 100, 200];
+        if (!allowedPerPage.includes(parseInt(perPage))) {
+            perPage = 50; // Default fallback
+        }
+        
+        boothsPerPage = parseInt(perPage);
+        boothsFilterParams.per_page = boothsPerPage;
+        localStorage.setItem('boothsPerPage', boothsPerPage);
+        
+        // Reload page with new per-page setting
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('per_page', perPage);
+        currentUrl.searchParams.set('view', 'table');
+        // Reset to page 1 when changing per-page
+        currentUrl.searchParams.set('page', '1');
+        
+        // Preserve load mode
+        if (boothsLoadMode === 'pagination') {
+            currentUrl.searchParams.set('load_mode', 'pagination');
+        }
+        
+        window.location.href = currentUrl.toString();
+    }
     
     // Lazy Loading Observer
     let boothsLazyLoadObserver = null;
     
+    // Switch Load Mode Function
+    function switchLoadMode(mode) {
+        if (boothsLoadMode === mode) return;
+        
+        boothsLoadMode = mode;
+        localStorage.setItem('boothsLoadMode', mode);
+        
+        // Update button states
+        $('#lazyLoadModeBtn').toggleClass('active', mode === 'lazy');
+        $('#paginationModeBtn').toggleClass('active', mode === 'pagination');
+        
+        // Show/hide appropriate UI elements
+        if (mode === 'lazy') {
+            $('#boothsLazyLoadTrigger').show();
+            $('#boothsLazyLoadSpinner').show();
+            $('#boothsLazyLoadEnd').show();
+            $('#boothsPaginationLinks').hide();
+            initBoothsLazyLoading();
+        } else {
+            // Disconnect lazy loading observer
+            if (boothsLazyLoadObserver) {
+                boothsLazyLoadObserver.disconnect();
+                boothsLazyLoadObserver = null;
+            }
+            $('#boothsLazyLoadTrigger').hide();
+            $('#boothsLazyLoadSpinner').hide();
+            $('#boothsLazyLoadEnd').hide();
+            $('#boothsPaginationLinks').show();
+            // Reload page with pagination mode
+            reloadWithPagination();
+        }
+    }
+    
+    // Reload page with pagination mode
+    function reloadWithPagination() {
+        // Build URL with current filters and pagination mode
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('view', 'table');
+        currentUrl.searchParams.set('load_mode', 'pagination');
+        currentUrl.searchParams.set('per_page', boothsPerPage);
+        // Remove page param to start from page 1
+        currentUrl.searchParams.delete('page');
+        
+        window.location.href = currentUrl.toString();
+    }
+    
+    // Initialize load mode on page load
+    function initLoadMode() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const loadModeParam = urlParams.get('load_mode');
+        const perPageParam = urlParams.get('per_page');
+        
+        // Set per-page from URL or localStorage
+        if (perPageParam) {
+            boothsPerPage = parseInt(perPageParam);
+            boothsFilterParams.per_page = boothsPerPage;
+            localStorage.setItem('boothsPerPage', boothsPerPage);
+            // Update dropdown
+            $('#boothsPerPage').val(boothsPerPage);
+        } else {
+            // Try to get from localStorage
+            const savedPerPage = localStorage.getItem('boothsPerPage');
+            if (savedPerPage) {
+                boothsPerPage = parseInt(savedPerPage);
+                boothsFilterParams.per_page = boothsPerPage;
+                $('#boothsPerPage').val(boothsPerPage);
+            }
+        }
+        
+        // Check if pagination links exist (means we're in pagination mode from server)
+        const hasPaginationLinks = $('#boothsPaginationLinks').length > 0 && $('#boothsPaginationLinks').html().trim() !== '';
+        
+        if (loadModeParam === 'pagination' || hasPaginationLinks) {
+            boothsLoadMode = 'pagination';
+            localStorage.setItem('boothsLoadMode', 'pagination');
+        } else {
+            boothsLoadMode = localStorage.getItem('boothsLoadMode') || 'lazy';
+        }
+        
+        // Update button states
+        $('#lazyLoadModeBtn').toggleClass('active', boothsLoadMode === 'lazy');
+        $('#paginationModeBtn').toggleClass('active', boothsLoadMode === 'pagination');
+        
+        // Show/hide appropriate UI elements
+        if (boothsLoadMode === 'lazy') {
+            $('#boothsLazyLoadTrigger').show();
+            $('#boothsPaginationLinks').hide();
+        } else {
+            $('#boothsLazyLoadTrigger').hide();
+            $('#boothsLazyLoadSpinner').hide();
+            $('#boothsLazyLoadEnd').hide();
+            if ($('#boothsPaginationLinks').length > 0) {
+                $('#boothsPaginationLinks').show();
+            }
+        }
+    }
+    
     // Initialize Lazy Loading
     function initBoothsLazyLoading() {
+        // Only initialize if in lazy load mode
+        if (boothsLoadMode !== 'lazy') return;
+        
         // Disconnect existing observer if any
         if (boothsLazyLoadObserver) {
             boothsLazyLoadObserver.disconnect();
@@ -3056,7 +3908,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         boothsLazyLoadObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                if (entry.isIntersecting && boothsHasMoreData && !boothsIsLoading) {
+                if (entry.isIntersecting && boothsHasMoreData && !boothsIsLoading && boothsLoadMode === 'lazy') {
                     loadMoreBooths();
                 }
             });
@@ -3088,6 +3940,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (boothsFilterParams.category_id) params.append('category_id', boothsFilterParams.category_id);
         if (boothsFilterParams.sort_by) params.append('sort_by', boothsFilterParams.sort_by);
         if (boothsFilterParams.sort_dir) params.append('sort_dir', boothsFilterParams.sort_dir);
+        if (boothsFilterParams.per_page) params.append('per_page', boothsFilterParams.per_page);
         
         fetch('{{ route("booths.index") }}?' + params.toString(), {
             method: 'GET',
@@ -3108,7 +3961,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Append new rows to table body
                 $('#tableBoothsBody').append(data.html);
                 
+                // Reapply column visibility to newly loaded rows
+                const savedVisibility = JSON.parse(localStorage.getItem('boothColumnVisibility') || '{}');
+                columnDefinitions.forEach((col, index) => {
+                    if (savedVisibility[col.key] === false) {
+                        toggleColumnVisibility(col.key, index, false);
+                    }
+                });
+                
                 boothsHasMoreData = data.hasMore !== false;
+                boothsCurrentPage = data.currentPage || boothsCurrentPage;
+                boothsTotal = data.total || boothsTotal;
+                if (data.perPage) {
+                    boothsPerPage = data.perPage;
+                    boothsFilterParams.per_page = boothsPerPage;
+                }
+                
+                // Update pagination info
+                const showing = (boothsCurrentPage - 1) * boothsPerPage + 1;
+                const to = Math.min(boothsCurrentPage * boothsPerPage, boothsTotal);
+                $('#boothsShowing').text(showing);
+                $('#boothsTo').text(to);
+                $('#boothsTotal').text(boothsTotal);
                 
                 if (!data.hasMore) {
                     $('#boothsLazyLoadEnd').show();
@@ -3138,10 +4012,258 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Initialize lazy loading on page load
+    // Initialize on page load
     $(document).ready(function() {
-        initBoothsLazyLoading();
+        initLoadMode();
+        if (boothsLoadMode === 'lazy') {
+            initBoothsLazyLoading();
+        }
+        
+        // Initialize new features
+        initSpaceMode();
+        initColumnVisibility();
+        initTableColumnSettings();
     });
+    
+    // ============================================
+    // SPACE MODE FUNCTIONS
+    // ============================================
+    function setSpaceMode(mode) {
+        const container = document.getElementById('boothManagementContainer');
+        const buttons = document.querySelectorAll('.space-mode-btn');
+        
+        // Remove all mode classes
+        container.classList.remove('space-mode-default', 'space-mode-minimal', 'space-mode-expand');
+        
+        // Add selected mode class
+        container.classList.add('space-mode-' + mode);
+        container.setAttribute('data-space-mode', mode);
+        
+        // Update button states
+        buttons.forEach(btn => {
+            const btnMode = btn.getAttribute('data-mode');
+            if (btnMode === mode) {
+                btn.classList.add('active');
+                btn.style.background = '#667eea';
+                btn.style.color = 'white';
+            } else {
+                btn.classList.remove('active');
+                btn.style.background = '#f8f9fa';
+                btn.style.color = '#495057';
+            }
+        });
+        
+        // Save to localStorage
+        localStorage.setItem('boothSpaceMode', mode);
+        
+        // Apply mode-specific styles
+        applySpaceModeStyles(mode);
+    }
+    
+    function initSpaceMode() {
+        const savedMode = localStorage.getItem('boothSpaceMode') || 'default';
+        setSpaceMode(savedMode);
+    }
+    
+    function applySpaceModeStyles(mode) {
+        const container = document.getElementById('boothManagementContainer');
+        let fontSize, padding, tablePadding, cardPadding;
+        
+        switch(mode) {
+            case 'minimal':
+                fontSize = '0.85rem';
+                padding = '12px';
+                tablePadding = '8px 12px';
+                cardPadding = '12px';
+                break;
+            case 'expand':
+                fontSize = '1.2rem';
+                padding = '32px';
+                tablePadding = '24px 28px';
+                cardPadding = '28px';
+                break;
+            default:
+                fontSize = '1rem';
+                padding = '24px';
+                tablePadding = '18px 20px';
+                cardPadding = '20px';
+        }
+        
+        container.style.fontSize = fontSize;
+        container.style.padding = padding;
+        
+        // Apply to table cells
+        document.querySelectorAll('.table-modern tbody td').forEach(td => {
+            td.style.padding = tablePadding;
+        });
+        
+        // Apply to cards
+        document.querySelectorAll('.card-body').forEach(card => {
+            card.style.padding = cardPadding;
+        });
+    }
+    
+    // ============================================
+    // SETTINGS PANEL FUNCTIONS
+    // ============================================
+    function toggleSettingsPanel() {
+        const panel = document.getElementById('settingsPanel');
+        const chevron = document.getElementById('settingsChevron');
+        
+        if (panel.style.display === 'none' || !panel.style.display) {
+            panel.style.display = 'block';
+            chevron.classList.remove('fa-chevron-down');
+            chevron.classList.add('fa-chevron-up');
+        } else {
+            panel.style.display = 'none';
+            chevron.classList.remove('fa-chevron-up');
+            chevron.classList.add('fa-chevron-down');
+        }
+    }
+    
+    // ============================================
+    // COLUMN VISIBILITY FUNCTIONS
+    // ============================================
+    const columnDefinitions = [
+        { key: 'checkbox', label: 'Checkbox', visible: true },
+        { key: 'image', label: 'Image', visible: true },
+        { key: 'booth_number', label: 'Booth #', visible: true },
+        { key: 'type', label: 'Type', visible: true },
+        { key: 'floor_plan', label: 'Floor Plan', visible: true },
+        { key: 'company', label: 'Company', visible: true },
+        { key: 'category', label: 'Category', visible: true },
+        { key: 'status', label: 'Status', visible: true },
+        { key: 'price', label: 'Price', visible: true },
+        { key: 'area', label: 'Area', visible: true },
+        { key: 'capacity', label: 'Capacity', visible: true },
+        { key: 'actions', label: 'Actions', visible: true }
+    ];
+    
+    function initColumnVisibility() {
+        const controlsContainer = document.getElementById('columnVisibilityControls');
+        if (!controlsContainer) return;
+        
+        // Load saved column visibility
+        const savedVisibility = JSON.parse(localStorage.getItem('boothColumnVisibility') || '{}');
+        
+        columnDefinitions.forEach((col, index) => {
+            const isVisible = savedVisibility[col.key] !== undefined ? savedVisibility[col.key] : col.visible;
+            
+            const checkbox = document.createElement('div');
+            checkbox.className = 'form-check form-check-inline';
+            checkbox.innerHTML = `
+                <input class="form-check-input column-visibility-checkbox" type="checkbox" 
+                       id="col_${col.key}" data-column="${col.key}" data-index="${index}"
+                       ${isVisible ? 'checked' : ''} onchange="toggleColumnVisibility('${col.key}', ${index})">
+                <label class="form-check-label" for="col_${col.key}" style="font-size: 13px; cursor: pointer;">
+                    ${col.label}
+                </label>
+            `;
+            controlsContainer.appendChild(checkbox);
+            
+            // Apply initial visibility
+            toggleColumnVisibility(col.key, index, isVisible);
+        });
+    }
+    
+    function toggleColumnVisibility(columnKey, index, forceVisible = null) {
+        const checkbox = document.getElementById('col_' + columnKey);
+        const isVisible = forceVisible !== null ? forceVisible : (checkbox ? checkbox.checked : true);
+        
+        // Hide/show table column using data attributes
+        const table = document.getElementById('boothsTable');
+        if (!table) return;
+        
+        // Hide/show header using data-column attribute
+        const headerCells = table.querySelectorAll(`thead th[data-column="${columnKey}"]`);
+        headerCells.forEach(th => {
+            th.style.display = isVisible ? '' : 'none';
+        });
+        
+        // Hide/show body cells using data-column attribute
+        const bodyCells = table.querySelectorAll(`tbody td[data-column="${columnKey}"]`);
+        bodyCells.forEach(td => {
+            td.style.display = isVisible ? '' : 'none';
+        });
+        
+        // Save to localStorage
+        const savedVisibility = JSON.parse(localStorage.getItem('boothColumnVisibility') || '{}');
+        savedVisibility[columnKey] = isVisible;
+        localStorage.setItem('boothColumnVisibility', JSON.stringify(savedVisibility));
+    }
+    
+    function initTableColumnSettings() {
+        // Initialize column visibility from saved settings
+        const savedVisibility = JSON.parse(localStorage.getItem('boothColumnVisibility') || '{}');
+        columnDefinitions.forEach((col, index) => {
+            if (savedVisibility[col.key] === false) {
+                toggleColumnVisibility(col.key, index, false);
+            }
+        });
+    }
+    
+    // ============================================
+    // TABLE COLUMN FITTING FUNCTIONS
+    // ============================================
+    function fitColumnsToContent() {
+        const table = document.getElementById('boothsTable');
+        if (!table) return;
+        
+        const headerCells = table.querySelectorAll('thead th');
+        const bodyRows = table.querySelectorAll('tbody tr');
+        
+        if (bodyRows.length === 0) return;
+        
+        // Reset all widths first
+        headerCells.forEach(th => {
+            th.style.width = 'auto';
+            th.style.minWidth = '';
+        });
+        
+        // Calculate optimal widths based on content
+        headerCells.forEach((th, colIndex) => {
+            let maxWidth = th.offsetWidth;
+            
+            // Check header content
+            const headerText = th.textContent.trim();
+            if (headerText.length > 0) {
+                maxWidth = Math.max(maxWidth, headerText.length * 8 + 40);
+            }
+            
+            // Check first few rows for content width
+            const sampleRows = Array.from(bodyRows).slice(0, Math.min(10, bodyRows.length));
+            sampleRows.forEach(row => {
+                const cell = row.querySelectorAll('td')[colIndex];
+                if (cell) {
+                    const cellWidth = cell.scrollWidth;
+                    maxWidth = Math.max(maxWidth, cellWidth);
+                }
+            });
+            
+            // Set width with some padding
+            th.style.minWidth = (maxWidth + 20) + 'px';
+            th.style.width = (maxWidth + 20) + 'px';
+        });
+        
+        if (typeof toastr !== 'undefined') {
+            toastr.success('Columns fitted to content');
+        }
+    }
+    
+    function resetColumnWidths() {
+        const table = document.getElementById('boothsTable');
+        if (!table) return;
+        
+        const headerCells = table.querySelectorAll('thead th');
+        headerCells.forEach(th => {
+            th.style.width = '';
+            th.style.minWidth = '';
+        });
+        
+        if (typeof toastr !== 'undefined') {
+            toastr.success('Column widths reset');
+        }
+    }
 });
 </script>
 @endpush

@@ -1,0 +1,82 @@
+================================================================================
+  Cursor – Access hosting (system.khbevents.com) via SSH or SFTP
+================================================================================
+Project path on server: /home/khbevents/system.khbevents.com
+Document root:         /home/khbevents/system.khbevents.com/public
+================================================================================
+
+OPTION A — SSH (recommended if your host allows it)
+--------------------------------------------------
+1. In Cursor: install the "Remote - SSH" extension (ms-vscode-remote.remote-ssh).
+
+2. Open SSH config:
+   - Press Ctrl+Shift+P → "Remote-SSH: Open SSH Configuration File"
+   - Pick the first one (e.g. C:\Users\YOUR_USERNAME\.ssh\config)
+
+3. Add this block (replace YOUR_CPANEL_USER and HOST if your host gave different values):
+
+   Host khbevents
+       HostName system.khbevents.com
+       User YOUR_CPANEL_USER
+       Port 22
+
+   If your host uses a different SSH host (e.g. server123.hosting.com), use:
+       HostName server123.hosting.com
+
+4. Save the config file.
+
+5. Connect:
+   - Ctrl+Shift+P → "Remote-SSH: Connect to Host..."
+   - Choose "khbevents" (or the Host name you used).
+
+6. After connection: File → Open Folder → enter:
+   /home/khbevents/system.khbevents.com
+
+7. You can run Terminal in Cursor; it runs on the server (composer, php artisan, etc.).
+
+   If the host does not offer SSH, use Option B (SFTP).
+
+
+OPTION B — SFTP (works with FTP/SFTP from cPanel)
+-------------------------------------------------
+1. In Cursor: install an SFTP extension, e.g. "SFTP" by Natizyskunk (liximomo.sftp).
+
+2. Get from cPanel:
+   - FTP host (or SFTP host), e.g. system.khbevents.com or ftp.khbevents.com
+   - FTP/SFTP username and password (or create an FTP account in cPanel).
+
+3. Create or open the config file:
+   - If .vscode/sftp.json already exists, open it. Otherwise copy sftp.json.example
+     to .vscode/sftp.json (create .vscode folder if needed).
+
+4. Edit .vscode/sftp.json and replace these placeholders:
+   - FTP_OR_SFTP_HOST     → your FTP/SFTP hostname
+   - YOUR_CPANEL_OR_FTP_USERNAME → your cPanel or FTP username
+   - YOUR_FTP_OR_CPANEL_PASSWORD → your FTP/cPanel password
+
+   For key-based auth: remove the "password" line and add instead:
+   "privateKeyPath": "C:/Users/YOUR_USERNAME/.ssh/id_rsa"
+
+5. Upload / download:
+   - Ctrl+Shift+P → "SFTP: Upload Project" (or "Download Project", "Sync Local -> Remote", etc.)
+   - Or enable "uploadOnSave": true in sftp.json to upload on each save (use with care).
+
+6. Keep .vscode/sftp.json and sftp.json out of Git (they are in .gitignore if at project root). 
+   Never commit real passwords or keys.
+
+
+Where to find host/user in cPanel
+---------------------------------
+- cPanel → FTP Accounts or "FTP" section: host, username.
+- cPanel → SSH Access: see if SSH is enabled and which host/user to use.
+- If in doubt, ask your host: "What is the SFTP/SSH host and username for this account?"
+
+
+Safety
+------
+- Do not overwrite .env on the server with your local .env.
+- Do not upload vendor/ or node_modules; install them on the server (composer install, etc.).
+- The sftp.json.example ignores .env, vendor, node_modules; the real .vscode/sftp.json 
+  uses the same "ignore" list.
+
+================================================================================

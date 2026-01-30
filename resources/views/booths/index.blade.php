@@ -1876,6 +1876,12 @@
     padding-left: 20px;
 }
 
+.context-menu-item.context-menu-subheader:hover {
+    background: transparent;
+    border-left-color: transparent;
+    padding-left: 18px;
+}
+
 .context-menu-item i {
     width: 20px;
     text-align: center;
@@ -2474,6 +2480,7 @@
                         Current: <strong>{{ $currentFloorPlan->name }}</strong>
                         @if($currentFloorPlan->project_name) | Project: {{ $currentFloorPlan->project_name }} @endif
                         @if($currentFloorPlan->event) | Event: {{ $currentFloorPlan->event->title }} @endif
+                        | <i class="fas fa-th-large mr-1"></i>Booths on canvas: <strong>{{ $totalBooths ?? 0 }}</strong>
                     </small>
                 </div>
             </div>
@@ -2682,8 +2689,8 @@
                     </div>
                 </div>
                 @endif
-                <button class="toolbar-btn" id="btnShowBooths" title="Show All Booths (Flash Effect)" style="background: rgba(255, 193, 7, 0.3);">
-                    <i class="fas fa-th"></i> <span id="boothCountBadge" style="font-size: 10px; margin-left: 4px;">0</span>
+                <button class="toolbar-btn" id="btnShowBooths" title="Show All Booths (Flash Effect) — {{ $totalBooths ?? 0 }} booths on canvas" style="background: rgba(255, 193, 7, 0.3);">
+                    <i class="fas fa-th"></i> <span id="boothCountBadge" style="font-size: 10px; margin-left: 4px;" aria-label="Booths on canvas">{{ $totalBooths ?? 0 }}</span>
                 </button>
                 @if(isset($canEditCanvas) && $canEditCanvas)
                 <button class="toolbar-btn" id="btnSettings" title="Canvas Settings">
@@ -2756,6 +2763,11 @@
                 <div class="info-section">
                     <span class="info-label">Company:</span>
                     <span class="info-value" id="infoCompany">-</span>
+                </div>
+                <div class="info-divider"></div>
+                <div class="info-section" title="Total booths on this floor plan">
+                    <span class="info-label"><i class="fas fa-th-large"></i> Booths:</span>
+                    <span class="info-value" id="infoBoothsOnCanvas">{{ $totalBooths ?? 0 }}</span>
                 </div>
         </div>
         </div>
@@ -3040,6 +3052,16 @@
         </div>
     </div>
 </div>
+
+<!-- Update Booth Info Modal (Basic Info, Details, Content, Media) - same as Edit at /booths -->
+@if(isset($floorPlans) && isset($boothTypes) && isset($categories))
+@include('booths.partials.edit-form-modal', [
+    'floorPlans' => $floorPlans ?? collect(),
+    'boothTypes' => $boothTypes ?? collect(),
+    'categories' => $categories ?? collect(),
+    'clients' => $clients ?? [],
+])
+@endif
 
 <!-- Upload Floorplan Modal -->
 <div class="modal fade" id="uploadFloorplanModal" tabindex="-1" role="dialog" aria-labelledby="uploadFloorplanModalLabel" aria-hidden="true">
@@ -4534,7 +4556,6 @@ const FloorPlanDesigner = {
         };
         
         // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/32c840ca-dc83-4c7d-be79-34d96940ebef',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'booths/index.blade.php:2068',message:'getElement called',data:{id:id,cacheKey:cacheMap[id],cachedExists:!!(cacheMap[id]&&self._cachedElements[cacheMap[id]])},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
         // #endregion
         
         const cacheKey = cacheMap[id];
@@ -4548,7 +4569,6 @@ const FloorPlanDesigner = {
         }
         
         // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/32c840ca-dc83-4c7d-be79-34d96940ebef',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'booths/index.blade.php:2086',message:'getElement result',data:{id:id,elementFound:!!element},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
         // #endregion
         
         return element;
@@ -4562,7 +4582,6 @@ const FloorPlanDesigner = {
         self.canEditCanvas = @json(isset($canEditCanvas) && $canEditCanvas ? true : false);
         
         // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/32c840ca-dc83-4c7d-be79-34d96940ebef',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'booths/index.blade.php:2090',message:'init() called',data:{timestamp:Date.now(),canEditCanvas:self.canEditCanvas},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4'})}).catch(()=>{});
         // #endregion
         
         // Cache frequently used DOM elements
@@ -4572,7 +4591,6 @@ const FloorPlanDesigner = {
         self._cachedElements.floorplanImage = document.getElementById('floorplanImageElement');
         
         // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/32c840ca-dc83-4c7d-be79-34d96940ebef',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'booths/index.blade.php:2097',message:'Elements cached',data:{canvas:!!self._cachedElements.canvas,container:!!self._cachedElements.container,infoToolbar:!!self._cachedElements.infoToolbar,floorplanImage:!!self._cachedElements.floorplanImage},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4'})}).catch(()=>{});
         // #endregion
         
         // Initialize Design Tools System
@@ -4729,8 +4747,8 @@ const FloorPlanDesigner = {
                         }
                     }
                 @endphp
-                self.floorPlanImageUrl = '{{ $floorPlanImageUrl }}';
-                self.floorplanImage = '{{ $floorPlanImagePath }}'; // Relative path
+                self.floorPlanImageUrl = @json($floorPlanImageUrl ?? $floorImageUrl ?? '');
+                self.floorplanImage = @json($floorPlanImagePath ?? $floorImage ?? '');
                 
                 // IMMEDIATELY set canvas background from floor plan (highest priority)
                 // This ensures the image loads automatically when user clicks "View Booths"
@@ -6887,6 +6905,16 @@ const FloorPlanDesigner = {
         contextMenu.id = 'boothContextMenu';
         contextMenu.className = 'booth-context-menu';
         contextMenu.innerHTML = `
+            <div class="context-menu-item context-menu-subheader" style="pointer-events: none; font-weight: 600; color: #667eea;">
+                <i class="fas fa-edit"></i> Edit Booth
+            </div>
+            <div class="context-menu-item" data-action="update-booth-info" title="Basic info, details, content, media (same as Edit at /booths)">
+                <i class="fas fa-info-circle"></i> Update Booth Info
+            </div>
+            <div class="context-menu-item" data-action="update-booth-appearance" title="Position, size, colors on canvas">
+                <i class="fas fa-paint-brush"></i> Update Booth Appearance
+            </div>
+            <div class="context-menu-divider"></div>
             <div class="context-menu-item" data-action="set-colors" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600;">
                 <i class="fas fa-palette"></i> Set Individual Colors
             </div>
@@ -6946,7 +6974,32 @@ const FloorPlanDesigner = {
                 e.preventDefault();
                 const action = this.getAttribute('data-action');
                 
-                if (action === 'set-price') {
+                if (action === 'update-booth-info') {
+                    // Open Update Booth Info modal on canvas (no redirect): fetch booth data and populate form
+                    self.openBoothInfoModal(boothId);
+                } else if (action === 'update-booth-appearance') {
+                    // Select this booth and open Properties panel (position, size, colors on canvas)
+                    self.selectedBooths.forEach(function(booth) {
+                        booth.classList.remove('selected');
+                    });
+                    self.selectedBooths = [boothElement];
+                    boothElement.classList.add('selected');
+                    self.updateInfoToolbar(boothElement);
+                    if (!boothElement.classList.contains('locked')) {
+                        var handles = boothElement.querySelectorAll('.resize-handle');
+                        handles.forEach(function(h) { h.style.display = 'block'; });
+                        self.updateResizeHandlesSize(boothElement);
+                        var rotateHandle = boothElement.querySelector('.rotate-handle');
+                        if (rotateHandle) rotateHandle.style.display = 'flex';
+                        self.updateRotationIndicator(boothElement);
+                    }
+                    self.updateSelectionBoundingBox();
+                    self.updatePropertiesPanel(boothElement);
+                    var panel = document.getElementById('propertiesPanel');
+                    var backdrop = document.getElementById('propertiesPanelBackdrop');
+                    if (panel) panel.classList.add('active');
+                    if (backdrop) backdrop.classList.add('active');
+                } else if (action === 'set-price') {
                     // Get current price
                     let currentPrice = 500; // Default
                     if (typeof window.boothsData !== 'undefined' && Array.isArray(window.boothsData)) {
@@ -7057,6 +7110,107 @@ const FloorPlanDesigner = {
             document.addEventListener('click', closeMenu, true);
             document.addEventListener('contextmenu', closeMenu, true);
         }, 100);
+    },
+    
+    // Open Update Booth Info modal on canvas: fetch booth data and populate form (no redirect)
+    openBoothInfoModal: function(boothId) {
+        const self = this;
+        const modal = document.getElementById('canvasBoothInfoModal');
+        const form = document.getElementById('canvasBoothInfoForm');
+        if (!modal || !form) return;
+        
+        $('#canvasModalTitleText').text('Update Booth Info');
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            bootstrap.Modal.getOrCreateInstance(modal).show();
+        } else {
+            $('#canvasBoothInfoModal').modal('show');
+        }
+        
+        const modalBody = $('#canvasBoothInfoModal .modal-body');
+        modalBody.css('position', 'relative');
+        if (!document.getElementById('canvasBoothInfoLoading')) {
+            modalBody.prepend('<div id="canvasBoothInfoLoading" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.9); z-index: 1000; display: flex; align-items: center; justify-content: center; border-radius: 12px;"><div class="text-center"><div class="spinner-border text-primary mb-2" role="status"></div><p class="text-muted">Loading booth data...</p></div></div>');
+        }
+        
+        const url = '{{ url("booths") }}/' + boothId + '?json=1';
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : ''
+            },
+            credentials: 'same-origin'
+        })
+        .then(function(response) {
+            const ct = response.headers.get('content-type');
+            if (!ct || !ct.includes('application/json')) {
+                return response.text().then(function(t) { throw new Error('Expected JSON'); });
+            }
+            if (!response.ok) {
+                return response.json().then(function(err) { throw new Error(err.message || 'HTTP ' + response.status); });
+            }
+            return response.json();
+        })
+        .then(function(data) {
+            $('#canvasBoothInfoLoading').remove();
+            if (data.error) throw new Error(data.message || data.error);
+            
+            $('#canvasBoothId').val(data.id || '');
+            $('#canvas_booth_number').val(data.booth_number || '');
+            $('#canvas_floor_plan_id').val(data.floor_plan_id || '');
+            $('#canvas_booth_type_id').val(data.booth_type_id || '');
+            $('#canvas_type').val(data.type || '1');
+            $('#canvas_price').val(data.price || '');
+            $('#canvas_status').val(data.status || '1');
+            $('#canvas_client_id').val(data.client_id || '');
+            $('#canvas_category_id').val(data.category_id || '');
+            $('#canvas_area_sqm').val(data.area_sqm || '');
+            $('#canvas_capacity').val(data.capacity || '');
+            $('#canvas_electricity_power').val(data.electricity_power || '');
+            $('#canvas_description').val(data.description || '');
+            $('#canvas_features').val(data.features || '');
+            $('#canvas_notes').val(data.notes || '');
+            
+            if (data.booth_image) {
+                $('#canvasImagePreview').attr('src', data.booth_image);
+                $('#canvasImagePreviewContainer').show();
+                $('#canvasImageUploadArea').hide();
+            } else {
+                $('#canvasImagePreviewContainer').hide();
+                $('#canvasImageUploadArea').show();
+            }
+            
+            var basicTab = document.getElementById('canvas-basic-tab');
+            if (basicTab && typeof bootstrap !== 'undefined' && bootstrap.Tab) {
+                bootstrap.Tab.getOrCreateInstance(basicTab).show();
+            } else {
+                $('#canvas-basic-tab').tab('show');
+            }
+            var bsModal = (typeof bootstrap !== 'undefined' && bootstrap.Modal) ? bootstrap.Modal.getOrCreateInstance(modal) : null;
+            if (bsModal && !modal.classList.contains('show')) bsModal.show();
+            else if (!modal.classList.contains('show')) $('#canvasBoothInfoModal').modal('show');
+        })
+        .catch(function(err) {
+            $('#canvasBoothInfoLoading').remove();
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                bootstrap.Modal.getOrCreateInstance(modal).hide();
+            } else {
+                $('#canvasBoothInfoModal').modal('hide');
+            }
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'error', title: 'Failed to load booth data', text: err.message || 'Please try again.' });
+            } else {
+                alert('Failed to load booth data: ' + (err.message || 'Please try again.'));
+            }
+        });
+    },
+    
+    clearCanvasBoothImagePreview: function() {
+        $('#canvas_booth_image').val('');
+        $('#canvasImagePreview').attr('src', '');
+        $('#canvasImagePreviewContainer').hide();
+        $('#canvasImageUploadArea').show();
     },
     
     // Helper: lock a single booth element
@@ -12061,6 +12215,7 @@ const FloorPlanDesigner = {
     },
     
     updatePropertiesPanel: function(element) {
+        const self = this; // FloorPlanDesigner - do not use global 'self'
         const panel = document.getElementById('propertiesPanel');
         const content = document.getElementById('propertiesContent');
         
@@ -12070,26 +12225,27 @@ const FloorPlanDesigner = {
         
         const boothId = element.getAttribute('data-booth-id');
         const boothNumber = element.textContent.trim();
-        const x = parseFloat(element.style.left) || 0;
-        const y = parseFloat(element.style.top) || 0;
-        const width = parseFloat(element.style.width) || 80;
-        const height = parseFloat(element.style.height) || 50;
-        const rotation = parseFloat(element.getAttribute('data-rotation')) || 0;
+        const safeNum = function(v, def) { const n = parseFloat(v); return (n !== n || !Number.isFinite(n)) ? (def !== undefined ? def : 0) : n; };
+        const x = safeNum(element.style.left, 0);
+        const y = safeNum(element.style.top, 0);
+        const width = safeNum(element.style.width, 80);
+        const height = safeNum(element.style.height, 50);
+        const rotation = safeNum(element.getAttribute('data-rotation'), 0);
         
         // Get booth data attributes for additional properties
         const status = element.getAttribute('data-status') || element.className.match(/status-(\d+)/) ? element.className.match(/status-(\d+)/)[1] : '1';
-        const fontSize = parseFloat(element.style.fontSize) || 14;
-        const borderWidth = parseFloat(element.style.borderWidth) || 2;
-        const borderRadius = parseFloat(element.style.borderRadius) || 6;
-        const opacity = parseFloat(element.style.opacity) || 1;
-        const zIndex = parseFloat(element.style.zIndex) || 10;
+        const fontSize = safeNum(element.style.fontSize, 14);
+        const borderWidth = safeNum(element.style.borderWidth, 2);
+        const borderRadius = safeNum(element.style.borderRadius, 6);
+        const opacity = safeNum(element.style.opacity, 1);
+        const zIndex = safeNum(element.style.zIndex, 10);
         
         // Get booth price from boothsData
         let boothPrice = 500; // Default price
         if (typeof window.boothsData !== 'undefined' && Array.isArray(window.boothsData)) {
             const boothData = window.boothsData.find(b => b.id == boothId);
             if (boothData && boothData.price !== undefined) {
-                boothPrice = parseFloat(boothData.price) || 500;
+                boothPrice = safeNum(boothData.price, 500);
             }
         }
         
@@ -12097,12 +12253,12 @@ const FloorPlanDesigner = {
         propHtml += '<h6 class="mb-3"><i class="fas fa-cube"></i> Booth: ' + boothNumber + '</h6>';
         propHtml += '<div class="mb-3"><strong>Booth Details</strong></div>';
         propHtml += '<div class="mb-2"><label class="form-label small"><i class="fas fa-dollar-sign"></i> Price:</label>';
-        propHtml += '<input type="number" class="form-control form-control-sm prop-price" value="' + boothPrice.toFixed(2) + '" min="0" step="0.01"></div>';
+        propHtml += '<input type="number" class="form-control form-control-sm prop-price" value="' + (Number.isFinite(boothPrice) ? boothPrice.toFixed(2) : '0.00') + '" min="0" step="0.01"></div>';
         propHtml += '<div class="mb-3 mt-3"><strong>Position</strong></div>';
         propHtml += '<div class="mb-2"><label class="form-label small"><i class="fas fa-arrows-alt-h"></i> Position X (px):</label>';
-        propHtml += '<input type="number" class="form-control form-control-sm prop-x" value="' + Math.round(x) + '" step="' + self.gridSize + '"></div>';
+        propHtml += '<input type="number" class="form-control form-control-sm prop-x" value="' + Math.round(x) + '" step="' + (Number(self.gridSize) || 10) + '"></div>';
         propHtml += '<div class="mb-2"><label class="form-label small"><i class="fas fa-arrows-alt-v"></i> Position Y (px):</label>';
-        propHtml += '<input type="number" class="form-control form-control-sm prop-y" value="' + Math.round(y) + '" step="' + self.gridSize + '"></div>';
+        propHtml += '<input type="number" class="form-control form-control-sm prop-y" value="' + Math.round(y) + '" step="' + (Number(self.gridSize) || 10) + '"></div>';
         propHtml += '<div class="mb-3 mt-3"><strong>Size</strong></div>';
         propHtml += '<div class="mb-2"><label class="form-label small"><i class="fas fa-arrows-alt-h"></i> Width (px):</label>';
         propHtml += '<input type="number" class="form-control form-control-sm prop-w" value="' + Math.round(width) + '" min="5" step="1"></div>';
@@ -12121,7 +12277,7 @@ const FloorPlanDesigner = {
         propHtml += '<div class="mb-2"><label class="form-label small"><i class="fas fa-circle"></i> Border Radius (px):</label>';
         propHtml += '<input type="number" class="form-control form-control-sm prop-borderradius" value="' + Math.round(borderRadius) + '" min="0" max="50" step="1"></div>';
         propHtml += '<div class="mb-2"><label class="form-label small"><i class="fas fa-adjust"></i> Opacity:</label>';
-        propHtml += '<input type="number" class="form-control form-control-sm prop-opacity" value="' + opacity.toFixed(2) + '" min="0" max="1" step="0.1"></div>';
+        propHtml += '<input type="number" class="form-control form-control-sm prop-opacity" value="' + (Number.isFinite(opacity) ? opacity.toFixed(2) : '1.00') + '" min="0" max="1" step="0.1"></div>';
         
         content.innerHTML = propHtml;
         
@@ -13755,10 +13911,10 @@ const FloorPlanDesigner = {
                                     $fallbackImagePath = $currentFloorPlan->floor_image;
                                 @endphp
                                 if (!self.floorplanImage) {
-                                    self.floorplanImage = '{{ $fallbackImagePath }}';
+                                    self.floorplanImage = @json($fallbackImagePath);
                                 }
                                 if (!self.floorPlanImageUrl) {
-                                    self.floorPlanImageUrl = '{{ $fallbackImageUrl }}';
+                                    self.floorPlanImageUrl = @json($fallbackImageUrl);
                                 }
                             @endif
                         } else {
@@ -14624,13 +14780,17 @@ const FloorPlanDesigner = {
             self.rotateSelectedBooths(90);
         });
         
-        // Function to update booth count badge
+        // Function to update booth count badge and info toolbar
         self.updateBoothCount = function() {
             const booths = document.querySelectorAll('.dropped-booth');
             const count = booths.length;
             const badge = document.getElementById('boothCountBadge');
             if (badge) {
                 badge.textContent = count;
+            }
+            const infoBooths = document.getElementById('infoBoothsOnCanvas');
+            if (infoBooths) {
+                infoBooths.textContent = count;
             }
         };
         
@@ -15799,6 +15959,107 @@ const FloorPlanDesigner = {
             }
         });
         
+        // Update Booth Info modal: submit via AJAX (no redirect), stay on canvas
+        $(document).on('submit', '#canvasBoothInfoForm', function(e) {
+            e.preventDefault();
+            var form = this;
+            var boothId = document.getElementById('canvasBoothId').value;
+            if (!boothId) {
+                if (typeof Swal !== 'undefined') Swal.fire({ icon: 'error', title: 'Error', text: 'Booth ID missing.' });
+                return;
+            }
+            var formData = new FormData(form);
+            formData.append('_method', 'PUT');
+            var url = '{{ url("booths") }}/' + boothId;
+            var submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+            }
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'same-origin'
+            })
+            .then(function(response) {
+                return response.json().then(function(data) {
+                    if (response.ok && (data.success !== false)) {
+                        var canvasModalEl = document.getElementById('canvasBoothInfoModal');
+                        if (canvasModalEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                            bootstrap.Modal.getOrCreateInstance(canvasModalEl).hide();
+                        } else {
+                            $('#canvasBoothInfoModal').modal('hide');
+                        }
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({ icon: 'success', title: 'Saved', text: 'Booth updated successfully.', timer: 2000, showConfirmButton: false, toast: true, position: 'bottom-right' });
+                        } else {
+                            alert('Booth updated successfully.');
+                        }
+                        var newNumber = document.getElementById('canvas_booth_number').value;
+                        var boothEl = document.querySelector('.dropped-booth[data-booth-id="' + boothId + '"]');
+                        if (boothEl && newNumber) {
+                            boothEl.textContent = newNumber;
+                        }
+                        if (typeof window.boothsData !== 'undefined' && Array.isArray(window.boothsData)) {
+                            var b = window.boothsData.find(function(x) { return x.id == boothId; });
+                            if (b) {
+                                b.booth_number = newNumber;
+                                b.price = document.getElementById('canvas_price').value;
+                                b.status = document.getElementById('canvas_status').value;
+                            }
+                        }
+                    } else {
+                        var msg = data.message || 'Update failed';
+                        if (data.errors) msg = Object.values(data.errors).flat().join(' ');
+                        if (typeof Swal !== 'undefined') Swal.fire({ icon: 'error', title: 'Error', text: msg });
+                        else alert(msg);
+                    }
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-save mr-2"></i>Save Booth';
+                    }
+                }).catch(function() {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-save mr-2"></i>Save Booth';
+                    }
+                    if (typeof Swal !== 'undefined') Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to save booth.' });
+                });
+            })
+            .catch(function(err) {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-save mr-2"></i>Save Booth';
+                }
+                if (typeof Swal !== 'undefined') Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'Failed to save booth.' });
+            });
+            return false;
+        });
+        
+        // Canvas booth image preview on file select
+        $(document).on('change', '#canvas_booth_image', function() {
+            var input = this;
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#canvasImagePreview').attr('src', e.target.result);
+                    $('#canvasImagePreviewContainer').show();
+                    $('#canvasImageUploadArea').hide();
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        });
+        $(document).on('click', '#canvasRemoveImageBtn', function() {
+            if (typeof FloorPlanDesigner !== 'undefined' && FloorPlanDesigner.clearCanvasBoothImagePreview) {
+                FloorPlanDesigner.clearCanvasBoothImagePreview();
+            }
+        });
+        
         // Click on individual info value to enable edit mode for that field only
         $(document).on('click', '.info-value.info-editable', function(e) {
             // Don't trigger if clicking on an input that's already there
@@ -16818,13 +17079,11 @@ const FloorPlanDesigner = {
         const self = this;
         
         // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/32c840ca-dc83-4c7d-be79-34d96940ebef',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'booths/index.blade.php:9698',message:'printFloorplan() called',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
         // #endregion
         
         const canvas = self.getElement('print');
         
         // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/32c840ca-dc83-4c7d-be79-34d96940ebef',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'booths/index.blade.php:9700',message:'Canvas check',data:{canvasFound:!!canvas,html2canvasAvailable:typeof html2canvas!=='undefined'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
         // #endregion
         
         if (!canvas) {
@@ -16936,7 +17195,6 @@ const FloorPlanDesigner = {
             
             // Create print-friendly HTML
             // #region agent log
-            fetch('http://127.0.0.1:7244/ingest/32c840ca-dc83-4c7d-be79-34d96940ebef',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'booths/index.blade.php:9809',message:'Creating printHTML',data:{imgDataLength:imgData?imgData.length:0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
             // #endregion
             
             const printDate = new Date().toLocaleString();
@@ -16976,7 +17234,6 @@ const FloorPlanDesigner = {
             var printHTML = htmlParts.join('');
             
             // #region agent log
-            fetch('http://127.0.0.1:7244/ingest/32c840ca-dc83-4c7d-be79-34d96940ebef',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'booths/index.blade.php:9923',message:'Before writing to printWindow',data:{printHTMLLength:printHTML?printHTML.length:0,printWindowExists:!!printWindow},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
             // #endregion
             
             // Write content to print window
@@ -16984,7 +17241,6 @@ const FloorPlanDesigner = {
             printWindow.document.close();
             
             // #region agent log
-            fetch('http://127.0.0.1:7244/ingest/32c840ca-dc83-4c7d-be79-34d96940ebef',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'booths/index.blade.php:9926',message:'After writing to printWindow',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
             // #endregion
             
             // Close loading notification
@@ -16995,7 +17251,6 @@ const FloorPlanDesigner = {
             
         }).catch(function(error) {
             // #region agent log
-            fetch('http://127.0.0.1:7244/ingest/32c840ca-dc83-4c7d-be79-34d96940ebef',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'booths/index.blade.php:9903',message:'Print error caught',data:{errorMessage:error?error.message:'unknown',errorStack:error?error.stack:'',errorName:error?error.name:''},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
             // #endregion
             
             // Restore canvas overflow
@@ -17363,8 +17618,8 @@ $(document).ready(function() {
                     }
                 }
             @endphp
-            const floorPlanImagePath = '{{ $floorPlanImagePathReady }}';
-            let floorPlanImageUrl = '{{ $floorPlanImageUrlReady }}';
+            const floorPlanImagePath = @json($floorPlanImagePathReady ?? $floorImage ?? '');
+            let floorPlanImageUrl = @json($floorPlanImageUrlReady ?? $floorImageUrl ?? '');
             
             // Ensure absolute URL in JavaScript too
             if (!floorPlanImageUrl.startsWith('http')) {
@@ -17503,12 +17758,10 @@ $(document).ready(function() {
     // Print button handler
     // #region agent log
     const btnPrintElement = $('#btnPrint');
-    fetch('http://127.0.0.1:7244/ingest/32c840ca-dc83-4c7d-be79-34d96940ebef',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'booths/index.blade.php:10032',message:'Print button handler setup',data:{btnPrintFound:btnPrintElement.length>0,jQueryReady:typeof $!=='undefined'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
     // #endregion
     
     $('#btnPrint').on('click', function() {
         // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/32c840ca-dc83-4c7d-be79-34d96940ebef',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'booths/index.blade.php:10033',message:'Print button clicked',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
         // #endregion
         FloorPlanDesigner.printFloorplan();
     });

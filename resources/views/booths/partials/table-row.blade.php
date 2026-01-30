@@ -1,57 +1,59 @@
-<tr>
-    <td>
-        <input type="checkbox" class="booth-checkbox" value="{{ $booth->id }}">
+<tr style="transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);" data-booth-id="{{ $booth->id }}">
+    <td data-column="checkbox" data-column-index="0">
+        <div class="d-flex align-items-center justify-content-center">
+            <input type="checkbox" class="booth-checkbox" value="{{ $booth->id }}" style="width: 18px; height: 18px; cursor: pointer; accent-color: #667eea;">
+        </div>
     </td>
-    <td>
+    <td data-column="image" data-column-index="1">
         @if($booth->booth_image)
-            <img src="{{ asset($booth->booth_image) }}" alt="Booth Image" class="booth-image-preview" onclick="viewImage('{{ asset($booth->booth_image) }}')">
+            <img src="{{ asset($booth->booth_image) }}" alt="Booth Image" class="booth-image-preview" onclick="viewImage('{{ asset($booth->booth_image) }}')" style="width: 56px; height: 56px; object-fit: cover; border-radius: 12px; border: 2px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease;">
         @else
-            <div style="width: 60px; height: 60px; background: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #9ca3af;">
-                <i class="fas fa-image"></i>
+            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #94a3b8; border: 2px solid #e2e8f0;">
+                <i class="fas fa-image" style="font-size: 20px;"></i>
             </div>
         @endif
     </td>
-    <td>
-        <strong style="font-size: 16px; font-weight: 700; color: #111827;">{{ $booth->booth_number }}</strong>
+    <td data-column="booth_number" data-column-index="2">
+        <strong style="font-size: 15px; font-weight: 700; color: #1e293b; letter-spacing: -0.2px;">{{ $booth->booth_number }}</strong>
     </td>
-    <td>
-        <span class="badge badge-info">
+    <td data-column="type" data-column-index="3">
+        <span class="badge badge-info" style="padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 12px;">
             {{ $booth->boothType ? $booth->boothType->name : ($booth->type == 1 ? 'Booth' : 'Space Only') }}
         </span>
     </td>
-    <td>
-        <span style="color: #4b5563; font-weight: 500;">{{ $booth->floorPlan ? $booth->floorPlan->name : 'N/A' }}</span>
+    <td data-column="floor_plan" data-column-index="4">
+        <span style="color: #475569; font-weight: 500; font-size: 14px;">{{ $booth->floorPlan ? $booth->floorPlan->name : 'N/A' }}</span>
     </td>
-    <td>
-        <span style="color: #374151; font-weight: 500;">{{ $booth->client ? $booth->client->company : 'N/A' }}</span>
+    <td data-column="company" data-column-index="5">
+        <span style="color: #1e293b; font-weight: 600; font-size: 14px;">{{ $booth->client ? $booth->client->company : 'N/A' }}</span>
     </td>
-    <td>
-        <span style="color: #4b5563; font-weight: 500;">{{ $booth->category ? $booth->category->name : 'N/A' }}</span>
+    <td data-column="category" data-column-index="6">
+        <span style="color: #475569; font-weight: 500; font-size: 14px;">{{ $booth->category ? $booth->category->name : 'N/A' }}</span>
     </td>
-    <td>
-        <span class="badge badge-{{ $booth->getStatusColor() }}">
+    <td data-column="status" data-column-index="7">
+        <span class="badge badge-{{ $booth->getStatusColor() }}" style="padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 12px;">
             {{ $booth->getStatusLabel() }}
         </span>
     </td>
-    <td>
-        <strong style="color: #10b981; font-size: 15px; font-weight: 700;">${{ number_format($booth->price, 2) }}</strong>
+    <td data-column="price" data-column-index="8">
+        <strong style="color: #10b981; font-size: 15px; font-weight: 700; letter-spacing: -0.3px;">${{ number_format($booth->price, 2) }}</strong>
     </td>
-    <td>
-        <span style="color: #6b7280;">{{ $booth->area_sqm ? number_format($booth->area_sqm, 2) . ' m²' : 'N/A' }}</span>
+    <td data-column="area" data-column-index="9">
+        <span style="color: #64748b; font-size: 14px; font-weight: 500;">{{ $booth->area_sqm ? number_format($booth->area_sqm, 2) . ' m²' : 'N/A' }}</span>
     </td>
-    <td>
-        <span style="color: #6b7280;">{{ $booth->capacity ? $booth->capacity . ' people' : 'N/A' }}</span>
+    <td data-column="capacity" data-column-index="10">
+        <span style="color: #64748b; font-size: 14px; font-weight: 500;">{{ $booth->capacity ? $booth->capacity . ' people' : 'N/A' }}</span>
     </td>
-    <td>
-        <div class="action-buttons">
-            <button type="button" class="btn btn-sm btn-info btn-action" onclick="viewBooth({{ $booth->id }})" title="View">
-                <i class="fas fa-eye"></i>
+    <td data-column="actions" data-column-index="11">
+        <div class="action-buttons" style="display: flex; gap: 6px; justify-content: center;">
+            <button type="button" class="btn btn-sm btn-info btn-action" onclick="viewBooth({{ $booth->id }})" title="View" style="width: 36px; height: 36px; padding: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
+                <i class="fas fa-eye" style="font-size: 13px;"></i>
             </button>
-            <button type="button" class="btn btn-sm btn-primary btn-action" onclick="editBooth({{ $booth->id }})" title="Edit">
-                <i class="fas fa-edit"></i>
+            <button type="button" class="btn btn-sm btn-primary btn-action" onclick="editBooth({{ $booth->id }})" title="Edit" style="width: 36px; height: 36px; padding: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
+                <i class="fas fa-edit" style="font-size: 13px;"></i>
             </button>
-            <button type="button" class="btn btn-sm btn-danger btn-action" onclick="deleteBooth({{ $booth->id }})" title="Delete">
-                <i class="fas fa-trash"></i>
+            <button type="button" class="btn btn-sm btn-danger btn-action" onclick="deleteBooth({{ $booth->id }})" title="Delete" style="width: 36px; height: 36px; padding: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
+                <i class="fas fa-trash" style="font-size: 13px;"></i>
             </button>
         </div>
     </td>

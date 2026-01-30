@@ -28,6 +28,8 @@ yarn-error.log
 /.idea
 /.vscode
 /.cursor
+# SFTP/remote config with credentials (use sftp.json.example as template)
+sftp.json
 .DS_Store
 Thumbs.db
 /chamnab_note/my note.txt
