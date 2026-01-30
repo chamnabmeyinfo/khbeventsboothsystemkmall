@@ -13,6 +13,20 @@
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
     }
     
+    /* Hide Content Header */
+    .content-header {
+        display: none !important;
+    }
+    
+    /* Make Main Header Navbar Sticky */
+    .main-header.navbar.navbar-expand.navbar-white.navbar-light {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 1030 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+        background: white !important;
+    }
+    
     /* Full Width Layout - Starting from Right Edge of Sidebar */
     @media (min-width: 769px) and (max-width: 1024px) {
         /* Tablet: Sidebar is 200px */
@@ -240,6 +254,12 @@
     }
     
     /* Table Scrollbar Styling */
+    .table-responsive {
+        width: 100% !important;
+        overflow-x: auto !important;
+        overflow-y: auto !important;
+    }
+    
     .table-responsive::-webkit-scrollbar {
         width: 8px;
         height: 8px;
@@ -257,6 +277,50 @@
     
     .table-responsive::-webkit-scrollbar-thumb:hover {
         background: #94a3b8;
+    }
+    
+    /* Table Width - Always Fit Container (default column widths fill container) */
+    #boothsTable {
+        width: 100% !important;
+        table-layout: fixed !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    .table-modern #boothsTable {
+        width: 100% !important;
+        table-layout: fixed !important;
+        max-width: 100% !important;
+    }
+    
+    /* Ensure table fits container width */
+    .table-modern .card-body {
+        width: 100% !important;
+        overflow-x: hidden !important;
+    }
+    
+    .table-modern .table-responsive {
+        width: 100% !important;
+        overflow-x: hidden !important;
+    }
+    
+    /* Make columns flexible to fit available space */
+    #boothsTable th,
+    #boothsTable td {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* Allow some columns to be flexible */
+    #boothsTable th[data-column="company"],
+    #boothsTable td[data-column="company"],
+    #boothsTable th[data-column="floor_plan"],
+    #boothsTable td[data-column="floor_plan"],
+    #boothsTable th[data-column="category"],
+    #boothsTable td[data-column="category"] {
+        min-width: 120px;
+        max-width: none;
     }
     
     /* Modern Stat Cards - Matching Dashboard */
@@ -1047,7 +1111,25 @@
     .table-modern thead {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
         color: white !important;
+    }
+    
+    /* Sticky Table Header - Stays visible when scrolling */
+    .table-modern thead.sticky-table-header,
+    .table-modern thead[style*="sticky"],
+    #boothsTable thead.sticky-table-header {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 200 !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    /* Ensure each th has solid background for sticky (no see-through) */
+    .table-modern thead.sticky-table-header th,
+    #boothsTable thead.sticky-table-header th {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
         position: relative !important;
+        border: none !important;
     }
     
     .table-modern thead::after {
@@ -1085,6 +1167,24 @@
         height: 18px !important;
         cursor: pointer !important;
         accent-color: white !important;
+    }
+    
+    /* Min widths only for checkbox/row_number so default % widths can fit container */
+    .table-modern thead th[data-column="checkbox"],
+    .table-modern tbody td[data-column="checkbox"] {
+        min-width: 50px !important;
+    }
+    
+    .table-modern thead th[data-column="row_number"],
+    .table-modern tbody td[data-column="row_number"] {
+        min-width: 60px !important;
+    }
+    
+    /* Sticky Table Header */
+    .table-modern thead[style*="position: sticky"] {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 100 !important;
     }
     
     /* Modern Table Body */
@@ -1301,9 +1401,32 @@
         box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
     }
     
-    .pagination-info {
+    .dataTables_info {
         display: flex;
         align-items: center;
+    }
+    
+    /* Pagination Info in Control Bar */
+    #paginationInfoContainer .dataTables_info {
+        margin: 0;
+        padding: 0;
+    }
+    
+    #paginationInfoContainer .dataTables_info .pagination-text {
+        font-size: 14px;
+        color: #475569;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    
+    #paginationInfoContainer .dataTables_info .pagination-text i {
+        color: #667eea;
+        margin-right: 8px;
+    }
+    
+    #paginationInfoContainer .dataTables_info .pagination-text strong {
+        color: #1e293b;
+        font-weight: 600;
     }
     
     #boothsTable_info {
@@ -1481,13 +1604,103 @@
         }
     }
     
+    /* Settings Panel Card Body Styling */
+    #settingsPanel .card-body {
+        padding: 24px !important;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+        border-radius: 0 !important;
+    }
+    
+    #settingsPanel .card-body h5 {
+        font-size: 16px !important;
+        font-weight: 700 !important;
+        color: #1e293b !important;
+        margin-bottom: 20px !important;
+        padding-bottom: 12px !important;
+        border-bottom: 2px solid #e5e7eb !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    
+    #settingsPanel .card-body h5 i {
+        color: #667eea !important;
+        margin-right: 10px !important;
+        font-size: 18px !important;
+    }
+    
+    #settingsPanel .card-body .form-label {
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        color: #475569 !important;
+        margin-bottom: 12px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+    }
+    
+    #settingsPanel .card-body .row {
+        margin-left: -8px !important;
+        margin-right: -8px !important;
+    }
+    
+    #settingsPanel .card-body .row > div {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+    
+    #settingsPanel .card-body #columnVisibilityControls {
+        gap: 8px !important;
+    }
+    
+    #settingsPanel .card-body .form-check {
+        background: white !important;
+        padding: 8px 12px !important;
+        border-radius: 8px !important;
+        border: 1px solid #e5e7eb !important;
+        transition: all 0.2s ease !important;
+        margin: 0 !important;
+    }
+    
+    #settingsPanel .card-body .form-check:hover {
+        border-color: #667eea !important;
+        box-shadow: 0 2px 4px rgba(102, 126, 234, 0.1) !important;
+        transform: translateY(-1px) !important;
+    }
+    
+    #settingsPanel .card-body .form-check-input {
+        width: 18px !important;
+        height: 18px !important;
+        margin-right: 8px !important;
+        cursor: pointer !important;
+        accent-color: #667eea !important;
+    }
+    
+    #settingsPanel .card-body .form-check-label {
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        color: #475569 !important;
+        cursor: pointer !important;
+        margin: 0 !important;
+        text-transform: none !important;
+        letter-spacing: 0 !important;
+    }
+    
+    #settingsPanel .card-body .form-check-input:checked ~ .form-check-label {
+        color: #667eea !important;
+    }
+    
+    #settingsPanel .card-body .form-check-input:checked ~ .form-check-label::before {
+        content: '✓' !important;
+        color: #667eea !important;
+        font-weight: 700 !important;
+    }
+    
     @media (max-width: 768px) {
         .pagination-wrapper {
             flex-direction: column;
             align-items: stretch;
         }
         
-        .pagination-info {
+        .dataTables_info {
             justify-content: center;
             margin-bottom: 15px;
         }
@@ -1754,38 +1967,124 @@
         vertical-align: middle;
     }
     
+    /* Modern Filter Form Styles */
+    .filter-field-wrapper {
+        position: relative;
+    }
+    
+    .modern-filter-input:focus,
+    .modern-filter-select:focus {
+        outline: none !important;
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1), 0 4px 12px rgba(0,0,0,0.1) !important;
+        transform: translateY(-2px) !important;
+    }
+    
+    .modern-filter-input:hover,
+    .modern-filter-select:hover {
+        border-color: #cbd5e1 !important;
+    }
+    
+    .modern-filter-select:focus {
+        background-color: white !important;
+    }
+    
+    .modern-filter-select {
+        height: 40px !important;
+        line-height: 1.5 !important;
+        display: flex !important;
+        align-items: center !important;
+        padding: 8px 40px 8px 16px !important;
+        box-sizing: border-box !important;
+    }
+    
+    .modern-filter-select option {
+        padding: 8px 12px !important;
+        line-height: 1.5 !important;
+    }
+    
+    .modern-filter-btn:hover {
+        transform: translateY(-2px) scale(1.02) !important;
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4) !important;
+    }
+    
+    .modern-filter-btn:active {
+        transform: translateY(0) scale(0.98) !important;
+    }
+    
+    /* Filter Form Responsive */
+    @media (max-width: 768px) {
+        .filter-field-wrapper {
+            margin-bottom: 16px;
+        }
+        
+        .modern-filter-input,
+        .modern-filter-select {
+            width: 100% !important;
+        }
+        
+        .modern-filter-btn {
+            width: 100% !important;
+            margin-top: 8px;
+        }
+    }
+    
     /* Hide DataTables Length Selector */
     .dataTables_length {
+        display: none !important;
+    }
+    
+    /* Hide DataTables Pagination */
+    .dataTables_paginate,
+    .paging_simple_numbers,
+    #boothsTable_paginate {
         display: none !important;
     }
     
     /* Modern DataTables Search Filter */
     #boothsTable_filter.dataTables_filter {
         float: none !important;
-        text-align: right !important;
-        margin-bottom: 20px !important;
+        text-align: left !important;
+        margin-bottom: 0 !important;
         margin-top: 0 !important;
+        margin-right: 0 !important;
         position: relative !important;
+        width: 100% !important;
     }
     
     #boothsTable_filter.dataTables_filter label {
         display: inline-flex !important;
         align-items: center !important;
-        justify-content: flex-end !important;
+        justify-content: flex-start !important;
         margin: 0 !important;
         font-weight: 600 !important;
         color: #475569 !important;
         font-size: 14px !important;
         position: relative !important;
         width: 100% !important;
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
+        white-space: nowrap !important;
     }
     
+    /* Style the "Search:" text to be inline */
+    #boothsTable_filter.dataTables_filter label > *:not(input) {
+        display: inline-block !important;
+        margin-right: 8px !important;
+        white-space: nowrap !important;
+    }
+    
+    /* Hide "Search:" text if you prefer icon only, or keep it visible */
+    /* Uncomment the line below to hide the "Search:" text */
+    /* #boothsTable_filter.dataTables_filter label > *:not(input) { display: none !important; } */
+    
+    /* Alternative: If we want to keep the text, style it inline */
     #boothsTable_filter.dataTables_filter label::before {
         content: '\f002' !important;
         font-family: 'Font Awesome 5 Free' !important;
         font-weight: 900 !important;
         position: absolute !important;
-        right: 16px !important;
+        left: 16px !important;
         color: #94a3b8 !important;
         font-size: 14px !important;
         pointer-events: none !important;
@@ -1793,13 +2092,13 @@
     }
     
     #boothsTable_filter.dataTables_filter input[type="search"] {
-        margin-left: 12px !important;
-        padding: 12px 44px 12px 16px !important;
+        margin-left: 0 !important;
+        padding: 12px 16px 12px 44px !important;
         border: 2px solid #e5e7eb !important;
         border-radius: 12px !important;
         font-size: 14px !important;
-        width: 300px !important;
-        max-width: calc(100% - 12px) !important;
+        width: 100% !important;
+        max-width: 100% !important;
         transition: all 0.3s ease !important;
         background: white !important;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
@@ -1816,6 +2115,132 @@
     #boothsTable_filter.dataTables_filter input[type="search"]::placeholder {
         color: #94a3b8 !important;
         font-weight: 400 !important;
+    }
+    
+    /* Redesigned Table Control Bar */
+    #tableControlBar {
+        position: relative;
+    }
+    
+    /* Table container - full width below controls */
+    #tableContainerInControlBar {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    #tableContainerInControlBar .table-responsive {
+        width: 100% !important;
+        margin: 0 !important;
+        max-height: calc(100vh - 400px) !important;
+        overflow-y: auto !important;
+        overflow-x: auto !important;
+    }
+    
+    #tableContainerInControlBar #boothsTable {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+    
+    /* Sticky header: scroll container - must have overflow and explicit height for sticky to work */
+    #tableContainerInControlBar {
+        position: relative !important;
+        display: block !important;
+    }
+    
+    #tableContainerInControlBar .table-responsive,
+    .table-modern .table-responsive {
+        overflow-y: auto !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        display: block !important;
+        max-height: calc(100vh - 400px) !important;
+    }
+    
+    /* Sticky thead: stick at BOTTOM of tableContainerInControlBar when scrolling table rows */
+    #tableContainerInControlBar .table-responsive thead.sticky-table-header,
+    #tableContainerInControlBar .table-responsive thead,
+    #tableContainerInControlBar #boothsTable thead.sticky-table-header,
+    #tableContainerInControlBar #boothsTable thead {
+        position: sticky !important;
+        bottom: 0 !important;
+        top: auto !important;
+        z-index: 300 !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.12) !important;
+    }
+    
+    #tableContainerInControlBar .table-responsive thead th,
+    #tableContainerInControlBar .table-responsive thead.sticky-table-header th,
+    #tableContainerInControlBar #boothsTable thead th {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+    
+    /* Settings Button Hover Effects */
+    #settingsToggleBtn:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
+    }
+    
+    #settingsToggleBtn:active {
+        transform: translateY(0) !important;
+        box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3) !important;
+    }
+    
+    /* Chevron Rotation Animation */
+    #settingsChevron.fa-chevron-up {
+        transform: rotate(180deg);
+    }
+    
+    #settingsChevron.fa-chevron-down {
+        transform: rotate(0deg);
+    }
+    
+    /* Search Filter Container Styling */
+    #searchFilterContainer {
+        min-width: 250px;
+    }
+    
+    /* Column Resize Handles */
+    .table-modern thead th {
+        position: relative;
+        user-select: none;
+    }
+    
+    .table-modern thead th .column-resizer {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 5px;
+        height: 100%;
+        cursor: col-resize;
+        background: transparent;
+        z-index: 10;
+        touch-action: none;
+    }
+    
+    .table-modern thead th .column-resizer:hover {
+        background: rgba(102, 126, 234, 0.3);
+    }
+    
+    .table-modern thead th .column-resizer.active {
+        background: rgba(102, 126, 234, 0.6);
+    }
+    
+    .table-modern thead th:last-child .column-resizer {
+        display: none; /* Hide resize handle on last column */
+    }
+    
+    /* Prevent text selection while resizing */
+    .table-modern.resizing {
+        user-select: none;
+        cursor: col-resize !important;
+    }
+    
+    .table-modern.resizing thead th,
+    .table-modern.resizing tbody td {
+        user-select: none;
     }
     
     @media (max-width: 768px) {
@@ -1877,10 +2302,6 @@
                     
                     <!-- Right: Actions -->
                     <div class="d-flex gap-2 align-items-center">
-                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleSettingsPanel()" id="settingsToggleBtn" style="border-radius: 10px; padding: 8px 16px;">
-                            <i class="fas fa-cog mr-1"></i>Settings
-                            <i class="fas fa-chevron-down ml-1" id="settingsChevron"></i>
-                        </button>
                         <button type="button" class="btn btn-sm btn-outline-primary" onclick="openStatusSettingsModal()" style="border-radius: 10px; padding: 8px 16px;">
                             <i class="fas fa-tags mr-1"></i>Status Settings
                         </button>
@@ -2159,75 +2580,99 @@
                 </div>
                 <form method="GET" action="{{ route('booths.index', ['view' => 'table']) }}" id="filterForm">
                     <div class="row g-3">
-                        <div class="col-md-3">
-                            <label class="form-label" style="font-weight: 600; color: #475569;">
-                                <i class="fas fa-search mr-1"></i>Search
-                            </label>
-                            <input type="text" name="search" class="form-control" placeholder="Booth number, company, category..." value="{{ request('search') }}" style="border-radius: 10px;">
+                        <!-- Search Field - Full Width on Mobile, 3 columns on Desktop -->
+                        <div class="col-12 col-md-3">
+                            <div class="filter-field-wrapper" style="position: relative;">
+                                <label class="form-label" style="font-weight: 600; color: #475569; margin-bottom: 8px; display: flex; align-items: center;">
+                                    <i class="fas fa-search mr-2" style="color: #667eea;"></i>Search
+                                </label>
+                                <div class="input-group" style="position: relative;">
+                                    <input type="text" name="search" class="form-control modern-filter-input" placeholder="Booth number, company, category..." value="{{ request('search') }}" style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 12px 16px 12px 44px; font-size: 14px; transition: all 0.3s ease; background: white;">
+                                    <i class="fas fa-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; z-index: 5;"></i>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-2">
-                            <label class="form-label" style="font-weight: 600; color: #475569;">
-                                <i class="fas fa-map mr-1"></i>Floor Plan
-                            </label>
-                            <select name="floor_plan_id" class="form-control" style="border-radius: 10px; width: 100%; display: block;">
-                                <option value="">All Floor Plans</option>
-                                @foreach($floorPlans as $fp)
-                                    <option value="{{ $fp->id }}" {{ request('floor_plan_id') == $fp->id ? 'selected' : '' }}>
-                                        {{ $fp->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label" style="font-weight: 600; color: #475569;">
-                                <i class="fas fa-info-circle mr-1"></i>Status
-                            </label>
-                            <select name="status" class="form-control" style="border-radius: 10px; width: 100%; display: block;">
-                                <option value="">All Status</option>
-                                @if(isset($statusSettings) && $statusSettings->count() > 0)
-                                    @foreach($statusSettings as $status)
-                                        <option value="{{ $status->status_code }}" {{ request('status') == $status->status_code ? 'selected' : '' }}>
-                                            {{ $status->status_name }}
+                        
+                        <!-- Floor Plan Filter -->
+                        <div class="col-12 col-md-2">
+                            <div class="filter-field-wrapper">
+                                <label class="form-label" style="font-weight: 600; color: #475569; margin-bottom: 8px; display: flex; align-items: center;">
+                                    <i class="fas fa-map mr-2" style="color: #667eea;"></i>Floor Plan
+                                </label>
+                                <select name="floor_plan_id" class="form-control modern-filter-select" style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 8px 40px 8px 16px; font-size: 14px; transition: all 0.3s ease; background: white; width: 100%; display: block; cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'></polyline></svg>'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; height: 40px; line-height: 1.5; box-sizing: border-box;">
+                                    <option value="">All Floor Plans</option>
+                                    @foreach($floorPlans as $fp)
+                                        <option value="{{ $fp->id }}" {{ request('floor_plan_id') == $fp->id ? 'selected' : '' }}>
+                                            {{ $fp->name }}
                                         </option>
                                     @endforeach
-                                @endif
-                                <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Available</option>
-                                <option value="2" {{ request('status') == '2' ? 'selected' : '' }}>Confirmed</option>
-                                <option value="3" {{ request('status') == '3' ? 'selected' : '' }}>Reserved</option>
-                                <option value="4" {{ request('status') == '4' ? 'selected' : '' }}>Hidden</option>
-                                <option value="5" {{ request('status') == '5' ? 'selected' : '' }}>Paid</option>
-                            </select>
+                                </select>
+                            </div>
                         </div>
-                        <div class="col-md-2">
-                            <label class="form-label" style="font-weight: 600; color: #475569;">
-                                <i class="fas fa-building mr-1"></i>Booth Type
-                            </label>
-                            <select name="booth_type_id" class="form-control" style="border-radius: 10px; width: 100%; display: block;">
-                                <option value="">All Types</option>
-                                @foreach($boothTypes as $type)
-                                    <option value="{{ $type->id }}" {{ request('booth_type_id') == $type->id ? 'selected' : '' }}>
-                                        {{ $type->name }}
-                                    </option>
-                                @endforeach
-                            </select>
+                        
+                        <!-- Status Filter -->
+                        <div class="col-12 col-md-2">
+                            <div class="filter-field-wrapper">
+                                <label class="form-label" style="font-weight: 600; color: #475569; margin-bottom: 8px; display: flex; align-items: center;">
+                                    <i class="fas fa-info-circle mr-2" style="color: #667eea;"></i>Status
+                                </label>
+                                <select name="status" class="form-control modern-filter-select" style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 8px 40px 8px 16px; font-size: 14px; transition: all 0.3s ease; background: white; width: 100%; display: block; cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'></polyline></svg>'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; height: 40px; line-height: 1.5; box-sizing: border-box;">
+                                    <option value="">All Status</option>
+                                    @if(isset($statusSettings) && $statusSettings->count() > 0)
+                                        @foreach($statusSettings as $status)
+                                            <option value="{{ $status->status_code }}" {{ request('status') == $status->status_code ? 'selected' : '' }}>
+                                                {{ $status->status_name }}
+                                            </option>
+                                        @endforeach
+                                    @endif
+                                    <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Available</option>
+                                    <option value="2" {{ request('status') == '2' ? 'selected' : '' }}>Confirmed</option>
+                                    <option value="3" {{ request('status') == '3' ? 'selected' : '' }}>Reserved</option>
+                                    <option value="4" {{ request('status') == '4' ? 'selected' : '' }}>Hidden</option>
+                                    <option value="5" {{ request('status') == '5' ? 'selected' : '' }}>Paid</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="col-md-2">
-                            <label class="form-label" style="font-weight: 600; color: #475569;">
-                                <i class="fas fa-folder mr-1"></i>Category
-                            </label>
-                            <select name="category_id" class="form-control" style="border-radius: 10px; width: 100%; display: block;">
-                                <option value="">All Categories</option>
-                                @foreach($categories as $cat)
-                                    <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>
-                                        {{ $cat->name }}
-                                    </option>
-                                @endforeach
-                            </select>
+                        
+                        <!-- Booth Type Filter -->
+                        <div class="col-12 col-md-2">
+                            <div class="filter-field-wrapper">
+                                <label class="form-label" style="font-weight: 600; color: #475569; margin-bottom: 8px; display: flex; align-items: center;">
+                                    <i class="fas fa-building mr-2" style="color: #667eea;"></i>Booth Type
+                                </label>
+                                <select name="booth_type_id" class="form-control modern-filter-select" style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 8px 40px 8px 16px; font-size: 14px; transition: all 0.3s ease; background: white; width: 100%; display: block; cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'></polyline></svg>'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; height: 40px; line-height: 1.5; box-sizing: border-box;">
+                                    <option value="">All Types</option>
+                                    @foreach($boothTypes as $type)
+                                        <option value="{{ $type->id }}" {{ request('booth_type_id') == $type->id ? 'selected' : '' }}>
+                                            {{ $type->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
-                        <div class="col-md-1">
-                            <label class="form-label" style="font-weight: 600; color: #475569;">&nbsp;</label>
-                            <button type="submit" class="btn btn-primary w-100" style="border-radius: 10px; font-weight: 600;">
-                                <i class="fas fa-filter mr-1"></i>Filter
+                        
+                        <!-- Category Filter -->
+                        <div class="col-12 col-md-2">
+                            <div class="filter-field-wrapper">
+                                <label class="form-label" style="font-weight: 600; color: #475569; margin-bottom: 8px; display: flex; align-items: center;">
+                                    <i class="fas fa-folder mr-2" style="color: #667eea;"></i>Category
+                                </label>
+                                <select name="category_id" class="form-control modern-filter-select" style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 8px 40px 8px 16px; font-size: 14px; transition: all 0.3s ease; background: white; width: 100%; display: block; cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'></polyline></svg>'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; height: 40px; line-height: 1.5; box-sizing: border-box;">
+                                    <option value="">All Categories</option>
+                                    @foreach($categories as $cat)
+                                        <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>
+                                            {{ $cat->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Filter Button -->
+                        <div class="col-12 col-md-1">
+                            <label class="form-label" style="font-weight: 600; color: #475569; margin-bottom: 8px; visibility: hidden;">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary w-100 modern-filter-btn" style="border-radius: 12px; font-weight: 600; padding: 12px 20px; border: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); transition: all 0.3s ease; height: 48px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-filter mr-2"></i>Filter
                             </button>
                         </div>
                     </div>
@@ -2284,84 +2729,109 @@
 
     <!-- Booths Table - Desktop View -->
     <div class="card table-modern d-none d-md-block mb-3">
-        <!-- Settings Toggle Button - Top of Card -->
-        <div class="d-flex justify-content-end p-2" style="border-bottom: 1px solid #e5e7eb; background: #f8f9fa;">
-            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.toggleSettingsPanel()" id="settingsToggleBtn" style="border-radius: 8px; padding: 6px 12px;">
-                <i class="fas fa-cog mr-1"></i>Table Settings
-                <i class="fas fa-chevron-down ml-1" id="settingsChevron"></i>
-            </button>
-        </div>
-        <!-- Expandable Settings Panel - Inside Table Card -->
-        <div class="d-none d-md-block" id="settingsPanel" style="display: none; border-bottom: 1px solid #e5e7eb;">
-            <div class="card-body" style="padding: 20px; background: #f8f9fa;">
-                <h5 class="mb-3" style="font-weight: 600; color: #1e293b;">
-                    <i class="fas fa-sliders-h mr-2"></i>Display Settings
-                </h5>
-                <div class="row">
-                    <div>
-                        <label class="form-label font-weight-600">Column Visibility</label>
-                        <div class="d-flex flex-wrap gap-2" id="columnVisibilityControls">
-                            <!-- Will be populated by JavaScript -->
+        <!-- Table Control Bar - Redesigned -->
+        <div id="tableControlBar" class="d-none d-md-block" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+            <!-- Top Controls Row -->
+            <div class="d-flex justify-content-between align-items-center px-4 py-3" style="border-bottom: 2px solid #e5e7eb;">
+                <!-- Left: Search Filter -->
+                <div class="d-flex align-items-center" id="searchFilterContainer" style="flex: 1; max-width: 400px;">
+                    <!-- DataTables filter will be moved here by JavaScript -->
+                </div>
+                
+                <!-- Center: Pagination Info -->
+                <div class="d-flex align-items-center" id="paginationInfoContainer" style="flex: 1; justify-content: center;">
+                    <!-- Pagination info will be moved here by JavaScript -->
+                </div>
+                
+                <!-- Right: Actions -->
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm" onclick="window.toggleSettingsPanel()" id="settingsToggleBtn" style="border-radius: 10px; padding: 8px 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; font-weight: 600; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3); transition: all 0.3s ease;">
+                        <i class="fas fa-cog mr-2"></i>Table Settings
+                        <i class="fas fa-chevron-down ml-2" id="settingsChevron" style="transition: transform 0.3s ease;"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Expandable Settings Panel - Under Table Settings button, above table -->
+            <div class="d-none d-md-block" id="settingsPanel" style="display: none; border-bottom: 1px solid #e5e7eb;">
+                <div class="card-body" style="padding: 20px; background: #f8f9fa;">
+                    <h5 class="mb-3" style="font-weight: 600; color: #1e293b;">
+                        <i class="fas fa-sliders-h mr-2"></i>Display Settings
+                    </h5>
+                    <div class="row">
+                        <div>
+                            <label class="form-label font-weight-600">Column Visibility</label>
+                            <div class="d-flex flex-wrap gap-2" id="columnVisibilityControls">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                            <button type="button" class="btn btn-sm btn-primary mt-2" onclick="window.saveColumnVisibility()" style="border-radius: 8px;" title="Save which columns are shown or hidden">
+                                <i class="fas fa-save mr-1"></i>Save columns
+                            </button>
                         </div>
-                    </div>
-                    <div class="col-sm-12 col-md-6">
-                        <label class="form-label font-weight-600">Table Options</label>
-                        <div class="d-flex flex-wrap gap-2">
-                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.fitColumnsToContent()" style="border-radius: 8px;">
-                                <i class="fas fa-arrows-alt-h mr-1"></i>Fit Columns
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.resetColumnWidths()" style="border-radius: 8px;">
-                                <i class="fas fa-redo mr-1"></i>Reset Widths
-                            </button>
+                        <div class="col-sm-12 col-md-6">
+                            <label class="form-label font-weight-600">Table Options</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.fitColumnsToContent()" style="border-radius: 8px;">
+                                    <i class="fas fa-arrows-alt-h mr-1"></i>Fit Columns
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.resetColumnWidths()" style="border-radius: 8px;">
+                                    <i class="fas fa-redo mr-1"></i>Reset Widths
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+            
+            <!-- Table Container - Full width below Table Settings / Settings panel -->
+            <div id="tableContainerInControlBar" style="width: 100%; margin: 0; padding: 0;">
+                <!-- Table will be moved here by JavaScript -->
+            </div>
         </div>
         <div class="card-body p-0">
-            <div class="table-responsive" style="max-height: calc(100vh - 400px); overflow-y: auto;">
-                <table class="table table-hover mb-0" id="boothsTable" style="margin-bottom: 0;">
-                    <thead style="position: sticky; top: 0; z-index: 10;">
+            <div class="table-responsive" style="max-height: calc(100vh - 400px); overflow-y: auto; width: 100%;">
+                <table class="table table-hover mb-0" id="boothsTable" style="margin-bottom: 0; width: 100%; table-layout: fixed;">
+                    <thead class="sticky-table-header" style="position: sticky; bottom: 0; z-index: 300;">
                         <tr>
-                            <th width="50" style="min-width: 50px;" data-column="checkbox" data-column-index="0">
+                            <th style="min-width: 50px; width: 4%;" data-column="checkbox" data-column-index="0">
                                 <div class="d-flex align-items-center justify-content-center">
                                     <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" style="cursor: pointer; width: 18px; height: 18px;">
                                 </div>
                             </th>
-                            <th width="60" style="min-width: 60px; text-align: center;" data-column="row_number" data-column-index="1">
+                            <th style="min-width: 60px; width: 4%; text-align: center;" data-column="row_number" data-column-index="1">
                                 <i class="fas fa-hashtag mr-1"></i>#
                             </th>
-                            <th style="min-width: 80px;" data-column="image" data-column-index="2">
+                            <th style="min-width: 80px; width: 6%;" data-column="image" data-column-index="2">
                                 <i class="fas fa-image mr-1"></i>Image
                             </th>
-                            <th style="min-width: 100px;" data-column="booth_number" data-column-index="3">
+                            <th style="min-width: 100px; width: 8%;" data-column="booth_number" data-column-index="3">
                                 <i class="fas fa-hashtag mr-1"></i>Booth #
                             </th>
-                            <th style="min-width: 100px;" data-column="type" data-column-index="4">
+                            <th style="min-width: 100px; width: 8%;" data-column="type" data-column-index="4">
                                 <i class="fas fa-tag mr-1"></i>Type
                             </th>
-                            <th style="min-width: 120px;" data-column="floor_plan" data-column-index="5">
+                            <th style="min-width: 120px; width: 9%;" data-column="floor_plan" data-column-index="5">
                                 <i class="fas fa-building mr-1"></i>Floor Plan
                             </th>
-                            <th style="min-width: 150px;" data-column="company" data-column-index="6">
+                            <th style="min-width: 150px; width: 12%;" data-column="company" data-column-index="6">
                                 <i class="fas fa-briefcase mr-1"></i>Company
                             </th>
-                            <th style="min-width: 120px;" data-column="category" data-column-index="7">
+                            <th style="min-width: 120px; width: 9%;" data-column="category" data-column-index="7">
                                 <i class="fas fa-folder mr-1"></i>Category
                             </th>
-                            <th style="min-width: 100px;" data-column="status" data-column-index="8">
+                            <th style="min-width: 100px; width: 8%;" data-column="status" data-column-index="8">
                                 <i class="fas fa-info-circle mr-1"></i>Status
                             </th>
-                            <th style="min-width: 100px;" data-column="price" data-column-index="9">
+                            <th style="min-width: 100px; width: 8%;" data-column="price" data-column-index="9">
                                 <i class="fas fa-dollar-sign mr-1"></i>Price
                             </th>
-                            <th style="min-width: 90px;" data-column="area" data-column-index="10">
+                            <th style="min-width: 90px; width: 7%;" data-column="area" data-column-index="10">
                                 <i class="fas fa-ruler-combined mr-1"></i>Area
                             </th>
-                            <th style="min-width: 100px;" data-column="capacity" data-column-index="11">
+                            <th style="min-width: 100px; width: 8%;" data-column="capacity" data-column-index="11">
                                 <i class="fas fa-users mr-1"></i>Capacity
                             </th>
-                            <th style="min-width: 120px; text-align: center;" data-column="actions" data-column-index="12">
+                            <th style="min-width: 120px; width: 9%; text-align: center;" data-column="actions" data-column-index="12">
                                 <i class="fas fa-cog mr-1"></i>Actions
                             </th>
                         </tr>
@@ -2404,7 +2874,7 @@
         @if(isset($booths) && $booths->total() > 0)
         <div class="card-footer-modern">
             <div class="pagination-wrapper">
-                <div class="pagination-info" id="boothsTable_info" aria-describedby="boothsTable_info">
+                <div class="dataTables_info" id="boothsTable_info" aria-describedby="boothsTable_info">
                     <span class="pagination-text">
                         <i class="fas fa-list mr-2"></i>
                         Showing <strong id="boothsShowing">{{ $booths->firstItem() ?? 0 }}</strong> - <strong id="boothsTo">{{ $booths->lastItem() ?? 0 }}</strong> of <strong id="boothsTotal">{{ $booths->total() }}</strong> booths
@@ -2983,16 +3453,461 @@
 <script>
 let currentBoothId = null;
 
+// ============================================
+// SCROLL POSITION RESTORE ON RELOAD
+// ============================================
+(function() {
+    var scrollStorageKey = 'boothsManagement_scrollPosition';
+    var tableScrollStorageKey = 'boothsManagement_tableScrollPosition';
+
+    // Save scroll position (window + table container)
+    function saveScrollPosition() {
+        try {
+            sessionStorage.setItem(scrollStorageKey, String(window.scrollY || window.pageYOffset || 0));
+            var table = document.getElementById('boothsTable');
+            var scrollContainer = table ? table.closest('.table-responsive') : null;
+            if (scrollContainer) {
+                sessionStorage.setItem(tableScrollStorageKey, String(scrollContainer.scrollTop || 0));
+            }
+        } catch (e) {}
+    }
+
+    // Restore scroll position after page load
+    function restoreScrollPosition() {
+        try {
+            var winY = sessionStorage.getItem(scrollStorageKey);
+            if (winY !== null) {
+                var y = parseInt(winY, 10);
+                if (!isNaN(y) && y >= 0) {
+                    window.scrollTo(0, y);
+                }
+            }
+            var tableY = sessionStorage.getItem(tableScrollStorageKey);
+            if (tableY !== null) {
+                var table = document.getElementById('boothsTable');
+                var scrollContainer = table ? table.closest('.table-responsive') : null;
+                if (scrollContainer) {
+                    var ty = parseInt(tableY, 10);
+                    if (!isNaN(ty) && ty >= 0) {
+                        scrollContainer.scrollTop = ty;
+                    }
+                }
+            }
+        } catch (e) {}
+    }
+
+    // Save on before unload (reload, navigate away)
+    window.addEventListener('beforeunload', saveScrollPosition);
+
+    // Save on scroll (debounced) so we capture position even if user doesn't leave
+    var scrollSaveTimeout;
+    window.addEventListener('scroll', function() {
+        clearTimeout(scrollSaveTimeout);
+        scrollSaveTimeout = setTimeout(saveScrollPosition, 150);
+    }, { passive: true });
+
+    // Save table container scroll
+    document.addEventListener('scroll', function(e) {
+        var el = e.target;
+        if (el && el.classList && el.classList.contains('table-responsive')) {
+            clearTimeout(scrollSaveTimeout);
+            scrollSaveTimeout = setTimeout(saveScrollPosition, 150);
+        }
+    }, { passive: true, capture: true });
+
+    // Restore after DOM ready and after layout is stable (table moved, etc.)
+    if (document.readyState === 'complete') {
+        setTimeout(restoreScrollPosition, 100);
+        setTimeout(restoreScrollPosition, 500);
+    } else {
+        window.addEventListener('load', function() {
+            setTimeout(restoreScrollPosition, 100);
+            setTimeout(restoreScrollPosition, 500);
+        });
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(restoreScrollPosition, 300);
+        setTimeout(restoreScrollPosition, 800);
+    });
+})();
+
 // Initialize DataTable
 $(document).ready(function() {
     $('#boothsTable').DataTable({
         pageLength: 50,
         lengthChange: false, // Hide the length/rows per page selector
+        paging: false, // Do not show or load DataTables pagination
         order: [[3, 'asc']], // Updated to account for row number column
         columnDefs: [
-            { orderable: false, targets: [0, 1, 2, 12] } // Updated: checkbox(0), row_number(1), image(2), actions(12)
-        ]
+            { orderable: false, targets: [0, 1, 2, 12] }, // checkbox(0), row_number(1), image(2), actions(12)
+            { width: "4%", targets: [0] },
+            { width: "4%", targets: [1] },
+            { width: "6%", targets: [2] },
+            { width: "8%", targets: [3] },
+            { width: "8%", targets: [4] },
+            { width: "9%", targets: [5] },
+            { width: "12%", targets: [6] },
+            { width: "9%", targets: [7] },
+            { width: "8%", targets: [8] },
+            { width: "8%", targets: [9] },
+            { width: "7%", targets: [10] },
+            { width: "8%", targets: [11] },
+            { width: "9%", targets: [12] }
+        ],
+        language: {
+            search: "", // Remove "Search:" label text
+            searchPlaceholder: "Search booths..."
+        },
+        autoWidth: true, // Enable auto width to fit container
+        scrollX: false, // Disable horizontal scrolling - table should fit width
+        scrollCollapse: false
     });
+    
+    // Ensure table always fits container width
+    function ensureTableFitsWidth() {
+        const table = $('#boothsTable');
+        const container = table.closest('.table-responsive');
+        if (table.length && container.length) {
+            table.css('width', '100%');
+            table.css('max-width', '100%');
+            // Force table to recalculate width
+            if (table.DataTable) {
+                table.DataTable().columns.adjust();
+            }
+        }
+    }
+    
+    // Apply on load and resize
+    setTimeout(function() {
+        ensureTableFitsWidth();
+    }, 100);
+    
+    $(window).on('resize', function() {
+        setTimeout(function() {
+            ensureTableFitsWidth();
+        }, 100);
+    });
+    
+    // Move search filter to the redesigned control bar
+    const filterElement = $('#boothsTable_filter');
+    const targetDiv = $('#searchFilterContainer');
+    if (filterElement.length && targetDiv.length) {
+        filterElement.appendTo(targetDiv);
+        // Adjust styling for the new location
+        filterElement.css({
+            'margin-bottom': '0',
+            'margin-right': '0',
+            'width': '100%'
+        });
+        
+        // Remove any text nodes (like "Search:") from the label
+        const label = filterElement.find('label');
+        if (label.length) {
+            label.contents().each(function() {
+                if (this.nodeType === 3) { // Text node
+                    $(this).remove();
+                }
+            });
+        }
+    }
+    
+    // Move pagination info to the redesigned control bar
+    function movePaginationInfo() {
+        // Try to find pagination info element (could be created by DataTables or exist in DOM)
+        const paginationInfoElement = $('#boothsTable_info');
+        const paginationInfoContainer = $('#paginationInfoContainer');
+        
+        if (paginationInfoContainer.length) {
+            // If DataTables info element exists, move it
+            if (paginationInfoElement.length) {
+                paginationInfoElement.appendTo(paginationInfoContainer);
+                paginationInfoElement.css({
+                    'margin-bottom': '0',
+                    'margin-top': '0'
+                });
+            }
+            
+            // Also check for .dataTables_info class (from original HTML)
+            const originalPaginationInfo = $('.dataTables_info').not('#boothsTable_info');
+            if (originalPaginationInfo.length && originalPaginationInfo.closest('#paginationInfoContainer').length === 0) {
+                originalPaginationInfo.appendTo(paginationInfoContainer);
+                originalPaginationInfo.css({
+                    'margin-bottom': '0',
+                    'margin-top': '0'
+                });
+            }
+        }
+    }
+    
+    // Move pagination info immediately and after DataTable initialization
+    movePaginationInfo();
+    
+    // Also move it after DataTable draws (in case it creates the element dynamically)
+    $('#boothsTable').on('draw.dt', function() {
+        setTimeout(movePaginationInfo, 100);
+    });
+    
+    // Move table into the control bar area
+    function moveTableToControlBar() {
+        const table = $('#boothsTable');
+        const tableResponsive = table.closest('.table-responsive');
+        const tableContainer = $('#tableContainerInControlBar');
+        const controlBar = $('#tableControlBar');
+        
+        if (table.length && tableContainer.length && controlBar.length) {
+            // Move the entire table-responsive div (which contains the table) into the control bar
+            if (tableResponsive.length) {
+                tableResponsive.appendTo(tableContainer);
+                // Ensure it maintains full width
+                tableResponsive.css({
+                    'width': '100%',
+                    'margin-top': '0',
+                    'margin-bottom': '0'
+                });
+            } else {
+                // If table-responsive doesn't exist, move just the table
+                table.appendTo(tableContainer);
+                // Wrap it in a responsive container
+                table.wrap('<div class="table-responsive" style="max-height: calc(100vh - 400px); overflow-y: auto; width: 100%;"></div>');
+            }
+            
+            // Move lazy load trigger, spinner, and end message into table container (after table-responsive)
+            // so they appear below the table and lazy load works when scrolling
+            const lazyTrigger = $('#boothsLazyLoadTrigger');
+            const lazySpinner = $('#boothsLazyLoadSpinner');
+            const lazyEnd = $('#boothsLazyLoadEnd');
+            if (lazyTrigger.length) lazyTrigger.appendTo(tableContainer);
+            if (lazySpinner.length) lazySpinner.appendTo(tableContainer);
+            if (lazyEnd.length) lazyEnd.appendTo(tableContainer);
+        }
+    }
+    
+    // Move table after DataTable initialization
+    setTimeout(function() {
+        moveTableToControlBar();
+    }, 200);
+    
+    // Also move it after DataTable draws
+    $('#boothsTable').on('draw.dt', function() {
+        setTimeout(moveTableToControlBar, 100);
+    });
+    
+    // Ensure sticky header class is applied (DataTables may strip inline styles on redraw)
+    function ensureStickyTableHeader() {
+        const thead = $('#boothsTable thead');
+        if (thead.length) {
+            thead.addClass('sticky-table-header');
+            thead.css({ 'position': 'sticky', 'bottom': '0', 'top': 'auto', 'z-index': '300' });
+        }
+    }
+    
+    setTimeout(ensureStickyTableHeader, 150);
+    $('#boothsTable').on('draw.dt', function() {
+        setTimeout(ensureStickyTableHeader, 100);
+    });
+    
+    // ============================================
+    // COLUMN RESIZE FUNCTIONALITY
+    // ============================================
+    function initializeColumnResize() {
+        const table = $('#boothsTable');
+        const tableId = 'boothsTable';
+        const storageKey = 'boothsTable_columnWidths';
+        
+        // Default column widths that always fit container (percent + min-width in px)
+        const defaultFitLayout = [
+            { pct: '4%', minPx: 50 },   // checkbox
+            { pct: '4%', minPx: 60 },   // row_number
+            { pct: '6%', minPx: 80 },   // image
+            { pct: '8%', minPx: 100 },  // booth_number
+            { pct: '8%', minPx: 100 },  // type
+            { pct: '9%', minPx: 120 },  // floor_plan
+            { pct: '12%', minPx: 150 }, // company
+            { pct: '9%', minPx: 120 },  // category
+            { pct: '8%', minPx: 100 },  // status
+            { pct: '8%', minPx: 100 },  // price
+            { pct: '7%', minPx: 90 },   // area
+            { pct: '8%', minPx: 100 },  // capacity
+            { pct: '9%', minPx: 120 }   // actions
+        ];
+        
+        function applyFitToContainer() {
+            table.css({ width: '100%', maxWidth: '100%' });
+            table.find('thead th').each(function(index) {
+                const def = defaultFitLayout[index];
+                if (!def) return;
+                $(this).css({ width: def.pct, minWidth: def.minPx + 'px' });
+                $(this).removeAttr('width');
+                const widthVal = def.pct;
+                table.find('tbody tr').each(function() {
+                    $(this).find('td').eq(index).css({ width: widthVal, minWidth: def.minPx + 'px' });
+                });
+            });
+        }
+        
+        // Restore saved column widths, or apply fit-to-container when none saved
+        function restoreColumnWidths() {
+            const savedWidths = localStorage.getItem(storageKey);
+            if (savedWidths) {
+                try {
+                    const widths = JSON.parse(savedWidths);
+                    table.find('thead th').each(function(index) {
+                        if (widths[index]) {
+                            const width = widths[index] + 'px';
+                            $(this).css('width', width);
+                            $(this).attr('width', widths[index]);
+                            table.find('tbody tr').each(function() {
+                                $(this).find('td').eq(index).css('width', width);
+                            });
+                        }
+                    });
+                } catch (e) {
+                    console.error('Error restoring column widths:', e);
+                    applyFitToContainer();
+                }
+            } else {
+                applyFitToContainer();
+            }
+        }
+        
+        // Save column widths to localStorage
+        function saveColumnWidths() {
+            const widths = [];
+            table.find('thead th').each(function() {
+                const width = $(this).outerWidth();
+                widths.push(width);
+            });
+            localStorage.setItem(storageKey, JSON.stringify(widths));
+        }
+        
+        // Add resize handles to column headers
+        function addResizeHandles() {
+            table.find('thead th').each(function() {
+                // Skip last column (no resize handle needed)
+                if ($(this).is(':last-child')) {
+                    return;
+                }
+                
+                // Check if resize handle already exists
+                if ($(this).find('.column-resizer').length === 0) {
+                    const resizer = $('<div class="column-resizer"></div>');
+                    $(this).append(resizer);
+                }
+            });
+        }
+        
+        // Initialize resize functionality
+        function setupResize() {
+            let isResizing = false;
+            let currentColumn = null;
+            let startX = 0;
+            let startWidth = 0;
+            let columnIndex = 0;
+            
+            $(document).on('mousedown', '.column-resizer', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                isResizing = true;
+                currentColumn = $(this).closest('th');
+                columnIndex = currentColumn.index();
+                startX = e.pageX;
+                startWidth = currentColumn.outerWidth();
+                
+                table.addClass('resizing');
+                $(this).addClass('active');
+                
+                // Prevent text selection
+                $('body').css('cursor', 'col-resize');
+                $('body').css('user-select', 'none');
+            });
+            
+            $(document).on('mousemove', function(e) {
+                if (!isResizing) return;
+                
+                e.preventDefault();
+                const diff = e.pageX - startX;
+                const newWidth = Math.max(50, startWidth + diff); // Minimum width 50px
+                const widthStr = newWidth + 'px';
+                
+                // Update header
+                currentColumn.css('width', widthStr);
+                currentColumn.attr('width', newWidth);
+                
+                // Update all cells in this column
+                table.find('tbody tr').each(function() {
+                    $(this).find('td').eq(columnIndex).css('width', widthStr);
+                });
+            });
+            
+            $(document).on('mouseup', function() {
+                if (isResizing) {
+                    isResizing = false;
+                    table.removeClass('resizing');
+                    $('.column-resizer').removeClass('active');
+                    $('body').css('cursor', '');
+                    $('body').css('user-select', '');
+                    
+                    // Save column widths
+                    saveColumnWidths();
+                }
+            });
+            
+            // Touch support for mobile
+            $(document).on('touchstart', '.column-resizer', function(e) {
+                e.preventDefault();
+                const touch = e.originalEvent.touches[0];
+                isResizing = true;
+                currentColumn = $(this).closest('th');
+                columnIndex = currentColumn.index();
+                startX = touch.pageX;
+                startWidth = currentColumn.outerWidth();
+                table.addClass('resizing');
+                $(this).addClass('active');
+            });
+            
+            $(document).on('touchmove', function(e) {
+                if (!isResizing) return;
+                e.preventDefault();
+                const touch = e.originalEvent.touches[0];
+                const diff = touch.pageX - startX;
+                const newWidth = Math.max(50, startWidth + diff);
+                const widthStr = newWidth + 'px';
+                
+                currentColumn.css('width', widthStr);
+                currentColumn.attr('width', newWidth);
+                
+                table.find('tbody tr').each(function() {
+                    $(this).find('td').eq(columnIndex).css('width', widthStr);
+                });
+            });
+            
+            $(document).on('touchend', function() {
+                if (isResizing) {
+                    isResizing = false;
+                    table.removeClass('resizing');
+                    $('.column-resizer').removeClass('active');
+                    saveColumnWidths();
+                }
+            });
+        }
+        
+        // Initialize
+        addResizeHandles();
+        setupResize();
+        restoreColumnWidths();
+        
+        // Re-initialize after DataTables draws the table
+        table.on('draw.dt', function() {
+            addResizeHandles();
+            restoreColumnWidths();
+        });
+    }
+    
+    // Initialize column resize after a short delay to ensure DataTables is ready
+    setTimeout(function() {
+        initializeColumnResize();
+    }, 100);
     
     // Auto-scroll modal body to top and reset to first tab when modal is shown
     $('#boothModal').on('shown.bs.modal', function() {
@@ -4018,28 +4933,54 @@ document.addEventListener('DOMContentLoaded', function() {
         // Disconnect existing observer if any
         if (boothsLazyLoadObserver) {
             boothsLazyLoadObserver.disconnect();
+            boothsLazyLoadObserver = null;
         }
         
-        // Use Intersection Observer API for better performance
-        const trigger = document.getElementById('boothsLazyLoadTrigger');
+        // Remove any existing scroll listeners
+        $(window).off('scroll.lazyLoadCheck');
+        $(document).off('scroll.lazyLoadTable');
         
-        if (!trigger) return;
-        
-        const observerOptions = {
-            root: null,
-            rootMargin: '200px',
-            threshold: 0.1
-        };
-        
-        boothsLazyLoadObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting && boothsHasMoreData && !boothsIsLoading && boothsLoadMode === 'lazy') {
+        // The table scrolls inside .table-responsive, not the window. We must listen to that container.
+        function attachScrollToTableContainer() {
+            const table = document.getElementById('boothsTable');
+            if (!table) return;
+            
+            const scrollContainer = table.closest('.table-responsive');
+            if (!scrollContainer) return;
+            
+            let scrollCheckTimeout;
+            const threshold = 250; // Load when within 250px of bottom
+            
+            function checkAndLoad() {
+                if (boothsLoadMode !== 'lazy' || boothsIsLoading || !boothsHasMoreData) return;
+                
+                const scrollTop = scrollContainer.scrollTop;
+                const scrollHeight = scrollContainer.scrollHeight;
+                const clientHeight = scrollContainer.clientHeight;
+                const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+                
+                if (distanceFromBottom <= threshold) {
                     loadMoreBooths();
                 }
+            }
+            
+            $(scrollContainer).off('scroll.lazyLoadTable').on('scroll.lazyLoadTable', function() {
+                clearTimeout(scrollCheckTimeout);
+                scrollCheckTimeout = setTimeout(checkAndLoad, 100);
             });
-        }, observerOptions);
+            
+            // Also check on window scroll (in case table container is in view and user scrolls page)
+            $(window).off('scroll.lazyLoadCheck').on('scroll.lazyLoadCheck', function() {
+                clearTimeout(scrollCheckTimeout);
+                scrollCheckTimeout = setTimeout(checkAndLoad, 100);
+            });
+            
+            // Initial check in case content is short and trigger is already "visible"
+            setTimeout(checkAndLoad, 200);
+        }
         
-        boothsLazyLoadObserver.observe(trigger);
+        // Attach after a delay so table container exists (may be moved by moveTableToControlBar)
+        setTimeout(attachScrollToTableContainer, 400);
     }
     
     // Load More Booths
@@ -4073,7 +5014,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-            }
+            },
+            credentials: 'same-origin'
         })
         .then(response => {
             if (!response.ok) {
@@ -4115,10 +5057,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     $('#boothsLazyLoadEnd').show();
                     $('#boothsLazyLoadSpinner').hide();
                 } else {
-                    // Re-initialize lazy loading observer for new content after a brief delay
+                    // Re-attach scroll listener for next page (container ref is still valid)
                     setTimeout(function() {
                         initBoothsLazyLoading();
-                    }, 100);
+                    }, 150);
                 }
             } else {
                 boothsHasMoreData = false;
@@ -4357,6 +5299,33 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('boothColumnVisibility', JSON.stringify(savedVisibility));
     }
     
+    /**
+     * Save current column visibility (enabled/disabled) from the checkboxes in
+     * #columnVisibilityControls (the div with class "d-flex flex-wrap gap-2").
+     * Call this to persist which columns are shown/hidden.
+     */
+    window.saveColumnVisibility = function() {
+        const controlsContainer = document.getElementById('columnVisibilityControls');
+        if (!controlsContainer) {
+            if (typeof toastr !== 'undefined') toastr.warning('Column settings not found.');
+            return false;
+        }
+        const checkboxes = controlsContainer.querySelectorAll('.column-visibility-checkbox[data-column]');
+        const state = {};
+        checkboxes.forEach(cb => {
+            const key = cb.getAttribute('data-column');
+            if (key) state[key] = cb.checked;
+        });
+        try {
+            localStorage.setItem('boothColumnVisibility', JSON.stringify(state));
+            if (typeof toastr !== 'undefined') toastr.success('Column visibility saved.');
+            return true;
+        } catch (e) {
+            if (typeof toastr !== 'undefined') toastr.error('Failed to save column visibility.');
+            return false;
+        }
+    }
+    
     window.initTableColumnSettings = function() {
         // Initialize column visibility from saved settings
         const savedVisibility = JSON.parse(localStorage.getItem('boothColumnVisibility') || '{}');
@@ -4416,18 +5385,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     window.resetColumnWidths = function() {
-        const table = document.getElementById('boothsTable');
-        if (!table) return;
-        
-        const headerCells = table.querySelectorAll('thead th');
-        headerCells.forEach(th => {
-            th.style.width = '';
-            th.style.minWidth = '';
+        localStorage.removeItem('boothsTable_columnWidths');
+        const table = $('#boothsTable');
+        if (!table.length) return;
+        // Re-run the same fit-to-container logic used when no saved widths
+        const defaultFitLayout = [
+            { pct: '4%', minPx: 50 }, { pct: '4%', minPx: 60 }, { pct: '6%', minPx: 80 },
+            { pct: '8%', minPx: 100 }, { pct: '8%', minPx: 100 }, { pct: '9%', minPx: 120 },
+            { pct: '12%', minPx: 150 }, { pct: '9%', minPx: 120 }, { pct: '8%', minPx: 100 },
+            { pct: '8%', minPx: 100 }, { pct: '7%', minPx: 90 }, { pct: '8%', minPx: 100 },
+            { pct: '9%', minPx: 120 }
+        ];
+        table.css({ width: '100%', maxWidth: '100%' });
+        table.find('thead th').each(function(index) {
+            const def = defaultFitLayout[index];
+            if (!def) return;
+            $(this).css({ width: def.pct, minWidth: def.minPx + 'px' }).removeAttr('width');
+            table.find('tbody tr').each(function() {
+                $(this).find('td').eq(index).css({ width: def.pct, minWidth: def.minPx + 'px' });
+            });
         });
-        
-        if (typeof toastr !== 'undefined') {
-            toastr.success('Column widths reset');
-        }
+        if (typeof toastr !== 'undefined') toastr.success('Column widths reset to fit container');
     }
 });
 </script>
