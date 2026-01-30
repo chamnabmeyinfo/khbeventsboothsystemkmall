@@ -2689,10 +2689,16 @@ class BoothController extends Controller
         // Public view actions for logged-in users (controlled by settings)
         $authUser = auth()->user();
         $allowCreateOnPublicView = Setting::getValue('public_view_allow_create_booking', true);
+        // Allow when user has Create Bookings permission, or when user's role is Sales (name/slug contains "sales")
+        $isSalesRole = $authUser && $authUser->role
+            && (stripos($authUser->role->name ?? '', 'sales') !== false || stripos($authUser->role->slug ?? '', 'sales') !== false);
         $canCreateBookingOnPublicView = $authUser
             && $allowCreateOnPublicView
-            && $authUser->hasPermission('bookings.create');
+            && ($authUser->hasPermission('bookings.create') || $isSalesRole);
         $restrictCrudToOwnBooking = Setting::getValue('public_view_restrict_crud_to_own_booking', true);
+        // Only users with canvas edit permission (or admin) can see "Switch back to Canvas Design"
+        $canSwitchToCanvasDesign = $authUser
+            && ($authUser->hasPermission('booths.canvas.edit') || $authUser->isAdmin());
 
         return view('booths.public-view', compact(
             'floorPlan',
@@ -2707,7 +2713,8 @@ class BoothController extends Controller
             'statusColors',
             'authUser',
             'canCreateBookingOnPublicView',
-            'restrictCrudToOwnBooking'
+            'restrictCrudToOwnBooking',
+            'canSwitchToCanvasDesign'
         ));
     }
 

@@ -139,7 +139,7 @@
             </div>
             <div class="card-body">
                 <p class="text-muted">Control what logged-in users can do on the public floor plan view (<code>/floor-plans/{id}/public</code>).</p>
-                <form id="publicViewSettingsForm" action="{{ route('settings.public-view.save') }}" method="POST">
+                <form id="publicViewSettingsForm" action="{{ url('settings/public-view') }}" method="POST">
                     @csrf
                     <div class="mb-3">
                         <div class="form-check form-switch">

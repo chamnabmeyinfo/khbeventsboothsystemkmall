@@ -260,6 +260,45 @@
             transition: transform 0.2s, box-shadow 0.2s;
         }
         .btn-book-booth-public:hover { color: white; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(40, 167, 69, 0.5); }
+        /* Right-click context menu (public view - Create Booking) */
+        .public-view-context-menu {
+            display: none;
+            position: fixed;
+            z-index: 10001;
+            min-width: 200px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            padding: 6px 0;
+            list-style: none;
+            margin: 0;
+            border: 1px solid #e9ecef;
+        }
+        .public-view-context-menu.active { display: block; }
+        .public-view-context-menu li { margin: 0; padding: 0; }
+        .public-view-context-menu a,
+        .public-view-context-menu button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 10px 16px;
+            border: none;
+            background: none;
+            text-align: left;
+            font-size: 0.95rem;
+            color: #495057;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.15s;
+        }
+        .public-view-context-menu a:hover,
+        .public-view-context-menu button:hover {
+            background: #f0f4ff;
+            color: #667eea;
+        }
+        .public-view-context-menu a i,
+        .public-view-context-menu button i { width: 20px; text-align: center; }
         .zoom-controls-simple {
             display: flex;
             align-items: center;
@@ -873,6 +912,85 @@
         .booth-modal-body {
             padding: 30px;
         }
+
+        /* Public view: interactive booking-only popup (same flow as /books/create) */
+        .public-booking-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10002; justify-content: center; align-items: center; animation: fadeIn 0.2s ease; padding: 16px; box-sizing: border-box; }
+        .public-booking-modal.active { display: flex; }
+        .public-booking-modal .modal-content-inner { background: white; border-radius: 16px; width: 100%; max-width: 560px; max-height: 92vh; overflow: hidden; box-shadow: 0 12px 48px rgba(0,0,0,0.3); animation: slideUp 0.3s ease; display: flex; flex-direction: column; }
+        .public-booking-modal .modal-header-inner { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 20px; border-radius: 16px 16px 0 0; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
+        .public-booking-modal .modal-header-inner h3 { margin: 0; font-size: 1.2rem; font-weight: 700; }
+        .public-booking-modal .modal-body-inner { padding: 20px; overflow-y: auto; flex: 1; min-height: 0; }
+        .public-booking-modal .btn-close-inner { background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .public-booking-modal .btn-close-inner:hover { background: rgba(255,255,255,0.3); }
+        .public-booking-modal .bf-section { margin-bottom: 20px; }
+        .public-booking-modal .bf-section-title { font-size: 0.85rem; font-weight: 700; color: #667eea; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+        .public-booking-modal .bf-form-row { display: flex; gap: 12px; flex-wrap: wrap; }
+        .public-booking-modal .bf-form-row .bf-field { flex: 1; min-width: 140px; }
+        .public-booking-modal .bf-field { margin-bottom: 12px; }
+        .public-booking-modal .bf-field label { display: block; font-weight: 600; color: #495057; margin-bottom: 4px; font-size: 0.85rem; }
+        .public-booking-modal .bf-field input, .public-booking-modal .bf-field select, .public-booking-modal .bf-field textarea { width: 100%; padding: 8px 12px; border: 1px solid #dee2e6; border-radius: 8px; font-size: 0.9rem; box-sizing: border-box; }
+        .public-booking-modal .bf-field .req { color: #dc3545; }
+        .public-booking-modal .bf-section-title-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+        .public-booking-modal .bf-section-title-row .bf-section-title { margin-bottom: 0; }
+        .public-booking-modal .bf-booths-view-switcher { display: flex; gap: 4px; }
+        .public-booking-modal .bf-view-btn { width: 32px; height: 32px; border: 1px solid #dee2e6; background: #fff; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; color: #6c757d; font-size: 0.85rem; transition: all 0.2s; }
+        .public-booking-modal .bf-view-btn:hover { background: #f8f9fa; color: #667eea; border-color: #667eea; }
+        .public-booking-modal .bf-view-btn.active { background: #667eea; color: #fff; border-color: #667eea; }
+        .public-booking-modal .bf-booths { max-height: 220px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 8px; padding: 10px; background: #f8f9fa; }
+        .public-booking-modal .bf-booth-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; cursor: pointer; }
+        .public-booking-modal .bf-booth-item input { width: auto; margin: 0; flex-shrink: 0; }
+        .public-booking-modal .bf-booth-item label { margin: 0; font-weight: 500; cursor: pointer; flex: 1; }
+        .public-booking-modal .bf-booth-item-info { font-size: 0.75rem; color: #6c757d; margin-top: 2px; }
+        .public-booking-modal .bf-booths.view-list .bf-booth-item { flex-wrap: wrap; }
+        .public-booking-modal .bf-booths.view-list .bf-booth-item .bf-booth-item-info { flex: 1 1 100%; padding-left: 28px; }
+        .public-booking-modal .bf-booths.view-large { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .public-booking-modal .bf-booths.view-large .bf-booth-item { flex-direction: column; align-items: stretch; padding: 10px; background: #fff; border: 1px solid #e9ecef; border-radius: 8px; min-height: 70px; }
+        .public-booking-modal .bf-booths.view-large .bf-booth-item label { display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .public-booking-modal .bf-booths.view-large .bf-booth-item .bf-booth-item-primary { font-weight: 700; font-size: 1rem; color: #212529; }
+        .public-booking-modal .bf-booths.view-large .bf-booth-item .bf-booth-item-info { margin-top: 4px; font-size: 0.7rem; }
+        .public-booking-modal .bf-booths.view-medium { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .public-booking-modal .bf-booths.view-medium .bf-booth-item { flex-direction: column; align-items: center; padding: 8px; background: #fff; border: 1px solid #e9ecef; border-radius: 6px; min-height: 56px; }
+        .public-booking-modal .bf-booths.view-medium .bf-booth-item label { text-align: center; font-size: 0.8rem; }
+        .public-booking-modal .bf-booths.view-medium .bf-booth-item .bf-booth-item-primary { font-weight: 600; }
+        .public-booking-modal .bf-booths.view-medium .bf-booth-item .bf-booth-item-info { font-size: 0.65rem; margin-top: 2px; }
+        .public-booking-modal .bf-booths.view-detail .bf-booth-item { flex-wrap: wrap; padding: 8px 10px; background: #fff; border: 1px solid #e9ecef; border-radius: 6px; margin-bottom: 6px; }
+        .public-booking-modal .bf-booths.view-detail .bf-booth-item:last-child { margin-bottom: 0; }
+        .public-booking-modal .bf-booths.view-detail .bf-booth-item label { flex: 1 1 100%; display: block; }
+        .public-booking-modal .bf-booths.view-detail .bf-booth-item .bf-booth-item-primary { font-weight: 700; font-size: 0.9rem; }
+        .public-booking-modal .bf-booths.view-detail .bf-booth-item .bf-booth-item-info { flex: 1 1 100%; padding-left: 28px; font-size: 0.75rem; line-height: 1.4; }
+        /* Client search & selected (same style as /books/create) */
+        .public-booking-modal .bf-client-search-wrap { position: relative; margin-bottom: 10px; }
+        .public-booking-modal .bf-client-search-input { width: 100%; padding: 10px 12px 10px 36px; border: 1px solid #dee2e6; border-radius: 8px; font-size: 0.9rem; box-sizing: border-box; }
+        .public-booking-modal .bf-client-search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #6c757d; pointer-events: none; }
+        .public-booking-modal .bf-client-results { position: absolute; left: 0; right: 0; top: 100%; margin-top: 4px; background: #fff; border: 1px solid #dee2e6; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); max-height: 200px; overflow-y: auto; z-index: 100; }
+        .public-booking-modal .bf-client-result-item { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
+        .public-booking-modal .bf-client-result-item:last-child { border-bottom: none; }
+        .public-booking-modal .bf-client-result-item:hover { background: #f8f9fa; }
+        .public-booking-modal .bf-client-result-item .name { font-weight: 600; color: #212529; }
+        .public-booking-modal .bf-client-result-item .meta { font-size: 0.8rem; color: #6c757d; }
+        .public-booking-modal .bf-btn-new-client { margin-top: 8px; padding: 8px 14px; background: #e9ecef; border: 1px solid #dee2e6; border-radius: 8px; font-size: 0.875rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+        .public-booking-modal .bf-btn-new-client:hover { background: #dee2e6; }
+        .public-booking-modal .bf-client-selected { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; margin-bottom: 10px; }
+        .public-booking-modal .bf-client-selected-info { display: flex; align-items: center; gap: 12px; }
+        .public-booking-modal .bf-client-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
+        .public-booking-modal .bf-client-name { font-weight: 600; color: #212529; }
+        .public-booking-modal .bf-client-meta { font-size: 0.8rem; color: #6c757d; }
+        .public-booking-modal .bf-btn-change { padding: 6px 12px; font-size: 0.8rem; background: #fff; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer; }
+        .public-booking-modal .bf-btn-change:hover { background: #f8f9fa; }
+        .public-booking-modal .bf-new-client-form { margin-top: 14px; padding-top: 14px; border-top: 1px solid #e9ecef; }
+        .public-booking-modal .bf-new-client-form-full .bf-new-client-form-scroll { max-height: 320px; overflow-y: auto; padding-right: 6px; margin-bottom: 14px; }
+        .public-booking-modal .bf-form-subsection { margin-bottom: 16px; }
+        .public-booking-modal .bf-form-subsection:last-child { margin-bottom: 0; }
+        .public-booking-modal .bf-form-subtitle { font-size: 0.8rem; font-weight: 700; color: #6c757d; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .public-booking-modal .bf-new-client-actions { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e9ecef; }
+        .public-booking-modal .bf-alert { padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 0.85rem; display: none; }
+        .public-booking-modal .bf-alert.show { display: block; }
+        .public-booking-modal .bf-alert-error { background: #f8d7da; color: #721c24; }
+        .public-booking-modal .bf-footer { padding: 16px 20px; border-top: 1px solid #e9ecef; background: #f8f9fa; border-radius: 0 0 16px 16px; display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0; }
+        .public-booking-modal .bf-btn { padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; }
+        .public-booking-modal .bf-btn-secondary { background: #fff; color: #495057; border: 1px solid #dee2e6; }
+        .public-booking-modal .bf-btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .public-booking-modal .bf-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
         
         .booth-detail-row {
             display: flex;
@@ -1006,6 +1124,11 @@
             </div>
         </div>
         <div class="header-right">
+            @if($canSwitchToCanvasDesign ?? false)
+                <a href="{{ route('booths.index', ['view' => 'canvas', 'floor_plan_id' => $floorPlan->id]) }}" class="header-action-link" title="Switch back to Canvas Design">
+                    <i class="fas fa-pencil-ruler"></i><span class="header-action-text">Canvas Design</span>
+                </a>
+            @endif
             @if($authUser ?? null)
                 <a href="{{ route('books.index') }}" class="header-action-link" title="My Bookings">
                     <i class="fas fa-calendar-check"></i><span class="header-action-text">My Bookings</span>
@@ -1148,6 +1271,126 @@
             </div>
         </div>
     </div>
+
+    <!-- Right-click context menu (Create Booking for logged-in user) -->
+    <ul class="public-view-context-menu" id="publicViewContextMenu" role="menu"></ul>
+
+    <!-- Full booking form popup (same form as /books/create, POST to /books) -->
+    <div class="public-booking-modal" id="publicBookingModal">
+        <div class="modal-content-inner">
+            <div class="modal-header-inner">
+                <h3 id="publicBookingModalTitle"><i class="fas fa-calendar-plus"></i> Create Booking</h3>
+                <button type="button" class="btn-close-inner" id="publicBookingModalClose" aria-label="Close"><i class="fas fa-times"></i></button>
+            </div>
+            <form action="{{ route('books.store') }}" method="POST" id="bookingForm" class="public-booking-form">
+                @csrf
+                <input type="hidden" name="clientid" id="publicBookingClientId" required>
+                <div class="modal-body-inner">
+                    <div id="publicBookingError" class="bf-alert bf-alert-error" role="alert"></div>
+
+                    <div class="bf-section" id="publicBookingClientBlock">
+                        <div class="bf-section-title"><i class="fas fa-user"></i> Client <span class="req">*</span></div>
+                        <div id="publicSelectedClientUI" style="display: none;">
+                            <div class="bf-client-selected">
+                                <div class="bf-client-selected-info">
+                                    <span class="bf-client-avatar" id="publicUiClientInitial">—</span>
+                                    <div>
+                                        <div class="bf-client-name" id="publicUiClientName"></div>
+                                        <div class="bf-client-meta" id="publicUiClientDetails"></div>
+                                    </div>
+                                </div>
+                                <button type="button" class="bf-btn-change" id="publicBtnChangeClient">Change</button>
+                            </div>
+                        </div>
+                        <div id="publicSearchClientUI">
+                            <div class="bf-client-search-wrap">
+                                <i class="fas fa-search bf-client-search-icon"></i>
+                                <input type="text" id="publicClientSearch" class="bf-client-search-input" placeholder="Search by name or company..." autocomplete="off">
+                                <div id="publicInlineClientResults" class="bf-client-results" style="display: none;">
+                                    <div id="publicInlineClientResultsList"></div>
+                                </div>
+                            </div>
+                            <button type="button" class="bf-btn-new-client" id="publicBtnNewClient"><i class="fas fa-user-plus"></i> New client</button>
+                        </div>
+                        <div id="publicNewClientForm" class="bf-new-client-form bf-new-client-form-full" style="display: none;">
+                            <div class="bf-section-title"><i class="fas fa-user-plus"></i> Create new client (full form)</div>
+                            <div class="bf-new-client-form-scroll">
+                                <div class="bf-form-subsection">
+                                    <div class="bf-form-subtitle"><i class="fas fa-user"></i> Basic</div>
+                                    <div class="bf-form-row">
+                                        <div class="bf-field"><label>Full Name</label><input type="text" name="name" id="newClientName" placeholder="Full name"></div>
+                                        <div class="bf-field"><label>Gender</label><select name="sex" id="newClientSex"><option value="">—</option><option value="1">Male</option><option value="2">Female</option><option value="3">Other</option></select></div>
+                                    </div>
+                                </div>
+                                <div class="bf-form-subsection">
+                                    <div class="bf-form-subtitle"><i class="fas fa-building"></i> Company</div>
+                                    <div class="bf-form-row">
+                                        <div class="bf-field"><label>Company Name</label><input type="text" name="company" id="newClientCompany" placeholder="Company name"></div>
+                                        <div class="bf-field"><label>Company Name (Khmer)</label><input type="text" name="company_name_khmer" id="newClientCompanyKhmer" placeholder="Khmer"></div>
+                                    </div>
+                                    <div class="bf-field"><label>Position/Title</label><input type="text" name="position" id="newClientPosition" placeholder="Position or title"></div>
+                                </div>
+                                <div class="bf-form-subsection">
+                                    <div class="bf-form-subtitle"><i class="fas fa-phone"></i> Contact</div>
+                                    <div class="bf-form-row">
+                                        <div class="bf-field"><label>Phone Number</label><input type="text" name="phone_number" id="newClientPhone" placeholder="Phone"></div>
+                                        <div class="bf-field"><label>Phone 1</label><input type="text" name="phone_1" id="newClientPhone1" placeholder="Primary phone"></div>
+                                    </div>
+                                    <div class="bf-form-row">
+                                        <div class="bf-field"><label>Phone 2</label><input type="text" name="phone_2" id="newClientPhone2" placeholder="Secondary phone"></div>
+                                        <div class="bf-field"><label>Email</label><input type="email" name="email" id="newClientEmail" placeholder="Email"></div>
+                                    </div>
+                                    <div class="bf-form-row">
+                                        <div class="bf-field"><label>Email 1</label><input type="email" name="email_1" id="newClientEmail1" placeholder="Primary email"></div>
+                                        <div class="bf-field"><label>Email 2</label><input type="email" name="email_2" id="newClientEmail2" placeholder="Secondary email"></div>
+                                    </div>
+                                    <div class="bf-field"><label>Address</label><textarea name="address" id="newClientAddress" rows="2" placeholder="Street, city, country"></textarea></div>
+                                </div>
+                                <div class="bf-form-subsection">
+                                    <div class="bf-form-subtitle"><i class="fas fa-info-circle"></i> Additional</div>
+                                    <div class="bf-form-row">
+                                        <div class="bf-field"><label>Tax ID</label><input type="text" name="tax_id" id="newClientTaxId" placeholder="Tax ID or business registration"></div>
+                                        <div class="bf-field"><label>Website</label><input type="url" name="website" id="newClientWebsite" placeholder="https://..."></div>
+                                    </div>
+                                    <div class="bf-field"><label>Notes</label><textarea name="notes" id="newClientNotes" rows="2" placeholder="Additional notes"></textarea></div>
+                                </div>
+                            </div>
+                            <div class="bf-form-row bf-new-client-actions">
+                                <button type="button" class="bf-btn bf-btn-secondary" id="publicNewClientCancel">Cancel</button>
+                                <button type="button" class="bf-btn bf-btn-primary" id="publicNewClientSave"><i class="fas fa-save"></i> Save &amp; Select</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bf-section">
+                        <div class="bf-section-title-row">
+                            <div class="bf-section-title"><i class="fas fa-th-large"></i> Booths <span class="req">*</span></div>
+                            <div class="bf-booths-view-switcher" role="group" aria-label="Booth list view style">
+                                <button type="button" class="bf-view-btn active" data-view="list" title="List View"><i class="fas fa-list"></i></button>
+                                <button type="button" class="bf-view-btn" data-view="large" title="Large Icon View"><i class="fas fa-th-large"></i></button>
+                                <button type="button" class="bf-view-btn" data-view="medium" title="Medium Icon View"><i class="fas fa-th"></i></button>
+                                <button type="button" class="bf-view-btn" data-view="detail" title="Detail View"><i class="fas fa-align-left"></i></button>
+                            </div>
+                        </div>
+                        <div id="publicBookingBoothList" class="bf-booths view-list"></div>
+                    </div>
+
+                    <div class="bf-section">
+                        <div class="bf-section-title"><i class="fas fa-tag"></i> Details</div>
+                        <div class="bf-form-row">
+                            <div class="bf-field"><label>Type</label><select name="type" id="publicBookingType"><option value="1">Regular (Reserved)</option><option value="2">Special (Confirmed)</option><option value="3">Temporary (Short-term)</option></select></div>
+                            <div class="bf-field"><label>Date &amp; time</label><input type="datetime-local" name="date_book" id="publicBookingDateBook" value="{{ now()->format('Y-m-d\TH:i') }}"></div>
+                        </div>
+                        <div class="bf-field"><label>Notes</label><textarea name="notes" id="publicBookingNotes" rows="2" placeholder="Optional notes..."></textarea></div>
+                    </div>
+                </div>
+                <div class="bf-footer">
+                    <button type="button" class="bf-btn bf-btn-secondary" id="publicBookingCancel">Cancel</button>
+                    <button type="submit" class="bf-btn bf-btn-primary" id="publicBookingSubmit"><i class="fas fa-save"></i> Create booking</button>
+                </div>
+            </form>
+        </div>
+    </div>
     
     <script>
         // Function to calculate contrasting text color (black or white) based on background
@@ -1172,6 +1415,306 @@
         window.publicViewCanCreateBooking = @json($canCreateBookingOnPublicView ?? false);
         window.publicViewFloorPlanId = @json($floorPlan->id ?? null);
         window.publicViewBooksCreateUrl = @json(route('books.create'));
+        window.publicViewBooksStoreUrl = @json(route('books.store'));
+        window.publicViewClientsSearchUrl = @json(route('clients.search'));
+        window.publicViewClientsStoreUrl = @json(route('clients.store'));
+
+        // Right-click context menu (Create Booking)
+        const publicViewContextMenu = document.getElementById('publicViewContextMenu');
+        function showPublicViewContextMenu(x, y, items) {
+            if (!items || items.length === 0) return;
+            publicViewContextMenu.innerHTML = '';
+            items.forEach(function(item) {
+                const li = document.createElement('li');
+                li.setAttribute('role', 'menuitem');
+                if (item.url) {
+                    const a = document.createElement('a');
+                    a.href = item.url;
+                    a.innerHTML = (item.icon ? '<i class="fas ' + item.icon + '"></i>' : '') + '<span>' + item.label + '</span>';
+                    a.addEventListener('click', function(e) { e.preventDefault(); window.location.href = item.url; });
+                    li.appendChild(a);
+                } else if (item.action) {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.innerHTML = (item.icon ? '<i class="fas ' + item.icon + '"></i>' : '') + '<span>' + item.label + '</span>';
+                    btn.addEventListener('click', function() { hidePublicViewContextMenu(); item.action(); });
+                    li.appendChild(btn);
+                }
+                publicViewContextMenu.appendChild(li);
+            });
+            publicViewContextMenu.style.left = x + 'px';
+            publicViewContextMenu.style.top = y + 'px';
+            publicViewContextMenu.classList.add('active');
+            const rect = publicViewContextMenu.getBoundingClientRect();
+            if (rect.right > window.innerWidth) publicViewContextMenu.style.left = (window.innerWidth - rect.width - 8) + 'px';
+            if (rect.bottom > window.innerHeight) publicViewContextMenu.style.top = (window.innerHeight - rect.height - 8) + 'px';
+        }
+        function hidePublicViewContextMenu() {
+            publicViewContextMenu.classList.remove('active');
+        }
+        document.addEventListener('click', function() { hidePublicViewContextMenu(); });
+        document.addEventListener('contextmenu', function(e) {
+            if (!publicViewContextMenu.contains(e.target)) hidePublicViewContextMenu();
+        });
+
+        // Full booking form popup (same as /books/create: POST to /books, client + booths + details)
+        const publicBookingModalEl = document.getElementById('publicBookingModal');
+        const publicBookingModalTitle = document.getElementById('publicBookingModalTitle');
+        const publicBookingFormEl = document.getElementById('bookingForm');
+        const publicBookingBoothList = document.getElementById('publicBookingBoothList');
+        const publicBookingErrorEl = document.getElementById('publicBookingError');
+        const publicBookingSubmitBtn = document.getElementById('publicBookingSubmit');
+        const publicBookingClientIdEl = document.getElementById('publicBookingClientId');
+        const publicSelectedClientUI = document.getElementById('publicSelectedClientUI');
+        const publicSearchClientUI = document.getElementById('publicSearchClientUI');
+        const publicNewClientForm = document.getElementById('publicNewClientForm');
+
+        var publicBookingBoothView = 'list';
+        var publicBookingBoothAvailable = [];
+        var publicBookingBoothPreselectedId = null;
+
+        function publicBoothInfoLine(b, view) {
+            var parts = [];
+            if (view === 'list') {
+                if (b.category) parts.push(b.category);
+                if (b.area_sqm != null && b.area_sqm !== '') parts.push(b.area_sqm + ' m²');
+                return parts.length ? parts.join(' · ') : 'Available';
+            }
+            if (b.price != null && b.price !== '') parts.push('$' + parseFloat(b.price).toFixed(2));
+            if (b.category) parts.push(b.category);
+            if (b.area_sqm != null && b.area_sqm !== '') parts.push(b.area_sqm + ' m²');
+            if (view === 'detail' && b.booth_type) parts.push(b.booth_type);
+            return parts.length ? parts.join(' · ') : 'Available';
+        }
+
+        function renderPublicBookingBoothList() {
+            publicBookingBoothList.innerHTML = '';
+            publicBookingBoothList.className = 'bf-booths view-' + publicBookingBoothView;
+            if (!publicBookingBoothAvailable.length) {
+                publicBookingBoothList.innerHTML = '<p class="text-muted small mb-0">No available booths.</p>';
+                return;
+            }
+            publicBookingBoothAvailable.forEach(function(b) {
+                var id = 'pb_booth_' + b.id;
+                var checked = (publicBookingBoothPreselectedId && b.id == publicBookingBoothPreselectedId) ? ' checked' : '';
+                var num = (b.booth_number || b.id);
+                var info = publicBoothInfoLine(b, publicBookingBoothView);
+                var div = document.createElement('div');
+                div.className = 'bf-booth-item';
+                var labelHtml = '';
+                if (publicBookingBoothView === 'list') {
+                    labelHtml = 'Booth ' + num + (b.price != null && b.price !== '' ? ' — $' + parseFloat(b.price).toFixed(2) : '') + '<span class="bf-booth-item-info">' + info.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
+                } else if (publicBookingBoothView === 'large' || publicBookingBoothView === 'medium') {
+                    labelHtml = '<span class="bf-booth-item-primary">Booth ' + num + '</span><span class="bf-booth-item-info">' + info.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
+                } else {
+                    labelHtml = '<span class="bf-booth-item-primary">Booth ' + num + '</span><span class="bf-booth-item-info">' + info.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
+                }
+                div.innerHTML = '<input type="checkbox" name="booth_ids[]" value="' + b.id + '" id="' + id + '"' + checked + '><label for="' + id + '">' + labelHtml + '</label>';
+                publicBookingBoothList.appendChild(div);
+            });
+        }
+
+        function openPublicBookingModal(boothId, boothNumber) {
+            if (!publicBookingFormEl) return;
+            publicBookingFormEl.reset();
+            publicBookingClientIdEl.value = '';
+            publicSelectedClientUI.style.display = 'none';
+            publicSearchClientUI.style.display = 'block';
+            publicNewClientForm.style.display = 'none';
+            document.getElementById('publicClientSearch').value = '';
+            document.getElementById('publicInlineClientResults').style.display = 'none';
+            document.getElementById('publicInlineClientResultsList').innerHTML = '';
+            if (document.getElementById('publicBookingDateBook')) document.getElementById('publicBookingDateBook').value = '{{ now()->format('Y-m-d\TH:i') }}';
+            publicBookingErrorEl.classList.remove('show');
+            publicBookingErrorEl.textContent = '';
+            publicBookingModalTitle.innerHTML = (boothId && boothNumber)
+                ? '<i class="fas fa-calendar-plus"></i> Create Booking for Booth ' + (boothNumber || boothId)
+                : '<i class="fas fa-calendar-plus"></i> Create Booking';
+            publicBookingBoothAvailable = [];
+            publicBookingBoothPreselectedId = boothId || null;
+            if (typeof booths !== 'undefined' && booths.length) {
+                publicBookingBoothAvailable = booths.filter(function(b) {
+                    return b.status == 1 && b.position_x != null && b.position_y != null;
+                });
+            }
+            document.querySelectorAll('.bf-booths-view-switcher .bf-view-btn').forEach(function(btn) {
+                btn.classList.toggle('active', btn.getAttribute('data-view') === publicBookingBoothView);
+            });
+            renderPublicBookingBoothList();
+            publicBookingModalEl.classList.add('active');
+        }
+
+        document.querySelectorAll('.bf-booths-view-switcher .bf-view-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var view = this.getAttribute('data-view');
+                if (!view) return;
+                publicBookingBoothView = view;
+                document.querySelectorAll('.bf-booths-view-switcher .bf-view-btn').forEach(function(b) { b.classList.remove('active'); });
+                this.classList.add('active');
+                renderPublicBookingBoothList();
+            });
+        });
+
+        function closePublicBookingModal() {
+            publicBookingModalEl.classList.remove('active');
+        }
+
+        function selectClientPublic(c) {
+            publicBookingClientIdEl.value = c.id;
+            document.getElementById('publicUiClientName').textContent = c.company || c.name || '—';
+            document.getElementById('publicUiClientDetails').textContent = [c.email, c.phone_number].filter(Boolean).join(' · ') || '—';
+            var initial = (c.company || c.name || '—').toString().charAt(0).toUpperCase();
+            document.getElementById('publicUiClientInitial').textContent = initial === ' ' ? '—' : initial;
+            publicSearchClientUI.style.display = 'none';
+            publicSelectedClientUI.style.display = 'block';
+            publicNewClientForm.style.display = 'none';
+            document.getElementById('publicInlineClientResults').style.display = 'none';
+        }
+
+        document.getElementById('publicBookingModalClose').addEventListener('click', function() { closePublicBookingModal(); });
+        document.getElementById('publicBookingCancel').addEventListener('click', function() { closePublicBookingModal(); });
+        publicBookingModalEl.addEventListener('click', function(e) {
+            if (e.target === publicBookingModalEl) closePublicBookingModal();
+        });
+
+        document.getElementById('publicBtnChangeClient').addEventListener('click', function() {
+            publicBookingClientIdEl.value = '';
+            publicSelectedClientUI.style.display = 'none';
+            publicSearchClientUI.style.display = 'block';
+        });
+
+        var publicClientSearchTimer;
+        document.getElementById('publicClientSearch').addEventListener('input', function() {
+            var q = this.value.trim();
+            clearTimeout(publicClientSearchTimer);
+            var resultsEl = document.getElementById('publicInlineClientResults');
+            var listEl = document.getElementById('publicInlineClientResultsList');
+            if (q.length < 2) { resultsEl.style.display = 'none'; return; }
+            publicClientSearchTimer = setTimeout(function() {
+                fetch(window.publicViewClientsSearchUrl + '?q=' + encodeURIComponent(q), { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
+                    .then(function(r) { return r.json(); })
+                    .then(function(res) {
+                        listEl.innerHTML = '';
+                        if (res && res.length > 0) {
+                            res.forEach(function(c) {
+                                var item = document.createElement('div');
+                                item.className = 'bf-client-result-item';
+                                item.innerHTML = '<div class="name">' + (c.company || c.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div><div class="meta">' + (c.phone_number || c.email || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
+                                item.addEventListener('click', function() { selectClientPublic(c); });
+                                listEl.appendChild(item);
+                            });
+                        } else {
+                            listEl.innerHTML = '<div class="bf-client-result-item"><div class="meta text-center">No clients found</div></div>';
+                        }
+                        resultsEl.style.display = 'block';
+                    })
+                    .catch(function() { listEl.innerHTML = '<div class="bf-client-result-item"><div class="meta text-center">Search failed</div></div>'; resultsEl.style.display = 'block'; });
+            }, 300);
+        });
+        document.addEventListener('click', function(e) {
+            if (!publicBookingModalEl.contains(e.target) || (!e.target.closest('#publicClientSearch') && !e.target.closest('#publicInlineClientResults')))
+                document.getElementById('publicInlineClientResults').style.display = 'none';
+        });
+
+        function clearPublicNewClientForm() {
+            var ids = ['newClientName', 'newClientSex', 'newClientCompany', 'newClientCompanyKhmer', 'newClientPosition', 'newClientPhone', 'newClientPhone1', 'newClientPhone2', 'newClientEmail', 'newClientEmail1', 'newClientEmail2', 'newClientAddress', 'newClientTaxId', 'newClientWebsite', 'newClientNotes'];
+            ids.forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+        }
+        document.getElementById('publicBtnNewClient').addEventListener('click', function() {
+            publicSearchClientUI.style.display = 'none';
+            publicNewClientForm.style.display = 'block';
+            clearPublicNewClientForm();
+        });
+        document.getElementById('publicNewClientCancel').addEventListener('click', function() {
+            publicNewClientForm.style.display = 'none';
+            publicSearchClientUI.style.display = 'block';
+        });
+        document.getElementById('publicNewClientSave').addEventListener('click', function() {
+            var name = document.getElementById('newClientName') ? document.getElementById('newClientName').value.trim() : '';
+            var company = document.getElementById('newClientCompany') ? document.getElementById('newClientCompany').value.trim() : '';
+            var phone = document.getElementById('newClientPhone') ? document.getElementById('newClientPhone').value.trim() : '';
+            var phone1 = document.getElementById('newClientPhone1') ? document.getElementById('newClientPhone1').value.trim() : '';
+            if (!name && !company) {
+                publicBookingErrorEl.textContent = 'Please enter at least Name or Company for the new client.';
+                publicBookingErrorEl.classList.add('show');
+                return;
+            }
+            if (!phone && !phone1) {
+                publicBookingErrorEl.textContent = 'Please enter at least one phone number (Phone or Phone 1).';
+                publicBookingErrorEl.classList.add('show');
+                return;
+            }
+            var btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            var fd = new FormData();
+            fd.append('_token', document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '');
+            var fields = [
+                { id: 'newClientName', key: 'name' }, { id: 'newClientSex', key: 'sex' }, { id: 'newClientCompany', key: 'company' },
+                { id: 'newClientCompanyKhmer', key: 'company_name_khmer' }, { id: 'newClientPosition', key: 'position' },
+                { id: 'newClientPhone', key: 'phone_number' }, { id: 'newClientPhone1', key: 'phone_1' }, { id: 'newClientPhone2', key: 'phone_2' },
+                { id: 'newClientEmail', key: 'email' }, { id: 'newClientEmail1', key: 'email_1' }, { id: 'newClientEmail2', key: 'email_2' },
+                { id: 'newClientAddress', key: 'address' }, { id: 'newClientTaxId', key: 'tax_id' }, { id: 'newClientWebsite', key: 'website' }, { id: 'newClientNotes', key: 'notes' }
+            ];
+            fields.forEach(function(f) {
+                var el = document.getElementById(f.id);
+                if (el) fd.append(f.key, el.value || '');
+            });
+            fetch(window.publicViewClientsStoreUrl, { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.status === 'success' && data.client) { selectClientPublic(data.client); publicBookingErrorEl.classList.remove('show'); publicNewClientForm.style.display = 'none'; publicSearchClientUI.style.display = 'block'; clearPublicNewClientForm(); }
+                    else { publicBookingErrorEl.textContent = (data.message || 'Failed to create client.') + (data.errors ? ' ' + Object.values(data.errors).flat().join(' ') : ''); publicBookingErrorEl.classList.add('show'); }
+                })
+                .catch(function() { publicBookingErrorEl.textContent = 'Failed to create client.'; publicBookingErrorEl.classList.add('show'); })
+                .finally(function() { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save & Select'; });
+        });
+
+        publicBookingFormEl.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!publicBookingClientIdEl.value) {
+                publicBookingErrorEl.textContent = 'Please select or add a client.';
+                publicBookingErrorEl.classList.add('show');
+                return;
+            }
+            var checked = publicBookingFormEl.querySelectorAll('input[name="booth_ids[]"]:checked');
+            if (!checked.length) {
+                publicBookingErrorEl.textContent = 'Please select at least one booth.';
+                publicBookingErrorEl.classList.add('show');
+                return;
+            }
+            publicBookingErrorEl.classList.remove('show');
+            var formData = new FormData(publicBookingFormEl);
+            publicBookingSubmitBtn.disabled = true;
+            publicBookingSubmitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+            fetch(window.publicViewBooksStoreUrl, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            })
+            .then(function(r) { return r.json().catch(function() { return {}; }); })
+            .then(function(data) {
+                if (data.success === true) {
+                    closePublicBookingModal();
+                    alert(data.message || 'Booking created successfully.');
+                    window.location.reload();
+                } else {
+                    publicBookingErrorEl.textContent = (data.message || data.errors ? (typeof data.errors === 'object' ? Object.values(data.errors).flat().join(' ') : '') : 'Failed to create booking.') || 'Failed to create booking.';
+                    publicBookingErrorEl.classList.add('show');
+                }
+            })
+            .catch(function(err) {
+                publicBookingErrorEl.textContent = 'Error: ' + (err.message || 'Failed to create booking.');
+                publicBookingErrorEl.classList.add('show');
+            })
+            .finally(function() {
+                publicBookingSubmitBtn.disabled = false;
+                publicBookingSubmitBtn.innerHTML = '<i class="fas fa-save"></i> Create booking';
+            });
+        });
         
         let panzoomInstance;
         let zoomLevel = 1;
@@ -1493,10 +2036,42 @@
                     e.stopPropagation();
                     showBoothModal(booth, statusLabels, statusColors, statusDescriptions);
                 });
+
+                // Right-click context menu (Create Booking for logged-in user)
+                boothElement.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const items = [];
+                    const isAvailableForBooking = (booth.status == 1 || booth.status == 4);
+                    if (window.publicViewCanCreateBooking && isAvailableForBooking) {
+                        items.push({
+                            label: 'Create Booking for Booth ' + booth.booth_number,
+                            icon: 'fa-calendar-plus',
+                            action: function() { hidePublicViewContextMenu(); openPublicBookingModal(booth.id, booth.booth_number); }
+                        });
+                    }
+                    items.push({
+                        label: 'View Booth Details',
+                        icon: 'fa-info-circle',
+                        action: function() { hidePublicViewContextMenu(); showBoothModal(booth, statusLabels, statusColors, statusDescriptions); }
+                    });
+                    showPublicViewContextMenu(e.clientX, e.clientY, items);
+                });
                 
                 canvas.appendChild(boothElement);
             }
         });
+
+        // Right-click on canvas (empty area): show Create Booking when logged-in user can create
+        if (container && window.publicViewCanCreateBooking) {
+            container.addEventListener('contextmenu', function(e) {
+                if (e.target.closest('.dropped-booth')) return;
+                e.preventDefault();
+                showPublicViewContextMenu(e.clientX, e.clientY, [
+                    { label: 'Create Booking', icon: 'fa-calendar-plus', action: function() { hidePublicViewContextMenu(); openPublicBookingModal(null, null); } }
+                ]);
+            });
+        }
         
         // Function to apply shake animation while preserving rotation
         function applyShakeAnimation(element, rotation) {
@@ -1914,18 +2489,26 @@
                 html += '</div>';
             }
 
-            // Book this booth (only when logged in with permission and booth is available or hidden)
+            // Book this booth (only when logged in with permission and booth is available or hidden) - opens inline form
             const isAvailableForBooking = (booth.status == 1 || booth.status == 4);
-            if (window.publicViewCanCreateBooking && isAvailableForBooking && window.publicViewBooksCreateUrl && window.publicViewFloorPlanId) {
-                const bookUrl = window.publicViewBooksCreateUrl + '?floor_plan_id=' + window.publicViewFloorPlanId + '&booth_id=' + booth.id;
+            if (window.publicViewCanCreateBooking && isAvailableForBooking) {
                 html += '<div class="booth-detail-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e9ecef;">';
-                html += '<a href="' + bookUrl + '" class="btn-book-booth-public"><i class="fas fa-calendar-plus"></i> Book this booth</a>';
-                html += '<p class="text-muted small mt-2 mb-0">You will be taken to the booking form with this booth pre-selected.</p>';
+                html += '<button type="button" class="btn-book-booth-public" data-booth-id="' + booth.id + '" data-booth-number="' + (booth.booth_number || '') + '"><i class="fas fa-calendar-plus"></i> Book this booth</button>';
+                html += '<p class="text-muted small mt-2 mb-0">Opens the booking form on this page.</p>';
                 html += '</div>';
             }
             
             modalBody.innerHTML = html;
             modal.classList.add('active');
+
+            // Book this booth button: open inline booking form
+            const bookBtn = modalBody.querySelector('.btn-book-booth-public');
+            if (bookBtn && bookBtn.dataset.boothId && typeof openPublicBookingModal === 'function') {
+                bookBtn.addEventListener('click', function() {
+                    closeBoothModal();
+                    openPublicBookingModal(parseInt(bookBtn.dataset.boothId, 10), bookBtn.dataset.boothNumber || '');
+                });
+            }
             
             // Close modal when clicking outside
             modal.addEventListener('click', function(e) {
