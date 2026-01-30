@@ -3,7 +3,7 @@
 /public/hot
 /public/storage
 # User-uploaded client avatars (keep server uploads out of repo)
-/public/images/avatars/client/*
+/public/images/*
 /storage/*.key
 /storage/framework/sessions/*
 !/storage/framework/sessions/.gitkeep

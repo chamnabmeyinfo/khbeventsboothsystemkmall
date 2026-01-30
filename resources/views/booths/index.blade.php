@@ -2577,6 +2577,10 @@
                             </a>
                         </div>
                     </div>
+                    <button class="toolbar-btn" id="btnSelectAll" title="Select All Booths on Canvas" onclick="FloorPlanDesigner.selectAllBoothsOnCanvas(); return false;">
+                        <i class="fas fa-object-group"></i>
+                        <span class="tool-label">Select All</span>
+                    </button>
                     <button class="toolbar-btn" id="btnMeasureTool" title="Measure Tool (M)" data-tool="measure">
                         <i class="fas fa-ruler"></i>
                         <span class="tool-label">Measure</span>
@@ -3293,22 +3297,22 @@
                     <!-- Delete Option Tabs -->
                     <ul class="nav nav-tabs mb-3" id="deleteOptionTabs" role="tablist">
                         <li class="nav-item">
-                            <a class="nav-link active" id="delete-all-tab" data-toggle="tab" href="#delete-all" role="tab">
+                            <a class="nav-link active" id="delete-all-tab" data-bs-toggle="tab" href="#delete-all" role="tab">
                                 <i class="fas fa-trash-alt"></i> Delete All
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="delete-specific-tab" data-toggle="tab" href="#delete-specific" role="tab">
+                            <a class="nav-link" id="delete-specific-tab" data-bs-toggle="tab" href="#delete-specific" role="tab">
                                 <i class="fas fa-list"></i> Delete Specific
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="delete-range-tab" data-toggle="tab" href="#delete-range" role="tab">
+                            <a class="nav-link" id="delete-range-tab" data-bs-toggle="tab" href="#delete-range" role="tab">
                                 <i class="fas fa-arrows-alt-h"></i> Delete Range
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="delete-by-ids-tab" data-toggle="tab" href="#delete-by-ids" role="tab">
+                            <a class="nav-link" id="delete-by-ids-tab" data-bs-toggle="tab" href="#delete-by-ids" role="tab">
                                 <i class="fas fa-hashtag"></i> By Booth ID(s)
                             </a>
                         </li>
@@ -6286,9 +6290,17 @@ const FloorPlanDesigner = {
         document.getElementById('deleteBoothZoneName').textContent = zoneName;
         document.getElementById('deleteAllZoneName').textContent = zoneName;
         
-        // Reset form and tabs
+        // Reset form and tabs (Bootstrap 5: use data-bs-toggle tab or Tab API)
         document.getElementById('deleteBoothForm').reset();
-        $('#deleteOptionTabs a[href="#delete-all"]').tab('show');
+        var deleteAllTabEl = document.querySelector('#deleteOptionTabs a[href="#delete-all"]');
+        if (deleteAllTabEl && typeof bootstrap !== 'undefined' && bootstrap.Tab) {
+            bootstrap.Tab.getOrCreateInstance(deleteAllTabEl).show();
+        } else {
+            $('#deleteOptionTabs .nav-link').removeClass('active');
+            $('#deleteOptionTabsContent .tab-pane').removeClass('show active');
+            $('#delete-all-tab').addClass('active');
+            $('#delete-all').addClass('show active');
+        }
         document.getElementById('confirmDeleteAll').checked = false;
         document.getElementById('deleteFrom').value = 1;
         document.getElementById('deleteTo').value = 1;
@@ -6925,6 +6937,10 @@ const FloorPlanDesigner = {
             <div class="context-menu-item" data-action="book">
                 <i class="fas fa-calendar-check"></i> Book Booth
             </div>
+            <div class="context-menu-divider"></div>
+            <div class="context-menu-item" data-action="delete-booth" style="color: #dc3545;">
+                <i class="fas fa-trash-alt"></i> Delete Booth(s)
+            </div>
         `;
         
         // Position menu at cursor (using fixed positioning)
@@ -7087,6 +7103,8 @@ const FloorPlanDesigner = {
                     self.openBoothColorPicker(boothId, boothNumber, boothElement);
                 } else if (action === 'book') {
                     self.showBookBoothModal(boothId, boothNumber, boothElement);
+                } else if (action === 'delete-booth') {
+                    self.deleteBoothsFromCanvas(boothId, boothNumber, boothElement);
                 }
                 
                 // Remove menu
@@ -7110,6 +7128,112 @@ const FloorPlanDesigner = {
             document.addEventListener('click', closeMenu, true);
             document.addEventListener('contextmenu', closeMenu, true);
         }, 100);
+    },
+    
+    // Delete booth(s) from canvas: check bookings first, then delete if clear (procedure-first)
+    deleteBoothsFromCanvas: function(boothId, boothNumber, boothElement) {
+        const self = this;
+        // Determine booth IDs to delete: all selected if multiple selected and this booth is in selection, else just this booth
+        let boothIdsToDelete = [];
+        const isInSelection = self.selectedBooths && self.selectedBooths.indexOf(boothElement) !== -1;
+        if (isInSelection && self.selectedBooths.length > 1) {
+            boothIdsToDelete = self.selectedBooths.map(function(el) { return parseInt(el.getAttribute('data-booth-id'), 10); }).filter(function(id) { return !isNaN(id); });
+        } else {
+            boothIdsToDelete = [parseInt(boothId, 10)];
+        }
+        if (boothIdsToDelete.length === 0) return;
+        
+        // Step 1: Check if any booth has an active booking (procedure: resolve first before delete)
+        fetch('/booths/check-bookings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ booth_ids: boothIdsToDelete })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.status !== 200) {
+                Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'Failed to check bookings.' });
+                return;
+            }
+            if (data.booths_with_bookings && data.booths_with_bookings.length > 0) {
+                var list = data.booths_with_bookings.map(function(b) {
+                    return b.booth_number + ' (Booking #' + b.book_id + ', ' + (b.client_company || 'Unknown') + ')';
+                }).join('<br>');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Cannot delete: active bookings',
+                    html: 'The following booth(s) have active bookings. Please cancel or reassign the booking first before deleting.<br><br><div style="text-align: left; max-height: 200px; overflow-y: auto;">' + list + '</div><br><small>Go to Bookings to manage or cancel bookings.</small>',
+                    confirmButtonText: 'Go to Bookings',
+                    showCancelButton: true,
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#3085d6'
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        window.location.href = '{{ url("books") }}';
+                    }
+                });
+                return;
+            }
+            // Step 2: All clear — confirm then delete
+            var count = boothIdsToDelete.length;
+            Swal.fire({
+                title: 'Delete ' + count + ' booth(s)?',
+                text: 'This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Delete',
+                confirmButtonColor: '#dc3545',
+                cancelButtonText: 'Cancel'
+            }).then(function(result) {
+                if (!result.isConfirmed) return;
+                fetch('/booths/delete-by-ids', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({ booth_ids: boothIdsToDelete })
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(delData) {
+                    if (delData.status !== 200 && delData.status !== 206) {
+                        Swal.fire({ icon: 'error', title: 'Error', text: delData.message || 'Failed to delete.' });
+                        return;
+                    }
+                    // Remove booth elements from canvas and sidebar
+                    boothIdsToDelete.forEach(function(id) {
+                        var canvasBooth = document.querySelector('#print .dropped-booth[data-booth-id="' + id + '"]');
+                        if (canvasBooth) {
+                            if (self.selectedBooths) {
+                                var idx = self.selectedBooths.indexOf(canvasBooth);
+                                if (idx !== -1) self.selectedBooths.splice(idx, 1);
+                            }
+                            canvasBooth.remove();
+                        }
+                        var sidebarItem = document.querySelector('.booth-number-item[data-booth-id="' + id + '"]');
+                        if (sidebarItem) sidebarItem.remove();
+                    });
+                    self.updateSelectionBoundingBox && self.updateSelectionBoundingBox();
+                    self.saveState && self.saveState();
+                    var msg = (delData.deleted && delData.deleted.length) ? delData.deleted.length + ' booth(s) deleted.' : count + ' booth(s) deleted.';
+                    if (delData.booked_booths_skipped && delData.booked_booths_skipped.length > 0) {
+                        msg += ' ' + delData.booked_booths_skipped.length + ' booth(s) with bookings were skipped.';
+                    }
+                    Swal.fire({ icon: 'success', title: 'Deleted', text: msg, timer: 3000, showConfirmButton: false });
+                })
+                .catch(function(err) {
+                    console.error('Delete booths error:', err);
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to delete booths.' });
+                });
+            });
+        })
+        .catch(function(err) {
+            console.error('Check bookings error:', err);
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to check bookings.' });
+        });
     },
     
     // Open Update Booth Info modal on canvas: fetch booth data and populate form (no redirect)
@@ -7407,8 +7531,8 @@ const FloorPlanDesigner = {
         // Create settings modal with two separate groups
         var modalHtml = '<div style="text-align: left; max-width: 700px; margin: 0 auto;">';
         modalHtml += '<p style="margin-bottom: 20px; color: #666; padding: 12px; background: #f8f9fa; border-radius: 8px;">';
-        modalHtml += 'Found <strong>' + boothCount + '</strong> booth(s) in Zone ' + zoneName + ' on canvas.';
-        modalHtml += '<br><small>Each group has its own Save button. Changes will apply to all booths in this zone.</small>';
+        modalHtml += 'Found <strong>' + boothCount + '</strong> booth(s) in Zone ' + zoneName + '.';
+        modalHtml += '<br><small><strong>Instant preview:</strong> Changing any number or color applies to all booths in this zone immediately. Use Save to persist.</small>';
         modalHtml += '</p>';
         
         // Group 0: Zone General Information (Zone About)
@@ -7575,8 +7699,15 @@ const FloorPlanDesigner = {
         modalHtml += '</div>';
         modalHtml += '</div>'; // End Appearance & Style group
         
+        modalHtml += '<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 20px; margin-bottom: 20px;">';
+        modalHtml += '<button id="saveAllZoneBtn" class="swal2-confirm swal2-styled" style="background: #fff; color: #667eea; width: 100%; padding: 14px; font-weight: 700; border: 2px solid #fff;">';
+        modalHtml += '<i class="fas fa-save mr-2"></i>Save All Zone Settings';
+        modalHtml += '</button>';
+        modalHtml += '<p style="font-size: 11px; color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">Saves Zone Info, Shape & Layout, and Appearance & Style for Zone ' + zoneName + '.</p>';
+        modalHtml += '</div>';
+        
         modalHtml += '<p style="font-size: 11px; color: #999; margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px;">';
-        modalHtml += '<i class="fas fa-info-circle"></i> <strong>Note:</strong> Each group has its own Save button. Shape & Layout settings affect dimensions and positioning. Appearance & Style settings affect colors, fonts, and visual properties.';
+        modalHtml += '<i class="fas fa-info-circle"></i> <strong>Note:</strong> Changes apply instantly on canvas. Use the Save buttons above to persist. "Save All" persists everything for this zone.';
         modalHtml += '</p>';
         modalHtml += '</div>';
         
@@ -7632,6 +7763,67 @@ const FloorPlanDesigner = {
                     });
                 }
                 
+                // Live preview: read shape from form and apply to canvas
+                function readShapeFromForm() {
+                    const w = document.getElementById('zoneWidth');
+                    const h = document.getElementById('zoneHeight');
+                    const r = document.getElementById('zoneRotation');
+                    const z = document.getElementById('zoneZIndex');
+                    return {
+                        width: w ? (parseFloat(w.value) || 80) : 80,
+                        height: h ? (parseFloat(h.value) || 50) : 50,
+                        rotation: r ? (parseFloat(r.value) || 0) : 0,
+                        zIndex: z ? (parseInt(z.value, 10) || 10) : 10
+                    };
+                }
+                function readAppearanceFromForm() {
+                    const bgText = document.getElementById('zoneAppearanceBackgroundColorText');
+                    const borderText = document.getElementById('zoneAppearanceBorderColorText');
+                    const textColorEl = document.getElementById('zoneAppearanceTextColorText');
+                    const bgPicker = document.getElementById('zoneAppearanceBackgroundColor');
+                    const borderPicker = document.getElementById('zoneAppearanceBorderColor');
+                    const textPicker = document.getElementById('zoneAppearanceTextColor');
+                    const fontWeightEl = document.getElementById('zoneAppearanceFontWeight');
+                    const fontFamilyEl = document.getElementById('zoneAppearanceFontFamily');
+                    const textAlignEl = document.getElementById('zoneAppearanceTextAlign');
+                    const boxShadowEl = document.getElementById('zoneAppearanceBoxShadow');
+                    const borderRadiusEl = document.getElementById('zoneAppearanceBorderRadius');
+                    const borderWidthEl = document.getElementById('zoneAppearanceBorderWidth');
+                    const opacityEl = document.getElementById('zoneAppearanceOpacity');
+                    return {
+                        background_color: (bgText && bgText.value.trim()) || (bgPicker && bgPicker.value) || '',
+                        border_color: (borderText && borderText.value.trim()) || (borderPicker && borderPicker.value) || '',
+                        text_color: (textColorEl && textColorEl.value.trim()) || (textPicker && textPicker.value) || '',
+                        font_weight: (fontWeightEl && fontWeightEl.value) ? (fontWeightEl.value === '' ? null : fontWeightEl.value) : null,
+                        font_family: (fontFamilyEl && fontFamilyEl.value.trim()) || null,
+                        text_align: (textAlignEl && textAlignEl.value) ? (textAlignEl.value === '' ? null : textAlignEl.value) : null,
+                        box_shadow: (boxShadowEl && boxShadowEl.value.trim()) || null,
+                        borderRadius: borderRadiusEl ? (parseFloat(borderRadiusEl.value) || 0) : 0,
+                        borderWidth: borderWidthEl ? (parseFloat(borderWidthEl.value) || 2) : 2,
+                        opacity: opacityEl ? (parseFloat(opacityEl.value) || 1) : 1
+                    };
+                }
+                function applyShapeLive() {
+                    self.applyZoneShapeLayoutToCanvas(zoneName, readShapeFromForm());
+                }
+                function applyAppearanceLive() {
+                    self.applyZoneAppearanceToCanvas(zoneName, readAppearanceFromForm());
+                }
+                [ 'zoneWidth', 'zoneHeight', 'zoneRotation', 'zoneZIndex' ].forEach(function(id) {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.addEventListener('input', applyShapeLive);
+                        el.addEventListener('change', applyShapeLive);
+                    }
+                });
+                [ 'zoneAppearanceBackgroundColor', 'zoneAppearanceBackgroundColorText', 'zoneAppearanceBorderColor', 'zoneAppearanceBorderColorText', 'zoneAppearanceTextColor', 'zoneAppearanceTextColorText', 'zoneAppearanceFontWeight', 'zoneAppearanceFontFamily', 'zoneAppearanceTextAlign', 'zoneAppearanceBoxShadow', 'zoneAppearanceBorderRadius', 'zoneAppearanceBorderWidth', 'zoneAppearanceOpacity' ].forEach(function(id) {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.addEventListener('input', applyAppearanceLive);
+                        el.addEventListener('change', applyAppearanceLive);
+                    }
+                });
+                
                 // Save Zone Information button
                 document.getElementById('saveZoneInfoBtn').addEventListener('click', function() {
                     const zoneAbout = document.getElementById('zoneAbout').value.trim();
@@ -7666,16 +7858,25 @@ const FloorPlanDesigner = {
                 
                 // Save Appearance & Style button
                 document.getElementById('saveAppearanceBtn').addEventListener('click', function() {
-                    const backgroundColor = document.getElementById('zoneAppearanceBackgroundColorText').value.trim() || null;
-                    const borderColor = document.getElementById('zoneAppearanceBorderColorText').value.trim() || null;
-                    const textColor = document.getElementById('zoneAppearanceTextColorText').value.trim() || null;
-                    const fontWeight = document.getElementById('zoneAppearanceFontWeight').value.trim() || null;
-                    const fontFamily = document.getElementById('zoneAppearanceFontFamily').value.trim() || null;
-                    const textAlign = document.getElementById('zoneAppearanceTextAlign').value.trim() || null;
-                    const boxShadow = document.getElementById('zoneAppearanceBoxShadow').value.trim() || null;
-                    const borderRadius = document.getElementById('zoneAppearanceBorderRadius').value;
-                    const borderWidth = document.getElementById('zoneAppearanceBorderWidth').value;
-                    const opacity = document.getElementById('zoneAppearanceOpacity').value;
+                    const bgText = document.getElementById('zoneAppearanceBackgroundColorText');
+                    const borderText = document.getElementById('zoneAppearanceBorderColorText');
+                    const textColorEl = document.getElementById('zoneAppearanceTextColorText');
+                    const backgroundColor = (bgText && bgText.value.trim()) || (document.getElementById('zoneAppearanceBackgroundColor') && document.getElementById('zoneAppearanceBackgroundColor').value) || null;
+                    const borderColor = (borderText && borderText.value.trim()) || (document.getElementById('zoneAppearanceBorderColor') && document.getElementById('zoneAppearanceBorderColor').value) || null;
+                    const textColor = (textColorEl && textColorEl.value.trim()) || (document.getElementById('zoneAppearanceTextColor') && document.getElementById('zoneAppearanceTextColor').value) || null;
+                    const fontWeightEl = document.getElementById('zoneAppearanceFontWeight');
+                    const fontWeight = (fontWeightEl && fontWeightEl.value.trim()) ? (fontWeightEl.value === 'Use Default' || fontWeightEl.value === '' ? null : fontWeightEl.value) : null;
+                    const fontFamilyEl = document.getElementById('zoneAppearanceFontFamily');
+                    const fontFamily = (fontFamilyEl && fontFamilyEl.value.trim()) ? (fontFamilyEl.value === 'Use Default' || fontFamilyEl.value === '' ? null : fontFamilyEl.value) : null;
+                    const textAlignEl = document.getElementById('zoneAppearanceTextAlign');
+                    const textAlign = (textAlignEl && textAlignEl.value.trim()) ? (textAlignEl.value === 'Use Default' || textAlignEl.value === '' ? null : textAlignEl.value) : null;
+                    const boxShadow = document.getElementById('zoneAppearanceBoxShadow') ? document.getElementById('zoneAppearanceBoxShadow').value.trim() || null : null;
+                    const borderRadiusEl = document.getElementById('zoneAppearanceBorderRadius');
+                    const borderWidthEl = document.getElementById('zoneAppearanceBorderWidth');
+                    const opacityEl = document.getElementById('zoneAppearanceOpacity');
+                    const borderRadius = borderRadiusEl ? (parseFloat(borderRadiusEl.value) || 0) : 0;
+                    const borderWidth = borderWidthEl ? (parseFloat(borderWidthEl.value) || 0) : 2;
+                    const opacity = opacityEl ? (parseFloat(opacityEl.value) || 1) : 1;
                     
                     const appearanceSettings = {
                         background_color: backgroundColor,
@@ -7685,29 +7886,114 @@ const FloorPlanDesigner = {
                         font_family: fontFamily,
                         text_align: textAlign,
                         box_shadow: boxShadow,
-                        borderRadius: parseFloat(borderRadius),
-                        borderWidth: parseFloat(borderWidth),
-                        opacity: parseFloat(opacity)
+                        borderRadius: borderRadius,
+                        borderWidth: borderWidth,
+                        opacity: opacity
                     };
                     
                     self.saveZoneAppearanceSettings(zoneName, appearanceSettings);
                 });
+                
+                // Save All Zone Settings (Info + Shape + Appearance in one)
+                const saveAllZoneBtn = document.getElementById('saveAllZoneBtn');
+                if (saveAllZoneBtn) {
+                    saveAllZoneBtn.addEventListener('click', function() {
+                        const zoneAbout = document.getElementById('zoneAbout') ? document.getElementById('zoneAbout').value.trim() : '';
+                        const shape = readShapeFromForm();
+                        const appearance = readAppearanceFromForm();
+                        self.saveAllZoneSettings(zoneName, {
+                            zone_about: zoneAbout,
+                            width: shape.width,
+                            height: shape.height,
+                            rotation: shape.rotation,
+                            zIndex: shape.zIndex,
+                            borderRadius: appearance.borderRadius,
+                            borderWidth: appearance.borderWidth,
+                            opacity: appearance.opacity,
+                            background_color: appearance.background_color,
+                            border_color: appearance.border_color,
+                            text_color: appearance.text_color,
+                            font_weight: appearance.font_weight,
+                            font_family: appearance.font_family,
+                            text_align: appearance.text_align,
+                            box_shadow: appearance.box_shadow
+                        });
+                    });
+                }
             }
         });
     },
     
-    // Save Zone Shape & Layout Settings (W, H, R, Z only)
+    // Apply zone shape/layout to canvas only (instant preview, no save)
+    applyZoneShapeLayoutToCanvas: function(zoneName, shapeSettings) {
+        const self = this;
+        const canvas = document.getElementById('print');
+        if (!canvas) return;
+        const canvasBooths = canvas.querySelectorAll('.dropped-booth[data-booth-zone="' + zoneName + '"]');
+        const width = Math.max(5, parseFloat(shapeSettings.width) || 80);
+        const height = Math.max(5, parseFloat(shapeSettings.height) || 50);
+        const rotation = (parseFloat(shapeSettings.rotation) || 0) % 360;
+        const zIndex = Math.max(1, Math.min(1000, parseInt(shapeSettings.zIndex, 10) || 10));
+        canvasBooths.forEach(function(boothElement) {
+            boothElement.style.width = width + 'px';
+            boothElement.style.height = height + 'px';
+            boothElement.style.transform = 'rotate(' + rotation + 'deg)';
+            boothElement.style.zIndex = zIndex;
+            boothElement.setAttribute('data-width', width);
+            boothElement.setAttribute('data-height', height);
+            boothElement.setAttribute('data-rotation', rotation);
+            boothElement.setAttribute('data-z-index', zIndex);
+            if (self.updateResizeHandlesSize) self.updateResizeHandlesSize(boothElement);
+            if (self.updateRotationIndicator) self.updateRotationIndicator(boothElement);
+            const userFontSize = parseFloat(boothElement.getAttribute('data-font-size')) || self.defaultBoothFontSize || 14;
+            const calculatedFontSize = Math.min(userFontSize, Math.max(8, width * 0.45));
+            boothElement.style.fontSize = calculatedFontSize + 'px';
+            boothElement.setAttribute('data-calculated-font-size', calculatedFontSize);
+        });
+    },
+    
+    // Apply zone appearance/style to canvas only (instant preview, no save)
+    applyZoneAppearanceToCanvas: function(zoneName, appearanceSettings) {
+        const canvas = document.getElementById('print');
+        if (!canvas) return;
+        const canvasBooths = canvas.querySelectorAll('.dropped-booth[data-booth-zone="' + zoneName + '"]');
+        canvasBooths.forEach(function(boothElement) {
+            boothElement.classList.add('has-custom-colors');
+            boothElement.style.backgroundColor = appearanceSettings.background_color || '';
+            boothElement.style.borderColor = appearanceSettings.border_color || '';
+            boothElement.style.color = appearanceSettings.text_color || '';
+            boothElement.style.fontWeight = appearanceSettings.font_weight || '';
+            boothElement.style.fontFamily = appearanceSettings.font_family || '';
+            boothElement.style.textAlign = appearanceSettings.text_align || '';
+            boothElement.style.boxShadow = appearanceSettings.box_shadow || '';
+            const br = appearanceSettings.borderRadius != null ? parseFloat(appearanceSettings.borderRadius) : 0;
+            boothElement.style.borderRadius = br + 'px';
+            const bw = appearanceSettings.borderWidth != null ? parseFloat(appearanceSettings.borderWidth) : 2;
+            boothElement.style.borderWidth = bw + 'px';
+            boothElement.style.borderStyle = 'solid';
+            const op = appearanceSettings.opacity != null ? parseFloat(appearanceSettings.opacity) : 1;
+            boothElement.style.opacity = op;
+            boothElement.setAttribute('data-background-color', appearanceSettings.background_color || '');
+            boothElement.setAttribute('data-border-color', appearanceSettings.border_color || '');
+            boothElement.setAttribute('data-text-color', appearanceSettings.text_color || '');
+            boothElement.setAttribute('data-font-weight', appearanceSettings.font_weight || '');
+            boothElement.setAttribute('data-font-family', appearanceSettings.font_family || '');
+            boothElement.setAttribute('data-text-align', appearanceSettings.text_align || '');
+            boothElement.setAttribute('data-box-shadow', appearanceSettings.box_shadow || '');
+            boothElement.setAttribute('data-border-radius', br);
+            boothElement.setAttribute('data-border-width', bw);
+            boothElement.setAttribute('data-opacity', op);
+        });
+    },
+    
+    // Save Zone Shape & Layout Settings (W, H, R, Z only) — applies to entire zone (sidebar + canvas)
     saveZoneShapeLayoutSettings: function(zoneName, shapeSettings) {
         const self = this;
         const canvas = document.getElementById('print');
         if (!canvas) return;
         
-        // IMPORTANT: Zone settings should ONLY apply to booths still in the sidebar (not yet on canvas)
-        // Booths already on canvas should have independent settings and not be affected
         const sidebarContainer = document.getElementById('boothNumbersContainer');
         const sidebarBooths = sidebarContainer ? sidebarContainer.querySelectorAll('.booth-number-item[data-booth-zone="' + zoneName + '"]') : [];
-        
-        // Find booths on canvas for reference (to skip them)
         const canvasBooths = canvas.querySelectorAll('.dropped-booth[data-booth-zone="' + zoneName + '"]');
         const canvasBoothIds = new Set();
         canvasBooths.forEach(function(booth) {
@@ -7715,42 +8001,78 @@ const FloorPlanDesigner = {
             if (boothId) canvasBoothIds.add(boothId);
         });
         
-        if (sidebarBooths.length === 0) {
-            Swal.fire({
-                icon: 'info',
-                title: 'No Booths in Sidebar',
-                text: 'No booths from Zone ' + zoneName + ' found in sidebar. Settings will be saved for future booths added to this zone.'
-            });
-        }
-        
         const boothsToSave = [];
         let updatedCount = 0;
+        const width = Math.max(5, shapeSettings.width);
+        const height = Math.max(5, shapeSettings.height);
+        const rotation = shapeSettings.rotation % 360;
+        const zIndex = Math.max(1, Math.min(1000, shapeSettings.zIndex));
         
-        // Apply shape/layout settings ONLY to booths in sidebar (not yet on canvas)
+        // 1) Sidebar booths (not on canvas): save shape to DB only
         sidebarBooths.forEach(function(boothItem) {
             const boothId = boothItem.getAttribute('data-booth-id');
-            
-            // Skip if this booth is already on canvas (zone settings don't apply to canvas booths)
-            if (boothId && canvasBoothIds.has(boothId)) {
-                console.log('Skipping booth ' + boothId + ' - already on canvas, zone settings do not apply');
-                return;
-            }
-            
-            // For sidebar booths, we only save the settings to the database
-            // They will be applied when the booth is first added to canvas
-            if (boothId) {
-                // Get current position if booth exists in database (might have been on canvas before)
-                // We'll update the database with zone settings, but only if booth is not currently on canvas
-                boothsToSave.push({
-                    id: parseInt(boothId),
-                    width: Math.max(5, shapeSettings.width),
-                    height: Math.max(5, shapeSettings.height),
-                    rotation: shapeSettings.rotation % 360,
-                    z_index: Math.max(1, Math.min(1000, shapeSettings.zIndex))
-                });
-                updatedCount++;
-            }
+            if (!boothId || canvasBoothIds.has(boothId)) return;
+            boothsToSave.push({
+                id: parseInt(boothId),
+                width: width,
+                height: height,
+                rotation: rotation,
+                z_index: zIndex
+            });
+            updatedCount++;
         });
+        
+        // 2) Canvas booths: apply to DOM and save to DB (entire zone)
+        canvasBooths.forEach(function(boothElement) {
+            const boothId = boothElement.getAttribute('data-booth-id');
+            if (!boothId) return;
+            boothElement.style.width = width + 'px';
+            boothElement.style.height = height + 'px';
+            boothElement.style.transform = 'rotate(' + rotation + 'deg)';
+            boothElement.style.zIndex = zIndex;
+            boothElement.setAttribute('data-width', width);
+            boothElement.setAttribute('data-height', height);
+            boothElement.setAttribute('data-rotation', rotation);
+            boothElement.setAttribute('data-z-index', zIndex);
+            self.updateResizeHandlesSize(boothElement);
+            self.updateRotationIndicator(boothElement);
+            const userFontSize = parseFloat(boothElement.getAttribute('data-font-size')) || self.defaultBoothFontSize;
+            const calculatedFontSize = Math.min(userFontSize, Math.max(8, width * 0.45));
+            boothElement.style.fontSize = calculatedFontSize + 'px';
+            boothElement.setAttribute('data-calculated-font-size', calculatedFontSize);
+            const x = parseFloat(boothElement.style.left) || 0;
+            const y = parseFloat(boothElement.style.top) || 0;
+            boothsToSave.push({
+                id: parseInt(boothId),
+                position_x: x,
+                position_y: y,
+                width: width,
+                height: height,
+                rotation: rotation,
+                z_index: zIndex,
+                font_size: calculatedFontSize,
+                border_width: boothElement.getAttribute('data-border-width') || 2,
+                border_radius: boothElement.getAttribute('data-border-radius') || 6,
+                opacity: boothElement.getAttribute('data-opacity') || 1,
+                background_color: boothElement.style.backgroundColor || boothElement.getAttribute('data-background-color') || null,
+                border_color: boothElement.style.borderColor || boothElement.getAttribute('data-border-color') || null,
+                text_color: boothElement.style.color || boothElement.getAttribute('data-text-color') || null,
+                font_weight: boothElement.getAttribute('data-font-weight') || null,
+                font_family: boothElement.style.fontFamily || boothElement.getAttribute('data-font-family') || null,
+                text_align: boothElement.getAttribute('data-text-align') || null,
+                box_shadow: boothElement.style.boxShadow || boothElement.getAttribute('data-box-shadow') || null
+            });
+            updatedCount++;
+        });
+        
+        if (updatedCount === 0) {
+            Swal.fire({
+                icon: 'info',
+                title: 'No Booths in Zone',
+                text: 'No booths from Zone ' + zoneName + ' found. Settings will be saved for future booths added to this zone.'
+            });
+            return;
+        }
         
         // Get current floor plan ID
         const floorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
@@ -7832,7 +8154,7 @@ const FloorPlanDesigner = {
                 Swal.fire({
                     icon: 'success',
                     title: 'Saved!',
-                    text: 'Shape & Layout settings saved for ' + updatedCount + ' booth(s) in Zone ' + zoneName + ' (sidebar only). Canvas booths are not affected.',
+                    text: 'Shape & Layout applied to entire Zone ' + zoneName + ' — ' + updatedCount + ' booth(s) updated.',
                     timer: 3000,
                     showConfirmButton: false
                 });
@@ -7849,18 +8171,14 @@ const FloorPlanDesigner = {
             });
     },
     
-    // Save Zone Appearance & Style Settings
+    // Save Zone Appearance & Style Settings — applies to entire zone (sidebar + canvas)
     saveZoneAppearanceSettings: function(zoneName, appearanceSettings) {
         const self = this;
         const canvas = document.getElementById('print');
         if (!canvas) return;
         
-        // IMPORTANT: Zone settings should ONLY apply to booths still in the sidebar (not yet on canvas)
-        // Booths already on canvas should have independent settings and not be affected
         const sidebarContainer = document.getElementById('boothNumbersContainer');
         const sidebarBooths = sidebarContainer ? sidebarContainer.querySelectorAll('.booth-number-item[data-booth-zone="' + zoneName + '"]') : [];
-        
-        // Find booths on canvas for reference (to skip them)
         const canvasBooths = canvas.querySelectorAll('.dropped-booth[data-booth-zone="' + zoneName + '"]');
         const canvasBoothIds = new Set();
         canvasBooths.forEach(function(booth) {
@@ -7868,48 +8186,90 @@ const FloorPlanDesigner = {
             if (boothId) canvasBoothIds.add(boothId);
         });
         
-        if (sidebarBooths.length === 0) {
-            Swal.fire({
-                icon: 'info',
-                title: 'No Booths in Sidebar',
-                text: 'No booths from Zone ' + zoneName + ' found in sidebar. Settings will be saved for future booths added to this zone.'
-            });
-        }
-        
         const boothsToSave = [];
         let updatedCount = 0;
+        const boothDataAppearance = {
+            background_color: appearanceSettings.background_color,
+            border_color: appearanceSettings.border_color,
+            text_color: appearanceSettings.text_color,
+            font_weight: appearanceSettings.font_weight,
+            font_family: appearanceSettings.font_family,
+            text_align: appearanceSettings.text_align,
+            box_shadow: appearanceSettings.box_shadow,
+            border_radius: appearanceSettings.borderRadius,
+            border_width: appearanceSettings.borderWidth,
+            opacity: appearanceSettings.opacity
+        };
         
-        // Apply appearance settings ONLY to booths in sidebar (not yet on canvas)
+        // 1) Sidebar booths (not on canvas): save appearance to DB only
         sidebarBooths.forEach(function(boothItem) {
             const boothId = boothItem.getAttribute('data-booth-id');
-            
-            // Skip if this booth is already on canvas (zone settings don't apply to canvas booths)
-            if (boothId && canvasBoothIds.has(boothId)) {
-                console.log('Skipping booth ' + boothId + ' - already on canvas, zone settings do not apply');
-                return;
-            }
-            
-            // For sidebar booths, we only save the settings to the database
-            // They will be applied when the booth is first added to canvas
-            if (boothId) {
-                const boothData = {
-                    id: parseInt(boothId),
-                    background_color: appearanceSettings.background_color,
-                    border_color: appearanceSettings.border_color,
-                    text_color: appearanceSettings.text_color,
-                    font_weight: appearanceSettings.font_weight,
-                    font_family: appearanceSettings.font_family,
-                    text_align: appearanceSettings.text_align,
-                    box_shadow: appearanceSettings.box_shadow,
-                    border_radius: appearanceSettings.borderRadius,
-                    border_width: appearanceSettings.borderWidth,
-                    opacity: appearanceSettings.opacity
-                };
-                boothsToSave.push(boothData);
-            }
-            
+            if (!boothId || canvasBoothIds.has(boothId)) return;
+            boothsToSave.push(Object.assign({ id: parseInt(boothId) }, boothDataAppearance));
             updatedCount++;
         });
+        
+        // 2) Canvas booths: apply to DOM and save to DB (entire zone)
+        canvasBooths.forEach(function(boothElement) {
+            const boothId = boothElement.getAttribute('data-booth-id');
+            if (!boothId) return;
+            // So status-based !important rules don't override inline styles
+            boothElement.classList.add('has-custom-colors');
+            boothElement.style.backgroundColor = appearanceSettings.background_color || '';
+            boothElement.style.borderColor = appearanceSettings.border_color || '';
+            boothElement.style.color = appearanceSettings.text_color || '';
+            boothElement.style.fontWeight = appearanceSettings.font_weight || '';
+            boothElement.style.fontFamily = appearanceSettings.font_family || '';
+            boothElement.style.textAlign = appearanceSettings.text_align || '';
+            boothElement.style.boxShadow = appearanceSettings.box_shadow || '';
+            boothElement.style.borderRadius = (appearanceSettings.borderRadius != null ? parseFloat(appearanceSettings.borderRadius) : 0) + 'px';
+            const borderWidthPx = appearanceSettings.borderWidth != null ? parseFloat(appearanceSettings.borderWidth) : 2;
+            boothElement.style.borderWidth = borderWidthPx + 'px';
+            boothElement.style.borderStyle = 'solid';
+            boothElement.style.opacity = appearanceSettings.opacity != null ? parseFloat(appearanceSettings.opacity) : 1;
+            boothElement.setAttribute('data-background-color', appearanceSettings.background_color || '');
+            boothElement.setAttribute('data-border-color', appearanceSettings.border_color || '');
+            boothElement.setAttribute('data-text-color', appearanceSettings.text_color || '');
+            boothElement.setAttribute('data-font-weight', appearanceSettings.font_weight || '');
+            boothElement.setAttribute('data-font-family', appearanceSettings.font_family || '');
+            boothElement.setAttribute('data-text-align', appearanceSettings.text_align || '');
+            boothElement.setAttribute('data-box-shadow', appearanceSettings.box_shadow || '');
+            boothElement.setAttribute('data-border-radius', appearanceSettings.borderRadius || 0);
+            boothElement.setAttribute('data-border-width', appearanceSettings.borderWidth || 0);
+            boothElement.setAttribute('data-opacity', appearanceSettings.opacity != null ? appearanceSettings.opacity : 1);
+            const x = parseFloat(boothElement.style.left) || 0;
+            const y = parseFloat(boothElement.style.top) || 0;
+            boothsToSave.push({
+                id: parseInt(boothId),
+                position_x: x,
+                position_y: y,
+                width: parseInt(boothElement.getAttribute('data-width'), 10) || parseInt(boothElement.style.width, 10) || 80,
+                height: parseInt(boothElement.getAttribute('data-height'), 10) || parseInt(boothElement.style.height, 10) || 50,
+                rotation: parseFloat(boothElement.getAttribute('data-rotation')) || 0,
+                z_index: parseInt(boothElement.getAttribute('data-z-index'), 10) || 10,
+                font_size: parseFloat(boothElement.getAttribute('data-calculated-font-size')) || 14,
+                border_width: appearanceSettings.borderWidth,
+                border_radius: appearanceSettings.borderRadius,
+                opacity: appearanceSettings.opacity != null ? appearanceSettings.opacity : 1,
+                background_color: appearanceSettings.background_color,
+                border_color: appearanceSettings.border_color,
+                text_color: appearanceSettings.text_color,
+                font_weight: appearanceSettings.font_weight,
+                font_family: appearanceSettings.font_family,
+                text_align: appearanceSettings.text_align,
+                box_shadow: appearanceSettings.box_shadow
+            });
+            updatedCount++;
+        });
+        
+        if (updatedCount === 0) {
+            Swal.fire({
+                icon: 'info',
+                title: 'No Booths in Zone',
+                text: 'No booths from Zone ' + zoneName + ' found. Settings will be saved for future booths added to this zone.'
+            });
+            return;
+        }
         
         // Get current floor plan ID
         const floorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
@@ -8004,7 +8364,7 @@ const FloorPlanDesigner = {
                 Swal.fire({
                     icon: 'success',
                     title: 'Saved!',
-                    text: 'Appearance & Style settings saved for ' + updatedCount + ' booth(s) in Zone ' + zoneName + ' (sidebar only). Canvas booths are not affected.',
+                    text: 'Appearance & Style applied to entire Zone ' + zoneName + ' — ' + updatedCount + ' booth(s) updated.',
                     timer: 3000,
                     showConfirmButton: false
                 });
@@ -8019,6 +8379,180 @@ const FloorPlanDesigner = {
                     text: 'Failed to save settings. Please try again.'
                 });
             });
+    },
+    
+    // Save all zone settings in one go (Info + Shape + Appearance) — applies to entire zone
+    saveAllZoneSettings: function(zoneName, fullSettings) {
+        const self = this;
+        const canvas = document.getElementById('print');
+        if (!canvas) return;
+        
+        const floorPlanId = @php echo isset($floorPlanId) && $floorPlanId ? (int)$floorPlanId : 'null'; @endphp;
+        if (!floorPlanId) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Floor Plan Required',
+                text: 'Please select a floor plan first before saving zone settings.'
+            });
+            return;
+        }
+        
+        const sidebarContainer = document.getElementById('boothNumbersContainer');
+        const sidebarBooths = sidebarContainer ? sidebarContainer.querySelectorAll('.booth-number-item[data-booth-zone="' + zoneName + '"]') : [];
+        const canvasBooths = canvas.querySelectorAll('.dropped-booth[data-booth-zone="' + zoneName + '"]');
+        const canvasBoothIds = new Set();
+        canvasBooths.forEach(function(booth) {
+            const boothId = booth.getAttribute('data-booth-id');
+            if (boothId) canvasBoothIds.add(boothId);
+        });
+        
+        // Apply to DOM so canvas reflects current form (in case live preview missed)
+        self.applyZoneShapeLayoutToCanvas(zoneName, {
+            width: fullSettings.width,
+            height: fullSettings.height,
+            rotation: fullSettings.rotation,
+            zIndex: fullSettings.zIndex
+        });
+        self.applyZoneAppearanceToCanvas(zoneName, {
+            background_color: fullSettings.background_color,
+            border_color: fullSettings.border_color,
+            text_color: fullSettings.text_color,
+            font_weight: fullSettings.font_weight,
+            font_family: fullSettings.font_family,
+            text_align: fullSettings.text_align,
+            box_shadow: fullSettings.box_shadow,
+            borderRadius: fullSettings.borderRadius,
+            borderWidth: fullSettings.borderWidth,
+            opacity: fullSettings.opacity
+        });
+        
+        const boothsToSave = [];
+        const width = Math.max(5, parseFloat(fullSettings.width) || 80);
+        const height = Math.max(5, parseFloat(fullSettings.height) || 50);
+        const rotation = (parseFloat(fullSettings.rotation) || 0) % 360;
+        const zIndex = Math.max(1, Math.min(1000, parseInt(fullSettings.zIndex, 10) || 10));
+        
+        sidebarBooths.forEach(function(boothItem) {
+            const boothId = boothItem.getAttribute('data-booth-id');
+            if (!boothId || canvasBoothIds.has(boothId)) return;
+            boothsToSave.push({
+                id: parseInt(boothId),
+                width: width,
+                height: height,
+                rotation: rotation,
+                z_index: zIndex,
+                border_width: fullSettings.borderWidth,
+                border_radius: fullSettings.borderRadius,
+                opacity: fullSettings.opacity != null ? fullSettings.opacity : 1,
+                background_color: fullSettings.background_color,
+                border_color: fullSettings.border_color,
+                text_color: fullSettings.text_color,
+                font_weight: fullSettings.font_weight,
+                font_family: fullSettings.font_family,
+                text_align: fullSettings.text_align,
+                box_shadow: fullSettings.box_shadow
+            });
+        });
+        
+        canvasBooths.forEach(function(boothElement) {
+            const boothId = boothElement.getAttribute('data-booth-id');
+            if (!boothId) return;
+            const x = parseFloat(boothElement.style.left) || 0;
+            const y = parseFloat(boothElement.style.top) || 0;
+            boothsToSave.push({
+                id: parseInt(boothId),
+                position_x: x,
+                position_y: y,
+                width: parseInt(boothElement.getAttribute('data-width'), 10) || width,
+                height: parseInt(boothElement.getAttribute('data-height'), 10) || height,
+                rotation: parseFloat(boothElement.getAttribute('data-rotation')) || rotation,
+                z_index: parseInt(boothElement.getAttribute('data-z-index'), 10) || zIndex,
+                font_size: parseFloat(boothElement.getAttribute('data-calculated-font-size')) || 14,
+                border_width: fullSettings.borderWidth,
+                border_radius: fullSettings.borderRadius,
+                opacity: fullSettings.opacity != null ? fullSettings.opacity : 1,
+                background_color: fullSettings.background_color,
+                border_color: fullSettings.border_color,
+                text_color: fullSettings.text_color,
+                font_weight: fullSettings.font_weight,
+                font_family: fullSettings.font_family,
+                text_align: fullSettings.text_align,
+                box_shadow: fullSettings.box_shadow
+            });
+        });
+        
+        const settingsToPost = {
+            floor_plan_id: floorPlanId,
+            zone_about: fullSettings.zone_about || null,
+            width: width,
+            height: height,
+            rotation: rotation,
+            zIndex: zIndex,
+            borderRadius: fullSettings.borderRadius != null ? fullSettings.borderRadius : 6,
+            borderWidth: fullSettings.borderWidth != null ? fullSettings.borderWidth : 2,
+            opacity: fullSettings.opacity != null ? fullSettings.opacity : 1,
+            background_color: fullSettings.background_color || null,
+            border_color: fullSettings.border_color || null,
+            text_color: fullSettings.text_color || null,
+            font_weight: fullSettings.font_weight || null,
+            font_family: fullSettings.font_family || null,
+            text_align: fullSettings.text_align || null,
+            box_shadow: fullSettings.box_shadow || null
+        };
+        
+        Swal.showLoading();
+        
+        fetch('/booths/zone-settings/' + encodeURIComponent(zoneName), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify(settingsToPost)
+        })
+        .then(response => response.json())
+        .then(function(data) {
+            if (data.status !== 200) throw new Error(data.message || 'Failed to save zone settings');
+            const cacheKey = floorPlanId + '_' + zoneName;
+            self.zoneSettingsCache[cacheKey] = Object.assign(self.zoneSettingsCache[cacheKey] || {}, {
+                zone_about: fullSettings.zone_about,
+                width: width,
+                height: height,
+                rotation: rotation,
+                zIndex: zIndex,
+                borderRadius: fullSettings.borderRadius,
+                borderWidth: fullSettings.borderWidth,
+                opacity: fullSettings.opacity,
+                background_color: fullSettings.background_color,
+                border_color: fullSettings.border_color,
+                text_color: fullSettings.text_color,
+                font_weight: fullSettings.font_weight,
+                font_family: fullSettings.font_family,
+                text_align: fullSettings.text_align,
+                box_shadow: fullSettings.box_shadow
+            });
+            if (boothsToSave.length > 0) {
+                return self.saveBoothsBatch(boothsToSave);
+            }
+        })
+        .then(function() {
+            Swal.fire({
+                icon: 'success',
+                title: 'All Settings Saved',
+                text: 'Zone ' + zoneName + ' — Info, Shape & Layout, and Appearance saved. ' + boothsToSave.length + ' booth(s) updated.',
+                timer: 3000,
+                showConfirmButton: false
+            });
+            self.saveState();
+        })
+        .catch(function(error) {
+            console.error('Error saving all zone settings:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to save settings. Please try again.'
+            });
+        });
     },
     
     // Save Zone General Information (Zone About)
@@ -10456,6 +10990,31 @@ const FloorPlanDesigner = {
             const rotateBorderWidth = Math.max(2, Math.min(3, Math.round(rotateHandleSize / 10)));
             rotateHandle.style.borderWidth = rotateBorderWidth + 'px';
         }
+    },
+    
+    // Select all booths on the canvas
+    selectAllBoothsOnCanvas: function() {
+        const self = this;
+        const canvas = document.getElementById('print');
+        if (!canvas) return;
+        const allBooths = canvas.querySelectorAll('.dropped-booth');
+        if (allBooths.length === 0) {
+            showNotification('No booths on canvas to select', 'info');
+            return;
+        }
+        // Clear current selection
+        if (self.selectedBooths && self.selectedBooths.length > 0) {
+            self.selectedBooths.forEach(function(booth) {
+                booth.classList.remove('selected');
+            });
+        }
+        self.selectedBooths = Array.from(allBooths);
+        self.selectedBooths.forEach(function(booth) {
+            booth.classList.add('selected');
+        });
+        self.updateSelectionBoundingBox();
+        self.updateInfoToolbar && self.updateInfoToolbar(null);
+        showNotification(allBooths.length + ' booth(s) selected', 'success');
     },
     
     // Update selection bounding box (Photoshop-like) around all selected booths
@@ -14336,9 +14895,20 @@ const FloorPlanDesigner = {
                         existingBooth.classList.remove('has-custom-colors');
                     }
                     
-                    existingBooth.style.borderWidth = (statusColor.border_width || 2) + 'px';
-                    existingBooth.style.borderStyle = statusColor.border_style || 'solid';
-                    existingBooth.style.borderRadius = (statusColor.border_radius || 4) + 'px';
+                    // Prefer saved booth border_radius/border_width over status (avoids overwriting zone/appearance settings on refresh)
+                    var hasSavedBorder = (booth.border_radius !== null && booth.border_radius !== undefined) || (booth.border_width !== null && booth.border_width !== undefined);
+                    if (hasSavedBorder) {
+                        existingBooth.classList.add('has-custom-colors');
+                        existingBooth.style.borderWidth = (booth.border_width !== null && booth.border_width !== undefined ? booth.border_width : (statusColor.border_width || 2)) + 'px';
+                        existingBooth.style.borderStyle = 'solid';
+                        existingBooth.style.borderRadius = (booth.border_radius !== null && booth.border_radius !== undefined ? booth.border_radius : (statusColor.border_radius || 4)) + 'px';
+                        existingBooth.setAttribute('data-border-width', booth.border_width !== null && booth.border_width !== undefined ? booth.border_width : (statusColor.border_width || 2));
+                        existingBooth.setAttribute('data-border-radius', booth.border_radius !== null && booth.border_radius !== undefined ? booth.border_radius : (statusColor.border_radius || 4));
+                    } else {
+                        existingBooth.style.borderWidth = (statusColor.border_width || 2) + 'px';
+                        existingBooth.style.borderStyle = statusColor.border_style || 'solid';
+                        existingBooth.style.borderRadius = (statusColor.border_radius || 4) + 'px';
+                    }
                     
                     // Update status class
                     existingBooth.className = existingBooth.className.replace(/status-\d+/, 'status-' + boothStatus);
@@ -14515,13 +15085,25 @@ const FloorPlanDesigner = {
                     boothElement.classList.remove('has-custom-colors');
                 }
                 
-                boothElement.style.borderWidth = (statusColor.border_width || 2) + 'px';
-                boothElement.style.borderStyle = statusColor.border_style || 'solid';
-                boothElement.style.borderRadius = (statusColor.border_radius || 4) + 'px';
+                // Prefer saved booth border_radius/border_width over status (avoids overwriting zone/appearance settings on refresh)
+                var hasSavedBorderNew = (booth.border_radius !== null && booth.border_radius !== undefined) || (booth.border_width !== null && booth.border_width !== undefined);
+                if (hasSavedBorderNew) {
+                    boothElement.classList.add('has-custom-colors');
+                    boothElement.style.borderWidth = (booth.border_width !== null && booth.border_width !== undefined ? booth.border_width : (statusColor.border_width || 2)) + 'px';
+                    boothElement.style.borderStyle = 'solid';
+                    boothElement.style.borderRadius = (booth.border_radius !== null && booth.border_radius !== undefined ? booth.border_radius : (statusColor.border_radius || 4)) + 'px';
+                    boothElement.setAttribute('data-border-width', booth.border_width !== null && booth.border_width !== undefined ? booth.border_width : (statusColor.border_width || 2));
+                    boothElement.setAttribute('data-border-radius', booth.border_radius !== null && booth.border_radius !== undefined ? booth.border_radius : (statusColor.border_radius || 4));
+                } else {
+                    boothElement.style.borderWidth = (statusColor.border_width || 2) + 'px';
+                    boothElement.style.borderStyle = statusColor.border_style || 'solid';
+                    boothElement.style.borderRadius = (statusColor.border_radius || 4) + 'px';
+                }
                 
-                    // Store status colors in data attributes
-                    boothElement.setAttribute('data-background-color', statusColor.bg);
-                    boothElement.setAttribute('data-border-color', statusColor.border);
+                    // Store status colors in data attributes (when not using custom)
+                    if (!customBgColor) boothElement.setAttribute('data-background-color', statusColor.bg);
+                    if (!customBorderColor) boothElement.setAttribute('data-border-color', statusColor.border);
+                    boothElement.setAttribute('data-text-color', customTextColor || statusColor.text);
                     
                     // isBooked already declared earlier in this block, just ensure booked class is applied
                     if (isBooked) {
@@ -14529,7 +15111,6 @@ const FloorPlanDesigner = {
                     } else {
                         boothElement.classList.remove('booked');
                     }
-                boothElement.setAttribute('data-text-color', statusColor.text);
                 
                 // Still apply other appearance properties if they exist (font-weight, font-family, etc.)
                 if (booth.font_weight) {

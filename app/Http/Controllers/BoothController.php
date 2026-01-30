@@ -2167,6 +2167,64 @@ class BoothController extends Controller
     }
 
     /**
+     * Check which booths have active bookings (before allowing delete from canvas).
+     * Returns booths_with_bookings so the UI can require "resolve booking first" before delete.
+     */
+    public function checkBoothsBookings(Request $request)
+    {
+        if (!auth()->user()->hasPermission('booths.canvas.edit') && !auth()->user()->isAdmin()) {
+            return response()->json([
+                'status' => 403,
+                'message' => 'You do not have permission to edit canvas.',
+            ], 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'booth_ids' => 'required|array',
+                'booth_ids.*' => 'integer|exists:booth,id',
+            ]);
+
+            $boothIds = array_unique(array_map('intval', $validated['booth_ids']));
+            $boothsWithBookings = [];
+
+            foreach ($boothIds as $boothId) {
+                $booth = Booth::find($boothId);
+                if (!$booth) {
+                    continue;
+                }
+                if ($booth->bookid) {
+                    $book = Book::find($booth->bookid);
+                    $boothsWithBookings[] = [
+                        'booth_id' => $booth->id,
+                        'booth_number' => $booth->booth_number,
+                        'book_id' => $booth->bookid,
+                        'client_company' => $booth->client ? $booth->client->company : 'Unknown',
+                    ];
+                }
+            }
+
+            return response()->json([
+                'status' => 200,
+                'all_clear' => count($boothsWithBookings) === 0,
+                'booths_with_bookings' => $boothsWithBookings,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error checking booth bookings: ' . $e->getMessage());
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error checking bookings.',
+            ], 500);
+        }
+    }
+
+    /**
      * Save zone settings (floor-plan-specific)
      */
     public function saveZoneSettings(Request $request, $zoneName)
