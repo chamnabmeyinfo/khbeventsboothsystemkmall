@@ -4,7 +4,16 @@
             <input type="checkbox" class="booth-checkbox" value="{{ $booth->id }}" style="width: 18px; height: 18px; cursor: pointer; accent-color: #667eea;">
         </div>
     </td>
-    <td data-column="image" data-column-index="1">
+    <td data-column="row_number" data-column-index="1" style="text-align: center; color: #64748b; font-weight: 600; font-size: 14px;">
+        <span class="row-number">
+            @if(isset($rowNumber))
+                {{ $rowNumber }}
+            @else
+                {{ $loop->iteration + (($booths->currentPage() - 1) * $booths->perPage()) }}
+            @endif
+        </span>
+    </td>
+    <td data-column="image" data-column-index="2">
         @if($booth->booth_image)
             <img src="{{ asset($booth->booth_image) }}" alt="Booth Image" class="booth-image-preview" onclick="viewImage('{{ asset($booth->booth_image) }}')" style="width: 56px; height: 56px; object-fit: cover; border-radius: 12px; border: 2px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease;">
         @else
@@ -13,38 +22,38 @@
             </div>
         @endif
     </td>
-    <td data-column="booth_number" data-column-index="2">
+    <td data-column="booth_number" data-column-index="3">
         <strong style="font-size: 15px; font-weight: 700; color: #1e293b; letter-spacing: -0.2px;">{{ $booth->booth_number }}</strong>
     </td>
-    <td data-column="type" data-column-index="3">
+    <td data-column="type" data-column-index="4">
         <span class="badge badge-info" style="padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 12px;">
             {{ $booth->boothType ? $booth->boothType->name : ($booth->type == 1 ? 'Booth' : 'Space Only') }}
         </span>
     </td>
-    <td data-column="floor_plan" data-column-index="4">
+    <td data-column="floor_plan" data-column-index="5">
         <span style="color: #475569; font-weight: 500; font-size: 14px;">{{ $booth->floorPlan ? $booth->floorPlan->name : 'N/A' }}</span>
     </td>
-    <td data-column="company" data-column-index="5">
+    <td data-column="company" data-column-index="6">
         <span style="color: #1e293b; font-weight: 600; font-size: 14px;">{{ $booth->client ? $booth->client->company : 'N/A' }}</span>
     </td>
-    <td data-column="category" data-column-index="6">
+    <td data-column="category" data-column-index="7">
         <span style="color: #475569; font-weight: 500; font-size: 14px;">{{ $booth->category ? $booth->category->name : 'N/A' }}</span>
     </td>
-    <td data-column="status" data-column-index="7">
+    <td data-column="status" data-column-index="8">
         <span class="badge badge-{{ $booth->getStatusColor() }}" style="padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 12px;">
             {{ $booth->getStatusLabel() }}
         </span>
     </td>
-    <td data-column="price" data-column-index="8">
+    <td data-column="price" data-column-index="9">
         <strong style="color: #10b981; font-size: 15px; font-weight: 700; letter-spacing: -0.3px;">${{ number_format($booth->price, 2) }}</strong>
     </td>
-    <td data-column="area" data-column-index="9">
+    <td data-column="area" data-column-index="10">
         <span style="color: #64748b; font-size: 14px; font-weight: 500;">{{ $booth->area_sqm ? number_format($booth->area_sqm, 2) . ' m²' : 'N/A' }}</span>
     </td>
-    <td data-column="capacity" data-column-index="10">
+    <td data-column="capacity" data-column-index="11">
         <span style="color: #64748b; font-size: 14px; font-weight: 500;">{{ $booth->capacity ? $booth->capacity . ' people' : 'N/A' }}</span>
     </td>
-    <td data-column="actions" data-column-index="11">
+    <td data-column="actions" data-column-index="12">
         <div class="action-buttons" style="display: flex; gap: 6px; justify-content: center;">
             <button type="button" class="btn btn-sm btn-info btn-action" onclick="viewBooth({{ $booth->id }})" title="View" style="width: 36px; height: 36px; padding: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
                 <i class="fas fa-eye" style="font-size: 13px;"></i>

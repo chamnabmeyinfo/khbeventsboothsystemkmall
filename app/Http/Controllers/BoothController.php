@@ -2884,10 +2884,14 @@ class BoothController extends Controller
         $booths = $query->offset($offset)->limit($perPage)->get();
         $hasMore = ($offset + $booths->count()) < $total;
         
-        // Render table rows
+        // Render table rows with row numbers
         $html = '';
+        $rowNumber = $offset + 1; // Start row number from offset + 1
         foreach ($booths as $booth) {
-            $html .= view('booths.partials.table-row', ['booth' => $booth])->render();
+            $html .= view('booths.partials.table-row', [
+                'booth' => $booth,
+                'rowNumber' => $rowNumber++
+            ])->render();
         }
         
         return response()->json([

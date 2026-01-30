@@ -1753,6 +1753,95 @@
         margin-right: 8px;
         vertical-align: middle;
     }
+    
+    /* Hide DataTables Length Selector */
+    .dataTables_length {
+        display: none !important;
+    }
+    
+    /* Modern DataTables Search Filter */
+    #boothsTable_filter.dataTables_filter {
+        float: none !important;
+        text-align: right !important;
+        margin-bottom: 20px !important;
+        margin-top: 0 !important;
+        position: relative !important;
+    }
+    
+    #boothsTable_filter.dataTables_filter label {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        margin: 0 !important;
+        font-weight: 600 !important;
+        color: #475569 !important;
+        font-size: 14px !important;
+        position: relative !important;
+        width: 100% !important;
+    }
+    
+    #boothsTable_filter.dataTables_filter label::before {
+        content: '\f002' !important;
+        font-family: 'Font Awesome 5 Free' !important;
+        font-weight: 900 !important;
+        position: absolute !important;
+        right: 16px !important;
+        color: #94a3b8 !important;
+        font-size: 14px !important;
+        pointer-events: none !important;
+        z-index: 10 !important;
+    }
+    
+    #boothsTable_filter.dataTables_filter input[type="search"] {
+        margin-left: 12px !important;
+        padding: 12px 44px 12px 16px !important;
+        border: 2px solid #e5e7eb !important;
+        border-radius: 12px !important;
+        font-size: 14px !important;
+        width: 300px !important;
+        max-width: calc(100% - 12px) !important;
+        transition: all 0.3s ease !important;
+        background: white !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+        position: relative !important;
+    }
+    
+    #boothsTable_filter.dataTables_filter input[type="search"]:focus {
+        outline: none !important;
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1), 0 4px 12px rgba(0,0,0,0.1) !important;
+        transform: translateY(-2px) !important;
+    }
+    
+    #boothsTable_filter.dataTables_filter input[type="search"]::placeholder {
+        color: #94a3b8 !important;
+        font-weight: 400 !important;
+    }
+    
+    @media (max-width: 768px) {
+        #boothsTable_filter.dataTables_filter {
+            text-align: center !important;
+            margin-bottom: 16px !important;
+        }
+        
+        #boothsTable_filter.dataTables_filter label {
+            flex-direction: column !important;
+            align-items: stretch !important;
+        }
+        
+        #boothsTable_filter.dataTables_filter label::before {
+            right: auto !important;
+            left: 16px !important;
+        }
+        
+        #boothsTable_filter.dataTables_filter input[type="search"] {
+            width: 100% !important;
+            margin-left: 0 !important;
+            margin-top: 8px !important;
+            padding-left: 44px !important;
+            padding-right: 16px !important;
+        }
+    }
 </style>
 @endpush
 
@@ -2080,7 +2169,7 @@
                             <label class="form-label" style="font-weight: 600; color: #475569;">
                                 <i class="fas fa-map mr-1"></i>Floor Plan
                             </label>
-                            <select name="floor_plan_id" class="form-control" style="border-radius: 10px;">
+                            <select name="floor_plan_id" class="form-control" style="border-radius: 10px; width: 100%; display: block;">
                                 <option value="">All Floor Plans</option>
                                 @foreach($floorPlans as $fp)
                                     <option value="{{ $fp->id }}" {{ request('floor_plan_id') == $fp->id ? 'selected' : '' }}>
@@ -2093,7 +2182,7 @@
                             <label class="form-label" style="font-weight: 600; color: #475569;">
                                 <i class="fas fa-info-circle mr-1"></i>Status
                             </label>
-                            <select name="status" class="form-control" style="border-radius: 10px;">
+                            <select name="status" class="form-control" style="border-radius: 10px; width: 100%; display: block;">
                                 <option value="">All Status</option>
                                 @if(isset($statusSettings) && $statusSettings->count() > 0)
                                     @foreach($statusSettings as $status)
@@ -2113,7 +2202,7 @@
                             <label class="form-label" style="font-weight: 600; color: #475569;">
                                 <i class="fas fa-building mr-1"></i>Booth Type
                             </label>
-                            <select name="booth_type_id" class="form-control" style="border-radius: 10px;">
+                            <select name="booth_type_id" class="form-control" style="border-radius: 10px; width: 100%; display: block;">
                                 <option value="">All Types</option>
                                 @foreach($boothTypes as $type)
                                     <option value="{{ $type->id }}" {{ request('booth_type_id') == $type->id ? 'selected' : '' }}>
@@ -2126,7 +2215,7 @@
                             <label class="form-label" style="font-weight: 600; color: #475569;">
                                 <i class="fas fa-folder mr-1"></i>Category
                             </label>
-                            <select name="category_id" class="form-control" style="border-radius: 10px;">
+                            <select name="category_id" class="form-control" style="border-radius: 10px; width: 100%; display: block;">
                                 <option value="">All Categories</option>
                                 @foreach($categories as $cat)
                                     <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>
@@ -2239,37 +2328,40 @@
                                     <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" style="cursor: pointer; width: 18px; height: 18px;">
                                 </div>
                             </th>
-                            <th style="min-width: 80px;" data-column="image" data-column-index="1">
+                            <th width="60" style="min-width: 60px; text-align: center;" data-column="row_number" data-column-index="1">
+                                <i class="fas fa-hashtag mr-1"></i>#
+                            </th>
+                            <th style="min-width: 80px;" data-column="image" data-column-index="2">
                                 <i class="fas fa-image mr-1"></i>Image
                             </th>
-                            <th style="min-width: 100px;" data-column="booth_number" data-column-index="2">
+                            <th style="min-width: 100px;" data-column="booth_number" data-column-index="3">
                                 <i class="fas fa-hashtag mr-1"></i>Booth #
                             </th>
-                            <th style="min-width: 100px;" data-column="type" data-column-index="3">
+                            <th style="min-width: 100px;" data-column="type" data-column-index="4">
                                 <i class="fas fa-tag mr-1"></i>Type
                             </th>
-                            <th style="min-width: 120px;" data-column="floor_plan" data-column-index="4">
+                            <th style="min-width: 120px;" data-column="floor_plan" data-column-index="5">
                                 <i class="fas fa-building mr-1"></i>Floor Plan
                             </th>
-                            <th style="min-width: 150px;" data-column="company" data-column-index="5">
+                            <th style="min-width: 150px;" data-column="company" data-column-index="6">
                                 <i class="fas fa-briefcase mr-1"></i>Company
                             </th>
-                            <th style="min-width: 120px;" data-column="category" data-column-index="6">
+                            <th style="min-width: 120px;" data-column="category" data-column-index="7">
                                 <i class="fas fa-folder mr-1"></i>Category
                             </th>
-                            <th style="min-width: 100px;" data-column="status" data-column-index="7">
+                            <th style="min-width: 100px;" data-column="status" data-column-index="8">
                                 <i class="fas fa-info-circle mr-1"></i>Status
                             </th>
-                            <th style="min-width: 100px;" data-column="price" data-column-index="8">
+                            <th style="min-width: 100px;" data-column="price" data-column-index="9">
                                 <i class="fas fa-dollar-sign mr-1"></i>Price
                             </th>
-                            <th style="min-width: 90px;" data-column="area" data-column-index="9">
+                            <th style="min-width: 90px;" data-column="area" data-column-index="10">
                                 <i class="fas fa-ruler-combined mr-1"></i>Area
                             </th>
-                            <th style="min-width: 100px;" data-column="capacity" data-column-index="10">
+                            <th style="min-width: 100px;" data-column="capacity" data-column-index="11">
                                 <i class="fas fa-users mr-1"></i>Capacity
                             </th>
-                            <th style="min-width: 120px; text-align: center;" data-column="actions" data-column-index="11">
+                            <th style="min-width: 120px; text-align: center;" data-column="actions" data-column-index="12">
                                 <i class="fas fa-cog mr-1"></i>Actions
                             </th>
                         </tr>
@@ -2279,7 +2371,7 @@
                             @include('booths.partials.table-row', ['booth' => $booth])
                         @empty
                         <tr>
-                            <td colspan="12" class="text-center py-5">
+                            <td colspan="13" class="text-center py-5">
                                 <div style="padding: 40px 20px;">
                                     <i class="fas fa-inbox" style="font-size: 64px; color: #cbd5e1; margin-bottom: 20px; display: block;"></i>
                                     <h5 style="color: #64748b; font-weight: 600; margin-bottom: 8px;">No booths found</h5>
@@ -2895,9 +2987,10 @@ let currentBoothId = null;
 $(document).ready(function() {
     $('#boothsTable').DataTable({
         pageLength: 50,
-        order: [[2, 'asc']],
+        lengthChange: false, // Hide the length/rows per page selector
+        order: [[3, 'asc']], // Updated to account for row number column
         columnDefs: [
-            { orderable: false, targets: [0, 1, 11] }
+            { orderable: false, targets: [0, 1, 2, 12] } // Updated: checkbox(0), row_number(1), image(2), actions(12)
         ]
     });
     
@@ -4197,6 +4290,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ============================================
     window.columnDefinitions = [
         { key: 'checkbox', label: 'Checkbox', visible: true },
+        { key: 'row_number', label: '#', visible: true },
         { key: 'image', label: 'Image', visible: true },
         { key: 'booth_number', label: 'Booth #', visible: true },
         { key: 'type', label: 'Type', visible: true },
