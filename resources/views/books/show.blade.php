@@ -125,6 +125,22 @@
                             <strong>{{ $book->user->username ?? 'System' }}</strong>
                         </div>
                     </div>
+                    @if($book->floorPlan)
+                    <div class="info-row">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted"><i class="fas fa-map mr-2"></i>Floor Plan:</span>
+                            <a href="{{ route('floor-plans.show', $book->floorPlan) }}" class="text-primary font-weight-bold">{{ $book->floorPlan->name }}</a>
+                        </div>
+                    </div>
+                    @if($book->floorPlan->event ?? null)
+                    <div class="info-row">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted"><i class="fas fa-calendar-alt mr-2"></i>Event:</span>
+                            <strong>{{ $book->floorPlan->event->title ?? '—' }}</strong>
+                        </div>
+                    </div>
+                    @endif
+                    @endif
                     <div class="info-row">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="text-muted"><i class="fas fa-cube mr-2"></i>Total Booths:</span>

@@ -25,7 +25,11 @@ class BookController extends Controller
             return $this->lazyLoad($request);
         }
 
-        $query = Book::with(['client', 'user']);
+        $with = ['client', 'user', 'floorPlan', 'statusSetting'];
+        if (\Schema::hasTable('events')) {
+            $with[] = 'floorPlan.event';
+        }
+        $query = Book::with($with);
 
         // Restrict to own bookings when setting is enabled (non-admin users only see their bookings)
         if ($this->restrictToOwnBookings()) {
@@ -54,6 +58,35 @@ class BookController extends Controller
         // Type filter
         if ($request->filled('type')) {
             $query->where('type', $request->type);
+        }
+
+        // Floor plan filter
+        if ($request->filled('floor_plan_id')) {
+            $query->where('floor_plan_id', $request->floor_plan_id);
+        }
+
+        // Status filter
+        if ($request->filled('status')) {
+            $query->where('status', (int) $request->status);
+        }
+
+        // Amount range filter
+        if ($request->filled('amount_min') && is_numeric($request->amount_min)) {
+            $query->where('total_amount', '>=', (float) $request->amount_min);
+        }
+        if ($request->filled('amount_max') && is_numeric($request->amount_max)) {
+            $query->where('total_amount', '<=', (float) $request->amount_max);
+        }
+
+        // Min booth count filter (boothid is JSON array)
+        if ($request->filled('booth_count_min') && is_numeric($request->booth_count_min) && (int) $request->booth_count_min > 0) {
+            $driver = $query->getConnection()->getDriverName();
+            $minBooths = (int) $request->booth_count_min;
+            if ($driver === 'mysql') {
+                $query->whereRaw('JSON_LENGTH(COALESCE(boothid, \'[]\')) >= ?', [$minBooths]);
+            } elseif ($driver === 'sqlite') {
+                $query->whereRaw('json_array_length(COALESCE(boothid, \'[]\')) >= ?', [$minBooths]);
+            }
         }
         
         // Group By filter
@@ -85,6 +118,9 @@ class BookController extends Controller
         // Get initial 20 records for lazy loading
         $books = $query->latest('date_book')->limit(20)->get();
         $total = $query->count();
+
+        // Batch-load booths for all books to avoid N+1
+        $boothsByBookId = $this->loadBoothsForBooks($books);
         
         // Group bookings if group_by is specified
         $groupedBooks = [];
@@ -107,7 +143,15 @@ class BookController extends Controller
         }
 
         $restrictToOwnBookings = $this->restrictToOwnBookings();
-        return view('books.index', compact('books', 'total', 'groupBy', 'dateRange', 'groupedBooks', 'restrictToOwnBookings'));
+
+        $floorPlans = FloorPlan::where('is_active', true)->orderBy('is_default', 'desc')->orderBy('name')->get();
+        try {
+            $statusSettings = \App\Models\BookingStatusSetting::getActiveStatuses();
+        } catch (\Exception $e) {
+            $statusSettings = collect([]);
+        }
+
+        return view('books.index', compact('books', 'total', 'groupBy', 'dateRange', 'groupedBooks', 'restrictToOwnBookings', 'boothsByBookId', 'floorPlans', 'statusSettings'));
     }
 
     /**
@@ -115,8 +159,11 @@ class BookController extends Controller
      */
     public function lazyLoad(Request $request)
     {
-        // Use exact same query structure as index method
-        $query = Book::with(['client', 'user']);
+        $with = ['client', 'user', 'floorPlan', 'statusSetting'];
+        if (\Schema::hasTable('events')) {
+            $with[] = 'floorPlan.event';
+        }
+        $query = Book::with($with);
 
         if ($this->restrictToOwnBookings()) {
             $query->where('userid', auth()->id());
@@ -144,6 +191,35 @@ class BookController extends Controller
         // Type filter (exact same as index)
         if ($request->filled('type')) {
             $query->where('type', $request->type);
+        }
+
+        // Floor plan filter
+        if ($request->filled('floor_plan_id')) {
+            $query->where('floor_plan_id', $request->floor_plan_id);
+        }
+
+        // Status filter
+        if ($request->filled('status')) {
+            $query->where('status', (int) $request->status);
+        }
+
+        // Amount range filter
+        if ($request->filled('amount_min') && is_numeric($request->amount_min)) {
+            $query->where('total_amount', '>=', (float) $request->amount_min);
+        }
+        if ($request->filled('amount_max') && is_numeric($request->amount_max)) {
+            $query->where('total_amount', '<=', (float) $request->amount_max);
+        }
+
+        // Min booth count filter
+        if ($request->filled('booth_count_min') && is_numeric($request->booth_count_min) && (int) $request->booth_count_min > 0) {
+            $driver = $query->getConnection()->getDriverName();
+            $minBooths = (int) $request->booth_count_min;
+            if ($driver === 'mysql') {
+                $query->whereRaw('JSON_LENGTH(COALESCE(boothid, \'[]\')) >= ?', [$minBooths]);
+            } elseif ($driver === 'sqlite') {
+                $query->whereRaw('json_array_length(COALESCE(boothid, \'[]\')) >= ?', [$minBooths]);
+            }
         }
         
         // Group By filter (exact same as index)
@@ -182,6 +258,8 @@ class BookController extends Controller
         // Use exact same ordering as index method
         $books = $query->latest('date_book')->offset($offset)->limit($perPage)->get();
         $hasMore = ($offset + $books->count()) < $total;
+
+        $boothsByBookId = $this->loadBoothsForBooks($books);
         
         $view = $request->input('view', 'table'); // 'table' or 'card'
         $groupBy = $request->input('group_by', 'none');
@@ -227,16 +305,10 @@ class BookController extends Controller
             $balanceAmount = $book->balance_amount ?? ($totalAmount - $paidAmount);
             
             if ($view === 'table') {
-                // Check if we're in grouped mode - if so, render table row, otherwise compact card
-                if ($groupBy !== 'none') {
-                    $html .= view('books.partials.table-row', compact('book', 'boothCount', 'statusColor', 'statusTextColor', 'statusName', 'totalAmount', 'balanceAmount'))->render();
-                } else {
-                    // Table row HTML - render compact card partial
-                    $html .= view('books.partials.compact-card', compact('book', 'boothCount', 'typeClass', 'typeBadge', 'statusColor', 'statusTextColor', 'statusName', 'totalAmount', 'balanceAmount'))->render();
-                }
+                $html .= view('books.partials.table-row', compact('book', 'boothCount', 'statusColor', 'statusTextColor', 'statusName', 'totalAmount', 'balanceAmount', 'boothsByBookId'))->render();
             } else {
                 // Card HTML
-                $html .= view('books.partials.card-item', compact('book', 'boothCount', 'typeBadge', 'typeClass'))->render();
+                $html .= view('books.partials.card-item', compact('book', 'boothCount', 'typeBadge', 'typeClass', 'boothsByBookId'))->render();
             }
         }
         
@@ -573,7 +645,10 @@ class BookController extends Controller
         if (!$this->canManageBooking($book)) {
             abort(403, 'You can only view your own bookings. This booking was created by another user.');
         }
-        $book->load(['client', 'user', 'payments', 'statusSetting']);
+        $book->load(['client', 'user', 'payments', 'statusSetting', 'floorPlan']);
+        if (\Schema::hasTable('events')) {
+            $book->load('floorPlan.event');
+        }
         
         // Calculate amounts if not set
         if (!$book->total_amount) {
@@ -613,8 +688,11 @@ class BookController extends Controller
                 $statusName = 'Pending';
             }
             
+            $html = view('books.partials.modal-booking-info', compact('book', 'booths'))->render();
+
             return response()->json([
                 'success' => true,
+                'html' => $html,
                 'book' => [
                     'id' => $book->id,
                     'date_book' => $book->date_book ? $book->date_book->format('F d, Y h:i A') : 'N/A',
@@ -1616,6 +1694,36 @@ class BookController extends Controller
             $countBoothCat = Booth::where('category_id', $categoryId)->count() + $boothCount;
             return $countBoothCat > $category->limit;
         }
+    }
+
+    /**
+     * Batch-load booths for a collection of books to avoid N+1 queries.
+     * Returns array keyed by book id => collection of Booth models.
+     */
+    private function loadBoothsForBooks($books): array
+    {
+        $boothsByBookId = [];
+        $allBoothIds = $books->flatMap(function ($book) {
+            $ids = json_decode($book->boothid, true) ?? [];
+            return is_array($ids) ? $ids : [];
+        })->unique()->filter()->values()->toArray();
+
+        if (empty($allBoothIds)) {
+            foreach ($books as $book) {
+                $boothsByBookId[$book->id] = collect([]);
+            }
+            return $boothsByBookId;
+        }
+
+        $booths = Booth::whereIn('id', $allBoothIds)->orderBy('booth_number')->get()->keyBy('id');
+
+        foreach ($books as $book) {
+            $ids = json_decode($book->boothid, true) ?? [];
+            $ids = is_array($ids) ? $ids : [];
+            $boothsByBookId[$book->id] = collect($ids)->map(fn ($id) => $booths->get($id))->filter()->values();
+        }
+
+        return $boothsByBookId;
     }
 
     /**

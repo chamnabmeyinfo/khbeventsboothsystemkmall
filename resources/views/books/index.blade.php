@@ -88,16 +88,85 @@
     letter-spacing: 0.5px;
 }
 
-/* Filter Bar - Following system pattern */
+/* Filter Bar - Advanced */
 .filter-bar {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.18);
-    padding: 16px 24px;
+    padding: 20px 24px;
     margin-bottom: 24px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+.filter-bar .filter-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.filter-bar .filter-header h6 {
+    margin: 0;
+    font-weight: 700;
+    color: #2d3748;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.filter-bar .filter-toggle {
+    font-size: 0.875rem;
+    color: #667eea;
+    cursor: pointer;
+    user-select: none;
+}
+.filter-bar .filter-toggle:hover {
+    text-decoration: underline;
+}
+.filter-bar .filter-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.filter-bar .filter-row-primary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px 16px;
+    align-items: end;
+}
+.filter-bar .filter-row-advanced {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+}
+.filter-bar .filter-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+    align-items: center;
+}
+.filter-bar .filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background: #edf2f7;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.filter-bar .filter-chip:hover {
+    background: #e2e8f0;
+}
+.filter-bar .filter-chip.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
 }
 
 /* Action Bar */
@@ -317,6 +386,17 @@
     visibility: hidden;
 }
 
+/* Filter bar responsive */
+@media (max-width: 768px) {
+    .filter-bar .filter-row-primary {
+        grid-template-columns: 1fr 1fr;
+    }
+    .filter-bar .filter-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
 /* Responsive breakpoints */
 @media (max-width: 768px) {
     .container-fluid {
@@ -524,72 +604,134 @@ html, body {
     </div>
 
     <!-- Filter Bar -->
+    @php
+        $hasActiveFilters = request()->hasAny(['search', 'date_from', 'date_to', 'type', 'floor_plan_id', 'status', 'amount_min', 'amount_max', 'booth_count_min']) || (request('date_range') && request('date_range') !== 'all');
+        $activeFilterCount = 0;
+        if (request('search')) $activeFilterCount++;
+        if (request('date_from') || request('date_to')) $activeFilterCount++;
+        if (request('type')) $activeFilterCount++;
+        if (request('floor_plan_id')) $activeFilterCount++;
+        if (request('status')) $activeFilterCount++;
+        if (request('amount_min') || request('amount_max')) $activeFilterCount++;
+        if (request('booth_count_min')) $activeFilterCount++;
+        if (request('date_range') && request('date_range') !== 'all') $activeFilterCount++;
+    @endphp
     <div class="filter-bar">
         <form method="GET" action="{{ route('books.index') }}" id="filterForm">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">Search</label>
-                    <input type="text" 
-                           name="search" 
-                           class="form-control form-control-modern" 
-                           placeholder="Client name, company, or user..." 
-                           value="{{ request('search') }}">
+            <div class="filter-header">
+                <h6>
+                    <i class="fas fa-filter"></i> Filters
+                    @if($activeFilterCount > 0)
+                    <span class="filter-badge">{{ $activeFilterCount }} active</span>
+                    @endif
+                </h6>
+                <span class="filter-toggle" onclick="document.getElementById('filterAdvanced').classList.toggle('d-none'); this.querySelector('i').classList.toggle('fa-chevron-down'); this.querySelector('i').classList.toggle('fa-chevron-up');">
+                    <i class="fas fa-chevron-down"></i> <span>Advanced</span>
+                </span>
+            </div>
+
+            <!-- Primary Filters (always visible) -->
+            <div class="filter-row-primary">
+                <div>
+                    <label class="form-label small mb-1">Search</label>
+                    <input type="text" name="search" class="form-control form-control-modern form-control-sm"
+                           placeholder="Client, company, user..." value="{{ request('search') }}">
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">Date From</label>
-                    <input type="date" 
-                           name="date_from" 
-                           class="form-control form-control-modern" 
-                           value="{{ request('date_from') }}">
+                <div>
+                    <label class="form-label small mb-1">Date From</label>
+                    <input type="date" name="date_from" class="form-control form-control-modern form-control-sm" value="{{ request('date_from') }}">
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">Date To</label>
-                    <input type="date" 
-                           name="date_to" 
-                           class="form-control form-control-modern" 
-                           value="{{ request('date_to') }}">
+                <div>
+                    <label class="form-label small mb-1">Date To</label>
+                    <input type="date" name="date_to" class="form-control form-control-modern form-control-sm" value="{{ request('date_to') }}">
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">Type</label>
-                    <select name="type" class="form-control form-control-modern">
+                <div>
+                    <label class="form-label small mb-1">Type</label>
+                    <select name="type" class="form-control form-control-modern form-control-sm">
                         <option value="">All Types</option>
                         <option value="1" {{ request('type') == '1' ? 'selected' : '' }}>Regular</option>
                         <option value="2" {{ request('type') == '2' ? 'selected' : '' }}>Special</option>
                         <option value="3" {{ request('type') == '3' ? 'selected' : '' }}>Temporary</option>
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">Group By</label>
-                    <select name="group_by" class="form-control form-control-modern" onchange="this.form.submit()">
+                <div>
+                    <label class="form-label small mb-1">Status</label>
+                    <select name="status" class="form-control form-control-modern form-control-sm">
+                        <option value="">All Statuses</option>
+                        @foreach($statusSettings ?? [] as $sts)
+                        <option value="{{ $sts->status_code }}" {{ request('status') == (string)$sts->status_code ? 'selected' : '' }}>{{ $sts->status_name }}</option>
+                        @endforeach
+                        @if(($statusSettings ?? collect())->isEmpty())
+                        <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Pending</option>
+                        <option value="2" {{ request('status') == '2' ? 'selected' : '' }}>Confirmed</option>
+                        <option value="3" {{ request('status') == '3' ? 'selected' : '' }}>Reserved</option>
+                        <option value="4" {{ request('status') == '4' ? 'selected' : '' }}>Paid</option>
+                        <option value="6" {{ request('status') == '6' ? 'selected' : '' }}>Cancelled</option>
+                        @endif
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label small mb-1">Floor Plan</label>
+                    <select name="floor_plan_id" class="form-control form-control-modern form-control-sm">
+                        <option value="">All Floor Plans</option>
+                        @foreach($floorPlans ?? [] as $fp)
+                        <option value="{{ $fp->id }}" {{ request('floor_plan_id') == (string)$fp->id ? 'selected' : '' }}>{{ $fp->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label small mb-1">Group By</label>
+                    <select name="group_by" class="form-control form-control-modern form-control-sm" onchange="this.form.submit()">
                         <option value="none" {{ request('group_by', 'none') == 'none' ? 'selected' : '' }}>No Grouping</option>
-                        <option value="name" {{ request('group_by') == 'name' ? 'selected' : '' }}>Group By Name</option>
-                        <option value="date" {{ request('group_by') == 'date' ? 'selected' : '' }}>Group By Date</option>
+                        <option value="name" {{ request('group_by') == 'name' ? 'selected' : '' }}>By Client</option>
+                        <option value="date" {{ request('group_by') == 'date' ? 'selected' : '' }}>By Date</option>
                     </select>
                 </div>
             </div>
-            @if(request('group_by') == 'date')
-            <div class="row g-3 mt-2">
-                <div class="col-md-4">
-                    <label class="form-label">Date Range</label>
-                    <select name="date_range" class="form-control form-control-modern" onchange="this.form.submit()">
-                        <option value="all" {{ request('date_range', 'all') == 'all' ? 'selected' : '' }}>All Dates</option>
-                        <option value="today" {{ request('date_range') == 'today' ? 'selected' : '' }}>Today / Now</option>
-                        <option value="3days" {{ request('date_range') == '3days' ? 'selected' : '' }}>Last 3 Days</option>
-                        <option value="7days" {{ request('date_range') == '7days' ? 'selected' : '' }}>Last 7 Days</option>
-                        <option value="14days" {{ request('date_range') == '14days' ? 'selected' : '' }}>Last 14 Days</option>
-                        <option value="more" {{ request('date_range') == 'more' ? 'selected' : '' }}>More than 14 Days</option>
-                    </select>
+
+            <!-- Advanced Filters (collapsible) -->
+            <div id="filterAdvanced" class="filter-row-advanced {{ $hasActiveFilters && (request('amount_min') || request('amount_max') || request('booth_count_min') || request('date_range')) ? '' : 'd-none' }}">
+                <div class="row g-3">
+                    <div class="col-md-2 col-6">
+                        <label class="form-label small mb-1">Amount Min ($)</label>
+                        <input type="number" name="amount_min" class="form-control form-control-modern form-control-sm" step="0.01" min="0" placeholder="0" value="{{ request('amount_min') }}">
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <label class="form-label small mb-1">Amount Max ($)</label>
+                        <input type="number" name="amount_max" class="form-control form-control-modern form-control-sm" step="0.01" min="0" placeholder="—" value="{{ request('amount_max') }}">
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <label class="form-label small mb-1">Min Booths</label>
+                        <input type="number" name="booth_count_min" class="form-control form-control-modern form-control-sm" min="1" placeholder="1" value="{{ request('booth_count_min') }}">
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <label class="form-label small mb-1">Date Range Preset</label>
+                        <select name="date_range" class="form-control form-control-modern form-control-sm">
+                            <option value="all" {{ request('date_range', 'all') == 'all' ? 'selected' : '' }}>All Dates</option>
+                            <option value="today" {{ request('date_range') == 'today' ? 'selected' : '' }}>Today</option>
+                            <option value="3days" {{ request('date_range') == '3days' ? 'selected' : '' }}>Last 3 Days</option>
+                            <option value="7days" {{ request('date_range') == '7days' ? 'selected' : '' }}>Last 7 Days</option>
+                            <option value="14days" {{ request('date_range') == '14days' ? 'selected' : '' }}>Last 14 Days</option>
+                            <option value="more" {{ request('date_range') == 'more' ? 'selected' : '' }}>Older than 14 Days</option>
+                        </select>
+                    </div>
                 </div>
             </div>
-            @endif
-            <div class="row g-3 mt-3">
-                <div class="col-12">
-                    <button type="submit" class="btn btn-modern btn-modern-primary">
-                        <i class="fas fa-filter me-2"></i>Apply Filters
-                    </button>
-                    <a href="{{ route('books.index') }}" class="btn btn-modern" style="background: #f3f4f6; color: #6b7280;">
-                        <i class="fas fa-times me-2"></i>Clear All
-                    </a>
+
+            <!-- Quick date presets (chips) -->
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-modern btn-modern-primary btn-sm">
+                    <i class="fas fa-filter me-1"></i>Apply
+                </button>
+                <a href="{{ route('books.index') }}" class="btn btn-modern btn-sm" style="background: #f3f4f6; color: #6b7280;">
+                    <i class="fas fa-times me-1"></i>Clear All
+                </a>
+                <div class="d-flex flex-wrap gap-2 ms-2 align-items-center">
+                    <span class="text-muted small me-1">Quick:</span>
+                    <button type="button" class="filter-chip {{ !request('date_from') && !request('date_to') && (!request('date_range') || request('date_range') == 'all') ? 'active' : '' }}" onclick="setQuickDate('')">All</button>
+                    <button type="button" class="filter-chip {{ request('date_range') == 'today' ? 'active' : '' }}" onclick="setQuickDate('today')">Today</button>
+                    <button type="button" class="filter-chip {{ request('date_range') == '7days' ? 'active' : '' }}" onclick="setQuickDate('7days')">Last 7 Days</button>
+                    <button type="button" class="filter-chip" onclick="setQuickDate('30days')">Last 30 Days</button>
                 </div>
             </div>
         </form>
@@ -619,9 +761,11 @@ html, body {
                                         <tr>
                                             <th>ID</th>
                                             <th>Client</th>
+                                            <th>Floor Plan</th>
                                             <th>Date</th>
                                             <th>Booths</th>
                                             <th>Type</th>
+                                            <th>Status</th>
                                             <th>Amount</th>
                                             <th>Actions</th>
                                         </tr>
@@ -656,9 +800,11 @@ html, body {
                                 <tr>
                                     <th>ID</th>
                                     <th>Client</th>
+                                    <th>Floor Plan</th>
                                     <th>Date</th>
                                     <th>Booths</th>
                                     <th>Type</th>
+                                    <th>Status</th>
                                     <th>Amount</th>
                                     <th>Actions</th>
                                 </tr>
@@ -668,7 +814,7 @@ html, body {
                                     @include('books.partials.table-row', ['book' => $book])
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="text-center py-5">
+                                        <td colspan="9" class="text-center py-5">
                                             <div class="empty-state">
                                                 <i class="fas fa-inbox empty-state-icon"></i>
                                                 <h3>No bookings found</h3>
@@ -850,10 +996,23 @@ html, body {
                 'Accept': 'application/json'
             }
         })
-        .then(response => response.json())
-        .then(data => {
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error('Request failed: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(function(data) {
             if (data.html) {
                 content.innerHTML = data.html;
+            } else if (data.book) {
+                var b = data.book;
+                content.innerHTML = '<div class="booking-modal-info"><p><strong>Booking #' + b.id + '</strong></p>' +
+                    '<p><strong>Client:</strong> ' + (b.client ? (b.client.company || b.client.name) : 'N/A') + '</p>' +
+                    '<p><strong>Date:</strong> ' + (b.date_book || 'N/A') + '</p>' +
+                    '<p><strong>Booths:</strong> ' + (b.booth_count || 0) + '</p>' +
+                    '<p><strong>Total:</strong> $' + parseFloat(b.total_amount || 0).toFixed(2) + '</p>' +
+                    '<a href="/books/' + b.id + '" class="btn btn-sm btn-primary">View Full Details</a></div>';
             } else {
                 content.innerHTML = '<div class="alert alert-danger">Failed to load booking details.</div>';
             }
@@ -868,7 +1027,55 @@ html, body {
     window.refreshPage = function() {
         window.location.reload();
     };
-    
+
+    // Delete Booking (used by table row and card action buttons)
+    window.deleteBooking = function(id) {
+        if (typeof Swal === 'undefined') {
+            if (confirm('Delete this booking? This will release all booths. This action cannot be undone!')) {
+                document.getElementById('delete-booking-form-' + id)?.submit();
+            }
+            return;
+        }
+        Swal.fire({
+            title: 'Delete Booking?',
+            text: 'This will release all booths in this booking. This action cannot be undone!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                Swal.fire({ title: 'Deleting...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+                fetch('/books/' + id, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    Swal.close();
+                    if (data.success) {
+                        Swal.fire('Deleted!', data.message || 'Booking has been deleted.', 'success').then(function() {
+                            window.location.href = '{{ route("books.index") }}';
+                        });
+                    } else {
+                        Swal.fire('Error!', data.message || 'Failed to delete booking.', 'error');
+                    }
+                })
+                .catch(function(error) {
+                    Swal.close();
+                    Swal.fire('Error!', 'An error occurred while deleting the booking.', 'error');
+                    console.error('Error:', error);
+                });
+            }
+        });
+    };
+
     // Delete All Modal
     window.showDeleteAllModal = function() {
         if (typeof Swal !== 'undefined') {
@@ -890,6 +1097,34 @@ html, body {
         }
     };
     
+    // Quick date preset - uses date_range for today/7days, date_from/date_to for 30days
+    window.setQuickDate = function(preset) {
+        const form = document.getElementById('filterForm');
+        const dateRangeSelect = form.querySelector('select[name="date_range"]');
+        const fromInput = form.querySelector('input[name="date_from"]');
+        const toInput = form.querySelector('input[name="date_to"]');
+
+        if (fromInput) fromInput.value = '';
+        if (toInput) toInput.value = '';
+        if (dateRangeSelect) dateRangeSelect.value = preset === '' ? 'all' : (preset === '30days' ? 'all' : preset);
+
+        if (preset === '30days') {
+            const today = new Date();
+            const y = today.getFullYear();
+            const m = String(today.getMonth() + 1).padStart(2, '0');
+            const d = String(today.getDate()).padStart(2, '0');
+            const todayStr = y + '-' + m + '-' + d;
+            const past = new Date(today);
+            past.setDate(past.getDate() - 29);
+            const py = past.getFullYear();
+            const pm = String(past.getMonth() + 1).padStart(2, '0');
+            const pd = String(past.getDate()).padStart(2, '0');
+            if (fromInput) fromInput.value = py + '-' + pm + '-' + pd;
+            if (toInput) toInput.value = todayStr;
+        }
+        form.submit();
+    };
+
     // Instant Search (debounced)
     let searchTimeout;
     const searchInput = document.querySelector('input[name="search"]');

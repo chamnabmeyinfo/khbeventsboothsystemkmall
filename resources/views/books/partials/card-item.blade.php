@@ -44,10 +44,23 @@
                 @endif
             </div>
             
+            @php
+                $boothsByBookId = $boothsByBookId ?? [];
+                $boothsForBook = $boothsByBookId[$book->id] ?? collect();
+                $boothNumbers = $boothsForBook->pluck('booth_number')->join(', ') ?: null;
+                $floorPlanName = $book->floorPlan->name ?? null;
+            @endphp
+            @if($floorPlanName)
+            <div class="mb-2">
+                <span class="badge-modern badge-modern-info" style="font-size: 0.875rem; padding: 6px 12px;">
+                    <i class="fas fa-map mr-1"></i>{{ $floorPlanName }}
+                </span>
+            </div>
+            @endif
             <div class="mb-3 d-flex align-items-center">
                 <div class="mr-3">
                     <span class="badge-modern badge-modern-info" style="font-size: 1rem; padding: 10px 18px;">
-                        <i class="fas fa-cube mr-2"></i>{{ $boothCount }} {{ $boothCount == 1 ? 'Booth' : 'Booths' }}
+                        <i class="fas fa-cube mr-2"></i>{{ $boothCount }} {{ $boothCount == 1 ? 'Booth' : 'Booths' }}{{ $boothNumbers ? ' (' . Str::limit($boothNumbers, 30) . ')' : '' }}
                     </span>
                 </div>
             </div>

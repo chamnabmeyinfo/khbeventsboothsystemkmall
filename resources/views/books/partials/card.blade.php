@@ -61,6 +61,20 @@
         </div>
     </div>
     
+    @php
+        $boothsByBookId = $boothsByBookId ?? [];
+        $boothsForBook = $boothsByBookId[$book->id] ?? collect();
+        $boothNumbers = $boothsForBook->pluck('booth_number')->join(', ') ?: '—';
+        $floorPlanName = $book->floorPlan->name ?? '—';
+    @endphp
+    @if($floorPlanName !== '—')
+    <div class="mb-2">
+        <div class="text-muted small">Floor Plan</div>
+        <div style="font-weight: 600;">
+            <i class="fas fa-map me-1"></i>{{ $floorPlanName }}
+        </div>
+    </div>
+    @endif
     <div class="row g-2 mb-3">
         <div class="col-6">
             <div class="text-muted small">Date</div>
@@ -76,6 +90,9 @@
             <div style="font-weight: 600;">
                 <i class="fas fa-cube me-1"></i>{{ $boothCount }} {{ $boothCount == 1 ? 'Booth' : 'Booths' }}
             </div>
+            @if($boothNumbers !== '—')
+            <small class="text-muted" title="{{ $boothNumbers }}">{{ Str::limit($boothNumbers, 25) }}</small>
+            @endif
         </div>
     </div>
     

@@ -19,9 +19,21 @@
             <span>{{ $book->client->name }}</span>
         </div>
         @endif
+        @php
+            $boothsByBookId = $boothsByBookId ?? [];
+            $boothsForBook = $boothsByBookId[$book->id] ?? collect();
+            $boothNumbers = $boothsForBook->pluck('booth_number')->join(', ') ?: null;
+            $floorPlanName = $book->floorPlan->name ?? null;
+        @endphp
+        @if($floorPlanName)
+        <div class="compact-card-row">
+            <i class="fas fa-map"></i>
+            <span>{{ $floorPlanName }}</span>
+        </div>
+        @endif
         <div class="compact-card-row">
             <i class="fas fa-cube"></i>
-            <span>{{ $boothCount }} {{ $boothCount == 1 ? 'Booth' : 'Booths' }}</span>
+            <span>{{ $boothCount }} {{ $boothCount == 1 ? 'Booth' : 'Booths' }}{{ $boothNumbers ? ': ' . Str::limit($boothNumbers, 40) : '' }}</span>
         </div>
         <div class="compact-card-row">
             <i class="fas fa-calendar"></i>
