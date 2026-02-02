@@ -956,6 +956,7 @@
         .public-booking-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10002; justify-content: center; align-items: center; animation: fadeIn 0.2s ease; padding: 16px; box-sizing: border-box; }
         .public-booking-modal.active { display: flex; }
         .public-booking-modal .modal-content-inner { background: white; border-radius: 16px; width: 100%; max-width: 560px; max-height: 92vh; overflow: hidden; box-shadow: 0 12px 48px rgba(0,0,0,0.3); animation: slideUp 0.3s ease; display: flex; flex-direction: column; }
+        .public-booking-modal .modal-content-inner form.public-booking-form { display: flex; flex-direction: column; flex: 1; min-height: 0; }
         .public-booking-modal .modal-header-inner { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 20px; border-radius: 16px 16px 0 0; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
         .public-booking-modal .modal-header-inner h3 { margin: 0; font-size: 1.2rem; font-weight: 700; }
         .public-booking-modal .modal-body-inner { padding: 20px; overflow-y: auto; flex: 1; min-height: 0; }
@@ -1025,7 +1026,7 @@
         .public-booking-modal .bf-alert { padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 0.85rem; display: none; }
         .public-booking-modal .bf-alert.show { display: block; }
         .public-booking-modal .bf-alert-error { background: #f8d7da; color: #721c24; }
-        .public-booking-modal .bf-footer { padding: 16px 20px; border-top: 1px solid #e9ecef; background: #f8f9fa; border-radius: 0 0 16px 16px; display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0; }
+        .public-booking-modal .bf-footer { padding: 16px 20px; border-top: 1px solid #e9ecef; background: #f8f9fa; border-radius: 0 0 16px 16px; display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0; margin-top: auto; }
         .public-booking-modal .bf-btn { padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; }
         .public-booking-modal .bf-btn-secondary { background: #fff; color: #495057; border: 1px solid #dee2e6; }
         .public-booking-modal .bf-btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }

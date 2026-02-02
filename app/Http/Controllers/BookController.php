@@ -145,7 +145,6 @@ class BookController extends Controller
                 $query->whereRaw('json_array_length(COALESCE(boothid, \'[]\')) >= ?', [$minBooths]);
             }
         }
-
         // Group By filter (exact same as index)
         $dateRange = $request->input('date_range', 'all');
 
