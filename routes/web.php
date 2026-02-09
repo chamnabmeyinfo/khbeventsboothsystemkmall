@@ -13,6 +13,7 @@ use App\Http\Controllers\ExportController;
 use App\Http\Controllers\FloorPlanController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VersionController;
 use App\Http\Controllers\ZoneController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -319,6 +320,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/leaves/bulk-approve', [\App\Http\Controllers\HR\ManagerDashboardController::class, 'bulkApproveLeaves'])->name('leaves.bulk-approve');
     });
 
+    // Documentation & Changelog (all authenticated users)
+    Route::get('/documentation', [VersionController::class, 'documentation'])->name('documentation.index');
+
     // Admin Routes
     Route::middleware(['admin'])->group(function () {
         // Staff Management
@@ -371,6 +375,13 @@ Route::middleware(['auth'])->group(function () {
         // Module Display Settings
         Route::get('/settings/module-display', [SettingsController::class, 'getModuleDisplaySettings'])->name('settings.module-display');
         Route::post('/settings/module-display', [SettingsController::class, 'saveModuleDisplaySettings'])->name('settings.module-display.save');
+
+        // Version management (admin only)
+        Route::get('/versions', [VersionController::class, 'index'])->name('versions.index');
+        Route::get('/versions/create', [VersionController::class, 'create'])->name('versions.create');
+        Route::post('/versions', [VersionController::class, 'store'])->name('versions.store');
+        Route::get('/versions/{version}', [VersionController::class, 'show'])->name('versions.show');
+        Route::post('/versions/{version}/set-current', [VersionController::class, 'setCurrent'])->name('versions.set-current');
 
         // Image Upload Routes
         Route::prefix('images')->name('images.')->group(function () {

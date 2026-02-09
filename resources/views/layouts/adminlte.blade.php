@@ -1686,7 +1686,10 @@
             <span>Settings</span>
         </a>
         @endif
-        
+        <a href="{{ route('documentation.index') }}" class="modern-aside-item" data-route="documentation">
+            <i class="fas fa-book"></i>
+            <span>Documentation</span>
+        </a>
         @auth
         <div class="modern-aside-divider"></div>
         <div class="modern-aside-section-title">
@@ -1905,6 +1908,12 @@
                             <i class="nav-icon fas fa-bell"></i>
                             <p>Notifications</p>
                             <span id="notification-badge" class="badge badge-warning navbar-badge" style="display: none;">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('documentation.index') }}" class="nav-link {{ request()->routeIs('documentation.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-book"></i>
+                            <p>Documentation</p>
                         </a>
                     </li>
                     {{-- Core Features Section --}}
@@ -2194,6 +2203,14 @@
                         <a href="{{ route('activity-logs.index') }}" class="nav-link {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-history"></i>
                             <p>Activity Logs</p>
+                        </a>
+                    </li>
+                    @endif
+                    @if(auth()->user()->isAdmin())
+                    <li class="nav-item">
+                        <a href="{{ route('versions.index') }}" class="nav-link {{ request()->routeIs('versions.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-code-branch"></i>
+                            <p>Versions</p>
                         </a>
                     </li>
                     @endif
@@ -2907,6 +2924,10 @@ $.widget.bridge('uibutton', $.ui.button);
             <span>Settings</span>
         </a>
         @endif
+        <a href="{{ route('documentation.index') }}" class="modern-mobile-nav-item" data-route="documentation">
+            <i class="fas fa-book"></i>
+            <span>Documentation</span>
+        </a>
     </div>
     
     <!-- Modern Mobile FAB (Floating Action Button) -->

@@ -67,7 +67,8 @@ docs/
 │
 └── 05-guides/                # Feature-specific guides
     ├── HR_MODULE_GUIDE.md
-    └── CANVAS_PERMISSIONS_GUIDE.md
+    ├── CANVAS_PERMISSIONS_GUIDE.md
+    └── WEBSITE_DOCUMENTATION.md
 ```
 
 ---
