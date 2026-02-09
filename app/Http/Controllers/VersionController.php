@@ -8,7 +8,9 @@ use App\Models\SystemVersion;
 use App\Services\VersionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class VersionController extends Controller
 {
@@ -69,6 +71,43 @@ class VersionController extends Controller
         return redirect()
             ->route('versions.index')
             ->with('success', 'Current version updated.');
+    }
+
+    /**
+     * Serve a file from the docs/ folder (e.g. /docs/README.md).
+     * Path is restricted to docs/ only (no directory traversal).
+     */
+    public function serveDocFile(Request $request, ?string $path = null): BinaryFileResponse|Response
+    {
+        $path = $path ?? 'README.md';
+        $path = str_replace(['../', '..\\'], '', trim($path));
+        if ($path === '') {
+            $path = 'README.md';
+        }
+
+        $base = realpath(base_path('docs'));
+        if ($base === false || ! is_dir($base)) {
+            abort(404, 'Docs folder not found.');
+        }
+
+        $fullPath = realpath($base.DIRECTORY_SEPARATOR.$path);
+        if ($fullPath === false || ! is_file($fullPath)) {
+            abort(404, 'Document not found.');
+        }
+        if (str_starts_with($fullPath, $base) === false) {
+            abort(404, 'Document not found.');
+        }
+
+        $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
+        $mimes = [
+            'md' => 'text/markdown',
+            'txt' => 'text/plain',
+            'html' => 'text/html',
+            'json' => 'application/json',
+        ];
+        $mime = $mimes[$ext] ?? 'application/octet-stream';
+
+        return response()->file($fullPath, ['Content-Type' => $mime]);
     }
 
     /**

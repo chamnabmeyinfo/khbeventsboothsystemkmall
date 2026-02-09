@@ -66,7 +66,7 @@
                 <div class="card-body">
                     <p class="small text-muted">Project documentation is maintained in the <code>docs/</code> folder and in the repository.</p>
                     <ul class="list-unstyled small">
-                        <li><i class="fas fa-file-alt text-info mr-1"></i> <a href="{{ asset('docs/README.md') }}" target="_blank" rel="noopener">docs/README.md</a> (if accessible)</li>
+                        <li><i class="fas fa-file-alt text-info mr-1"></i> <a href="{{ route('docs.file', ['path' => 'README.md']) }}" target="_blank" rel="noopener">docs/README.md</a></li>
                         <li><i class="fas fa-list text-info mr-1"></i> <strong>CHANGELOG.md</strong> in project root for release notes</li>
                     </ul>
                     @auth

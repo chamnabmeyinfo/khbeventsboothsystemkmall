@@ -323,6 +323,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Documentation & Changelog (all authenticated users)
     Route::get('/documentation', [VersionController::class, 'documentation'])->name('documentation.index');
+    Route::get('/docs/{path?}', [VersionController::class, 'serveDocFile'])->name('docs.file')->where('path', '.*');
 
     // Admin Routes
     Route::middleware(['admin'])->group(function () {
