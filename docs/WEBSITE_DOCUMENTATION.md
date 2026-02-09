@@ -25,7 +25,22 @@ The Documentation page shows:
 
 ---
 
-## Version tracking (admin)
+## Update Changelog (admin) – single page for all changelog updates
+
+- **URL (admin):** `/changelog/update`
+- **Route name:** `changelog.update`
+- **Access:** Admin only.
+
+Use this page whenever you add a new feature or change and want to record it:
+
+1. **Quick add changelog entry** – Enter a line (e.g. “Added report export”) and click “Add to changelog”. It appends to the current version. If no current version exists, one is created.
+2. **Edit current version** – Change the summary and full changelog text of the current version, then click “Save changes”.
+3. **New release** – Use “Create version” to add a new version (number, date, changelog) and optionally set it as current.
+4. **Recent versions** – See the latest versions and open “View” or go to “All” for the full list.
+
+---
+
+## Version list & create (admin)
 
 - **URL (admin):** `/versions`
 - **Route name:** `versions.index`

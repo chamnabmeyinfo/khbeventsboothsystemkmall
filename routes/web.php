@@ -181,6 +181,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('notifications')->name('notifications.')->group(function () {
         Route::get('/', [\App\Http\Controllers\NotificationController::class, 'index'])->name('index');
         Route::get('/unread-count', [\App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('unread-count');
+        Route::get('/recent', [\App\Http\Controllers\NotificationController::class, 'recent'])->name('recent');
         Route::post('/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('mark-read');
         Route::post('/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
     });
@@ -376,7 +377,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/settings/module-display', [SettingsController::class, 'getModuleDisplaySettings'])->name('settings.module-display');
         Route::post('/settings/module-display', [SettingsController::class, 'saveModuleDisplaySettings'])->name('settings.module-display.save');
 
-        // Version management (admin only)
+        // Version management & Update Changelog (admin only)
+        Route::get('/changelog/update', [VersionController::class, 'updateChangelogPage'])->name('changelog.update');
+        Route::post('/changelog/update', [VersionController::class, 'updateCurrentVersion'])->name('changelog.update.save');
+        Route::post('/changelog/append', [VersionController::class, 'appendChangelogEntry'])->name('changelog.append');
         Route::get('/versions', [VersionController::class, 'index'])->name('versions.index');
         Route::get('/versions/create', [VersionController::class, 'create'])->name('versions.create');
         Route::post('/versions', [VersionController::class, 'store'])->name('versions.store');

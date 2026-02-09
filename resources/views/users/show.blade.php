@@ -191,8 +191,8 @@
                 }
                 $coverPosition = $coverPosition ?? 'center center';
             @endphp
-            @if($user->cover_image)
-                <img src="{{ asset($user->cover_image) }}" alt="Cover Image" id="coverImage" 
+            @if(($coverUrl = \App\Helpers\AssetHelper::imageUrl($user->cover_image)))
+                <img src="{{ $coverUrl }}" alt="Cover Image" id="coverImage" 
                      style="object-position: {{ $coverPosition }};"
                      data-initial-position="{{ $coverPosition }}">
             @endif

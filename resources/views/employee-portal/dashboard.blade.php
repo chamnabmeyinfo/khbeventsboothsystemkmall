@@ -24,8 +24,8 @@
                 <div class="card card-primary">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
-                            @if($employee->avatar)
-                                <img src="{{ asset('storage/' . $employee->avatar) }}" alt="Avatar" class="img-circle mr-3" style="width: 80px; height: 80px; object-fit: cover;">
+                            @if(($employeeAvatarUrl = \App\Helpers\AssetHelper::imageUrl($employee->avatar ? 'storage/' . ltrim($employee->avatar, '/') : null)))
+                                <img src="{{ $employeeAvatarUrl }}" alt="Avatar" class="img-circle mr-3" style="width: 80px; height: 80px; object-fit: cover;" onerror="this.onerror=null; this.style.display='none';">
                             @else
                                 <div class="img-circle bg-primary d-flex align-items-center justify-content-center mr-3" style="width: 80px; height: 80px;">
                                     <span class="text-white" style="font-size: 32px; font-weight: bold;">{{ strtoupper(substr($employee->first_name, 0, 1)) }}</span>

@@ -45,8 +45,8 @@
             <!-- Employee Card -->
             <div class="card card-primary card-outline">
                 <div class="card-body text-center">
-                    @if($employee->avatar)
-                        <img src="{{ asset('storage/' . $employee->avatar) }}" 
+                    @if(($employeeAvatarUrl = \App\Helpers\AssetHelper::imageUrl($employee->avatar ? 'storage/' . ltrim($employee->avatar, '/') : null)))
+                        <img src="{{ $employeeAvatarUrl }}" 
                              alt="{{ $employee->full_name }}" 
                              class="img-circle img-size-128 mb-3">
                     @else

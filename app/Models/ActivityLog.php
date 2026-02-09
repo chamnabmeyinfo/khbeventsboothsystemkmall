@@ -44,6 +44,14 @@ class ActivityLog extends Model
     }
 
     /**
+     * Notifications created for this activity
+     */
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class, 'activity_log_id');
+    }
+
+    /**
      * Log an activity (static helper method)
      */
     public static function log($action, $model = null, $description = null, $oldValues = null, $newValues = null)

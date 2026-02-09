@@ -121,8 +121,8 @@
                             </td>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    @if($employee->avatar)
-                                        <img src="{{ asset('storage/' . $employee->avatar) }}" 
+                                    @if(($employeeAvatarUrl = \App\Helpers\AssetHelper::imageUrl($employee->avatar ? 'storage/' . ltrim($employee->avatar, '/') : null)))
+                                        <img src="{{ $employeeAvatarUrl }}" 
                                              alt="{{ $employee->full_name }}" 
                                              class="img-circle img-size-40 mr-2" style="width: 40px; height: 40px; object-fit: cover; border: 2px solid rgba(102, 126, 234, 0.2);">
                                     @else

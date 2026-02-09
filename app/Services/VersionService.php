@@ -72,6 +72,62 @@ class VersionService
     }
 
     /**
+     * Get the current version model (the one marked is_current), or null.
+     */
+    public function getCurrentVersionModel(): ?SystemVersion
+    {
+        return SystemVersion::current()->first();
+    }
+
+    /**
+     * Update a version's summary and/or changelog.
+     */
+    public function updateVersion(SystemVersion $version, array $data): SystemVersion
+    {
+        $updates = [];
+        if (array_key_exists('summary', $data)) {
+            $updates['summary'] = $data['summary'] ?? null;
+        }
+        if (array_key_exists('changelog', $data)) {
+            $updates['changelog'] = $data['changelog'] ?? null;
+        }
+        if ($updates !== []) {
+            $version->update($updates);
+        }
+
+        return $version->fresh();
+    }
+
+    /**
+     * Append a line (or block) to the current version's changelog. Creates current version if none.
+     */
+    public function appendToCurrentChangelog(string $entry): SystemVersion
+    {
+        $current = $this->getCurrentVersionModel();
+        $entry = trim($entry);
+        if ($entry === '') {
+            throw new \InvalidArgumentException('Changelog entry cannot be empty.');
+        }
+
+        if (! $current) {
+            $current = SystemVersion::create([
+                'version' => config('app.version', '1.0.0'),
+                'released_at' => now(),
+                'summary' => 'Current release',
+                'changelog' => $entry,
+                'is_current' => true,
+            ]);
+            return $current;
+        }
+
+        $existing = trim((string) $current->changelog);
+        $newChangelog = $existing === '' ? $entry : $existing . "\n" . $entry;
+        $current->update(['changelog' => $newChangelog]);
+
+        return $current->fresh();
+    }
+
+    /**
      * Find version by id.
      */
     public function find(int $id): ?SystemVersion

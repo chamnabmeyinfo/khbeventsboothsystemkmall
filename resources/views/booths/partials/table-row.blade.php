@@ -14,8 +14,9 @@
         </span>
     </td>
     <td data-column="image" data-column-index="2">
-        @if($booth->booth_image)
-            <img src="{{ asset($booth->booth_image) }}" alt="Booth Image" class="booth-image-preview" onclick="viewImage('{{ asset($booth->booth_image) }}')" style="width: 56px; height: 56px; object-fit: cover; border-radius: 12px; border: 2px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease;">
+        @if(($boothImageUrl = \App\Helpers\AssetHelper::imageUrl($booth->booth_image)))
+            <img src="{{ $boothImageUrl }}" alt="Booth Image" class="booth-image-preview" onclick="viewImage('{{ $boothImageUrl }}')" style="width: 56px; height: 56px; object-fit: cover; border-radius: 12px; border: 2px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease;" onerror="this.style.display='none'; this.nextElementSibling && (this.nextElementSibling.style.display='flex');">
+            <div style="display: none; width: 56px; height: 56px; background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); border-radius: 12px; align-items: center; justify-content: center; color: #94a3b8; border: 2px solid #e2e8f0;"><i class="fas fa-image" style="font-size: 20px;"></i></div>
         @else
             <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #94a3b8; border: 2px solid #e2e8f0;">
                 <i class="fas fa-image" style="font-size: 20px;"></i>

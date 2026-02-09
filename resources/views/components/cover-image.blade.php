@@ -1,9 +1,6 @@
 @php
-    // Get cover URL
-    $coverUrl = $cover ?? $image ?? null;
-    if ($coverUrl && !filter_var($coverUrl, FILTER_VALIDATE_URL)) {
-        $coverUrl = asset($coverUrl);
-    }
+    // Get cover URL (normalize path so images load properly)
+    $coverUrl = \App\Helpers\AssetHelper::imageUrl($cover ?? $image ?? null);
     
     // Default gradient
     $defaultGradient = $gradient ?? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';

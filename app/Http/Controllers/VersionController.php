@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSystemVersionRequest;
+use App\Http\Requests\UpdateSystemVersionRequest;
 use App\Models\SystemVersion;
 use App\Services\VersionService;
 use Illuminate\Http\RedirectResponse;
@@ -80,5 +81,55 @@ class VersionController extends Controller
         $appVersion = config('app.version', '1.0.0');
 
         return view('documentation.index', compact('current', 'allVersions', 'appVersion'));
+    }
+
+    /**
+     * Admin: single page to update changelog (edit current version, quick-add entry, or create new version).
+     */
+    public function updateChangelogPage(): View
+    {
+        $currentVersion = $this->versionService->getCurrentVersionModel();
+        $recentVersions = SystemVersion::latestFirst()->limit(10)->get();
+
+        return view('changelog.update', compact('currentVersion', 'recentVersions'));
+    }
+
+    /**
+     * Admin: update current version's summary and changelog.
+     */
+    public function updateCurrentVersion(UpdateSystemVersionRequest $request): RedirectResponse
+    {
+        $current = $this->versionService->getCurrentVersionModel();
+        if (! $current) {
+            return redirect()
+                ->route('changelog.update')
+                ->with('error', 'No current version set. Create a version or set one as current first.');
+        }
+
+        $this->versionService->updateVersion($current, $request->validated());
+
+        return redirect()
+            ->route('changelog.update')
+            ->with('success', 'Changelog updated.');
+    }
+
+    /**
+     * Admin: append a changelog entry to the current version.
+     */
+    public function appendChangelogEntry(Request $request): RedirectResponse
+    {
+        $request->validate(['entry' => 'required|string|max:65535']);
+
+        try {
+            $this->versionService->appendToCurrentChangelog($request->input('entry'));
+        } catch (\InvalidArgumentException $e) {
+            return redirect()
+                ->route('changelog.update')
+                ->with('error', $e->getMessage());
+        }
+
+        return redirect()
+            ->route('changelog.update')
+            ->with('success', 'Entry added to changelog.');
     }
 }

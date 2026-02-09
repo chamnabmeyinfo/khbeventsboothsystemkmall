@@ -20,8 +20,8 @@
         }
     @endphp
     <title>@yield('title', $companySettings['company_name'] ?? 'KHB Booth System')</title>
-    @if(!empty($companySettings['company_favicon']))
-        <link rel="icon" type="image/x-icon" href="{{ asset($companySettings['company_favicon']) }}">
+    @if(($faviconUrl = \App\Helpers\AssetHelper::imageUrl($companySettings['company_favicon'] ?? null)))
+        <link rel="icon" type="image/x-icon" href="{{ $faviconUrl }}">
     @endif
     
     {{-- Performance Optimizations: Resource Hints --}}
@@ -1812,10 +1812,14 @@
         <!-- Brand Logo - Modern Glass Card -->
         <a href="{{ route('dashboard') }}" class="brand-link">
             <div class="d-flex align-items-center w-100">
-                @if(!empty($companySettings['company_logo']) && \Illuminate\Support\Facades\File::exists(public_path($companySettings['company_logo'])))
+                @php
+                    $logoPath = trim(str_replace('\\', '/', $companySettings['company_logo'] ?? ''));
+                    $logoUrl = $logoPath ? \App\Helpers\AssetHelper::imageUrl(ltrim($logoPath, '/')) : null;
+                @endphp
+                @if($logoUrl)
                     <div class="brand-image-wrapper">
                         <div class="brand-image elevation-3 d-flex align-items-center justify-content-center" style="min-width: 50px; min-height: 50px; overflow: hidden;">
-                            <img src="{{ asset($companySettings['company_logo']) }}" alt="{{ $companySettings['company_name'] ?? 'Logo' }}" style="max-width: 100%; max-height: 100%; object-fit: contain;"
+                            <img src="{{ $logoUrl }}" alt="{{ $companySettings['company_name'] ?? 'Logo' }}" style="max-width: 100%; max-height: 100%; object-fit: contain;"
                                  onerror="this.style.display='none'; var s=this.nextElementSibling; if(s) s.style.display='flex';">
                             <span class="brand-image-initials d-flex align-items-center justify-content-center w-100 h-100" style="display: none; color: white; font-weight: 800; font-size: 20px; letter-spacing: 0.5px;">{{ strtoupper(substr($companySettings['company_name'] ?? 'KHB', 0, 3)) }}</span>
                         </div>
@@ -1841,9 +1845,7 @@
             @auth
             @php
                 $user = auth()->user();
-                $avatarUrlForLayout = $user->avatar && \Illuminate\Support\Facades\File::exists(public_path($user->avatar))
-                    ? asset($user->avatar)
-                    : null;
+                $avatarUrlForLayout = \App\Helpers\AssetHelper::imageUrl($user->avatar ?? null);
             @endphp
             <div class="user-panel d-flex align-items-center">
                 <div class="image">
@@ -2207,6 +2209,12 @@
                     </li>
                     @endif
                     @if(auth()->user()->isAdmin())
+                    <li class="nav-item">
+                        <a href="{{ route('changelog.update') }}" class="nav-link {{ request()->routeIs('changelog.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-edit"></i>
+                            <p>Update Changelog</p>
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a href="{{ route('versions.index') }}" class="nav-link {{ request()->routeIs('versions.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-code-branch"></i>

@@ -12,7 +12,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Monthly sales team report (with activity logs) – notify admins on the 1st at 8:00
+        $schedule->command('report:monthly-sales', ['--days' => 30])
+            ->monthlyOn(1, '08:00')
+            ->timezone(config('app.timezone', 'Asia/Phnom_Penh'));
     }
 
     /**

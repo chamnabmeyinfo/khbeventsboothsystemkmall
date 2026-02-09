@@ -49,18 +49,18 @@ class BoothService
         // Create booth
         $booth = $this->repository->create($data);
 
-        // Send notification
+        // Log activity first so we can link notification
+        $activity = null;
         try {
-            NotificationService::notifyBoothAction('created', $booth, $booth->userid ?? null);
-        } catch (\Exception $e) {
-            Log::error('Failed to send booth creation notification: '.$e->getMessage());
-        }
-
-        // Log activity
-        try {
-            ActivityLogger::log('booth.created', $booth, 'Booth created: '.$booth->booth_number);
+            $activity = ActivityLogger::log('booth.created', $booth, 'Booth created: '.$booth->booth_number);
         } catch (\Exception $e) {
             Log::error('Failed to log booth creation activity: '.$e->getMessage());
+        }
+
+        try {
+            NotificationService::notifyBoothAction('created', $booth, $booth->userid ?? null, $activity?->id);
+        } catch (\Exception $e) {
+            Log::error('Failed to send booth creation notification: '.$e->getMessage());
         }
 
         return $booth;
@@ -116,22 +116,21 @@ class BoothService
         $this->repository->update($booth, $data);
         $booth->refresh();
 
-        // Send notification if status changed
+        $activity = null;
+        try {
+            $activity = ActivityLogger::log('booth.updated', $booth, 'Booth updated: '.$booth->booth_number);
+        } catch (\Exception $e) {
+            Log::error('Failed to log booth update activity: '.$e->getMessage());
+        }
+
         try {
             if ($oldStatus != $newStatus) {
-                NotificationService::notifyBoothStatusChange($booth, $oldStatus, $newStatus);
+                NotificationService::notifyBoothStatusChange($booth, $oldStatus, $newStatus, $activity?->id);
             } else {
-                NotificationService::notifyBoothAction('updated', $booth, $booth->userid ?? null);
+                NotificationService::notifyBoothAction('updated', $booth, $booth->userid ?? null, $activity?->id);
             }
         } catch (\Exception $e) {
             Log::error('Failed to send booth update notification: '.$e->getMessage());
-        }
-
-        // Log activity
-        try {
-            ActivityLogger::log('booth.updated', $booth, 'Booth updated: '.$booth->booth_number);
-        } catch (\Exception $e) {
-            Log::error('Failed to log booth update activity: '.$e->getMessage());
         }
 
         return $booth;
@@ -149,34 +148,29 @@ class BoothService
             ]);
         }
 
-        // Store booth info before deletion for notification
         $boothNumber = $booth->booth_number;
         $boothUserId = $booth->userid;
 
-        // Delete image if exists
         if ($booth->booth_image && file_exists(public_path($booth->booth_image))) {
             File::delete(public_path($booth->booth_image));
         }
 
-        // Log activity before deletion
+        $activity = null;
         try {
-            ActivityLogger::log('booth.deleted', $booth, 'Booth deleted: '.$booth->booth_number);
+            $activity = ActivityLogger::log('booth.deleted', $booth, 'Booth deleted: '.$booth->booth_number);
         } catch (\Exception $e) {
             Log::error('Failed to log booth deletion activity: '.$e->getMessage());
         }
 
-        // Send notification about booth deletion
         try {
-            // Create a temporary booth object for notification
             $tempBooth = new Booth;
             $tempBooth->booth_number = $boothNumber;
             $tempBooth->userid = $boothUserId;
-            NotificationService::notifyBoothAction('deleted', $tempBooth, $boothUserId);
+            NotificationService::notifyBoothAction('deleted', $tempBooth, $boothUserId, $activity?->id);
         } catch (\Exception $e) {
             Log::error('Failed to send booth deletion notification: '.$e->getMessage());
         }
 
-        // Delete booth
         return $this->repository->delete($booth);
     }
 

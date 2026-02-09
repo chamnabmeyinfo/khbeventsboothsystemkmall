@@ -40,19 +40,18 @@ class ClientService
             $isUpdate = false;
         }
 
-        // Send notification
+        $activity = null;
         try {
-            NotificationService::notifyClientAction($isUpdate ? 'updated' : 'created', $client, auth()->id());
-        } catch (\Exception $e) {
-            Log::error('Failed to send client notification: '.$e->getMessage());
-        }
-
-        // Log activity
-        try {
-            ActivityLogger::log('client.'.($isUpdate ? 'updated' : 'created'), $client,
+            $activity = ActivityLogger::log('client.'.($isUpdate ? 'updated' : 'created'), $client,
                 ($isUpdate ? 'Client updated (existing email found)' : 'Client created').': '.($client->company ?? $client->name));
         } catch (\Exception $e) {
             Log::error('Failed to log client activity: '.$e->getMessage());
+        }
+
+        try {
+            NotificationService::notifyClientAction($isUpdate ? 'updated' : 'created', $client, auth()->id(), $activity?->id);
+        } catch (\Exception $e) {
+            Log::error('Failed to send client notification: '.$e->getMessage());
         }
 
         return ['client' => $client, 'isUpdate' => $isUpdate];
@@ -72,22 +71,20 @@ class ClientService
             }
         }
 
-        // Update client
         $this->repository->update($client, $data);
         $client->refresh();
 
-        // Send notification
+        $activity = null;
         try {
-            NotificationService::notifyClientAction('updated', $client, auth()->id());
-        } catch (\Exception $e) {
-            Log::error('Failed to send client update notification: '.$e->getMessage());
-        }
-
-        // Log activity
-        try {
-            ActivityLogger::log('client.updated', $client, 'Client updated: '.($client->company ?? $client->name));
+            $activity = ActivityLogger::log('client.updated', $client, 'Client updated: '.($client->company ?? $client->name));
         } catch (\Exception $e) {
             Log::error('Failed to log client update activity: '.$e->getMessage());
+        }
+
+        try {
+            NotificationService::notifyClientAction('updated', $client, auth()->id(), $activity?->id);
+        } catch (\Exception $e) {
+            Log::error('Failed to send client update notification: '.$e->getMessage());
         }
 
         return $client;
@@ -98,21 +95,19 @@ class ClientService
      */
     public function deleteClient(Client $client): bool
     {
-        // Send notification before deletion
+        $activity = null;
         try {
-            NotificationService::notifyClientAction('deleted', $client, auth()->id());
-        } catch (\Exception $e) {
-            Log::error('Failed to send client deletion notification: '.$e->getMessage());
-        }
-
-        // Log activity before deletion
-        try {
-            ActivityLogger::log('client.deleted', $client, 'Client deleted: '.($client->company ?? $client->name));
+            $activity = ActivityLogger::log('client.deleted', $client, 'Client deleted: '.($client->company ?? $client->name));
         } catch (\Exception $e) {
             Log::error('Failed to log client deletion activity: '.$e->getMessage());
         }
 
-        // Delete client
+        try {
+            NotificationService::notifyClientAction('deleted', $client, auth()->id(), $activity?->id);
+        } catch (\Exception $e) {
+            Log::error('Failed to send client deletion notification: '.$e->getMessage());
+        }
+
         return $this->repository->delete($client);
     }
 

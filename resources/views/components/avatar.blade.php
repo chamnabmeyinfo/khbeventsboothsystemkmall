@@ -35,11 +35,8 @@
         $initials = '?';
     }
     
-    // Get avatar URL
-    $avatarUrl = $avatar ?? $image ?? null;
-    if ($avatarUrl && !filter_var($avatarUrl, FILTER_VALIDATE_URL)) {
-        $avatarUrl = asset($avatarUrl);
-    }
+    // Get avatar URL (normalize path so images load properly)
+    $avatarUrl = \App\Helpers\AssetHelper::imageUrl($avatar ?? $image ?? null);
     
     // Type color for default avatar
     $type = $type ?? 'default';

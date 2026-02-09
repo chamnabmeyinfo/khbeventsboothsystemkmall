@@ -95,21 +95,19 @@ class BookingService
                 ]);
             }
 
-            // Create timeline entry
             $this->createTimelineEntry($booking, 'created', 'Booking created');
 
-            // Send notification
+            $activity = null;
             try {
-                NotificationService::notifyBookingAction('created', $booking, auth()->id());
-            } catch (\Exception $e) {
-                Log::error('Failed to send booking creation notification: '.$e->getMessage());
-            }
-
-            // Log activity
-            try {
-                ActivityLogger::log('booking.created', $booking, 'Booking created: #'.$booking->id);
+                $activity = ActivityLogger::log('booking.created', $booking, 'Booking created: #'.$booking->id);
             } catch (\Exception $e) {
                 Log::error('Failed to log booking creation activity: '.$e->getMessage());
+            }
+
+            try {
+                NotificationService::notifyBookingAction('created', $booking, auth()->id(), $activity?->id);
+            } catch (\Exception $e) {
+                Log::error('Failed to send booking creation notification: '.$e->getMessage());
             }
 
             DB::commit();
@@ -243,22 +241,21 @@ class BookingService
                 $this->createTimelineEntry($booking, 'status_changed', 'Status changed from '.$oldStatus.' to '.$data['status']);
             }
 
-            // Send notification
+            $activity = null;
+            try {
+                $activity = ActivityLogger::log('booking.updated', $booking, 'Booking updated: #'.$booking->id);
+            } catch (\Exception $e) {
+                Log::error('Failed to log booking update activity: '.$e->getMessage());
+            }
+
             try {
                 if (isset($data['status']) && $oldStatus != $data['status']) {
-                    NotificationService::notifyBookingAction('status_changed', $booking, $booking->userid);
+                    NotificationService::notifyBookingAction('status_changed', $booking, $booking->userid, $activity?->id);
                 } else {
-                    NotificationService::notifyBookingAction('updated', $booking, $booking->userid);
+                    NotificationService::notifyBookingAction('updated', $booking, $booking->userid, $activity?->id);
                 }
             } catch (\Exception $e) {
                 Log::error('Failed to send booking update notification: '.$e->getMessage());
-            }
-
-            // Log activity
-            try {
-                ActivityLogger::log('booking.updated', $booking, 'Booking updated: #'.$booking->id);
-            } catch (\Exception $e) {
-                Log::error('Failed to log booking update activity: '.$e->getMessage());
             }
 
             DB::commit();
@@ -288,21 +285,19 @@ class BookingService
 
             $booking->refresh();
 
-            // Create timeline entry
             $this->createTimelineEntry($booking, 'status_changed', 'Status changed from '.$oldStatus.' to '.$status);
 
-            // Send notification
+            $activity = null;
             try {
-                NotificationService::notifyBookingAction('status_changed', $booking, $booking->userid);
-            } catch (\Exception $e) {
-                Log::error('Failed to send booking status change notification: '.$e->getMessage());
-            }
-
-            // Log activity
-            try {
-                ActivityLogger::log('booking.status_changed', $booking, 'Booking status changed: #'.$booking->id);
+                $activity = ActivityLogger::log('booking.status_changed', $booking, 'Booking status changed: #'.$booking->id);
             } catch (\Exception $e) {
                 Log::error('Failed to log booking status change activity: '.$e->getMessage());
+            }
+
+            try {
+                NotificationService::notifyBookingAction('status_changed', $booking, $booking->userid, $activity?->id);
+            } catch (\Exception $e) {
+                Log::error('Failed to send booking status change notification: '.$e->getMessage());
             }
 
             DB::commit();
@@ -339,19 +334,17 @@ class BookingService
                 }
             }
 
-            // Log activity before deletion
+            $activity = null;
             try {
-                ActivityLogger::log('booking.deleted', $booking, 'Booking deleted: #'.$booking->id);
+                $activity = ActivityLogger::log('booking.deleted', $booking, 'Booking deleted: #'.$booking->id);
             } catch (\Exception $e) {
                 Log::error('Failed to log booking deletion activity: '.$e->getMessage());
             }
 
-            // Delete booking
             $deleted = $this->repository->delete($booking);
 
-            // Send notification
             try {
-                NotificationService::notifyBookingAction('deleted', $booking, $booking->userid);
+                NotificationService::notifyBookingAction('deleted', $booking, $booking->userid, $activity?->id);
             } catch (\Exception $e) {
                 Log::error('Failed to send booking deletion notification: '.$e->getMessage());
             }

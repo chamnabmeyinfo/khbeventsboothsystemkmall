@@ -783,14 +783,18 @@
                     $('#company_logo').val(data.company_logo || '');
                     $('#company_favicon').val(data.company_favicon || '');
                     
-                    // Show logo preview if exists
+                    // Show logo preview if exists (build URL so images load properly)
                     if (data.company_logo) {
-                        $('#logoPreview').attr('src', '{{ asset("") }}' + data.company_logo).show();
+                        var base = '{{ rtrim(url("/"), "/") }}';
+                        var path = (data.company_logo + '').replace(/^\/+/, '').replace(/\\/g, '/');
+                        $('#logoPreview').attr('src', path ? base + '/' + path : '').show();
                     }
                     
                     // Show favicon preview if exists
                     if (data.company_favicon) {
-                        $('#faviconPreview').attr('src', '{{ asset("") }}' + data.company_favicon).show();
+                        var base = '{{ rtrim(url("/"), "/") }}';
+                        var path = (data.company_favicon + '').replace(/^\/+/, '').replace(/\\/g, '/');
+                        $('#faviconPreview').attr('src', path ? base + '/' + path : '').show();
                     }
                 }
             })
