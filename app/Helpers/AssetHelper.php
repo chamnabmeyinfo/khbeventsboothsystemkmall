@@ -28,14 +28,16 @@ class AssetHelper
             return $path;
         }
 
-        // Trim leading slash so asset() builds URL correctly (avoid double slash)
+        // Trim leading slash so we build URL correctly (avoid double slash)
         $path = ltrim($path, '/');
 
         if ($path === '') {
             return null;
         }
 
-        return asset($path);
+        // Use url() so image loads from the same scheme/host as the current request.
+        // This fixes avatars not loading when APP_URL differs from how the user visits (e.g. https vs http, or domain vs IP).
+        return url('/'.$path);
     }
 
     /**
