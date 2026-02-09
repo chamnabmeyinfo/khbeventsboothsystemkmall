@@ -1,0 +1,426 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\ConnectionInterface\\:\\:getDriverName\\(\\)\\.$#"
+			count: 1
+			path: app/Repositories/BookingRepository.php
+
+		-
+			message: "#^Relation 'client' is not found in App\\\\Models\\\\Book model\\.$#"
+			count: 3
+			path: app/Repositories/BookingRepository.php
+
+		-
+			message: "#^Relation 'floorPlan' is not found in App\\\\Models\\\\Book model\\.$#"
+			count: 2
+			path: app/Repositories/BookingRepository.php
+
+		-
+			message: "#^Relation 'statusSetting' is not found in App\\\\Models\\\\Book model\\.$#"
+			count: 2
+			path: app/Repositories/BookingRepository.php
+
+		-
+			message: "#^Relation 'user' is not found in App\\\\Models\\\\Book model\\.$#"
+			count: 3
+			path: app/Repositories/BookingRepository.php
+
+		-
+			message: "#^Relation 'asset' is not found in App\\\\Models\\\\Booth model\\.$#"
+			count: 1
+			path: app/Repositories/BoothRepository.php
+
+		-
+			message: "#^Relation 'book' is not found in App\\\\Models\\\\Booth model\\.$#"
+			count: 1
+			path: app/Repositories/BoothRepository.php
+
+		-
+			message: "#^Relation 'boothType' is not found in App\\\\Models\\\\Booth model\\.$#"
+			count: 1
+			path: app/Repositories/BoothRepository.php
+
+		-
+			message: "#^Relation 'category' is not found in App\\\\Models\\\\Booth model\\.$#"
+			count: 1
+			path: app/Repositories/BoothRepository.php
+
+		-
+			message: "#^Relation 'client' is not found in App\\\\Models\\\\Booth model\\.$#"
+			count: 1
+			path: app/Repositories/BoothRepository.php
+
+		-
+			message: "#^Relation 'floorPlan' is not found in App\\\\Models\\\\Booth model\\.$#"
+			count: 1
+			path: app/Repositories/BoothRepository.php
+
+		-
+			message: "#^Relation 'subCategory' is not found in App\\\\Models\\\\Booth model\\.$#"
+			count: 1
+			path: app/Repositories/BoothRepository.php
+
+		-
+			message: "#^Relation 'user' is not found in App\\\\Models\\\\Booth model\\.$#"
+			count: 1
+			path: app/Repositories/BoothRepository.php
+
+		-
+			message: "#^Relation 'books' is not found in App\\\\Models\\\\Client model\\.$#"
+			count: 1
+			path: app/Repositories/ClientRepository.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Book\\:\\:\\$boothid\\.$#"
+			count: 1
+			path: app/Services/BookService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Book\\|Illuminate\\\\Database\\\\Eloquent\\\\Collection\\<int, App\\\\Models\\\\Book\\>\\:\\:\\$boothid\\.$#"
+			count: 1
+			path: app/Services/BookService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Booth\\:\\:\\$booth_number\\.$#"
+			count: 1
+			path: app/Services/BookService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$boothid\\.$#"
+			count: 2
+			path: app/Services/BookService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			count: 1
+			path: app/Services/BookService.php
+
+		-
+			message: "#^Method App\\\\Services\\\\BookService\\:\\:getBoothsForBooking\\(\\) should return Illuminate\\\\Database\\\\Eloquent\\\\Collection but returns Illuminate\\\\Support\\\\Collection\\<\\(int\\|string\\), mixed\\>\\.$#"
+			count: 1
+			path: app/Services/BookService.php
+
+		-
+			message: "#^Property App\\\\Services\\\\BookService\\:\\:\\$repository is never read, only written\\.$#"
+			count: 1
+			path: app/Services/BookService.php
+
+		-
+			message: "#^Relation 'asset' is not found in App\\\\Models\\\\Booth model\\.$#"
+			count: 2
+			path: app/Services/BookService.php
+
+		-
+			message: "#^Relation 'boothType' is not found in App\\\\Models\\\\Booth model\\.$#"
+			count: 2
+			path: app/Services/BookService.php
+
+		-
+			message: "#^Relation 'category' is not found in App\\\\Models\\\\Booth model\\.$#"
+			count: 2
+			path: app/Services/BookService.php
+
+		-
+			message: "#^Relation 'client' is not found in App\\\\Models\\\\Booth model\\.$#"
+			count: 2
+			path: app/Services/BookService.php
+
+		-
+			message: "#^Relation 'floorPlan' is not found in App\\\\Models\\\\Book model\\.$#"
+			count: 1
+			path: app/Services/BookService.php
+
+		-
+			message: "#^Relation 'floorPlan' is not found in App\\\\Models\\\\Booth model\\.$#"
+			count: 2
+			path: app/Services/BookService.php
+
+		-
+			message: "#^Relation 'subCategory' is not found in App\\\\Models\\\\Booth model\\.$#"
+			count: 2
+			path: app/Services/BookService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Book\\:\\:\\$boothid\\.$#"
+			count: 2
+			path: app/Services/BookingService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Book\\:\\:\\$clientid\\.$#"
+			count: 2
+			path: app/Services/BookingService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Book\\:\\:\\$notes\\.$#"
+			count: 1
+			path: app/Services/BookingService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Book\\:\\:\\$status\\.$#"
+			count: 2
+			path: app/Services/BookingService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Book\\:\\:\\$total_amount\\.$#"
+			count: 1
+			path: app/Services/BookingService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Book\\:\\:\\$userid\\.$#"
+			count: 5
+			path: app/Services/BookingService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Booth\\:\\:\\$bookid\\.$#"
+			count: 3
+			path: app/Services/BookingService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Booth\\:\\:\\$booth_number\\.$#"
+			count: 3
+			path: app/Services/BookingService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Booth\\:\\:\\$floor_plan_id\\.$#"
+			count: 1
+			path: app/Services/BookingService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Booth\\:\\:\\$status\\.$#"
+			count: 3
+			path: app/Services/BookingService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$floor_plan_id\\.$#"
+			count: 1
+			path: app/Services/BookingService.php
+
+		-
+			message: "#^Offset 'total_amount' on non\\-empty\\-array on left side of \\?\\? always exists and is not nullable\\.$#"
+			count: 1
+			path: app/Services/BookingService.php
+
+		-
+			message: "#^Relation 'client' is not found in App\\\\Models\\\\Booth model\\.$#"
+			count: 1
+			path: app/Services/BookingService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Booth\\:\\:\\$booth_number\\.$#"
+			count: 3
+			path: app/Services/BoothImageService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Booth\\:\\:\\$floor_plan_id\\.$#"
+			count: 2
+			path: app/Services/BoothImageService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\BoothImage\\:\\:\\$booth\\.$#"
+			count: 3
+			path: app/Services/BoothImageService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Book\\|Illuminate\\\\Database\\\\Eloquent\\\\Collection\\<int, App\\\\Models\\\\Book\\>\\:\\:\\$boothid\\.$#"
+			count: 4
+			path: app/Services/BoothService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Booth\\:\\:\\$bookid\\.$#"
+			count: 3
+			path: app/Services/BoothService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Booth\\:\\:\\$booth_image\\.$#"
+			count: 2
+			path: app/Services/BoothService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Booth\\:\\:\\$booth_number\\.$#"
+			count: 9
+			path: app/Services/BoothService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Booth\\:\\:\\$floor_plan_id\\.$#"
+			count: 3
+			path: app/Services/BoothService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Booth\\:\\:\\$status\\.$#"
+			count: 9
+			path: app/Services/BoothService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Booth\\:\\:\\$userid\\.$#"
+			count: 6
+			path: app/Services/BoothService.php
+
+		-
+			message: "#^Else branch is unreachable because ternary operator condition is always true\\.$#"
+			count: 10
+			path: app/Services/BoothService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$email\\.$#"
+			count: 1
+			path: app/Services/ClientService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			count: 1
+			path: app/Services/ClientService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$phone_number\\.$#"
+			count: 1
+			path: app/Services/ClientService.php
+
+		-
+			message: "#^Relation 'books' is not found in App\\\\Models\\\\Client model\\.$#"
+			count: 1
+			path: app/Services/ClientService.php
+
+		-
+			message: "#^Relation 'booths' is not found in App\\\\Models\\\\Client model\\.$#"
+			count: 1
+			path: app/Services/ClientService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\User\\:\\:\\$username\\.$#"
+			count: 1
+			path: app/Services/DashboardService.php
+
+		-
+			message: "#^Offset 'booking' on array\\{id\\: int, username\\: mixed, type\\: string, status\\: mixed, reserve\\: int, booking\\: int, paid\\: int, last_login\\: mixed\\} on left side of \\?\\? always exists and is not nullable\\.$#"
+			count: 2
+			path: app/Services/DashboardService.php
+
+		-
+			message: "#^Offset 'paid' on array\\{id\\: int, username\\: mixed, type\\: string, status\\: mixed, reserve\\: int, booking\\: int, paid\\: int, last_login\\: mixed\\} on left side of \\?\\? always exists and is not nullable\\.$#"
+			count: 2
+			path: app/Services/DashboardService.php
+
+		-
+			message: "#^Offset 'reserve' on array\\{id\\: int, username\\: mixed, type\\: string, status\\: mixed, reserve\\: int, booking\\: int, paid\\: int, last_login\\: mixed\\} on left side of \\?\\? always exists and is not nullable\\.$#"
+			count: 2
+			path: app/Services/DashboardService.php
+
+		-
+			message: "#^Relation 'client' is not found in App\\\\Models\\\\Book model\\.$#"
+			count: 1
+			path: app/Services/DashboardService.php
+
+		-
+			message: "#^Relation 'user' is not found in App\\\\Models\\\\ActivityLog model\\.$#"
+			count: 1
+			path: app/Services/DashboardService.php
+
+		-
+			message: "#^Relation 'user' is not found in App\\\\Models\\\\Book model\\.$#"
+			count: 1
+			path: app/Services/DashboardService.php
+
+		-
+			message: "#^If condition is always true\\.$#"
+			count: 1
+			path: app/Services/FloorPlanService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\HR\\\\Attendance\\:\\:\\$date\\.$#"
+			count: 2
+			path: app/Services/HRNotificationService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\HR\\\\Attendance\\:\\:\\$employee\\.$#"
+			count: 2
+			path: app/Services/HRNotificationService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\HR\\\\Employee\\:\\:\\$first_name\\.$#"
+			count: 1
+			path: app/Services/HRNotificationService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\HR\\\\Employee\\:\\:\\$user\\.$#"
+			count: 1
+			path: app/Services/HRNotificationService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\HR\\\\Employee\\:\\:\\$user_id\\.$#"
+			count: 1
+			path: app/Services/HRNotificationService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\HR\\\\EmployeeDocument\\:\\:\\$document_name\\.$#"
+			count: 1
+			path: app/Services/HRNotificationService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\HR\\\\EmployeeDocument\\:\\:\\$employee\\.$#"
+			count: 1
+			path: app/Services/HRNotificationService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\HR\\\\EmployeeDocument\\:\\:\\$expiry_date\\.$#"
+			count: 1
+			path: app/Services/HRNotificationService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\HR\\\\LeaveRequest\\:\\:\\$employee\\.$#"
+			count: 3
+			path: app/Services/HRNotificationService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\HR\\\\LeaveRequest\\:\\:\\$end_date\\.$#"
+			count: 3
+			path: app/Services/HRNotificationService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\HR\\\\LeaveRequest\\:\\:\\$rejection_reason\\.$#"
+			count: 1
+			path: app/Services/HRNotificationService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\HR\\\\LeaveRequest\\:\\:\\$start_date\\.$#"
+			count: 3
+			path: app/Services/HRNotificationService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\HR\\\\LeaveRequest\\:\\:\\$total_days\\.$#"
+			count: 3
+			path: app/Services/HRNotificationService.php
+
+		-
+			message: "#^Negated boolean expression is always false\\.$#"
+			count: 1
+			path: app/Services/HRNotificationService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Admin\\|App\\\\Models\\\\User\\:\\:\\$username\\.$#"
+			count: 14
+			path: app/Services/NotificationService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Book\\|Illuminate\\\\Database\\\\Eloquent\\\\Collection\\<int, App\\\\Models\\\\Book\\>\\:\\:\\$boothid\\.$#"
+			count: 2
+			path: app/Services/ZoneService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Booth\\:\\:\\$bookid\\.$#"
+			count: 2
+			path: app/Services/ZoneService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Booth\\:\\:\\$booth_number\\.$#"
+			count: 8
+			path: app/Services/ZoneService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Booth\\:\\:\\$status\\.$#"
+			count: 2
+			path: app/Services/ZoneService.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function str_pad expects string, int\\<1, max\\> given\\.$#"
+			count: 1
+			path: app/Services/ZoneService.php

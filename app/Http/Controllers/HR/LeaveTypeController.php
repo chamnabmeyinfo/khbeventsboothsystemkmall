@@ -14,9 +14,9 @@ class LeaveTypeController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%");
+                    ->orWhere('code', 'like', "%{$search}%");
             });
         }
 
@@ -70,7 +70,7 @@ class LeaveTypeController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'nullable|string|max:50|unique:leave_types,code,' . $leaveType->id,
+            'code' => 'nullable|string|max:50|unique:leave_types,code,'.$leaveType->id,
             'description' => 'nullable|string',
             'max_days_per_year' => 'nullable|integer|min:0',
             'carry_forward' => 'boolean',

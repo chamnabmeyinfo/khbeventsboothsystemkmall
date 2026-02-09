@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -19,9 +19,9 @@ return new class extends Migration
             $defaultFloorPlanId = $defaultFloorPlan ? $defaultFloorPlan->id : null;
         }
 
-        Schema::table('booth', function (Blueprint $table) use ($defaultFloorPlanId) {
+        Schema::table('booth', function (Blueprint $table) {
             // Add floor_plan_id column after id
-            if (!Schema::hasColumn('booth', 'floor_plan_id')) {
+            if (! Schema::hasColumn('booth', 'floor_plan_id')) {
                 $table->unsignedBigInteger('floor_plan_id')->nullable()->after('id');
                 $table->index('floor_plan_id', 'idx_floor_plan_id');
             }
@@ -30,7 +30,7 @@ return new class extends Migration
         // Assign existing booths to default floor plan if exists
         if ($defaultFloorPlanId && Schema::hasColumn('booth', 'floor_plan_id')) {
             DB::table('booth')->whereNull('floor_plan_id')->update([
-                'floor_plan_id' => $defaultFloorPlanId
+                'floor_plan_id' => $defaultFloorPlanId,
             ]);
         }
     }

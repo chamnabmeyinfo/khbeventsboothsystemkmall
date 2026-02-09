@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Payment;
 use App\Models\Book;
 use App\Models\Booth;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
@@ -21,13 +20,13 @@ class PaymentController extends Controller
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('transaction_id', 'like', "%{$search}%")
-                  ->orWhere('amount', 'like', "%{$search}%")
-                  ->orWhereHas('client', function($clientQuery) use ($search) {
-                      $clientQuery->where('name', 'like', "%{$search}%")
-                                   ->orWhere('company', 'like', "%{$search}%");
-                  });
+                    ->orWhere('amount', 'like', "%{$search}%")
+                    ->orWhereHas('client', function ($clientQuery) use ($search) {
+                        $clientQuery->where('name', 'like', "%{$search}%")
+                            ->orWhere('company', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -91,20 +90,20 @@ class PaymentController extends Controller
         ]);
 
         $booking = Book::with(['client', 'statusSetting'])->findOrFail($request->booking_id);
-        
+
         // Calculate total booking amount if not set
-        if (!$booking->total_amount) {
+        if (! $booking->total_amount) {
             $booking->total_amount = $booking->calculateTotalAmount();
         }
 
         // Get authenticated user ID - explicitly get from user object to ensure it's the ID, not username
         $user = Auth::user();
         $userId = $user ? (int) $user->id : null;
-        
-        if (!$userId) {
+
+        if (! $userId) {
             return back()->withErrors(['error' => 'You must be logged in to record a payment.'])->withInput();
         }
-        
+
         $payment = Payment::create([
             'booking_id' => $request->booking_id,
             'client_id' => $booking->clientid,
@@ -122,25 +121,25 @@ class PaymentController extends Controller
         // Update booth payment amounts based on payment
         // Distribute payment proportionally across booths
         $boothIds = json_decode($booking->boothid, true) ?? [];
-        if (!empty($boothIds)) {
+        if (! empty($boothIds)) {
             $booths = Booth::whereIn('id', $boothIds)->lockForUpdate()->get();
             $totalBoothPrice = $booths->sum('price');
-            
+
             foreach ($booths as $booth) {
                 if ($totalBoothPrice > 0) {
                     // Calculate proportional payment for this booth
                     $boothProportion = ($booth->price / $totalBoothPrice);
                     $boothPaymentAmount = $request->amount * $boothProportion;
-                    
+
                     // Update booth payment amounts
                     $currentDepositPaid = (float) ($booth->deposit_paid ?? 0);
                     $currentBalancePaid = (float) ($booth->balance_paid ?? 0);
                     $boothTotalPaid = $currentDepositPaid + $currentBalancePaid;
-                    
+
                     // Determine if this should be deposit or balance payment
                     $depositAmount = (float) ($booth->deposit_amount ?? 0);
                     $remainingDeposit = max(0, $depositAmount - $currentDepositPaid);
-                    
+
                     if ($remainingDeposit > 0) {
                         // Apply to deposit first
                         $depositPayment = min($boothPaymentAmount, $remainingDeposit);
@@ -148,17 +147,17 @@ class PaymentController extends Controller
                         $booth->deposit_paid_date = now();
                         $boothPaymentAmount -= $depositPayment;
                     }
-                    
+
                     // Apply remaining to balance
                     if ($boothPaymentAmount > 0) {
                         $booth->balance_paid = $currentBalancePaid + $boothPaymentAmount;
                         $booth->balance_paid_date = now();
                     }
-                    
+
                     // Update booth status based on payment
                     $oldStatus = $booth->status;
                     $newTotalPaid = (float) ($booth->deposit_paid ?? 0) + (float) ($booth->balance_paid ?? 0);
-                    
+
                     if ($newTotalPaid >= $booth->price) {
                         $booth->status = Booth::STATUS_PAID;
                     } elseif ($newTotalPaid > 0) {
@@ -167,16 +166,16 @@ class PaymentController extends Controller
                             $booth->status = Booth::STATUS_CONFIRMED;
                         }
                     }
-                    
+
                     $booth->save();
-                    
+
                     // Send notification about payment and status change
                     if ($oldStatus != $booth->status) {
                         try {
                             \App\Services\NotificationService::notifyPaymentReceived($booth, $boothPaymentAmount);
                             \App\Services\NotificationService::notifyBoothStatusChange($booth, $oldStatus, $booth->status);
                         } catch (\Exception $e) {
-                            \Log::error('Failed to send payment notification: ' . $e->getMessage());
+                            \Log::error('Failed to send payment notification: '.$e->getMessage());
                         }
                     }
                 }
@@ -193,7 +192,7 @@ class PaymentController extends Controller
     public function invoice($id)
     {
         $payment = Payment::with(['booking', 'client', 'user'])->findOrFail($id);
-        
+
         return view('payments.invoice', compact('payment'));
     }
 
@@ -204,7 +203,7 @@ class PaymentController extends Controller
     {
         $bookingId = $request->input('booking_id');
         $booking = $bookingId ? Book::with(['client', 'statusSetting'])->findOrFail($bookingId) : null;
-        
+
         return view('payments.create', compact('booking'));
     }
 
@@ -230,12 +229,13 @@ class PaymentController extends Controller
             // Get authenticated user ID
             $user = Auth::user();
             $userId = $user ? (int) $user->id : null;
-            
-            if (!$userId) {
+
+            if (! $userId) {
                 \DB::rollBack();
+
                 return back()->withErrors(['error' => 'You must be logged in to process a refund.']);
             }
-            
+
             // Create refund payment entry (negative amount)
             $refundPayment = Payment::create([
                 'booking_id' => $payment->booking_id,
@@ -243,8 +243,8 @@ class PaymentController extends Controller
                 'amount' => -$payment->amount, // Negative amount for refund
                 'payment_method' => $payment->payment_method,
                 'status' => Payment::STATUS_REFUNDED,
-                'transaction_id' => 'REFUND-' . $payment->transaction_id ?? 'REFUND-' . $payment->id,
-                'notes' => 'Refund for Payment #' . $payment->id . ($request->notes ? ': ' . $request->notes : ''),
+                'transaction_id' => 'REFUND-'.$payment->transaction_id ?? 'REFUND-'.$payment->id,
+                'notes' => 'Refund for Payment #'.$payment->id.($request->notes ? ': '.$request->notes : ''),
                 'paid_at' => now(),
                 'user_id' => $userId,
             ]);
@@ -252,14 +252,14 @@ class PaymentController extends Controller
             // Update original payment status
             $payment->update([
                 'status' => Payment::STATUS_REFUNDED,
-                'notes' => ($payment->notes ? $payment->notes . ' | ' : '') . 'Refunded on ' . now()->format('Y-m-d H:i:s'),
+                'notes' => ($payment->notes ? $payment->notes.' | ' : '').'Refunded on '.now()->format('Y-m-d H:i:s'),
             ]);
 
             // Revert booth status from paid to confirmed (or reserved if no confirmation)
             // Use lock to prevent race conditions
             if ($payment->booking) {
                 $boothIds = json_decode($payment->booking->boothid, true) ?? [];
-                if (!empty($boothIds)) {
+                if (! empty($boothIds)) {
                     Booth::whereIn('id', $boothIds)
                         ->where('status', Booth::STATUS_PAID)
                         ->lockForUpdate()
@@ -272,10 +272,11 @@ class PaymentController extends Controller
             \DB::commit();
 
             return redirect()->route('finance.payments.index')
-                ->with('success', 'Payment refunded successfully. Refund payment #' . $refundPayment->id . ' created.');
+                ->with('success', 'Payment refunded successfully. Refund payment #'.$refundPayment->id.' created.');
         } catch (\Exception $e) {
             \DB::rollBack();
-            return back()->with('error', 'Error processing refund: ' . $e->getMessage());
+
+            return back()->with('error', 'Error processing refund: '.$e->getMessage());
         }
     }
 
@@ -300,17 +301,17 @@ class PaymentController extends Controller
 
             // Store original status before update
             $originalStatus = $payment->status;
-            
+
             // Update payment status to failed (voided)
             $payment->update([
                 'status' => Payment::STATUS_FAILED,
-                'notes' => ($payment->notes ? $payment->notes . ' | ' : '') . 'VOIDED on ' . now()->format('Y-m-d H:i:s') . ($request->notes ? ': ' . $request->notes : ''),
+                'notes' => ($payment->notes ? $payment->notes.' | ' : '').'VOIDED on '.now()->format('Y-m-d H:i:s').($request->notes ? ': '.$request->notes : ''),
             ]);
 
             // Revert booth status if payment was completed (use lock to prevent race conditions)
             if ($originalStatus === Payment::STATUS_COMPLETED && $payment->booking) {
                 $boothIds = json_decode($payment->booking->boothid, true) ?? [];
-                if (!empty($boothIds)) {
+                if (! empty($boothIds)) {
                     Booth::whereIn('id', $boothIds)
                         ->where('status', Booth::STATUS_PAID)
                         ->lockForUpdate()
@@ -326,8 +327,8 @@ class PaymentController extends Controller
                 ->with('success', 'Payment voided successfully.');
         } catch (\Exception $e) {
             \DB::rollBack();
-            return back()->with('error', 'Error voiding payment: ' . $e->getMessage());
+
+            return back()->with('error', 'Error voiding payment: '.$e->getMessage());
         }
     }
 }
-

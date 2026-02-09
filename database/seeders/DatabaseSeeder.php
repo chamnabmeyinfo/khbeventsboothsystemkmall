@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
 use App\Models\Asset;
-use App\Models\BoothType;
 use App\Models\Booth;
+use App\Models\BoothType;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
@@ -56,13 +56,13 @@ class DatabaseSeeder extends Seeder
             'D20', 'D21', 'D22', 'D23', 'D24', 'D25', 'D26', 'D27', 'D28', 'D29',
             'D30', 'D31', 'D32', 'D33', 'D34', 'D35', 'D36', 'SP-01', 'SP-02', 'SP-03',
             'SP-04', 'SP-05', 'SP-06', 'SP-07', 'SP-08', 'SP-09', 'SP-10', 'SP-11',
-            'SP-12', 'SP-13', 'SP-14', 'SP-15', 'SP-16', 'SP-17', 'SP-18', 'SP-19', 'SP-20'
+            'SP-12', 'SP-13', 'SP-14', 'SP-15', 'SP-16', 'SP-17', 'SP-18', 'SP-19', 'SP-20',
         ];
 
         foreach ($boothNumbers as $number) {
             // Check if booth number already exists to prevent duplicates
             $existingBooth = Booth::where('booth_number', $number)->first();
-            if (!$existingBooth) {
+            if (! $existingBooth) {
                 Booth::create([
                     'booth_number' => $number,
                     'type' => 2,

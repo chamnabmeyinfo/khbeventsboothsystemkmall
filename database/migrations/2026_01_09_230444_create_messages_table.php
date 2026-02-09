@@ -19,7 +19,7 @@ return new class extends Migration
             $table->timestamp('read_at')->nullable();
             $table->string('type')->default('message'); // message, announcement, email_template
             $table->timestamps();
-            
+
             $table->foreign('from_user_id')->references('id')->on('user')->onDelete('set null');
             $table->foreign('to_user_id')->references('id')->on('user')->onDelete('set null');
             $table->foreign('client_id')->references('id')->on('client')->onDelete('cascade');

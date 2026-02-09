@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
-use App\Models\HR\SalaryHistory;
 use App\Models\HR\Employee;
+use App\Models\HR\SalaryHistory;
 use Illuminate\Http\Request;
 
 class SalaryHistoryController extends Controller

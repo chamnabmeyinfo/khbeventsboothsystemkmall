@@ -2,12 +2,11 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\Booth;
-use App\Models\Client;
 use App\Mail\PaymentReminderMail;
-use Illuminate\Support\Facades\Mail;
+use App\Models\Booth;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Mail;
 
 class SendPaymentReminders extends Command
 {
@@ -36,40 +35,41 @@ class SendPaymentReminders extends Command
         $days = $this->option('days');
         $overdueOnly = $this->option('overdue');
         $testMode = $this->option('test');
-        
+
         $this->info('🔔 Starting payment reminder process...');
-        
+
         if ($testMode) {
             $this->warn('⚠️  TEST MODE - Emails will NOT be sent, only logged');
         }
-        
+
         // Get booths with pending payments
         $booths = $this->getBoothsNeedingReminders($days, $overdueOnly);
-        
+
         $this->info("📊 Found {$booths->count()} booth(s) needing payment reminders");
-        
+
         $sent = 0;
         $failed = 0;
         $skipped = 0;
-        
+
         foreach ($booths as $booth) {
-            if (!$booth->client || !$booth->client->email) {
+            if (! $booth->client || ! $booth->client->email) {
                 $this->warn("⚠️  Booth {$booth->booth_number}: No client email found - SKIPPED");
                 $skipped++;
+
                 continue;
             }
-            
+
             try {
                 $reminderType = $this->getReminderType($booth);
-                
+
                 if ($testMode) {
                     $this->line("📧 [TEST] Would send {$reminderType} reminder to: {$booth->client->email} for booth {$booth->booth_number}");
                 } else {
                     Mail::to($booth->client->email)
                         ->send(new PaymentReminderMail($booth, $reminderType));
-                    
+
                     $this->info("✅ Sent {$reminderType} reminder to: {$booth->client->email} for booth {$booth->booth_number}");
-                    
+
                     // Log in timeline
                     \App\Models\BookingTimeline::createEntry(
                         $booth->id,
@@ -79,14 +79,14 @@ class SendPaymentReminders extends Command
                         $booth->bookid
                     );
                 }
-                
+
                 $sent++;
             } catch (\Exception $e) {
                 $this->error("❌ Failed to send reminder for booth {$booth->booth_number}: {$e->getMessage()}");
                 $failed++;
             }
         }
-        
+
         $this->newLine();
         $this->info('📈 Summary:');
         $this->table(
@@ -98,10 +98,10 @@ class SendPaymentReminders extends Command
                 ['📊 Total', $booths->count()],
             ]
         );
-        
+
         return Command::SUCCESS;
     }
-    
+
     /**
      * Get booths needing reminders
      */
@@ -110,7 +110,7 @@ class SendPaymentReminders extends Command
         $query = Booth::with(['client', 'floorPlan'])
             ->whereNotNull('bookid')
             ->whereNotNull('payment_due_date');
-        
+
         if ($overdueOnly) {
             // Overdue payments
             $query->where('payment_due_date', '<', Carbon::now())
@@ -122,10 +122,10 @@ class SendPaymentReminders extends Command
                 ->where('payment_due_date', '>=', Carbon::now())
                 ->where('payment_status', '!=', 'paid');
         }
-        
+
         return $query->get();
     }
-    
+
     /**
      * Determine reminder type
      */

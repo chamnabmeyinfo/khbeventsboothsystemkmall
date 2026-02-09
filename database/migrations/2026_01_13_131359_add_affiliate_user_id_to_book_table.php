@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('book', function (Blueprint $table) {
             // Add affiliate_user_id to track which sales person's link was used
             // This helps avoid conflicts of interest between sales team members
-            if (!Schema::hasColumn('book', 'affiliate_user_id')) {
+            if (! Schema::hasColumn('book', 'affiliate_user_id')) {
                 $table->unsignedBigInteger('affiliate_user_id')->nullable()->after('userid');
             }
             // Add index only if column exists and index doesn't exist
@@ -22,7 +22,7 @@ return new class extends Migration
                 $connection = Schema::getConnection();
                 $database = $connection->getDatabaseName();
                 $indexExists = $connection->select(
-                    "SELECT COUNT(*) as count FROM information_schema.statistics WHERE table_schema = ? AND table_name = ? AND index_name = ?",
+                    'SELECT COUNT(*) as count FROM information_schema.statistics WHERE table_schema = ? AND table_name = ? AND index_name = ?',
                     [$database, 'book', 'book_affiliate_user_id_index']
                 );
                 if (empty($indexExists) || $indexExists[0]->count == 0) {

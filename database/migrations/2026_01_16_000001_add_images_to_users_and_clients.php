@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         // Add avatar and cover_image to user table
-        if (!Schema::hasColumn('user', 'avatar')) {
+        if (! Schema::hasColumn('user', 'avatar')) {
             Schema::table('user', function (Blueprint $table) {
                 $table->string('avatar', 255)->nullable()->after('status');
                 $table->string('cover_image', 255)->nullable()->after('avatar');
@@ -20,7 +20,7 @@ return new class extends Migration
         }
 
         // Add avatar and cover_image to client table
-        if (!Schema::hasColumn('client', 'avatar')) {
+        if (! Schema::hasColumn('client', 'avatar')) {
             Schema::table('client', function (Blueprint $table) {
                 $table->string('avatar', 255)->nullable()->after('phone_number');
                 $table->string('cover_image', 255)->nullable()->after('avatar');
@@ -28,7 +28,7 @@ return new class extends Migration
         }
 
         // Add avatar and cover_image to category table (if needed)
-        if (Schema::hasTable('category') && !Schema::hasColumn('category', 'avatar')) {
+        if (Schema::hasTable('category') && ! Schema::hasColumn('category', 'avatar')) {
             Schema::table('category', function (Blueprint $table) {
                 $table->string('avatar', 255)->nullable()->after('status');
                 $table->string('cover_image', 255)->nullable()->after('avatar');

@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
-use App\Models\HR\LeaveRequest;
-use App\Models\HR\LeaveType;
 use App\Models\HR\Employee;
 use App\Models\HR\LeaveBalance;
-use Illuminate\Http\Request;
+use App\Models\HR\LeaveRequest;
+use App\Models\HR\LeaveType;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class LeaveController extends Controller
 {
@@ -72,24 +72,24 @@ class LeaveController extends Controller
             ->where('year', date('Y'))
             ->first();
 
-        if (!$leaveBalance) {
+        if (! $leaveBalance) {
             return back()->withInput()->with('error', 'Leave balance not found for this employee.');
         }
 
         if ($leaveBalance->remaining_days < $validated['total_days']) {
-            return back()->withInput()->with('error', 'Insufficient leave balance. Remaining: ' . $leaveBalance->remaining_days . ' days');
+            return back()->withInput()->with('error', 'Insufficient leave balance. Remaining: '.$leaveBalance->remaining_days.' days');
         }
 
         // Check for overlapping leave requests
         $overlapping = LeaveRequest::where('employee_id', $validated['employee_id'])
             ->where('status', '!=', 'cancelled')
-            ->where(function($q) use ($validated) {
+            ->where(function ($q) use ($validated) {
                 $q->whereBetween('start_date', [$validated['start_date'], $validated['end_date']])
-                  ->orWhereBetween('end_date', [$validated['start_date'], $validated['end_date']])
-                  ->orWhere(function($q2) use ($validated) {
-                      $q2->where('start_date', '<=', $validated['start_date'])
-                         ->where('end_date', '>=', $validated['end_date']);
-                  });
+                    ->orWhereBetween('end_date', [$validated['start_date'], $validated['end_date']])
+                    ->orWhere(function ($q2) use ($validated) {
+                        $q2->where('start_date', '<=', $validated['start_date'])
+                            ->where('end_date', '>=', $validated['end_date']);
+                    });
             })
             ->exists();
 
@@ -100,7 +100,7 @@ class LeaveController extends Controller
         $leaveRequest = LeaveRequest::create($validated);
 
         // Send notification to manager
-        $notificationService = new \App\Services\HRNotificationService();
+        $notificationService = new \App\Services\HRNotificationService;
         $notificationService->notifyLeaveRequestSubmitted($leaveRequest);
 
         return redirect()->route('hr.leaves.show', $leaveRequest)
@@ -156,20 +156,20 @@ class LeaveController extends Controller
             ->where('year', Carbon::parse($validated['start_date'])->year)
             ->first();
 
-        if (!$leaveBalance) {
+        if (! $leaveBalance) {
             return back()->withInput()->with('error', 'Leave balance not found for this employee.');
         }
 
         // Calculate available balance (add back current request days if same employee/type)
         $availableBalance = $leaveBalance->remaining_days;
-        if ($leaveRequest->employee_id == $validated['employee_id'] 
+        if ($leaveRequest->employee_id == $validated['employee_id']
             && $leaveRequest->leave_type_id == $validated['leave_type_id']
             && $leaveRequest->start_date->year == Carbon::parse($validated['start_date'])->year) {
             $availableBalance += $leaveRequest->total_days;
         }
 
         if ($availableBalance < $validated['total_days']) {
-            return back()->withInput()->with('error', 'Insufficient leave balance. Available: ' . $availableBalance . ' days');
+            return back()->withInput()->with('error', 'Insufficient leave balance. Available: '.$availableBalance.' days');
         }
 
         // Check for overlapping leave requests (excluding current request)
@@ -177,13 +177,13 @@ class LeaveController extends Controller
             ->where('id', '!=', $leaveRequest->id)
             ->where('status', '!=', 'cancelled')
             ->where('status', '!=', 'rejected')
-            ->where(function($q) use ($validated) {
+            ->where(function ($q) use ($validated) {
                 $q->whereBetween('start_date', [$validated['start_date'], $validated['end_date']])
-                  ->orWhereBetween('end_date', [$validated['start_date'], $validated['end_date']])
-                  ->orWhere(function($q2) use ($validated) {
-                      $q2->where('start_date', '<=', $validated['start_date'])
-                         ->where('end_date', '>=', $validated['end_date']);
-                  });
+                    ->orWhereBetween('end_date', [$validated['start_date'], $validated['end_date']])
+                    ->orWhere(function ($q2) use ($validated) {
+                        $q2->where('start_date', '<=', $validated['start_date'])
+                            ->where('end_date', '>=', $validated['end_date']);
+                    });
             })
             ->exists();
 
@@ -200,7 +200,7 @@ class LeaveController extends Controller
     public function destroy(LeaveRequest $leaveRequest)
     {
         // Only allow deleting pending or cancelled leave requests
-        if (!in_array($leaveRequest->status, ['pending', 'cancelled'])) {
+        if (! in_array($leaveRequest->status, ['pending', 'cancelled'])) {
             return back()->with('error', 'Only pending or cancelled leave requests can be deleted.');
         }
 
@@ -235,7 +235,7 @@ class LeaveController extends Controller
         ]);
 
         // Send notification to employee
-        $notificationService = new \App\Services\HRNotificationService();
+        $notificationService = new \App\Services\HRNotificationService;
         $notificationService->notifyLeaveApproved($leaveRequest);
 
         return back()->with('success', 'Leave request approved successfully.');
@@ -259,7 +259,7 @@ class LeaveController extends Controller
         ]);
 
         // Send notification to employee
-        $notificationService = new \App\Services\HRNotificationService();
+        $notificationService = new \App\Services\HRNotificationService;
         $notificationService->notifyLeaveRejected($leaveRequest);
 
         return back()->with('success', 'Leave request rejected.');

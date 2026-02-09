@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\FloorPlan;
 
 class CanvasSetting extends Model
 {
@@ -49,7 +48,7 @@ class CanvasSetting extends Model
             if ($settings) {
                 return $settings;
             }
-            
+
             // If not found, create default settings for this floor plan
             $floorPlan = FloorPlan::find($floorPlanId);
             if ($floorPlan) {
@@ -68,7 +67,7 @@ class CanvasSetting extends Model
                 ]);
             }
         }
-        
+
         // Fallback: get first available settings (for backward compatibility)
         return self::first() ?? self::create([
             'floor_plan_id' => null,
@@ -86,6 +85,7 @@ class CanvasSetting extends Model
 
     /**
      * Get the current canvas settings (singleton pattern - for backward compatibility)
+     *
      * @deprecated Use getForFloorPlan() instead
      */
     public static function getCurrent()
@@ -100,6 +100,7 @@ class CanvasSetting extends Model
     {
         $canvasSetting = self::getForFloorPlan($floorPlanId);
         $canvasSetting->update($settings);
+
         return $canvasSetting;
     }
 

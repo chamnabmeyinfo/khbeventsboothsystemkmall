@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Models\Event;
-use App\Models\CategoryEvent;
-use App\Models\UserEvent;
-use App\Models\Admin;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Helpers\DebugLogger;
+use App\Http\Controllers\Controller;
+use App\Models\Admin;
+use App\Models\CategoryEvent;
+use App\Models\Event;
+use App\Models\UserEvent;
 
 class AdminDashboardController extends Controller
 {
@@ -19,9 +17,9 @@ class AdminDashboardController extends Controller
     public function index()
     {
         // #region agent log
-        DebugLogger::log(['session_id'=>session()->getId()], 'AdminDashboardController.php:21', 'Dashboard index method entry');
+        DebugLogger::log(['session_id' => session()->getId()], 'AdminDashboardController.php:21', 'Dashboard index method entry');
         // #endregion
-        
+
         $stats = [
             'total_events' => Event::count(),
             'active_events' => Event::where('status', 1)->count(),
@@ -33,7 +31,7 @@ class AdminDashboardController extends Controller
         ];
 
         // #region agent log
-        DebugLogger::log(['stats'=>$stats], 'AdminDashboardController.php:35', 'Stats calculated');
+        DebugLogger::log(['stats' => $stats], 'AdminDashboardController.php:35', 'Stats calculated');
         // #endregion
 
         // Recent events
@@ -44,7 +42,7 @@ class AdminDashboardController extends Controller
 
         // #region agent log
         $eventSample = $recentEvents->first();
-        DebugLogger::log(['count'=>$recentEvents->count(),'first_event_id'=>$eventSample?->id,'first_start_date'=>($eventSample?->start_date ?? null),'first_start_date_type'=>gettype($eventSample?->start_date ?? null),'first_start_date_is_carbon'=>(is_object($eventSample?->start_date) && method_exists($eventSample?->start_date, 'format') ? 'YES' : 'NO')], 'AdminDashboardController.php:47', 'Recent events loaded');
+        DebugLogger::log(['count' => $recentEvents->count(), 'first_event_id' => $eventSample?->id, 'first_start_date' => ($eventSample?->start_date ?? null), 'first_start_date_type' => gettype($eventSample?->start_date ?? null), 'first_start_date_is_carbon' => (is_object($eventSample?->start_date) && method_exists($eventSample?->start_date, 'format') ? 'YES' : 'NO')], 'AdminDashboardController.php:47', 'Recent events loaded');
         // #endregion
 
         // Events by status
@@ -60,10 +58,9 @@ class AdminDashboardController extends Controller
             ->get();
 
         // #region agent log
-        DebugLogger::log(['recent_events_count'=>$recentEvents->count(),'top_categories_count'=>$topCategories->count()], 'AdminDashboardController.php:62', 'Returning view with data');
+        DebugLogger::log(['recent_events_count' => $recentEvents->count(), 'top_categories_count' => $topCategories->count()], 'AdminDashboardController.php:62', 'Returning view with data');
         // #endregion
 
         return view('admin.dashboard', compact('stats', 'recentEvents', 'eventsByStatus', 'topCategories'));
     }
 }
-

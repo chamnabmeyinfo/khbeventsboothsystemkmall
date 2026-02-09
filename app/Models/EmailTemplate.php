@@ -33,8 +33,8 @@ class EmailTemplate extends Model
         $body = $this->body;
 
         foreach ($data as $key => $value) {
-            $subject = str_replace('{{' . $key . '}}', $value, $subject);
-            $body = str_replace('{{' . $key . '}}', $value, $body);
+            $subject = str_replace('{{'.$key.'}}', $value, $subject);
+            $body = str_replace('{{'.$key.'}}', $value, $body);
         }
 
         return [

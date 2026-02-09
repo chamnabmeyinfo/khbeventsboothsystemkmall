@@ -1,0 +1,44 @@
+#Start XAMPP services:
+sudo /opt/lampp/lampp start
+
+#lampp UI run
+sudo /opt/lampp/manager-linux-x64.run
+
+#Stop MySQL:
+   sudo /opt/lampp/lampp stopmysql
+#Stop Apache:
+sudo /opt/lampp/lampp stopapache
+#Stop PHP:
+sudo /opt/lampp/lampp stopphp
+#Stop FTP:
+sudo /opt/lampp/lampp stopftp
+#Stop Tomcat:
+sudo /opt/lampp/lampp stoptomcat
+#Stop Mercury:
+sudo /opt/lampp/lampp stopmercury
+#Stop All:
+sudo /opt/lampp/lampp stop
+#start XAMPP services:
+sudo /opt/lampp/lampp start
+
+#delete mysql database
+sudo rm -rf /opt/lampp/var/mysql/khbeventskmallxmas
+#Start MySQL:
+sudo /opt/lampp/lampp startmysql
+
+#all artisan commands
+php artisan serve
+
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+php artisan migrate
+
+php artisan db:seed
+php artisan db:seed --class=UsersTableSeeder
+php artisan db:seed --class=RolesTableSeeder
+php artisan db:seed --class=PermissionsTableSeeder
+php artisan db:seed --class=RoleHasPermissionsTableSeeder
+php artisan db:seed --class=ModelHasRolesTableSeeder
+php artisan db:seed --class=ModelHasPermissionsTableSeeder

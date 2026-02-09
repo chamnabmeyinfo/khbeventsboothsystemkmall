@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ZoneSetting;
 use App\Models\FloorPlan;
+use App\Models\ZoneSetting;
 use Illuminate\Http\Request;
 
 class ZoneController extends Controller
@@ -14,30 +14,30 @@ class ZoneController extends Controller
     public function index(Request $request)
     {
         $query = ZoneSetting::with('floorPlan');
-        
+
         // Filter by floor plan
         if ($request->filled('floor_plan_id')) {
             $query->where('floor_plan_id', $request->floor_plan_id);
         }
-        
+
         // Search by zone name
         if ($request->filled('search')) {
-            $query->where('zone_name', 'like', '%' . $request->search . '%');
+            $query->where('zone_name', 'like', '%'.$request->search.'%');
         }
-        
+
         // Sort
         $sortBy = $request->get('sort_by', 'zone_name');
         $sortDir = $request->get('sort_dir', 'asc');
-        
+
         if (in_array($sortBy, ['zone_name', 'price', 'created_at'])) {
             $query->orderBy($sortBy, $sortDir);
         } else {
             $query->orderBy('zone_name', 'asc');
         }
-        
+
         $zones = $query->paginate(20);
         $floorPlans = FloorPlan::orderBy('name')->get();
-        
+
         return view('zones.index', compact('zones', 'floorPlans', 'sortBy', 'sortDir'));
     }
 
@@ -47,6 +47,7 @@ class ZoneController extends Controller
     public function create()
     {
         $floorPlans = FloorPlan::orderBy('name')->get();
+
         return view('zones.create', compact('floorPlans'));
     }
 
@@ -75,20 +76,20 @@ class ZoneController extends Controller
             'text_align' => 'nullable|string|in:left,center,right',
             'box_shadow' => 'nullable|string|max:255',
         ]);
-        
+
         // Check for duplicate zone name in same floor plan
         $existing = ZoneSetting::where('zone_name', $validated['zone_name'])
             ->where('floor_plan_id', $validated['floor_plan_id'] ?? null)
             ->first();
-            
+
         if ($existing) {
             return redirect()->back()
                 ->withInput()
                 ->withErrors(['zone_name' => 'A zone with this name already exists for this floor plan.']);
         }
-        
+
         $zone = ZoneSetting::create($validated);
-        
+
         return redirect()->route('zones.index')
             ->with('success', 'Zone created successfully.');
     }
@@ -99,6 +100,7 @@ class ZoneController extends Controller
     public function show(ZoneSetting $zone)
     {
         $zone->load('floorPlan');
+
         return view('zones.show', compact('zone'));
     }
 
@@ -109,6 +111,7 @@ class ZoneController extends Controller
     {
         $zone->load('floorPlan');
         $floorPlans = FloorPlan::orderBy('name')->get();
+
         return view('zones.edit', compact('zone', 'floorPlans'));
     }
 
@@ -137,21 +140,21 @@ class ZoneController extends Controller
             'text_align' => 'nullable|string|in:left,center,right',
             'box_shadow' => 'nullable|string|max:255',
         ]);
-        
+
         // Check for duplicate zone name in same floor plan (excluding current zone)
         $existing = ZoneSetting::where('zone_name', $validated['zone_name'])
             ->where('floor_plan_id', $validated['floor_plan_id'] ?? null)
             ->where('id', '!=', $zone->id)
             ->first();
-            
+
         if ($existing) {
             return redirect()->back()
                 ->withInput()
                 ->withErrors(['zone_name' => 'A zone with this name already exists for this floor plan.']);
         }
-        
+
         $zone->update($validated);
-        
+
         return redirect()->route('zones.index')
             ->with('success', 'Zone updated successfully.');
     }
@@ -163,7 +166,7 @@ class ZoneController extends Controller
     {
         $zoneName = $zone->zone_name;
         $zone->delete();
-        
+
         return redirect()->route('zones.index')
             ->with('success', "Zone '{$zoneName}' deleted successfully.");
     }

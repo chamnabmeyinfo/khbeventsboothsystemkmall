@@ -49,18 +49,18 @@ class BoothStatusSetting extends Model
     public static function getActiveStatuses($floorPlanId = null)
     {
         $query = self::where('is_active', true);
-        
+
         if ($floorPlanId !== null) {
             // Get statuses for specific floor plan OR global statuses (floor_plan_id is null)
-            $query->where(function($q) use ($floorPlanId) {
+            $query->where(function ($q) use ($floorPlanId) {
                 $q->where('floor_plan_id', $floorPlanId)
-                  ->orWhereNull('floor_plan_id');
+                    ->orWhereNull('floor_plan_id');
             });
         } else {
             // Get only global statuses (no floor plan assigned)
             $query->whereNull('floor_plan_id');
         }
-        
+
         return $query->orderBy('sort_order')->get();
     }
 
@@ -71,18 +71,18 @@ class BoothStatusSetting extends Model
     {
         $query = self::where('status_code', $statusCode)
             ->where('is_active', true);
-        
+
         if ($floorPlanId !== null) {
             // Get status for specific floor plan OR global status
-            $query->where(function($q) use ($floorPlanId) {
+            $query->where(function ($q) use ($floorPlanId) {
                 $q->where('floor_plan_id', $floorPlanId)
-                  ->orWhereNull('floor_plan_id');
+                    ->orWhereNull('floor_plan_id');
             })->orderByRaw('CASE WHEN floor_plan_id IS NOT NULL THEN 0 ELSE 1 END'); // Prefer floor-plan-specific over global
         } else {
             // Get only global status
             $query->whereNull('floor_plan_id');
         }
-        
+
         return $query->first();
     }
 
@@ -93,18 +93,18 @@ class BoothStatusSetting extends Model
     {
         $query = self::where('is_default', true)
             ->where('is_active', true);
-        
+
         if ($floorPlanId !== null) {
             // Get default status for specific floor plan OR global default
-            $query->where(function($q) use ($floorPlanId) {
+            $query->where(function ($q) use ($floorPlanId) {
                 $q->where('floor_plan_id', $floorPlanId)
-                  ->orWhereNull('floor_plan_id');
+                    ->orWhereNull('floor_plan_id');
             })->orderByRaw('CASE WHEN floor_plan_id IS NOT NULL THEN 0 ELSE 1 END'); // Prefer floor-plan-specific over global
         } else {
             // Get only global default
             $query->whereNull('floor_plan_id');
         }
-        
+
         return $query->first();
     }
 
@@ -137,6 +137,7 @@ class BoothStatusSetting extends Model
                 'badge' => $status->badge_color,
             ];
         }
+
         return $colors;
     }
 }

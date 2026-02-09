@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Event;
 use App\Models\CategoryEvent;
+use App\Models\Event;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class EventController extends Controller
 {
@@ -20,10 +19,10 @@ class EventController extends Controller
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('slug', 'like', "%{$search}%")
-                  ->orWhere('location_address', 'like', "%{$search}%");
+                    ->orWhere('slug', 'like', "%{$search}%")
+                    ->orWhere('location_address', 'like', "%{$search}%");
             });
         }
 
@@ -58,6 +57,7 @@ class EventController extends Controller
     public function create()
     {
         $categories = CategoryEvent::where('status', 1)->orderBy('sort_order')->get();
+
         return view('admin.events.create', compact('categories'));
     }
 
@@ -97,6 +97,7 @@ class EventController extends Controller
     public function show(Event $event)
     {
         $event->load('category');
+
         return view('admin.events.show', compact('event'));
     }
 
@@ -106,6 +107,7 @@ class EventController extends Controller
     public function edit(Event $event)
     {
         $categories = CategoryEvent::where('status', 1)->orderBy('sort_order')->get();
+
         return view('admin.events.edit', compact('event', 'categories'));
     }
 
@@ -116,7 +118,7 @@ class EventController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'slug' => 'nullable|string|max:255|unique:events,slug,' . $event->id,
+            'slug' => 'nullable|string|max:255|unique:events,slug,'.$event->id,
             'category_id' => 'required|exists:categories,id',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
@@ -140,8 +142,8 @@ class EventController extends Controller
     public function destroy(Event $event)
     {
         $event->delete();
+
         return redirect()->route('admin.events.index')
             ->with('success', 'Event deleted successfully.');
     }
 }
-

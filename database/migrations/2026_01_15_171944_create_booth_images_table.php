@@ -21,7 +21,7 @@ return new class extends Migration
             $table->integer('sort_order')->default(0);
             $table->boolean('is_primary')->default(false);
             $table->timestamps();
-            
+
             // Indexes for performance (skip foreign keys due to mixed int types)
             $table->index('booth_id');
             $table->index('floor_plan_id');

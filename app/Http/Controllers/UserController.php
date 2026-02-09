@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Role;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -22,28 +22,28 @@ class UserController extends Controller
         }
 
         $query = User::with(['role', 'role.permissions']);
-        
+
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('username', 'like', "%{$search}%")
-                  ->orWhereHas('role', function($roleQuery) use ($search) {
-                      $roleQuery->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('role', function ($roleQuery) use ($search) {
+                        $roleQuery->where('name', 'like', "%{$search}%");
+                    });
             });
         }
-        
+
         // Filter by type
         if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
-        
+
         // Filter by status
         if ($request->filled('status') && $request->status !== '') {
             $query->where('status', $request->status);
         }
-        
+
         // Filter by role (only if column exists)
         if ($request->filled('role_id') && \Illuminate\Support\Facades\Schema::hasColumn('user', 'role_id')) {
             if ($request->role_id == '0') {
@@ -52,13 +52,13 @@ class UserController extends Controller
                 $query->where('role_id', $request->role_id);
             }
         }
-        
+
         // Get initial 20 records for lazy loading
         $users = $query->orderBy('username')->limit(20)->get();
         $total = $query->count();
-        
+
         $roles = Role::where('is_active', true)->orderBy('name')->get();
-        
+
         return view('users.index', compact('users', 'total', 'roles'));
     }
 
@@ -69,28 +69,28 @@ class UserController extends Controller
     {
         // Use exact same query structure as index method
         $query = User::with(['role', 'role.permissions']);
-        
+
         // Search functionality (exact same as index)
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('username', 'like', "%{$search}%")
-                  ->orWhereHas('role', function($roleQuery) use ($search) {
-                      $roleQuery->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('role', function ($roleQuery) use ($search) {
+                        $roleQuery->where('name', 'like', "%{$search}%");
+                    });
             });
         }
-        
+
         // Filter by type (exact same as index)
         if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
-        
+
         // Filter by status (exact same as index)
         if ($request->filled('status') && $request->status !== '') {
             $query->where('status', $request->status);
         }
-        
+
         // Filter by role (exact same as index)
         if ($request->filled('role_id') && \Illuminate\Support\Facades\Schema::hasColumn('user', 'role_id')) {
             if ($request->role_id == '0') {
@@ -99,30 +99,30 @@ class UserController extends Controller
                 $query->where('role_id', $request->role_id);
             }
         }
-        
+
         // Use same ordering and limit as initial load
         $page = $request->input('page', 1);
         $perPage = 20; // Same as initial load limit(20)
         $offset = ($page - 1) * $perPage;
-        
+
         // Get total before pagination
         $total = $query->count();
-        
+
         // Use exact same ordering as index method
         $users = $query->orderBy('username')->offset($offset)->limit($perPage)->get();
         $hasMore = ($offset + $users->count()) < $total;
-        
+
         $html = '';
         foreach ($users as $user) {
             // Ensure relationships are loaded (same as initial load)
-            if (!$user->relationLoaded('role')) {
+            if (! $user->relationLoaded('role')) {
                 $user->load('role', 'role.permissions');
             }
-            
+
             // Table row HTML - partial will calculate everything internally to match main view exactly
             $html .= view('users.partials.table-row', compact('user'))->render();
         }
-        
+
         return response()->json([
             'success' => true,
             'html' => $html,
@@ -130,7 +130,7 @@ class UserController extends Controller
             'total' => $total,
             'loaded' => $offset + $users->count(),
             'page' => $page,
-            'perPage' => $perPage
+            'perPage' => $perPage,
         ], 200, [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
@@ -140,6 +140,7 @@ class UserController extends Controller
     public function create()
     {
         $roles = Role::where('is_active', true)->orderBy('name')->get();
+
         return view('users.create', compact('roles'));
     }
 
@@ -173,7 +174,7 @@ class UserController extends Controller
                     'type' => $user->type,
                     'status' => $user->status,
                     'role_id' => $user->role_id,
-                ]
+                ],
             ], 200);
         }
 
@@ -187,10 +188,10 @@ class UserController extends Controller
     public function show(User $user)
     {
         $user->load(['role', 'role.permissions']);
-        
+
         // Calculate affiliate/commission statistics
         $affiliateStats = $this->calculateAffiliateStats($user);
-        
+
         return view('users.show', compact('user', 'affiliateStats'));
     }
 
@@ -201,13 +202,14 @@ class UserController extends Controller
     {
         // Get affiliate bookings (bookings where this user is the affiliate)
         $affiliateBookings = \App\Models\Book::where('affiliate_user_id', $user->id)->get();
-        
+
         // Calculate total revenue from affiliate bookings
-        $totalRevenue = $affiliateBookings->sum(function($booking) {
+        $totalRevenue = $affiliateBookings->sum(function ($booking) {
             $booths = $booking->booths();
+
             return $booths->sum('price') ?? 0;
         });
-        
+
         // Calculate statistics
         $stats = [
             'total_bookings' => $affiliateBookings->count(),
@@ -218,11 +220,11 @@ class UserController extends Controller
             'last_booking_at' => $affiliateBookings->max('date_book'),
             'first_booking_at' => $affiliateBookings->min('date_book'),
             'total_clicks' => \App\Models\AffiliateClick::where('affiliate_user_id', $user->id)->count(),
-            'conversion_rate' => $affiliateBookings->count() > 0 && \App\Models\AffiliateClick::where('affiliate_user_id', $user->id)->count() > 0 
-                ? round(($affiliateBookings->count() / \App\Models\AffiliateClick::where('affiliate_user_id', $user->id)->count()) * 100, 2) 
+            'conversion_rate' => $affiliateBookings->count() > 0 && \App\Models\AffiliateClick::where('affiliate_user_id', $user->id)->count() > 0
+                ? round(($affiliateBookings->count() / \App\Models\AffiliateClick::where('affiliate_user_id', $user->id)->count()) * 100, 2)
                 : 0,
         ];
-        
+
         // Get bookings by month (last 6 months)
         $bookingsByMonth = \App\Models\Book::where('affiliate_user_id', $user->id)
             ->where('date_book', '>=', now()->subMonths(6))
@@ -230,12 +232,12 @@ class UserController extends Controller
             ->groupBy('month')
             ->orderBy('month', 'asc')
             ->get();
-        
+
         $stats['bookings_by_month'] = $bookingsByMonth;
-        
+
         // Get recent bookings (last 5)
         $stats['recent_bookings'] = $affiliateBookings->sortByDesc('date_book')->take(5);
-        
+
         return $stats;
     }
 
@@ -245,6 +247,7 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $roles = Role::where('is_active', true)->orderBy('name')->get();
+
         return view('users.edit', compact('user', 'roles'));
     }
 
@@ -273,7 +276,7 @@ class UserController extends Controller
     public function updatePassword(Request $request, $id)
     {
         $user = User::findOrFail($id);
-        
+
         $validated = $request->validate([
             'password' => ['required', 'string', 'min:8', 'confirmed', 'regex:/^(?=.*[A-Za-z])(?=.*[0-9]).{8,}$/'],
         ], [
@@ -294,10 +297,10 @@ class UserController extends Controller
      */
     public function status($id, Request $request)
     {
-        if (!$request->has('status')) {
+        if (! $request->has('status')) {
             return response()->json([
                 'status' => 400,
-                'message' => 'Status parameter is required'
+                'message' => 'Status parameter is required',
             ], 400);
         }
 
@@ -314,7 +317,7 @@ class UserController extends Controller
 
         return response()->json([
             'status' => 200,
-            'message' => 'User status updated successfully.'
+            'message' => 'User status updated successfully.',
         ]);
     }
 
@@ -324,6 +327,7 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $user->delete();
+
         return redirect()->route('users.index')
             ->with('success', 'User deleted successfully.');
     }
@@ -335,16 +339,16 @@ class UserController extends Controller
     {
         try {
             $user = User::findOrFail($id);
-            
+
             $validated = $request->validate([
                 'x' => 'required|numeric|min:0|max:100',
                 'y' => 'required|numeric|min:0|max:100',
                 'position' => 'nullable|string|max:50',
             ]);
-            
+
             // Store position as "x% y%" format
-            $position = $validated['position'] ?? ($validated['x'] . '% ' . $validated['y'] . '%');
-            
+            $position = $validated['position'] ?? ($validated['x'].'% '.$validated['y'].'%');
+
             // Check if cover_position column exists, if not store in settings
             if (Schema::hasColumn('user', 'cover_position')) {
                 $user->cover_position = $position;
@@ -352,25 +356,25 @@ class UserController extends Controller
             } else {
                 // Store in settings table as fallback
                 \App\Models\Setting::setValue(
-                    'user_' . $id . '_cover_position',
+                    'user_'.$id.'_cover_position',
                     $position,
                     'string',
-                    'Cover image position for user ' . $id
+                    'Cover image position for user '.$id
                 );
             }
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Cover position updated successfully.',
-                'position' => $position
+                'position' => $position,
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error updating cover position: ' . $e->getMessage());
+            \Log::error('Error updating cover position: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error updating cover position: ' . $e->getMessage()
+                'message' => 'Error updating cover position: '.$e->getMessage(),
             ], 500);
         }
     }
 }
-

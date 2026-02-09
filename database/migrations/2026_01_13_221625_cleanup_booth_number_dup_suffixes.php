@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -23,7 +21,7 @@ return new class extends Migration
         foreach ($boothsWithDup as $booth) {
             // Extract original booth number (remove "-dup1", "-dup2", etc.)
             $originalNumber = preg_replace('/-dup\d+$/', '', $booth->booth_number);
-            
+
             if ($originalNumber === $booth->booth_number) {
                 // No "-dup" pattern found, skip
                 continue;
@@ -36,7 +34,7 @@ return new class extends Migration
                 ->where('id', '!=', $booth->id)
                 ->exists();
 
-            if (!$conflict) {
+            if (! $conflict) {
                 // Safe to remove suffix - no conflict in same floor plan
                 DB::table('booth')
                     ->where('id', $booth->id)
@@ -50,16 +48,16 @@ return new class extends Migration
                     if ($floorPlan) {
                         // Use floor plan abbreviation or ID to make it unique
                         $fpAbbrev = strtoupper(substr($floorPlan->name, 0, 2));
-                        $newNumber = $originalNumber . '-' . $fpAbbrev;
-                        
+                        $newNumber = $originalNumber.'-'.$fpAbbrev;
+
                         // Check if this new number is available
                         $newConflict = DB::table('booth')
                             ->where('booth_number', $newNumber)
                             ->where('floor_plan_id', $booth->floor_plan_id)
                             ->where('id', '!=', $booth->id)
                             ->exists();
-                        
-                        if (!$newConflict) {
+
+                        if (! $newConflict) {
                             DB::table('booth')
                                 ->where('id', $booth->id)
                                 ->update(['booth_number' => $newNumber]);
@@ -77,8 +75,8 @@ return new class extends Migration
                         ->whereNull('floor_plan_id')
                         ->where('id', '!=', $booth->id)
                         ->exists();
-                    
-                    if (!$globalConflict) {
+
+                    if (! $globalConflict) {
                         DB::table('booth')
                             ->where('id', $booth->id)
                             ->update(['booth_number' => $originalNumber]);

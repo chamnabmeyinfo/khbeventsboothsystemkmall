@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Book;
 use App\Models\Booth;
 use App\Models\Client;
-use App\Models\Book;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -20,19 +19,19 @@ class ExportController extends Controller
             ->orderBy('booth_number')
             ->get();
 
-        $filename = 'booths_export_' . date('Y-m-d_His') . '.csv';
-        
+        $filename = 'booths_export_'.date('Y-m-d_His').'.csv';
+
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
-        $callback = function() use ($booths) {
+        $callback = function () use ($booths) {
             $file = fopen('php://output', 'w');
-            
+
             // Header row
             fputcsv($file, ['Booth Number', 'Status', 'Client', 'Category', 'Price', 'User', 'Created']);
-            
+
             // Data rows
             foreach ($booths as $booth) {
                 fputcsv($file, [
@@ -42,10 +41,10 @@ class ExportController extends Controller
                     $booth->category ? $booth->category->name : 'N/A',
                     number_format($booth->price, 2),
                     $booth->user ? $booth->user->username : 'N/A',
-                    $booth->create_time ?? 'N/A'
+                    $booth->create_time ?? 'N/A',
                 ]);
             }
-            
+
             fclose($file);
         };
 
@@ -59,18 +58,18 @@ class ExportController extends Controller
     {
         $clients = Client::with('booths')->orderBy('company')->get();
 
-        $filename = 'clients_export_' . date('Y-m-d_His') . '.csv';
-        
+        $filename = 'clients_export_'.date('Y-m-d_His').'.csv';
+
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
-        $callback = function() use ($clients) {
+        $callback = function () use ($clients) {
             $file = fopen('php://output', 'w');
-            
+
             fputcsv($file, ['ID', 'Company', 'Name', 'Position', 'Phone', 'Booths Count']);
-            
+
             foreach ($clients as $client) {
                 fputcsv($file, [
                     $client->id,
@@ -78,10 +77,10 @@ class ExportController extends Controller
                     $client->name,
                     $client->position ?? 'N/A',
                     $client->phone_number ?? 'N/A',
-                    $client->booths->count()
+                    $client->booths->count(),
                 ]);
             }
-            
+
             fclose($file);
         };
 
@@ -95,18 +94,18 @@ class ExportController extends Controller
     {
         $books = Book::with(['client', 'user'])->latest('date_book')->get();
 
-        $filename = 'bookings_export_' . date('Y-m-d_His') . '.csv';
-        
+        $filename = 'bookings_export_'.date('Y-m-d_His').'.csv';
+
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
-        $callback = function() use ($books) {
+        $callback = function () use ($books) {
             $file = fopen('php://output', 'w');
-            
+
             fputcsv($file, ['ID', 'Date', 'Client', 'Booths', 'User', 'Type']);
-            
+
             foreach ($books as $book) {
                 $boothIds = json_decode($book->boothid, true) ?? [];
                 fputcsv($file, [
@@ -115,10 +114,10 @@ class ExportController extends Controller
                     $book->client ? $book->client->company : 'N/A',
                     count($boothIds),
                     $book->user ? $book->user->username : 'N/A',
-                    $book->type
+                    $book->type,
                 ]);
             }
-            
+
             fclose($file);
         };
 
@@ -146,12 +145,12 @@ class ExportController extends Controller
         }
 
         $html = view('exports.pdf', compact('type', 'data'))->render();
-        
+
         // For now, return HTML that can be printed to PDF by browser
         // In production, use a library like dompdf or snappy
         return response($html)
             ->header('Content-Type', 'text/html')
-            ->header('Content-Disposition', 'inline; filename="export_' . $type . '_' . date('Y-m-d') . '.html"');
+            ->header('Content-Disposition', 'inline; filename="export_'.$type.'_'.date('Y-m-d').'.html"');
     }
 
     /**
@@ -183,7 +182,7 @@ class ExportController extends Controller
 
             if (($handle = fopen($file->getRealPath(), 'r')) !== false) {
                 $headers = fgetcsv($handle); // Skip header row
-                
+
                 while (($data = fgetcsv($handle)) !== false) {
                     try {
                         // Skip empty rows
@@ -199,11 +198,11 @@ class ExportController extends Controller
                                 } else {
                                     $skipped++;
                                     if ($result['error']) {
-                                        $errors[] = 'Row ' . ($imported + $skipped) . ': ' . $result['error'];
+                                        $errors[] = 'Row '.($imported + $skipped).': '.$result['error'];
                                     }
                                 }
                                 break;
-                                
+
                             case 'booths':
                                 $result = $this->importBooth($data, $headers);
                                 if ($result['success']) {
@@ -211,21 +210,21 @@ class ExportController extends Controller
                                 } else {
                                     $skipped++;
                                     if ($result['error']) {
-                                        $errors[] = 'Row ' . ($imported + $skipped) . ': ' . $result['error'];
+                                        $errors[] = 'Row '.($imported + $skipped).': '.$result['error'];
                                     }
                                 }
                                 break;
-                                
+
                             case 'bookings':
                                 // Bookings import is complex and requires existing clients/booths
                                 // Skipping for now - can be implemented if needed
-                                $errors[] = 'Row ' . ($imported + $skipped) . ': Booking import not yet implemented';
+                                $errors[] = 'Row '.($imported + $skipped).': Booking import not yet implemented';
                                 $skipped++;
                                 break;
                         }
                     } catch (\Exception $e) {
                         $skipped++;
-                        $errors[] = 'Row ' . ($imported + $skipped) . ': ' . $e->getMessage();
+                        $errors[] = 'Row '.($imported + $skipped).': '.$e->getMessage();
                     }
                 }
                 fclose($handle);
@@ -237,7 +236,7 @@ class ExportController extends Controller
             if ($request->expectsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => "Import completed: {$imported} records imported" . ($skipped > 0 ? ", {$skipped} skipped" : ""),
+                    'message' => "Import completed: {$imported} records imported".($skipped > 0 ? ", {$skipped} skipped" : ''),
                     'imported' => $imported,
                     'skipped' => $skipped,
                     'errors' => $errors,
@@ -246,24 +245,24 @@ class ExportController extends Controller
 
             // Return redirect for regular form submissions
             return redirect()->route('export.index')
-                ->with('success', "Import completed: {$imported} records imported" . ($skipped > 0 ? ", {$skipped} skipped" : ""))
+                ->with('success', "Import completed: {$imported} records imported".($skipped > 0 ? ", {$skipped} skipped" : ''))
                 ->with('import_errors', $errors);
-                
+
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             // Return JSON for AJAX requests
             if ($request->expectsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Import failed: ' . $e->getMessage(),
+                    'message' => 'Import failed: '.$e->getMessage(),
                     'errors' => [$e->getMessage()],
                 ], 500);
             }
-            
+
             // Return redirect for regular form submissions
             return redirect()->route('export.index')
-                ->with('error', 'Import failed: ' . $e->getMessage());
+                ->with('error', 'Import failed: '.$e->getMessage());
         }
     }
 
@@ -275,9 +274,9 @@ class ExportController extends Controller
         try {
             // Map headers to data (flexible column order)
             $headerMap = array_flip(array_map('strtolower', array_map('trim', $headers)));
-            
+
             $name = isset($headerMap['name']) && isset($data[$headerMap['name']]) ? trim($data[$headerMap['name']]) : null;
-            if (!$name) {
+            if (! $name) {
                 return ['success' => false, 'error' => 'Name is required'];
             }
 
@@ -295,7 +294,7 @@ class ExportController extends Controller
                 'company' => isset($headerMap['company']) && isset($data[$headerMap['company']]) ? trim($data[$headerMap['company']]) : null,
                 'position' => isset($headerMap['position']) && isset($data[$headerMap['position']]) ? trim($data[$headerMap['position']]) : null,
                 'phone_number' => $phone,
-                'sex' => isset($headerMap['sex']) && isset($data[$headerMap['sex']]) ? (int)$data[$headerMap['sex']] : null,
+                'sex' => isset($headerMap['sex']) && isset($data[$headerMap['sex']]) ? (int) $data[$headerMap['sex']] : null,
             ]);
 
             return ['success' => true, 'client' => $client];
@@ -311,14 +310,14 @@ class ExportController extends Controller
     {
         try {
             $headerMap = array_flip(array_map('strtolower', array_map('trim', $headers)));
-            
-            $boothNumber = isset($headerMap['booth number']) && isset($data[$headerMap['booth number']]) 
-                ? trim($data[$headerMap['booth number']]) 
-                : (isset($headerMap['booth_number']) && isset($data[$headerMap['booth_number']]) 
-                    ? trim($data[$headerMap['booth_number']]) 
+
+            $boothNumber = isset($headerMap['booth number']) && isset($data[$headerMap['booth number']])
+                ? trim($data[$headerMap['booth number']])
+                : (isset($headerMap['booth_number']) && isset($data[$headerMap['booth_number']])
+                    ? trim($data[$headerMap['booth_number']])
                     : null);
-            
-            if (!$boothNumber) {
+
+            if (! $boothNumber) {
                 return ['success' => false, 'error' => 'Booth number is required'];
             }
 
@@ -330,11 +329,11 @@ class ExportController extends Controller
 
             $booth = Booth::create([
                 'booth_number' => $boothNumber,
-                'price' => isset($headerMap['price']) && isset($data[$headerMap['price']]) ? (float)$data[$headerMap['price']] : 0,
-                'status' => isset($headerMap['status']) && isset($data[$headerMap['status']]) 
-                    ? $this->parseBoothStatus($data[$headerMap['status']]) 
+                'price' => isset($headerMap['price']) && isset($data[$headerMap['price']]) ? (float) $data[$headerMap['price']] : 0,
+                'status' => isset($headerMap['status']) && isset($data[$headerMap['status']])
+                    ? $this->parseBoothStatus($data[$headerMap['status']])
                     : Booth::STATUS_AVAILABLE,
-                'type' => isset($headerMap['type']) && isset($data[$headerMap['type']]) ? (int)$data[$headerMap['type']] : 1,
+                'type' => isset($headerMap['type']) && isset($data[$headerMap['type']]) ? (int) $data[$headerMap['type']] : 1,
             ]);
 
             return ['success' => true, 'booth' => $booth];
@@ -349,7 +348,7 @@ class ExportController extends Controller
     private function parseBoothStatus($status)
     {
         $status = strtolower(trim($status));
-        
+
         if (in_array($status, ['available', 'free', 'open'])) {
             return Booth::STATUS_AVAILABLE;
         } elseif (in_array($status, ['reserved', 'booked'])) {
@@ -361,8 +360,7 @@ class ExportController extends Controller
         } elseif (in_array($status, ['hidden', 'hide'])) {
             return Booth::STATUS_HIDDEN;
         }
-        
+
         return Booth::STATUS_AVAILABLE;
     }
 }
-

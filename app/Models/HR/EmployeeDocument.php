@@ -48,9 +48,10 @@ class EmployeeDocument extends Model
      */
     public function isExpired()
     {
-        if (!$this->expiry_date) {
+        if (! $this->expiry_date) {
             return false;
         }
+
         return \Carbon\Carbon::parse($this->expiry_date)->isPast();
     }
 
@@ -59,9 +60,10 @@ class EmployeeDocument extends Model
      */
     public function isExpiringSoon($days = 30)
     {
-        if (!$this->expiry_date) {
+        if (! $this->expiry_date) {
             return false;
         }
+
         return \Carbon\Carbon::parse($this->expiry_date)->isBefore(\Carbon\Carbon::now()->addDays($days));
     }
 }

@@ -38,10 +38,10 @@ class ActivityLogController extends Controller
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('description', 'like', "%{$search}%")
-                  ->orWhere('action', 'like', "%{$search}%")
-                  ->orWhere('route', 'like', "%{$search}%");
+                    ->orWhere('action', 'like', "%{$search}%")
+                    ->orWhere('route', 'like', "%{$search}%");
             });
         }
 
@@ -73,7 +73,7 @@ class ActivityLogController extends Controller
     public function show(ActivityLog $activityLog)
     {
         $activityLog->load('user');
-        
+
         // Return JSON for AJAX requests (popup)
         if (request()->ajax() || request()->wantsJson()) {
             return response()->json([
@@ -96,17 +96,17 @@ class ActivityLogController extends Controller
                         'id' => $activityLog->user->id,
                         'username' => $activityLog->user->username,
                         'avatar' => $activityLog->user->avatar,
-                        'is_admin' => $activityLog->user->isAdmin()
+                        'is_admin' => $activityLog->user->isAdmin(),
                     ] : null,
                     'model' => $activityLog->model ? [
                         'id' => $activityLog->model->id,
                         'name' => method_exists($activityLog->model, 'name') ? $activityLog->model->name : null,
                         'title' => method_exists($activityLog->model, 'title') ? $activityLog->model->title : null,
-                    ] : null
-                ]
+                    ] : null,
+                ],
             ]);
         }
-        
+
         return view('activity-logs.show', compact('activityLog'));
     }
 
@@ -125,18 +125,18 @@ class ActivityLogController extends Controller
 
         $logs = $query->get();
 
-        $filename = 'activity_logs_' . date('Y-m-d_His') . '.csv';
-        
+        $filename = 'activity_logs_'.date('Y-m-d_His').'.csv';
+
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
-        $callback = function() use ($logs) {
+        $callback = function () use ($logs) {
             $file = fopen('php://output', 'w');
-            
+
             fputcsv($file, ['Date', 'User', 'Action', 'Model', 'Description', 'IP Address']);
-            
+
             foreach ($logs as $log) {
                 fputcsv($file, [
                     $log->created_at->format('Y-m-d H:i:s'),
@@ -147,11 +147,10 @@ class ActivityLogController extends Controller
                     $log->ip_address ?? 'N/A',
                 ]);
             }
-            
+
             fclose($file);
         };
 
         return response()->stream($callback, 200, $headers);
     }
 }
-

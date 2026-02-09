@@ -62,7 +62,7 @@ class FloorPlan extends Model
         // We check table existence in controllers before eager loading
         return $this->belongsTo(Event::class, 'event_id');
     }
-    
+
     /**
      * Get event safely (checks if table exists)
      */
@@ -75,6 +75,7 @@ class FloorPlan extends Model
                 return null;
             }
         }
+
         return null;
     }
 

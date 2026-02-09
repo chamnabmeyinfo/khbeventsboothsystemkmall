@@ -18,7 +18,7 @@ return new class extends Migration
             $table->decimal('balance_amount', 10, 2)->nullable()->after('paid_amount')->comment('Remaining balance');
             $table->date('payment_due_date')->nullable()->after('balance_amount')->comment('Payment due date');
             $table->text('notes')->nullable()->after('payment_due_date')->comment('Booking notes');
-            
+
             $table->index('status');
             $table->index('payment_due_date');
         });

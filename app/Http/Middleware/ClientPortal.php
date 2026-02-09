@@ -13,7 +13,7 @@ class ClientPortal
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!session('client_id')) {
+        if (! session('client_id')) {
             return redirect()->route('client-portal.login')
                 ->with('error', 'Please login to access client portal');
         }

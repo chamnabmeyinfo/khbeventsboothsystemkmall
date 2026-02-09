@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\File;
-use App\Models\Setting;
-use App\Models\CanvasSetting;
 use App\Models\BoothStatusSetting;
+use App\Models\CanvasSetting;
 use App\Models\FloorPlan;
 use App\Models\FloorPlanTickSetting;
+use App\Models\Setting;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 
 class SettingsController extends Controller
 {
@@ -61,14 +61,14 @@ class SettingsController extends Controller
             $message = 'Application cache cleared successfully.';
             $type = 'success';
         } catch (\Exception $e) {
-            $message = 'Error clearing cache: ' . $e->getMessage();
+            $message = 'Error clearing cache: '.$e->getMessage();
             $type = 'error';
         }
 
         if ($request->expectsJson()) {
             return response()->json([
                 'status' => $type === 'success' ? 200 : 500,
-                'message' => $message
+                'message' => $message,
             ]);
         }
 
@@ -85,14 +85,14 @@ class SettingsController extends Controller
             $message = 'Configuration cache cleared successfully.';
             $type = 'success';
         } catch (\Exception $e) {
-            $message = 'Error clearing config cache: ' . $e->getMessage();
+            $message = 'Error clearing config cache: '.$e->getMessage();
             $type = 'error';
         }
 
         if ($request->expectsJson()) {
             return response()->json([
                 'status' => $type === 'success' ? 200 : 500,
-                'message' => $message
+                'message' => $message,
             ]);
         }
 
@@ -109,14 +109,14 @@ class SettingsController extends Controller
             $message = 'Route cache cleared successfully.';
             $type = 'success';
         } catch (\Exception $e) {
-            $message = 'Error clearing route cache: ' . $e->getMessage();
+            $message = 'Error clearing route cache: '.$e->getMessage();
             $type = 'error';
         }
 
         if ($request->expectsJson()) {
             return response()->json([
                 'status' => $type === 'success' ? 200 : 500,
-                'message' => $message
+                'message' => $message,
             ]);
         }
 
@@ -133,14 +133,14 @@ class SettingsController extends Controller
             $message = 'View cache cleared successfully.';
             $type = 'success';
         } catch (\Exception $e) {
-            $message = 'Error clearing view cache: ' . $e->getMessage();
+            $message = 'Error clearing view cache: '.$e->getMessage();
             $type = 'error';
         }
 
         if ($request->expectsJson()) {
             return response()->json([
                 'status' => $type === 'success' ? 200 : 500,
-                'message' => $message
+                'message' => $message,
             ]);
         }
 
@@ -153,33 +153,33 @@ class SettingsController extends Controller
     public function clearAll(Request $request)
     {
         $results = [];
-        
+
         try {
             Artisan::call('cache:clear');
             $results[] = 'Application cache cleared.';
         } catch (\Exception $e) {
-            $results[] = 'Error clearing application cache: ' . $e->getMessage();
+            $results[] = 'Error clearing application cache: '.$e->getMessage();
         }
 
         try {
             Artisan::call('config:clear');
             $results[] = 'Configuration cache cleared.';
         } catch (\Exception $e) {
-            $results[] = 'Error clearing config cache: ' . $e->getMessage();
+            $results[] = 'Error clearing config cache: '.$e->getMessage();
         }
 
         try {
             Artisan::call('route:clear');
             $results[] = 'Route cache cleared.';
         } catch (\Exception $e) {
-            $results[] = 'Error clearing route cache: ' . $e->getMessage();
+            $results[] = 'Error clearing route cache: '.$e->getMessage();
         }
 
         try {
             Artisan::call('view:clear');
             $results[] = 'View cache cleared.';
         } catch (\Exception $e) {
-            $results[] = 'Error clearing view cache: ' . $e->getMessage();
+            $results[] = 'Error clearing view cache: '.$e->getMessage();
         }
 
         $message = implode(' ', $results);
@@ -189,7 +189,7 @@ class SettingsController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'status' => $hasErrors ? 500 : 200,
-                'message' => $message
+                'message' => $message,
             ]);
         }
 
@@ -206,14 +206,14 @@ class SettingsController extends Controller
             $message = 'Application optimized successfully.';
             $type = 'success';
         } catch (\Exception $e) {
-            $message = 'Error optimizing application: ' . $e->getMessage();
+            $message = 'Error optimizing application: '.$e->getMessage();
             $type = 'error';
         }
 
         if ($request->expectsJson()) {
             return response()->json([
                 'status' => $type === 'success' ? 200 : 500,
-                'message' => $message
+                'message' => $message,
             ]);
         }
 
@@ -230,12 +230,12 @@ class SettingsController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'data' => $defaults
+                'data' => $defaults,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Error fetching booth defaults: ' . $e->getMessage()
+                'message' => 'Error fetching booth defaults: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -270,18 +270,18 @@ class SettingsController extends Controller
             return response()->json([
                 'status' => 200,
                 'message' => 'Booth default settings saved successfully.',
-                'data' => $defaults
+                'data' => $defaults,
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'status' => 422,
                 'message' => 'Validation failed',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Error saving booth defaults: ' . $e->getMessage()
+                'message' => 'Error saving booth defaults: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -293,7 +293,7 @@ class SettingsController extends Controller
     {
         try {
             // Check if table exists first
-            if (!\Schema::hasTable('canvas_settings')) {
+            if (! \Schema::hasTable('canvas_settings')) {
                 // Return defaults if table doesn't exist
                 return response()->json([
                     'status' => 200,
@@ -309,10 +309,10 @@ class SettingsController extends Controller
                         'floorplan_image' => null,
                         'grid_enabled' => true,
                         'snap_to_grid' => false,
-                    ]
+                    ],
                 ]);
             }
-            
+
             // Get floor_plan_id from request (query parameter or JSON body)
             $floorPlanId = $request->input('floor_plan_id');
             if ($floorPlanId) {
@@ -320,7 +320,7 @@ class SettingsController extends Controller
             } else {
                 $floorPlanId = null;
             }
-            
+
             // Get floor-plan-specific settings
             $settings = CanvasSetting::getForFloorPlan($floorPlanId);
 
@@ -330,18 +330,17 @@ class SettingsController extends Controller
             $floorplanImage = null;
             if ($floorPlanId) {
                 $floorPlan = \App\Models\FloorPlan::find($floorPlanId);
-                
-                
+
                 if ($floorPlan && $floorPlan->floor_image) {
                     $floorplanImage = $floorPlan->floor_image; // Relative path: 'images/floor-plans/...'
-                    
+
                     // Clean up invalid image paths (empty strings, etc.)
                     if (trim($floorplanImage) === '' || $floorplanImage === 'null') {
                         $floorplanImage = null;
                     }
                 }
             }
-            
+
             // Always sync canvas_settings.floorplan_image with floor_plans.floor_image
             // This ensures consistency and prevents conflicts when switching floor plans
             if ($floorPlanId) {
@@ -350,29 +349,29 @@ class SettingsController extends Controller
                     $settings->floorplan_image = $floorplanImage; // Can be null if no image
                     $settings->save();
                 } catch (\Exception $e) {
-                    \Log::warning('Could not sync canvas_settings.floorplan_image: ' . $e->getMessage());
+                    \Log::warning('Could not sync canvas_settings.floorplan_image: '.$e->getMessage());
                 }
             }
-            
+
             // Clean up any invalid data in canvas_settings (Blade templates, full URLs, etc.)
             if ($settings->floorplan_image) {
                 $canvasImagePath = $settings->floorplan_image;
                 $isInvalid = (
                     strpos($canvasImagePath, '{{') !== false || // Blade template
-                    strpos($canvasImagePath, 'asset') !== false || // Blade asset() function  
+                    strpos($canvasImagePath, 'asset') !== false || // Blade asset() function
                     strpos($canvasImagePath, 'http://') !== false || // Full URL
                     strpos($canvasImagePath, 'https://') !== false || // Full URL
                     trim($canvasImagePath) === '' || // Empty string
                     $canvasImagePath === 'null' // String "null"
                 );
-                
+
                 if ($isInvalid) {
                     try {
                         // Use floor plan's image instead (or null if none)
                         $settings->floorplan_image = $floorplanImage;
                         $settings->save();
                     } catch (\Exception $e) {
-                        \Log::warning('Could not clean invalid canvas_settings.floorplan_image: ' . $e->getMessage());
+                        \Log::warning('Could not clean invalid canvas_settings.floorplan_image: '.$e->getMessage());
                     }
                 }
             }
@@ -390,14 +389,14 @@ class SettingsController extends Controller
                 'grid_enabled' => $settings->grid_enabled ?? true,
                 'snap_to_grid' => $settings->snap_to_grid ?? false,
             ];
-            
-            
+
             return response()->json([
                 'status' => 200,
-                'data' => $responseData
+                'data' => $responseData,
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error fetching canvas settings: ' . $e->getMessage());
+            \Log::error('Error fetching canvas settings: '.$e->getMessage());
+
             // Return defaults on error
             return response()->json([
                 'status' => 200,
@@ -413,7 +412,7 @@ class SettingsController extends Controller
                     'floorplan_image' => null,
                     'grid_enabled' => true,
                     'snap_to_grid' => false,
-                ]
+                ],
             ]);
         }
     }
@@ -425,34 +424,34 @@ class SettingsController extends Controller
     {
         try {
             // Check if table exists first
-            if (!Schema::hasTable('canvas_settings')) {
+            if (! Schema::hasTable('canvas_settings')) {
                 return response()->json([
                     'status' => 200,
                     'message' => 'Canvas settings table not found. Please run migrations.',
-                    'data' => $request->all()
+                    'data' => $request->all(),
                 ]);
             }
-            
+
             // Get floor_plan_id from request (required for floor-plan-specific settings)
             $floorPlanId = $request->input('floor_plan_id');
             if ($floorPlanId) {
                 $floorPlanId = (int) $floorPlanId;
                 // Validate floor plan exists
-                if (!\App\Models\FloorPlan::find($floorPlanId)) {
+                if (! \App\Models\FloorPlan::find($floorPlanId)) {
                     return response()->json([
                         'status' => 422,
                         'message' => 'Floor plan not found.',
-                        'errors' => ['floor_plan_id' => ['The selected floor plan is invalid.']]
+                        'errors' => ['floor_plan_id' => ['The selected floor plan is invalid.']],
                     ], 422);
                 }
             } else {
                 $floorPlanId = null; // Allow null for backward compatibility
             }
-            
+
             // Prepare data with type conversion
             $data = [];
             $input = $request->all();
-            
+
             // Only include fields that are present and valid
             if ($floorPlanId !== null) {
                 $data['floor_plan_id'] = $floorPlanId;
@@ -490,13 +489,13 @@ class SettingsController extends Controller
             if (isset($input['snap_to_grid'])) {
                 $data['snap_to_grid'] = filter_var($input['snap_to_grid'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
             }
-            
+
             // If no data to save, return success
             if (empty($data)) {
                 return response()->json([
                     'status' => 200,
                     'message' => 'No settings to save.',
-                    'data' => []
+                    'data' => [],
                 ]);
             }
 
@@ -518,18 +517,18 @@ class SettingsController extends Controller
                     'floorplan_image' => $settings->floorplan_image,
                     'grid_enabled' => $settings->grid_enabled,
                     'snap_to_grid' => $settings->snap_to_grid,
-                ]
+                ],
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'status' => 422,
                 'message' => 'Validation failed',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Error saving canvas settings: ' . $e->getMessage()
+                'message' => 'Error saving canvas settings: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -544,12 +543,12 @@ class SettingsController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'data' => $settings
+                'data' => $settings,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Error fetching company settings: ' . $e->getMessage()
+                'message' => 'Error fetching company settings: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -575,18 +574,18 @@ class SettingsController extends Controller
             return response()->json([
                 'status' => 200,
                 'message' => 'Company settings saved successfully.',
-                'data' => $settings
+                'data' => $settings,
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'status' => 422,
                 'message' => 'Validation failed',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Error saving company settings: ' . $e->getMessage()
+                'message' => 'Error saving company settings: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -601,12 +600,12 @@ class SettingsController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'data' => $settings
+                'data' => $settings,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Error fetching appearance settings: ' . $e->getMessage()
+                'message' => 'Error fetching appearance settings: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -634,18 +633,18 @@ class SettingsController extends Controller
             return response()->json([
                 'status' => 200,
                 'message' => 'Appearance settings saved successfully.',
-                'data' => $settings
+                'data' => $settings,
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'status' => 422,
                 'message' => 'Validation failed',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Error saving appearance settings: ' . $e->getMessage()
+                'message' => 'Error saving appearance settings: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -661,42 +660,43 @@ class SettingsController extends Controller
             ]);
 
             $file = $request->file('logo');
-            
+
             // Create directory if it doesn't exist
             $directory = public_path('images/company');
-            if (!File::exists($directory)) {
+            if (! File::exists($directory)) {
                 File::makeDirectory($directory, 0755, true);
             }
 
             // Generate unique filename
-            $filename = 'company_logo_' . time() . '.' . $file->getClientOriginalExtension();
-            $path = $directory . '/' . $filename;
+            $filename = 'company_logo_'.time().'.'.$file->getClientOriginalExtension();
+            $path = $directory.'/'.$filename;
 
             // Move uploaded file
             $file->move($directory, $filename);
 
             // Save the path relative to public directory
-            $relativePath = 'images/company/' . $filename;
-            
+            $relativePath = 'images/company/'.$filename;
+
             // Delete old logo if exists
             $oldLogo = Setting::getValue('company_logo', '');
             if ($oldLogo && File::exists(public_path($oldLogo))) {
                 File::delete(public_path($oldLogo));
             }
-            
+
             Setting::setValue('company_logo', $relativePath, 'string', 'Company logo file path');
 
             return response()->json([
                 'status' => 200,
                 'message' => 'Logo uploaded successfully.',
                 'path' => $relativePath,
-                'url' => asset($relativePath)
+                'url' => asset($relativePath),
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error uploading logo: ' . $e->getMessage());
+            \Log::error('Error uploading logo: '.$e->getMessage());
+
             return response()->json([
                 'status' => 500,
-                'message' => 'Error uploading logo: ' . $e->getMessage()
+                'message' => 'Error uploading logo: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -712,42 +712,43 @@ class SettingsController extends Controller
             ]);
 
             $file = $request->file('favicon');
-            
+
             // Create directory if it doesn't exist
             $directory = public_path('images/company');
-            if (!File::exists($directory)) {
+            if (! File::exists($directory)) {
                 File::makeDirectory($directory, 0755, true);
             }
 
             // Generate unique filename
-            $filename = 'company_favicon_' . time() . '.' . $file->getClientOriginalExtension();
-            $path = $directory . '/' . $filename;
+            $filename = 'company_favicon_'.time().'.'.$file->getClientOriginalExtension();
+            $path = $directory.'/'.$filename;
 
             // Move uploaded file
             $file->move($directory, $filename);
 
             // Save the path relative to public directory
-            $relativePath = 'images/company/' . $filename;
-            
+            $relativePath = 'images/company/'.$filename;
+
             // Delete old favicon if exists
             $oldFavicon = Setting::getValue('company_favicon', '');
             if ($oldFavicon && File::exists(public_path($oldFavicon))) {
                 File::delete(public_path($oldFavicon));
             }
-            
+
             Setting::setValue('company_favicon', $relativePath, 'string', 'Company favicon file path');
 
             return response()->json([
                 'status' => 200,
                 'message' => 'Favicon uploaded successfully.',
                 'path' => $relativePath,
-                'url' => asset($relativePath)
+                'url' => asset($relativePath),
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error uploading favicon: ' . $e->getMessage());
+            \Log::error('Error uploading favicon: '.$e->getMessage());
+
             return response()->json([
                 'status' => 500,
-                'message' => 'Error uploading favicon: ' . $e->getMessage()
+                'message' => 'Error uploading favicon: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -762,12 +763,12 @@ class SettingsController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'data' => $statuses
+                'data' => $statuses,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Error fetching booth status settings: ' . $e->getMessage()
+                'message' => 'Error fetching booth status settings: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -782,7 +783,7 @@ class SettingsController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'data' => $colors
+                'data' => $colors,
             ]);
         } catch (\Exception $e) {
             // Fallback to default colors if error
@@ -794,7 +795,7 @@ class SettingsController extends Controller
                     3 => ['background' => '#ffc107', 'border' => '#ffc107', 'text' => '#333333'],
                     4 => ['background' => '#6c757d', 'border' => '#6c757d', 'text' => '#ffffff'],
                     5 => ['background' => '#212529', 'border' => '#212529', 'text' => '#ffffff'],
-                ]
+                ],
             ]);
         }
     }
@@ -809,7 +810,7 @@ class SettingsController extends Controller
             $statuses = $request->input('statuses', []);
             foreach ($statuses as &$status) {
                 // Convert empty string floor_plan_id to null
-                if (!isset($status['floor_plan_id']) || $status['floor_plan_id'] === '' || $status['floor_plan_id'] === null) {
+                if (! isset($status['floor_plan_id']) || $status['floor_plan_id'] === '' || $status['floor_plan_id'] === null) {
                     $status['floor_plan_id'] = null;
                 } else {
                     // Convert floor_plan_id to integer if it's a string number
@@ -824,10 +825,10 @@ class SettingsController extends Controller
                 }
             }
             unset($status);
-            
+
             // Replace the request input with processed data
             $request->merge(['statuses' => $statuses]);
-            
+
             $validated = $request->validate([
                 'statuses' => 'required|array',
                 'statuses.*.id' => 'nullable|integer|exists:booth_status_settings,id',
@@ -853,10 +854,10 @@ class SettingsController extends Controller
             foreach ($validated['statuses'] as $statusData) {
                 try {
                     // Ensure floor_plan_id is null if not set or empty
-                    if (!isset($statusData['floor_plan_id']) || $statusData['floor_plan_id'] === '') {
+                    if (! isset($statusData['floor_plan_id']) || $statusData['floor_plan_id'] === '') {
                         $statusData['floor_plan_id'] = null;
                     }
-                    
+
                     // If only one status should be default, unset others first (within same floor plan scope)
                     if (isset($statusData['is_default']) && $statusData['is_default']) {
                         $defaultQuery = BoothStatusSetting::where('id', '!=', $statusData['id'] ?? 0);
@@ -868,10 +869,10 @@ class SettingsController extends Controller
                         }
                         $defaultQuery->update(['is_default' => false]);
                     }
-                    
+
                     // Check for duplicate status_code within same floor plan
                     $existingStatus = BoothStatusSetting::where('status_code', $statusData['status_code'])
-                        ->where(function($q) use ($statusData) {
+                        ->where(function ($q) use ($statusData) {
                             if (isset($statusData['floor_plan_id']) && $statusData['floor_plan_id'] !== null) {
                                 $q->where('floor_plan_id', $statusData['floor_plan_id']);
                             } else {
@@ -880,11 +881,11 @@ class SettingsController extends Controller
                         })
                         ->where('id', '!=', $statusData['id'] ?? 0)
                         ->first();
-                    
+
                     if ($existingStatus) {
-                        throw new \Exception('Status code ' . $statusData['status_code'] . ' already exists for this floor plan assignment.');
+                        throw new \Exception('Status code '.$statusData['status_code'].' already exists for this floor plan assignment.');
                     }
-                    
+
                     if (isset($statusData['id']) && $statusData['id']) {
                         // Update existing
                         $status = BoothStatusSetting::findOrFail($statusData['id']);
@@ -897,7 +898,7 @@ class SettingsController extends Controller
                 } catch (\Exception $e) {
                     $errors[] = [
                         'status_code' => $statusData['status_code'] ?? 'unknown',
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ];
                 }
             }
@@ -906,19 +907,20 @@ class SettingsController extends Controller
                 'status' => 200,
                 'message' => 'Booth status settings saved successfully.',
                 'data' => $saved,
-                'errors' => $errors
+                'errors' => $errors,
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'status' => 422,
                 'message' => 'Validation failed',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
-            \Log::error('Error saving booth status settings: ' . $e->getMessage());
+            \Log::error('Error saving booth status settings: '.$e->getMessage());
+
             return response()->json([
                 'status' => 500,
-                'message' => 'Error saving booth status settings: ' . $e->getMessage()
+                'message' => 'Error saving booth status settings: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -930,13 +932,13 @@ class SettingsController extends Controller
     {
         try {
             $status = BoothStatusSetting::findOrFail($id);
-            
+
             // Don't allow deleting if it's the only active status
             $activeCount = BoothStatusSetting::where('is_active', true)->count();
             if ($status->is_active && $activeCount <= 1) {
                 return response()->json([
                     'status' => 400,
-                    'message' => 'Cannot delete the last active status. Please deactivate it instead.'
+                    'message' => 'Cannot delete the last active status. Please deactivate it instead.',
                 ], 400);
             }
 
@@ -944,13 +946,14 @@ class SettingsController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'message' => 'Booth status setting deleted successfully.'
+                'message' => 'Booth status setting deleted successfully.',
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error deleting booth status setting: ' . $e->getMessage());
+            \Log::error('Error deleting booth status setting: '.$e->getMessage());
+
             return response()->json([
                 'status' => 500,
-                'message' => 'Error deleting booth status setting: ' . $e->getMessage()
+                'message' => 'Error deleting booth status setting: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -965,12 +968,12 @@ class SettingsController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'data' => $settings
+                'data' => $settings,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Error fetching CDN settings: ' . $e->getMessage()
+                'message' => 'Error fetching CDN settings: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -990,18 +993,18 @@ class SettingsController extends Controller
             return response()->json([
                 'status' => 200,
                 'message' => 'CDN settings saved successfully. Please refresh the page to see changes.',
-                'data' => $settings
+                'data' => $settings,
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'status' => 422,
                 'message' => 'Validation failed',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Error saving CDN settings: ' . $e->getMessage()
+                'message' => 'Error saving CDN settings: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -1016,12 +1019,12 @@ class SettingsController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'data' => $settings
+                'data' => $settings,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Error fetching module display settings: ' . $e->getMessage()
+                'message' => 'Error fetching module display settings: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -1052,18 +1055,18 @@ class SettingsController extends Controller
             return response()->json([
                 'status' => 200,
                 'message' => 'Module display settings saved successfully.',
-                'data' => $savedSettings
+                'data' => $savedSettings,
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'status' => 422,
                 'message' => 'Validation failed',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Error saving module display settings: ' . $e->getMessage()
+                'message' => 'Error saving module display settings: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -1094,57 +1097,57 @@ class SettingsController extends Controller
         $allowedAnimations = ['pulse', 'none'];
 
         $tickColor = $request->input('booth_booked_tick_color', '#28a745');
-        if (!preg_match('/^#[0-9A-Fa-f]{6}$/', $tickColor)) {
+        if (! preg_match('/^#[0-9A-Fa-f]{6}$/', $tickColor)) {
             $tickColor = '#28a745';
         }
         $tickSize = $request->input('booth_booked_tick_size', 'medium');
-        if (!in_array($tickSize, $allowedSizes, true)) {
+        if (! in_array($tickSize, $allowedSizes, true)) {
             $tickSize = 'medium';
         }
         $tickShape = $request->input('booth_booked_tick_shape', 'round');
-        if (!in_array($tickShape, $allowedShapes, true)) {
+        if (! in_array($tickShape, $allowedShapes, true)) {
             $tickShape = 'round';
         }
         $tickPosition = $request->input('booth_booked_tick_position', 'top-right');
-        if (!in_array($tickPosition, $allowedPositions, true)) {
+        if (! in_array($tickPosition, $allowedPositions, true)) {
             $tickPosition = 'top-right';
         }
         $tickAnimation = $request->input('booth_booked_tick_animation', 'pulse');
-        if (!in_array($tickAnimation, $allowedAnimations, true)) {
+        if (! in_array($tickAnimation, $allowedAnimations, true)) {
             $tickAnimation = 'pulse';
         }
 
         $tickBgColor = '';
-        if (!$request->boolean('booth_booked_tick_bg_none')) {
+        if (! $request->boolean('booth_booked_tick_bg_none')) {
             $tickBgColor = $request->input('booth_booked_tick_bg_color', '');
-            if ($tickBgColor !== '' && !preg_match('/^#[0-9A-Fa-f]{6}$/', $tickBgColor)) {
+            if ($tickBgColor !== '' && ! preg_match('/^#[0-9A-Fa-f]{6}$/', $tickBgColor)) {
                 $tickBgColor = '';
             }
         }
 
         $allowedBorderWidths = ['0', '1', '2', '3'];
         $tickBorderWidth = $request->input('booth_booked_tick_border_width', '0');
-        if (!in_array($tickBorderWidth, $allowedBorderWidths, true)) {
+        if (! in_array($tickBorderWidth, $allowedBorderWidths, true)) {
             $tickBorderWidth = '0';
         }
         $tickBorderColor = $request->input('booth_booked_tick_border_color', '#ffffff');
-        if (!preg_match('/^#[0-9A-Fa-f]{6}$/', $tickBorderColor)) {
+        if (! preg_match('/^#[0-9A-Fa-f]{6}$/', $tickBorderColor)) {
             $tickBorderColor = '#ffffff';
         }
         $allowedFontSizes = ['small', 'medium', 'large'];
         $tickFontSize = $request->input('booth_booked_tick_font_size', 'medium');
-        if (!in_array($tickFontSize, $allowedFontSizes, true)) {
+        if (! in_array($tickFontSize, $allowedFontSizes, true)) {
             $tickFontSize = 'medium';
         }
 
         $allowedSizeModes = ['fixed', 'relative'];
         $tickSizeMode = $request->input('booth_booked_tick_size_mode', 'fixed');
-        if (!in_array($tickSizeMode, $allowedSizeModes, true)) {
+        if (! in_array($tickSizeMode, $allowedSizeModes, true)) {
             $tickSizeMode = 'fixed';
         }
         $allowedRelativePercents = ['8', '10', '12', '15', '20'];
         $tickRelativePercent = $request->input('booth_booked_tick_relative_percent', '12');
-        if (!in_array($tickRelativePercent, $allowedRelativePercents, true)) {
+        if (! in_array($tickRelativePercent, $allowedRelativePercents, true)) {
             $tickRelativePercent = '12';
         }
 
@@ -1189,7 +1192,7 @@ class SettingsController extends Controller
                 'message' => 'Public view settings saved successfully.',
             ]);
         }
+
         return redirect()->route('settings.index', ['tick_floor_plan_id' => $tickFloorPlanId ?: null])->with('success', 'Public view settings saved successfully.');
     }
 }
-

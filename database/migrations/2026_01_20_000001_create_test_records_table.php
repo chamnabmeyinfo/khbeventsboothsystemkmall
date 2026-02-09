@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         // Guard: only create if not present
-        if (!Schema::hasTable('test_records')) {
+        if (! Schema::hasTable('test_records')) {
             Schema::create('test_records', function (Blueprint $table) {
                 $table->id();
                 $table->string('title', 255);
@@ -34,4 +34,4 @@ return new class extends Migration
         Schema::dropIfExists('test_records');
     }
 };
-#test 
+// test

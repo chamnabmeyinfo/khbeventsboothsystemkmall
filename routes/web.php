@@ -1,21 +1,21 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\BoothController;
-use App\Http\Controllers\ClientController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\BookController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\SettingsController;
-use App\Http\Controllers\ExportController;
-use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\EventController;
+use App\Http\Controllers\Auth\AdminLoginController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\BookController;
+use App\Http\Controllers\BoothController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ClientController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExportController;
 use App\Http\Controllers\FloorPlanController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\ZoneController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,6 +33,7 @@ Route::get('/', function () {
     if (Auth::check()) {
         return redirect()->route('dashboard');
     }
+
     return redirect()->route('login');
 });
 
@@ -41,7 +42,7 @@ Route::prefix('client-portal')->name('client-portal.')->group(function () {
     Route::get('/login', [\App\Http\Controllers\ClientPortalController::class, 'showLogin'])->name('login');
     Route::post('/login', [\App\Http\Controllers\ClientPortalController::class, 'login'])->middleware('throttle:5,1')->name('login.post');
     Route::post('/logout', [\App\Http\Controllers\ClientPortalController::class, 'logout'])->name('logout');
-    
+
     Route::middleware(['client.portal'])->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\ClientPortalController::class, 'dashboard'])->name('dashboard');
         Route::get('/profile', [\App\Http\Controllers\ClientPortalController::class, 'profile'])->name('profile');
@@ -69,7 +70,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/floor-plans/{id}/set-default', [FloorPlanController::class, 'setDefault'])->name('floor-plans.set-default');
     Route::post('/floor-plans/{id}/duplicate', [FloorPlanController::class, 'duplicate'])->name('floor-plans.duplicate');
     Route::post('/floor-plans/{id}/affiliate-link', [FloorPlanController::class, 'generateAffiliateLink'])->name('floor-plans.generate-affiliate-link');
-    
+
     // Zones - CRUD Operations
     Route::resource('zones', ZoneController::class);
 });
@@ -83,7 +84,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/affiliates', [\App\Http\Controllers\AffiliateController::class, 'index'])->name('affiliates.index');
     Route::get('/affiliates/statistics/data', [\App\Http\Controllers\AffiliateController::class, 'statistics'])->name('affiliates.statistics');
     Route::get('/affiliates/export', [\App\Http\Controllers\AffiliateController::class, 'export'])->name('affiliates.export');
-    
+
     // Affiliate Benefits Management (must come before /affiliates/{id} to avoid route conflict)
     Route::resource('affiliates/benefits', \App\Http\Controllers\AffiliateBenefitController::class)->names([
         'index' => 'affiliates.benefits.index',
@@ -95,7 +96,7 @@ Route::middleware(['auth'])->group(function () {
         'destroy' => 'affiliates.benefits.destroy',
     ]);
     Route::post('/affiliates/benefits/{id}/toggle-status', [\App\Http\Controllers\AffiliateBenefitController::class, 'toggleStatus'])->name('affiliates.benefits.toggle-status');
-    
+
     // Affiliate Details (must come after benefits routes)
     Route::get('/affiliates/{id}', [\App\Http\Controllers\AffiliateController::class, 'show'])->name('affiliates.show');
 
@@ -122,7 +123,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/booths/check-bookings', [BoothController::class, 'checkBoothsBookings'])->name('booths.check-bookings');
     Route::post('/booths/book-booth', [BoothController::class, 'bookBooth'])->name('booths.book-booth');
     Route::post('/booths/{id}/upload-image', [BoothController::class, 'uploadBoothImage'])->name('booths.upload-image');
-    
+
     // Booth Gallery Images (Multiple Images)
     Route::post('/booths/{id}/upload-gallery', [BoothController::class, 'uploadBoothGalleryImages'])->name('booths.upload-gallery');
     Route::get('/booths/{id}/images', [BoothController::class, 'getBoothImages'])->name('booths.get-images');
@@ -136,7 +137,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/clients/remove-duplicates', [ClientController::class, 'removeDuplicates'])->name('clients.remove-duplicates');
     Route::resource('clients', ClientController::class);
     Route::post('/clients/{id}/cover-position', [ClientController::class, 'updateCoverPosition'])->name('clients.cover-position.update');
-    
+
     // Export Routes
     Route::get('/export', [ExportController::class, 'index'])->name('export.index');
     Route::get('/export/booths', [ExportController::class, 'exportBooths'])->name('export.booths');
@@ -165,7 +166,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Finance Dashboard
     Route::get('/finance/dashboard', [\App\Http\Controllers\FinanceController::class, 'dashboard'])->name('finance.dashboard');
-    
+
     // Reports & Analytics
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/', [\App\Http\Controllers\ReportController::class, 'index'])->name('index');
@@ -194,13 +195,13 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/{id}/refund', [\App\Http\Controllers\PaymentController::class, 'refund'])->name('refund');
             Route::post('/{id}/void', [\App\Http\Controllers\PaymentController::class, 'void'])->name('void');
         });
-        
+
         // Finance Management
         Route::resource('costings', \App\Http\Controllers\Finance\CostingController::class);
         Route::resource('expenses', \App\Http\Controllers\Finance\ExpenseController::class);
         Route::resource('revenues', \App\Http\Controllers\Finance\RevenueController::class);
         Route::resource('categories', \App\Http\Controllers\Finance\FinanceCategoryController::class);
-        
+
         // Booth Pricing routes
         Route::get('booth-pricing', [\App\Http\Controllers\Finance\BoothPricingController::class, 'index'])->name('booth-pricing.index');
         Route::get('booth-pricing/{id}/edit', [\App\Http\Controllers\Finance\BoothPricingController::class, 'edit'])->name('booth-pricing.edit');
@@ -253,46 +254,46 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('hr')->name('hr.')->group(function () {
         // HR Dashboard
         Route::get('/dashboard', [\App\Http\Controllers\HR\HRDashboardController::class, 'index'])->name('dashboard')->middleware('permission:hr.dashboard.view');
-        
+
         // Employees
         Route::resource('employees', \App\Http\Controllers\HR\EmployeeController::class)->middleware('permission:hr.employees.view');
         Route::post('/employees/{employee}/duplicate', [\App\Http\Controllers\HR\EmployeeController::class, 'duplicate'])->name('employees.duplicate')->middleware('permission:hr.employees.create');
-        
+
         // Departments
         Route::resource('departments', \App\Http\Controllers\HR\DepartmentController::class)->middleware('permission:hr.departments.view');
         Route::post('/departments/{department}/duplicate', [\App\Http\Controllers\HR\DepartmentController::class, 'duplicate'])->name('departments.duplicate')->middleware('permission:hr.departments.create');
-        
+
         // Positions
         Route::resource('positions', \App\Http\Controllers\HR\PositionController::class)->middleware('permission:hr.positions.view');
         Route::post('/positions/{position}/duplicate', [\App\Http\Controllers\HR\PositionController::class, 'duplicate'])->name('positions.duplicate')->middleware('permission:hr.positions.create');
-        
+
         // Attendance
         Route::resource('attendance', \App\Http\Controllers\HR\AttendanceController::class)->middleware('permission:hr.attendance.view');
         Route::post('/attendance/{attendance}/approve', [\App\Http\Controllers\HR\AttendanceController::class, 'approve'])->name('attendance.approve')->middleware('permission:hr.attendance.approve');
-        
+
         // Leave Requests
         Route::resource('leaves', \App\Http\Controllers\HR\LeaveController::class)->middleware('permission:hr.leaves.view');
         Route::post('/leaves/{leaveRequest}/approve', [\App\Http\Controllers\HR\LeaveController::class, 'approve'])->name('leaves.approve')->middleware('permission:hr.leaves.approve');
         Route::post('/leaves/{leaveRequest}/reject', [\App\Http\Controllers\HR\LeaveController::class, 'reject'])->name('leaves.reject')->middleware('permission:hr.leaves.approve');
         Route::post('/leaves/{leaveRequest}/cancel', [\App\Http\Controllers\HR\LeaveController::class, 'cancel'])->name('leaves.cancel')->middleware('permission:hr.leaves.manage');
-        
+
         // Leave Calendar
         Route::get('/leave-calendar', [\App\Http\Controllers\HR\LeaveCalendarController::class, 'index'])->name('leave-calendar.index')->middleware('permission:hr.leaves.view');
         Route::get('/leave-calendar/data', [\App\Http\Controllers\HR\LeaveCalendarController::class, 'getCalendarData'])->name('leave-calendar.data')->middleware('permission:hr.leaves.view');
-        
+
         // Leave Types
         Route::resource('leave-types', \App\Http\Controllers\HR\LeaveTypeController::class)->middleware('permission:hr.leaves.manage');
-        
+
         // Performance Reviews
         Route::resource('performance', \App\Http\Controllers\HR\PerformanceReviewController::class)->middleware('permission:hr.performance.view');
-        
+
         // Training
         Route::resource('training', \App\Http\Controllers\HR\TrainingController::class)->middleware('permission:hr.training.view');
-        
+
         // Documents
         Route::resource('documents', \App\Http\Controllers\HR\DocumentController::class)->middleware('permission:hr.documents.view');
         Route::get('/documents/{document}/download', [\App\Http\Controllers\HR\DocumentController::class, 'download'])->name('documents.download')->middleware('permission:hr.documents.view');
-        
+
         // Salary History
         Route::resource('salary', \App\Http\Controllers\HR\SalaryHistoryController::class)->middleware('permission:hr.salary.view');
     });
@@ -323,13 +324,13 @@ Route::middleware(['auth'])->group(function () {
         // Staff Management
         Route::resource('roles', \App\Http\Controllers\RoleController::class);
         Route::resource('permissions', \App\Http\Controllers\PermissionController::class);
-        
+
         // Users
         Route::resource('users', UserController::class);
         Route::post('/users/{id}/status', [UserController::class, 'status'])->name('users.status');
         Route::post('/users/{id}/password', [UserController::class, 'updatePassword'])->name('users.password.update');
         Route::post('/users/{id}/cover-position', [UserController::class, 'updateCoverPosition'])->name('users.cover-position.update');
-        
+
         // Settings
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
         Route::post('/settings/cache/clear', [SettingsController::class, 'clearCache'])->name('settings.cache.clear');
@@ -340,21 +341,21 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/settings/optimize', [SettingsController::class, 'optimize'])->name('settings.optimize');
         Route::get('/settings/public-view', [SettingsController::class, 'getPublicViewSettings'])->name('settings.public-view');
         Route::post('/settings/public-view', [SettingsController::class, 'savePublicViewSettings'])->name('settings.public-view.save');
-        
+
         // Booth Default Settings API
         Route::get('/settings/booth-defaults', [SettingsController::class, 'getBoothDefaults'])->name('settings.booth-defaults');
         Route::post('/settings/booth-defaults', [SettingsController::class, 'saveBoothDefaults'])->name('settings.booth-defaults.save');
-        
+
         // Canvas Settings API
         Route::get('/settings/canvas', [SettingsController::class, 'getCanvasSettings'])->name('settings.canvas');
         Route::post('/settings/canvas', [SettingsController::class, 'saveCanvasSettings'])->name('settings.canvas.save');
-        
+
         // Booth Status Settings API
         Route::get('/settings/booth-statuses', [SettingsController::class, 'getBoothStatusSettings'])->name('settings.booth-statuses');
         Route::get('/settings/booth-statuses/colors', [SettingsController::class, 'getBoothStatusColors'])->name('settings.booth-statuses.colors');
         Route::post('/settings/booth-statuses', [SettingsController::class, 'saveBoothStatusSettings'])->name('settings.booth-statuses.save');
         Route::delete('/settings/booth-statuses/{id}', [SettingsController::class, 'deleteBoothStatusSetting'])->name('settings.booth-statuses.delete');
-        
+
         // Company & Appearance Settings API
         Route::get('/settings/company', [SettingsController::class, 'getCompanySettings'])->name('settings.company');
         Route::post('/settings/company', [SettingsController::class, 'saveCompanySettings'])->name('settings.company.save');
@@ -362,15 +363,15 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/settings/company/upload-favicon', [SettingsController::class, 'uploadFavicon'])->name('settings.company.upload-favicon');
         Route::get('/settings/appearance', [SettingsController::class, 'getAppearanceSettings'])->name('settings.appearance');
         Route::post('/settings/appearance', [SettingsController::class, 'saveAppearanceSettings'])->name('settings.appearance.save');
-        
+
         // CDN Settings
         Route::get('/settings/cdn', [SettingsController::class, 'getCDNSettings'])->name('settings.cdn');
         Route::post('/settings/cdn', [SettingsController::class, 'saveCDNSettings'])->name('settings.cdn.save');
-        
+
         // Module Display Settings
         Route::get('/settings/module-display', [SettingsController::class, 'getModuleDisplaySettings'])->name('settings.module-display');
         Route::post('/settings/module-display', [SettingsController::class, 'saveModuleDisplaySettings'])->name('settings.module-display.save');
-        
+
         // Image Upload Routes
         Route::prefix('images')->name('images.')->group(function () {
             Route::post('/avatar/upload', [\App\Http\Controllers\ImageController::class, 'uploadAvatar'])->name('avatar.upload');
@@ -394,7 +395,7 @@ Route::prefix('admin')->group(function () {
     Route::middleware(['admin.auth'])->group(function () {
         // Admin Dashboard
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
-        
+
         // Events Management
         Route::resource('events', EventController::class)->names([
             'index' => 'admin.events.index',

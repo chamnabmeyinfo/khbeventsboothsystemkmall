@@ -54,6 +54,7 @@ class DatabaseInspect extends Command
             $this->error($e->getMessage());
             $this->newLine();
             $this->comment('Please check your .env file database credentials.');
+
             return 1;
         }
     }
@@ -69,9 +70,9 @@ class DatabaseInspect extends Command
 
         // Get all tables
         $tables = DB::select('SHOW TABLES');
-        $tableName = 'Tables_in_' . DB::connection()->getDatabaseName();
-        
-        $this->info('📋 Tables (' . count($tables) . '):');
+        $tableName = 'Tables_in_'.DB::connection()->getDatabaseName();
+
+        $this->info('📋 Tables ('.count($tables).'):');
         foreach ($tables as $table) {
             $tableNameValue = $table->$tableName;
             $rowCount = DB::table($tableNameValue)->count();
@@ -86,33 +87,33 @@ class DatabaseInspect extends Command
             if (Schema::hasTable($table)) {
                 $rowCount = DB::table($table)->count();
                 $columns = Schema::getColumnListing($table);
-                $this->line("  ✅ <fg=green>{$table}</> - {$rowCount} rows, " . count($columns) . " columns");
-                
+                $this->line("  ✅ <fg=green>{$table}</> - {$rowCount} rows, ".count($columns).' columns');
+
                 // Check for important columns
                 if ($table === 'floor_plans') {
                     $hasEventId = Schema::hasColumn($table, 'event_id');
                     $hasFloorImage = Schema::hasColumn($table, 'floor_image');
-                    $this->line("     └─ event_id: " . ($hasEventId ? '✅' : '❌') . ", floor_image: " . ($hasFloorImage ? '✅' : '❌'));
+                    $this->line('     └─ event_id: '.($hasEventId ? '✅' : '❌').', floor_image: '.($hasFloorImage ? '✅' : '❌'));
                 }
-                
+
                 if ($table === 'booth') {
                     $hasFloorPlanId = Schema::hasColumn($table, 'floor_plan_id');
-                    $this->line("     └─ floor_plan_id: " . ($hasFloorPlanId ? '✅' : '❌'));
+                    $this->line('     └─ floor_plan_id: '.($hasFloorPlanId ? '✅' : '❌'));
                 }
-                
+
                 if ($table === 'book') {
                     $hasEventId = Schema::hasColumn($table, 'event_id');
                     $hasFloorPlanId = Schema::hasColumn($table, 'floor_plan_id');
                     $nullCount = DB::table($table)->whereNull('event_id')->orWhereNull('floor_plan_id')->count();
-                    $this->line("     └─ event_id: " . ($hasEventId ? '✅' : '❌') . ", floor_plan_id: " . ($hasFloorPlanId ? '✅' : '❌'));
+                    $this->line('     └─ event_id: '.($hasEventId ? '✅' : '❌').', floor_plan_id: '.($hasFloorPlanId ? '✅' : '❌'));
                     if ($hasEventId && $hasFloorPlanId && $nullCount > 0) {
                         $this->warn("     ⚠️  {$nullCount} bookings need backfilling (event_id or floor_plan_id is NULL)");
                     }
                 }
-                
+
                 if ($table === 'zone_settings') {
                     $hasFloorPlanId = Schema::hasColumn($table, 'floor_plan_id');
-                    $this->line("     └─ floor_plan_id: " . ($hasFloorPlanId ? '✅' : '❌'));
+                    $this->line('     └─ floor_plan_id: '.($hasFloorPlanId ? '✅' : '❌'));
                 }
             } else {
                 $this->line("  ❌ <fg=red>{$table}</> - Table does not exist");
@@ -123,7 +124,7 @@ class DatabaseInspect extends Command
         $this->comment('💡 Usage:');
         $this->comment('  php artisan db:inspect --tables              List all tables');
         $this->comment('  php artisan db:inspect --table=floor_plans   Inspect specific table');
-        
+
         return 0;
     }
 
@@ -137,8 +138,8 @@ class DatabaseInspect extends Command
         $this->newLine();
 
         $tables = DB::select('SHOW TABLES');
-        $tableName = 'Tables_in_' . DB::connection()->getDatabaseName();
-        
+        $tableName = 'Tables_in_'.DB::connection()->getDatabaseName();
+
         $tableData = [];
         foreach ($tables as $table) {
             $tableNameValue = $table->$tableName;
@@ -147,11 +148,12 @@ class DatabaseInspect extends Command
             $tableData[] = [
                 'Table' => $tableNameValue,
                 'Rows' => $rowCount,
-                'Columns' => count($columns)
+                'Columns' => count($columns),
             ];
         }
 
         $this->table(['Table', 'Rows', 'Columns'], $tableData);
+
         return 0;
     }
 
@@ -160,8 +162,9 @@ class DatabaseInspect extends Command
      */
     protected function inspectTable($table)
     {
-        if (!Schema::hasTable($table)) {
+        if (! Schema::hasTable($table)) {
             $this->error("❌ Table '{$table}' does not exist!");
+
             return 1;
         }
 
@@ -173,9 +176,9 @@ class DatabaseInspect extends Command
         $columns = Schema::getColumnListing($table);
         $columnDetails = DB::select("DESCRIBE `{$table}`");
 
-        $this->info('📋 Columns (' . count($columns) . '):');
+        $this->info('📋 Columns ('.count($columns).'):');
         $this->newLine();
-        
+
         $columnData = [];
         foreach ($columnDetails as $col) {
             $columnData[] = [
@@ -184,7 +187,7 @@ class DatabaseInspect extends Command
                 'Null' => $col->Null,
                 'Key' => $col->Key ?: '-',
                 'Default' => $col->Default !== null ? $col->Default : 'NULL',
-                'Extra' => $col->Extra ?: '-'
+                'Extra' => $col->Extra ?: '-',
             ];
         }
         $this->table(['Column', 'Type', 'Null', 'Key', 'Default', 'Extra'], $columnData);
@@ -197,12 +200,12 @@ class DatabaseInspect extends Command
             $indexData = [];
             $uniqueIndexes = [];
             foreach ($indexes as $index) {
-                if (!in_array($index->Key_name, $uniqueIndexes)) {
+                if (! in_array($index->Key_name, $uniqueIndexes)) {
                     $indexData[] = [
                         'Index' => $index->Key_name,
                         'Columns' => $index->Column_name,
                         'Unique' => $index->Non_unique == 0 ? 'Yes' : 'No',
-                        'Type' => $index->Index_type
+                        'Type' => $index->Index_type,
                     ];
                     $uniqueIndexes[] = $index->Key_name;
                 }
@@ -220,16 +223,16 @@ class DatabaseInspect extends Command
         if ($rowCount > 0) {
             $this->info('📝 Sample Data (first 5 rows):');
             $sampleData = DB::table($table)->limit(5)->get();
-            
+
             if ($sampleData->count() > 0) {
-                $headers = array_keys((array)$sampleData->first());
+                $headers = array_keys((array) $sampleData->first());
                 $rows = [];
                 foreach ($sampleData as $row) {
                     $rowArray = [];
                     foreach ($headers as $header) {
                         $value = $row->$header;
                         if (is_string($value) && strlen($value) > 50) {
-                            $value = substr($value, 0, 47) . '...';
+                            $value = substr($value, 0, 47).'...';
                         }
                         $rowArray[] = $value ?? 'NULL';
                     }

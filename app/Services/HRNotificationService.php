@@ -2,13 +2,13 @@
 
 namespace App\Services;
 
-use App\Models\Notification;
-use App\Models\HR\LeaveRequest;
 use App\Models\HR\Attendance;
-use App\Models\HR\EmployeeDocument;
 use App\Models\HR\Employee;
-use Illuminate\Support\Facades\Mail;
+use App\Models\HR\EmployeeDocument;
+use App\Models\HR\LeaveRequest;
+use App\Models\Notification;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class HRNotificationService
 {
@@ -20,7 +20,7 @@ class HRNotificationService
         $employee = $leaveRequest->employee;
         $manager = $employee->manager;
 
-        if (!$manager || !$manager->user) {
+        if (! $manager || ! $manager->user) {
             return;
         }
 
@@ -50,7 +50,7 @@ class HRNotificationService
                 });
             }
         } catch (\Exception $e) {
-            Log::error('Failed to send leave request email: ' . $e->getMessage());
+            Log::error('Failed to send leave request email: '.$e->getMessage());
         }
     }
 
@@ -61,7 +61,7 @@ class HRNotificationService
     {
         $employee = $leaveRequest->employee;
 
-        if (!$employee || !$employee->user) {
+        if (! $employee || ! $employee->user) {
             return;
         }
 
@@ -89,7 +89,7 @@ class HRNotificationService
                 });
             }
         } catch (\Exception $e) {
-            Log::error('Failed to send leave approved email: ' . $e->getMessage());
+            Log::error('Failed to send leave approved email: '.$e->getMessage());
         }
     }
 
@@ -100,7 +100,7 @@ class HRNotificationService
     {
         $employee = $leaveRequest->employee;
 
-        if (!$employee || !$employee->user) {
+        if (! $employee || ! $employee->user) {
             return;
         }
 
@@ -131,7 +131,7 @@ class HRNotificationService
                 });
             }
         } catch (\Exception $e) {
-            Log::error('Failed to send leave rejected email: ' . $e->getMessage());
+            Log::error('Failed to send leave rejected email: '.$e->getMessage());
         }
     }
 
@@ -143,7 +143,7 @@ class HRNotificationService
         $employee = $attendance->employee;
         $manager = $employee->manager;
 
-        if (!$manager || !$manager->user) {
+        if (! $manager || ! $manager->user) {
             return;
         }
 
@@ -167,7 +167,7 @@ class HRNotificationService
     {
         $employee = $attendance->employee;
 
-        if (!$employee || !$employee->user) {
+        if (! $employee || ! $employee->user) {
             return;
         }
 
@@ -191,7 +191,7 @@ class HRNotificationService
     {
         $employee = $document->employee;
 
-        if (!$employee || !$employee->user) {
+        if (! $employee || ! $employee->user) {
             return;
         }
 
@@ -221,7 +221,7 @@ class HRNotificationService
                     });
                 }
             } catch (\Exception $e) {
-                Log::error('Failed to send document expiry email: ' . $e->getMessage());
+                Log::error('Failed to send document expiry email: '.$e->getMessage());
             }
         }
     }
@@ -231,7 +231,7 @@ class HRNotificationService
      */
     public function notifyPerformanceReviewUpcoming($employee, $reviewDate)
     {
-        if (!$employee || !$employee->user) {
+        if (! $employee || ! $employee->user) {
             return;
         }
 
@@ -253,7 +253,7 @@ class HRNotificationService
      */
     public function notifyBirthday(Employee $employee)
     {
-        if (!$employee || !$employee->user) {
+        if (! $employee || ! $employee->user) {
             return;
         }
 

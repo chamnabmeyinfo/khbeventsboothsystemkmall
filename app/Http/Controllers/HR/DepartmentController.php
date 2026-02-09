@@ -15,9 +15,9 @@ class DepartmentController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%");
+                    ->orWhere('code', 'like', "%{$search}%");
             });
         }
 
@@ -76,10 +76,10 @@ class DepartmentController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'nullable|string|max:50|unique:departments,code,' . $department->id,
+            'code' => 'nullable|string|max:50|unique:departments,code,'.$department->id,
             'description' => 'nullable|string',
             'manager_id' => 'nullable|exists:employees,id',
-            'parent_id' => 'nullable|exists:departments,id|not_in:' . $department->id,
+            'parent_id' => 'nullable|exists:departments,id|not_in:'.$department->id,
             'budget' => 'nullable|numeric|min:0',
             'is_active' => 'boolean',
             'sort_order' => 'nullable|integer',
@@ -110,7 +110,7 @@ class DepartmentController extends Controller
     public function duplicate(Department $department)
     {
         $newDepartment = $department->replicate();
-        $newDepartment->name = $department->name . ' (Copy)';
+        $newDepartment->name = $department->name.' (Copy)';
         $newDepartment->code = null; // Clear code to avoid unique constraint
         $newDepartment->manager_id = null; // Clear manager
         $newDepartment->is_active = false; // Set as inactive by default

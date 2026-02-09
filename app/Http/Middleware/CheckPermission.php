@@ -13,7 +13,7 @@ class CheckPermission
      */
     public function handle(Request $request, Closure $next, string $permission): Response
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return redirect()->route('login')
                 ->with('error', 'Please login to access this page');
         }
@@ -26,7 +26,7 @@ class CheckPermission
         }
 
         // Check if user has the required permission
-        if (!$user->hasPermission($permission)) {
+        if (! $user->hasPermission($permission)) {
             abort(403, 'You do not have permission to access this resource.');
         }
 

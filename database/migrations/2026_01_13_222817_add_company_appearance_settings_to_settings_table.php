@@ -1,9 +1,8 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -23,7 +22,7 @@ return new class extends Migration
                 ['key' => 'company_address', 'value' => '', 'type' => 'string', 'description' => 'Company physical address'],
                 ['key' => 'company_website', 'value' => '', 'type' => 'string', 'description' => 'Company website URL'],
             ];
-            
+
             // System Color Scheme Settings
             $colorSettings = [
                 ['key' => 'system_primary_color', 'value' => '#4e73df', 'type' => 'string', 'description' => 'Primary brand color (buttons, links, highlights)'],
@@ -36,14 +35,14 @@ return new class extends Migration
                 ['key' => 'system_navbar_bg', 'value' => '#ffffff', 'type' => 'string', 'description' => 'Navbar background color'],
                 ['key' => 'system_footer_bg', 'value' => '#f8f9fc', 'type' => 'string', 'description' => 'Footer background color'],
             ];
-            
+
             // Combine all settings
             $allSettings = array_merge($companySettings, $colorSettings);
-            
+
             // Insert settings if they don't exist
             foreach ($allSettings as $setting) {
                 $exists = DB::table('settings')->where('key', $setting['key'])->exists();
-                if (!$exists) {
+                if (! $exists) {
                     DB::table('settings')->insert(array_merge($setting, [
                         'created_at' => now(),
                         'updated_at' => now(),
@@ -60,13 +59,13 @@ return new class extends Migration
     {
         if (Schema::hasTable('settings')) {
             $keysToRemove = [
-                'company_name', 'company_logo', 'company_favicon', 'company_email', 
+                'company_name', 'company_logo', 'company_favicon', 'company_email',
                 'company_phone', 'company_address', 'company_website',
                 'system_primary_color', 'system_secondary_color', 'system_success_color',
                 'system_info_color', 'system_warning_color', 'system_danger_color',
-                'system_sidebar_bg', 'system_navbar_bg', 'system_footer_bg'
+                'system_sidebar_bg', 'system_navbar_bg', 'system_footer_bg',
             ];
-            
+
             DB::table('settings')->whereIn('key', $keysToRemove)->delete();
         }
     }

@@ -2,19 +2,18 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
+use App\Models\AffiliateBenefit;
+use App\Models\AffiliateClick;
+use App\Models\Book;
+use App\Models\Booth;
 use App\Models\Client;
 use App\Models\FloorPlan;
-use App\Models\Booth;
-use App\Models\Book;
-use App\Models\AffiliateClick;
-use App\Models\AffiliateBenefit;
 use App\Models\Role;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class AffiliateDemoDataSeeder extends Seeder
 {
@@ -30,7 +29,7 @@ class AffiliateDemoDataSeeder extends Seeder
         $salesStaffRole = Role::where('slug', 'sales-staff')->first();
         $adminRole = Role::where('slug', 'administrator')->first();
 
-        if (!$salesManagerRole || !$salesStaffRole) {
+        if (! $salesManagerRole || ! $salesStaffRole) {
             $this->command->warn('Roles not found. Please run: php artisan db:seed --class=RolesAndPermissionsSeeder');
             $this->command->warn('Continuing without role assignments...');
         }
@@ -107,8 +106,8 @@ class AffiliateDemoDataSeeder extends Seeder
                 [
                     'name' => $clientData['name'],
                     'company' => $clientData['company'],
-                    'phone_number' => '+1-555-' . rand(100, 999) . '-' . rand(1000, 9999),
-                    'address' => rand(100, 9999) . ' Main Street, City, State ' . rand(10000, 99999),
+                    'phone_number' => '+1-555-'.rand(100, 999).'-'.rand(1000, 9999),
+                    'address' => rand(100, 9999).' Main Street, City, State '.rand(10000, 99999),
                 ]
             );
             $clients[] = $client;
@@ -144,7 +143,7 @@ class AffiliateDemoDataSeeder extends Seeder
             $existingBooths = Booth::where('floor_plan_id', $floorPlan->id)->count();
             if ($existingBooths < 20) {
                 for ($i = 1; $i <= 20; $i++) {
-                    $boothNumber = 'B' . str_pad($i, 2, '0', STR_PAD_LEFT);
+                    $boothNumber = 'B'.str_pad($i, 2, '0', STR_PAD_LEFT);
                     Booth::firstOrCreate(
                         [
                             'floor_plan_id' => $floorPlan->id,
@@ -167,13 +166,13 @@ class AffiliateDemoDataSeeder extends Seeder
         // Create Affiliate Bookings
         $this->command->info('Creating affiliate bookings...');
         $bookingDates = [];
-        
+
         // Generate bookings over the last 6 months
         for ($i = 0; $i < 6; $i++) {
             $date = Carbon::now()->subMonths($i);
             $daysInMonth = $date->daysInMonth;
             $bookingsThisMonth = rand(3, 8);
-            
+
             for ($j = 0; $j < $bookingsThisMonth; $j++) {
                 $bookingDates[] = $date->copy()->day(rand(1, $daysInMonth));
             }
@@ -215,7 +214,7 @@ class AffiliateDemoDataSeeder extends Seeder
                 ]);
 
                 $bookingsCreated++;
-                
+
                 // Create affiliate clicks (simulate link clicks before booking)
                 // Only create if affiliate_clicks table exists
                 if (\Illuminate\Support\Facades\Schema::hasTable('affiliate_clicks')) {
@@ -224,15 +223,15 @@ class AffiliateDemoDataSeeder extends Seeder
                         AffiliateClick::create([
                             'affiliate_user_id' => $affiliateUser->id,
                             'floor_plan_id' => $floorPlan->id,
-                            'ref_code' => 'demo_ref_' . $booking->id,
-                            'ip_address' => '192.168.1.' . rand(100, 255),
+                            'ref_code' => 'demo_ref_'.$booking->id,
+                            'ip_address' => '192.168.1.'.rand(100, 255),
                             'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                             'expires_at' => $clickDate->copy()->addDays(30),
                             'created_at' => $clickDate,
                             'updated_at' => $clickDate,
                         ]);
                     } catch (\Exception $e) {
-                        $this->command->warn("Failed to create affiliate click: " . $e->getMessage());
+                        $this->command->warn('Failed to create affiliate click: '.$e->getMessage());
                     }
                 }
             }
@@ -254,8 +253,8 @@ class AffiliateDemoDataSeeder extends Seeder
                     AffiliateClick::create([
                         'affiliate_user_id' => $affiliateUser->id,
                         'floor_plan_id' => $floorPlan->id,
-                        'ref_code' => 'demo_ref_browse_' . $i,
-                        'ip_address' => '192.168.1.' . rand(100, 255),
+                        'ref_code' => 'demo_ref_browse_'.$i,
+                        'ip_address' => '192.168.1.'.rand(100, 255),
                         'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                         'expires_at' => $clickDate->copy()->addDays(30),
                         'created_at' => $clickDate,
@@ -263,7 +262,7 @@ class AffiliateDemoDataSeeder extends Seeder
                     ]);
                     $clicksCreated++;
                 } catch (\Exception $e) {
-                    $this->command->warn("Failed to create affiliate click #{$i}: " . $e->getMessage());
+                    $this->command->warn("Failed to create affiliate click #{$i}: ".$e->getMessage());
                 }
             }
             $this->command->info("Created {$clicksCreated} additional affiliate clicks");
@@ -292,7 +291,7 @@ class AffiliateDemoDataSeeder extends Seeder
                 ]
             );
             $benefitsCreated++;
-            $this->command->info("Created: Standard Commission (5%)");
+            $this->command->info('Created: Standard Commission (5%)');
 
             // 2. Performance Bonus - Fixed $500 when reaching 10 bookings
             $performanceBonus = AffiliateBenefit::firstOrCreate(
@@ -309,7 +308,7 @@ class AffiliateDemoDataSeeder extends Seeder
                 ]
             );
             $benefitsCreated++;
-            $this->command->info("Created: Performance Bonus ($500 for 10 bookings)");
+            $this->command->info('Created: Performance Bonus ($500 for 10 bookings)');
 
             // 3. Revenue Milestone Bonus - $1000 when reaching $50,000 revenue
             $revenueBonus = AffiliateBenefit::firstOrCreate(
@@ -326,7 +325,7 @@ class AffiliateDemoDataSeeder extends Seeder
                 ]
             );
             $benefitsCreated++;
-            $this->command->info("Created: Revenue Milestone Bonus ($1,000 for $50k revenue)");
+            $this->command->info('Created: Revenue Milestone Bonus ($1,000 for $50k revenue)');
 
             // 4. Tiered Commission - Higher percentage for higher revenue
             $tieredCommission = AffiliateBenefit::firstOrCreate(
@@ -347,7 +346,7 @@ class AffiliateDemoDataSeeder extends Seeder
                 ]
             );
             $benefitsCreated++;
-            $this->command->info("Created: Tiered Commission Structure");
+            $this->command->info('Created: Tiered Commission Structure');
 
             // 5. Client Acquisition Incentive - $200 per new client
             $clientIncentive = AffiliateBenefit::firstOrCreate(
@@ -364,7 +363,7 @@ class AffiliateDemoDataSeeder extends Seeder
                 ]
             );
             $benefitsCreated++;
-            $this->command->info("Created: Client Acquisition Incentive ($200 per client)");
+            $this->command->info('Created: Client Acquisition Incentive ($200 per client)');
 
             // 6. High-Value Booking Reward - Extra 2% for bookings over $5,000
             $highValueReward = AffiliateBenefit::firstOrCreate(
@@ -381,7 +380,7 @@ class AffiliateDemoDataSeeder extends Seeder
                 ]
             );
             $benefitsCreated++;
-            $this->command->info("Created: High-Value Booking Reward (2% for bookings > $5k)");
+            $this->command->info('Created: High-Value Booking Reward (2% for bookings > $5k)');
 
             // 7. Monthly Performance Bonus - $300 for 5+ bookings in a month
             $monthlyBonus = AffiliateBenefit::firstOrCreate(
@@ -400,7 +399,7 @@ class AffiliateDemoDataSeeder extends Seeder
                 ]
             );
             $benefitsCreated++;
-            $this->command->info("Created: Monthly Performance Bonus ($300 for 5+ bookings/month)");
+            $this->command->info('Created: Monthly Performance Bonus ($300 for 5+ bookings/month)');
 
             $this->command->info("Created {$benefitsCreated} affiliate benefit configurations");
         } else {

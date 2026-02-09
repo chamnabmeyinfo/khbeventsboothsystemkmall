@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Role;
 use App\Models\Permission;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 
@@ -24,10 +24,10 @@ class RoleController extends Controller
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('slug', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('slug', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -54,6 +54,7 @@ class RoleController extends Controller
             if ($hasRoleId) {
                 return \App\Models\User::whereNotNull('role_id')->count();
             }
+
             return 0;
         } catch (\Exception $e) {
             return 0;
@@ -67,6 +68,7 @@ class RoleController extends Controller
     {
         // Load all permissions (active and inactive) for free assignment
         $permissions = Permission::orderBy('module')->orderBy('sort_order')->get()->groupBy('module');
+
         return view('roles.create', compact('permissions'));
     }
 
@@ -95,10 +97,10 @@ class RoleController extends Controller
         // Assign permissions freely - no restrictions
         if (isset($validated['permissions']) && is_array($validated['permissions'])) {
             // Filter out any invalid IDs and ensure they're integers
-            $permissionIds = array_filter(array_map('intval', $validated['permissions']), function($id) {
+            $permissionIds = array_filter(array_map('intval', $validated['permissions']), function ($id) {
                 return $id > 0; // Only positive integers
             });
-            if (!empty($permissionIds)) {
+            if (! empty($permissionIds)) {
                 $role->assignPermissions($permissionIds);
             } else {
                 // If no valid permissions, detach all
@@ -120,7 +122,7 @@ class RoleController extends Controller
                     'slug' => $role->slug,
                     'description' => $role->description,
                     'is_active' => $role->is_active,
-                ]
+                ],
             ], 200);
         }
 
@@ -134,6 +136,7 @@ class RoleController extends Controller
     public function show(Role $role)
     {
         $role->load(['users', 'permissions']);
+
         return view('roles.show', compact('role'));
     }
 
@@ -146,6 +149,7 @@ class RoleController extends Controller
         $permissions = Permission::orderBy('module')->orderBy('sort_order')->get()->groupBy('module');
         $role->load('permissions');
         $selectedPermissions = $role->permissions->pluck('id')->toArray();
+
         return view('roles.edit', compact('role', 'permissions', 'selectedPermissions'));
     }
 
@@ -155,8 +159,8 @@ class RoleController extends Controller
     public function update(Request $request, Role $role)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
-            'slug' => 'required|string|max:255|unique:roles,slug,' . $role->id,
+            'name' => 'required|string|max:255|unique:roles,name,'.$role->id,
+            'slug' => 'required|string|max:255|unique:roles,slug,'.$role->id,
             'description' => 'nullable|string',
             'sort_order' => 'nullable|integer',
             'permissions' => 'nullable|array',
@@ -174,10 +178,10 @@ class RoleController extends Controller
         // Assign permissions freely - no restrictions
         if (isset($validated['permissions']) && is_array($validated['permissions'])) {
             // Filter out any invalid IDs and ensure they're integers
-            $permissionIds = array_filter(array_map('intval', $validated['permissions']), function($id) {
+            $permissionIds = array_filter(array_map('intval', $validated['permissions']), function ($id) {
                 return $id > 0; // Only positive integers
             });
-            if (!empty($permissionIds)) {
+            if (! empty($permissionIds)) {
                 $role->assignPermissions($permissionIds);
             } else {
                 // If no valid permissions, detach all
@@ -209,4 +213,3 @@ class RoleController extends Controller
             ->with('success', 'Role deleted successfully.');
     }
 }
-

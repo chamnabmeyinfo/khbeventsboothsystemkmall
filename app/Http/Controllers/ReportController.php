@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Booth;
 use App\Models\Book;
-use App\Models\Client;
-use App\Models\User;
 use App\Models\BookingTimeline;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Models\Booth;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class ReportController extends Controller
 {
@@ -50,9 +48,10 @@ class ReportController extends Controller
             $bookingPaid = $booths->sum(function ($booth) {
                 $depositPaid = (float) ($booth->deposit_paid ?? 0);
                 $balancePaid = (float) ($booth->balance_paid ?? 0);
+
                 return $depositPaid + $balancePaid;
             });
-            
+
             $paidRevenue += $bookingPaid;
 
             // Check if all booths in booking are fully paid (status = PAID)
@@ -67,7 +66,7 @@ class ReportController extends Controller
             } elseif ($bookingPaid > 0) {
                 $bookingStatus = 'Partially Paid';
             }
-            
+
             $bookingData[] = [
                 'id' => $book->id,
                 'date' => $book->date_book->format('Y-m-d'),
@@ -107,31 +106,31 @@ class ReportController extends Controller
             $dateStr = $date->format('Y-m-d');
 
             $bookings = Book::whereDate('date_book', $dateStr)->count();
-            
+
             // Count confirmed booths - use booking timeline to find when status changed to CONFIRMED
             $confirmed = BookingTimeline::whereDate('created_at', $dateStr)
                 ->where('new_status', Booth::STATUS_CONFIRMED)
                 ->distinct('booth_id')
                 ->count('booth_id');
-            
+
             // Count paid booths - use balance_paid_date or check timeline for fully_paid action
-            $paid = Booth::where(function($query) use ($dateStr) {
-                    $query->whereDate('balance_paid_date', $dateStr)
-                          ->orWhereDate('deposit_paid_date', $dateStr);
-                })
+            $paid = Booth::where(function ($query) use ($dateStr) {
+                $query->whereDate('balance_paid_date', $dateStr)
+                    ->orWhereDate('deposit_paid_date', $dateStr);
+            })
                 ->where('status', Booth::STATUS_PAID)
                 ->count();
-            
+
             // Alternative: Also count from timeline if payment dates are not set
             $paidFromTimeline = BookingTimeline::whereDate('created_at', $dateStr)
-                ->where(function($query) {
+                ->where(function ($query) {
                     $query->where('action', 'fully_paid')
-                          ->orWhere('action', 'balance_paid')
-                          ->orWhere('new_status', Booth::STATUS_PAID);
+                        ->orWhere('action', 'balance_paid')
+                        ->orWhere('new_status', Booth::STATUS_PAID);
                 })
                 ->distinct('booth_id')
                 ->count('booth_id');
-            
+
             // Use the higher count (either from payment dates or timeline)
             $paid = max($paid, $paidFromTimeline);
 
@@ -177,9 +176,10 @@ class ReportController extends Controller
                 $bookingPaid = $booths->sum(function ($booth) {
                     $depositPaid = (float) ($booth->deposit_paid ?? 0);
                     $balancePaid = (float) ($booth->balance_paid ?? 0);
+
                     return $depositPaid + $balancePaid;
                 });
-                
+
                 $paidRevenue += $bookingPaid;
             }
 
@@ -222,11 +222,11 @@ class ReportController extends Controller
 
         foreach ($bookings as $book) {
             $date = Carbon::parse($book->date_book);
-            
+
             switch ($groupBy) {
                 case 'week':
                     $key = $date->format('Y-W'); // Year-Week
-                    $label = 'Week ' . $date->format('W, Y');
+                    $label = 'Week '.$date->format('W, Y');
                     break;
                 case 'month':
                     $key = $date->format('Y-m');
@@ -237,7 +237,7 @@ class ReportController extends Controller
                     $label = $date->format('M d');
             }
 
-            if (!isset($grouped[$key])) {
+            if (! isset($grouped[$key])) {
                 $grouped[$key] = [
                     'label' => $label,
                     'total' => 0,
@@ -255,9 +255,10 @@ class ReportController extends Controller
             $paid = $booths->sum(function ($booth) {
                 $depositPaid = (float) ($booth->deposit_paid ?? 0);
                 $balancePaid = (float) ($booth->balance_paid ?? 0);
+
                 return $depositPaid + $balancePaid;
             });
-            
+
             $grouped[$key]['paid'] += $paid;
         }
 
@@ -278,7 +279,7 @@ class ReportController extends Controller
             $dateStr = $date->format('Y-m-d');
 
             $bookings = Book::whereDate('date_book', $dateStr)->get();
-            
+
             $total = 0;
             $paid = 0;
 
@@ -291,9 +292,10 @@ class ReportController extends Controller
                 $bookingPaid = $booths->sum(function ($booth) {
                     $depositPaid = (float) ($booth->deposit_paid ?? 0);
                     $balancePaid = (float) ($booth->balance_paid ?? 0);
+
                     return $depositPaid + $balancePaid;
                 });
-                
+
                 $paid += $bookingPaid;
             }
 
@@ -321,4 +323,3 @@ class ReportController extends Controller
         ];
     }
 }
-

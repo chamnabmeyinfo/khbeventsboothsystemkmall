@@ -3,9 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notification;
-use App\Models\Book;
-use App\Models\Booth;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
@@ -42,7 +39,7 @@ class NotificationController extends Controller
     {
         $notification = Notification::where('user_id', Auth::id())
             ->findOrFail($id);
-        
+
         $notification->markAsRead();
 
         return response()->json(['success' => true]);
@@ -78,4 +75,3 @@ class NotificationController extends Controller
         ]);
     }
 }
-

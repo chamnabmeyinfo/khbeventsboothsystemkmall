@@ -21,7 +21,7 @@ return new class extends Migration
             $table->text('user_agent')->nullable();
             $table->string('route')->nullable();
             $table->timestamps();
-            
+
             $table->foreign('user_id')->references('id')->on('user')->onDelete('set null');
             $table->index(['model_type', 'model_id']);
             $table->index('created_at');

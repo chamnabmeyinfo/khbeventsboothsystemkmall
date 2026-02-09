@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
-use App\Models\HR\LeaveRequest;
-use App\Models\HR\Employee;
 use App\Models\HR\Department;
-use Illuminate\Http\Request;
+use App\Models\HR\Employee;
+use App\Models\HR\LeaveRequest;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class LeaveCalendarController extends Controller
 {
@@ -31,7 +31,7 @@ class LeaveCalendarController extends Controller
 
         // Apply filters
         if ($departmentId) {
-            $query->whereHas('employee', function($q) use ($departmentId) {
+            $query->whereHas('employee', function ($q) use ($departmentId) {
                 $q->where('department_id', $departmentId);
             });
         }
@@ -60,13 +60,13 @@ class LeaveCalendarController extends Controller
         }
 
         // Get leaves in date range
-        $leaves = $query->where(function($q) use ($startDate, $endDate) {
+        $leaves = $query->where(function ($q) use ($startDate, $endDate) {
             $q->whereBetween('start_date', [$startDate, $endDate])
-              ->orWhereBetween('end_date', [$startDate, $endDate])
-              ->orWhere(function($query) use ($startDate, $endDate) {
-                  $query->where('start_date', '<=', $startDate)
+                ->orWhereBetween('end_date', [$startDate, $endDate])
+                ->orWhere(function ($query) use ($startDate, $endDate) {
+                    $query->where('start_date', '<=', $startDate)
                         ->where('end_date', '>=', $endDate);
-              });
+                });
         })->get();
 
         // Format leaves for calendar
@@ -76,7 +76,7 @@ class LeaveCalendarController extends Controller
             while ($currentDate <= $leave->end_date) {
                 if ($currentDate >= $startDate && $currentDate <= $endDate) {
                     $dateKey = $currentDate->format('Y-m-d');
-                    if (!isset($calendarLeaves[$dateKey])) {
+                    if (! isset($calendarLeaves[$dateKey])) {
                         $calendarLeaves[$dateKey] = [];
                     }
                     $calendarLeaves[$dateKey][] = $leave;
@@ -128,17 +128,17 @@ class LeaveCalendarController extends Controller
 
         $query = LeaveRequest::with(['employee.department', 'leaveType'])
             ->where('status', $status)
-            ->where(function($q) use ($start, $end) {
+            ->where(function ($q) use ($start, $end) {
                 $q->whereBetween('start_date', [$start, $end])
-                  ->orWhereBetween('end_date', [$start, $end])
-                  ->orWhere(function($query) use ($start, $end) {
-                      $query->where('start_date', '<=', $start)
+                    ->orWhereBetween('end_date', [$start, $end])
+                    ->orWhere(function ($query) use ($start, $end) {
+                        $query->where('start_date', '<=', $start)
                             ->where('end_date', '>=', $end);
-                  });
+                    });
             });
 
         if ($departmentId) {
-            $query->whereHas('employee', function($q) use ($departmentId) {
+            $query->whereHas('employee', function ($q) use ($departmentId) {
                 $q->where('department_id', $departmentId);
             });
         }
@@ -153,7 +153,7 @@ class LeaveCalendarController extends Controller
         foreach ($leaves as $leave) {
             $events[] = [
                 'id' => $leave->id,
-                'title' => $leave->employee->full_name . ' - ' . $leave->leaveType->name,
+                'title' => $leave->employee->full_name.' - '.$leave->leaveType->name,
                 'start' => $leave->start_date->format('Y-m-d'),
                 'end' => $leave->end_date->copy()->addDay()->format('Y-m-d'), // FullCalendar uses exclusive end
                 'backgroundColor' => $this->getLeaveTypeColor($leave->leaveType->name),

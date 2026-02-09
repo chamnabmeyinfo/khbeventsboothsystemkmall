@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -12,7 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('settings')) {
+        if (! Schema::hasTable('settings')) {
             Schema::create('settings', function (Blueprint $table) {
                 $table->id();
                 $table->string('key')->unique()->index();
@@ -22,7 +22,7 @@ return new class extends Migration
                 $table->timestamps();
             });
         }
-        
+
         if (Schema::hasTable('settings')) {
             // Insert default booth settings if they don't already exist
             $defaults = [
@@ -43,10 +43,10 @@ return new class extends Migration
                 ['key' => 'booth_default_text_align', 'value' => 'center', 'type' => 'string', 'description' => 'Default text alignment for booth numbers'],
                 ['key' => 'booth_default_box_shadow', 'value' => '0 2px 8px rgba(0,0,0,0.2)', 'type' => 'string', 'description' => 'Default box shadow for booths'],
             ];
-            
+
             foreach ($defaults as $default) {
                 $exists = DB::table('settings')->where('key', $default['key'])->exists();
-                if (!$exists) {
+                if (! $exists) {
                     DB::table('settings')->insert(array_merge($default, [
                         'created_at' => now(),
                         'updated_at' => now(),

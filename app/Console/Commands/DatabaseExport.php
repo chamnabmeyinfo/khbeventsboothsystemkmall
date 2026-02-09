@@ -3,8 +3,8 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class DatabaseExport extends Command
@@ -41,24 +41,25 @@ class DatabaseExport extends Command
             // Test database connection
             DB::connection()->getPdo();
             $this->info('✅ Database connection successful!');
-            
+
             // Set default export path
             $this->defaultExportPath = database_path('export_real_database/khbeventskmallxmas.sql');
-            
+
             // Get export file path
             $exportPath = $this->option('file') ?: $this->defaultExportPath;
-            
+
             // Check if file exists
-            if (file_exists($exportPath) && !$this->option('force')) {
-                if (!$this->confirm("File '{$exportPath}' already exists. Overwrite?", false)) {
+            if (file_exists($exportPath) && ! $this->option('force')) {
+                if (! $this->confirm("File '{$exportPath}' already exists. Overwrite?", false)) {
                     $this->warn('Export cancelled.');
+
                     return 0;
                 }
             }
 
             // Create directory if it doesn't exist
             $exportDir = dirname($exportPath);
-            if (!is_dir($exportDir)) {
+            if (! is_dir($exportDir)) {
                 mkdir($exportDir, 0755, true);
                 $this->info("Created directory: {$exportDir}");
             }
@@ -76,7 +77,7 @@ class DatabaseExport extends Command
 
             // Build mysqldump command
             $mysqldumpPath = $this->findMysqldumpPath();
-            if (!$mysqldumpPath) {
+            if (! $mysqldumpPath) {
                 return $this->exportUsingLaravel($exportPath);
             }
 
@@ -84,6 +85,7 @@ class DatabaseExport extends Command
         } catch (\Exception $e) {
             $this->error('❌ Database export failed!');
             $this->error($e->getMessage());
+
             return 1;
         }
     }
@@ -94,7 +96,7 @@ class DatabaseExport extends Command
     protected function exportUsingMysqldump($mysqldumpPath, $host, $port, $database, $username, $password, $exportPath)
     {
         $this->info('📤 Using mysqldump...');
-        
+
         // Build command
         $command = sprintf(
             '"%s" --host=%s --port=%d --user=%s --password=%s --single-transaction --routines --triggers --no-create-info=false --default-character-set=utf8mb4 %s',
@@ -113,27 +115,28 @@ class DatabaseExport extends Command
 
         if ($tables = $this->option('tables')) {
             $tableList = explode(',', $tables);
-            $command .= ' ' . implode(' ', array_map('escapeshellarg', $tableList));
+            $command .= ' '.implode(' ', array_map('escapeshellarg', $tableList));
         }
 
         // Execute and save to file
         $output = [];
         $returnVar = 0;
-        exec($command . ' > "' . $exportPath . '" 2>&1', $output, $returnVar);
+        exec($command.' > "'.$exportPath.'" 2>&1', $output, $returnVar);
 
         if ($returnVar !== 0) {
             $this->error('mysqldump failed:');
             $this->error(implode("\n", $output));
+
             return 1;
         }
 
         $fileSize = filesize($exportPath);
-        $this->info("✅ Export completed successfully!");
-        $this->info("File size: " . $this->formatBytes($fileSize));
+        $this->info('✅ Export completed successfully!');
+        $this->info('File size: '.$this->formatBytes($fileSize));
         $this->info("Location: <fg=cyan>{$exportPath}</>");
         $this->newLine();
         $this->comment('💡 You can now import this file directly to phpMyAdmin.');
-        
+
         return 0;
     }
 
@@ -146,8 +149,9 @@ class DatabaseExport extends Command
         $this->newLine();
 
         $handle = fopen($exportPath, 'w');
-        if (!$handle) {
+        if (! $handle) {
             $this->error("Cannot create file: {$exportPath}");
+
             return 1;
         }
 
@@ -162,12 +166,12 @@ class DatabaseExport extends Command
         foreach ($tables as $table) {
             // Export table structure
             $this->exportTableStructure($handle, $table);
-            
+
             // Export table data (unless --no-data)
-            if (!$this->option('no-data')) {
+            if (! $this->option('no-data')) {
                 $this->exportTableData($handle, $table);
             }
-            
+
             $progressBar->advance();
         }
 
@@ -180,12 +184,12 @@ class DatabaseExport extends Command
         fclose($handle);
 
         $fileSize = filesize($exportPath);
-        $this->info("✅ Export completed successfully!");
-        $this->info("File size: " . $this->formatBytes($fileSize));
+        $this->info('✅ Export completed successfully!');
+        $this->info('File size: '.$this->formatBytes($fileSize));
         $this->info("Location: <fg=cyan>{$exportPath}</>");
         $this->newLine();
         $this->comment('💡 You can now import this file directly to phpMyAdmin.');
-        
+
         return 0;
     }
 
@@ -196,12 +200,12 @@ class DatabaseExport extends Command
     {
         $timestamp = date('M d, Y \a\t h:i A');
         $serverVersion = DB::select('SELECT VERSION() as version')[0]->version ?? 'Unknown';
-        
+
         fwrite($handle, "-- phpMyAdmin SQL Dump\n");
         fwrite($handle, "-- Generated by Laravel db:export command\n");
         fwrite($handle, "-- Generation Time: {$timestamp}\n");
         fwrite($handle, "-- Server version: {$serverVersion}\n");
-        fwrite($handle, "-- PHP Version: " . PHP_VERSION . "\n");
+        fwrite($handle, '-- PHP Version: '.PHP_VERSION."\n");
         fwrite($handle, "\n");
         fwrite($handle, "SET SQL_MODE = \"NO_AUTO_VALUE_ON_ZERO\";\n");
         fwrite($handle, "START TRANSACTION;\n");
@@ -213,7 +217,7 @@ class DatabaseExport extends Command
         fwrite($handle, "/*!40101 SET NAMES utf8mb4 */;\n");
         fwrite($handle, "\n");
         fwrite($handle, "--\n");
-        fwrite($handle, "-- Database: `" . DB::connection()->getDatabaseName() . "`\n");
+        fwrite($handle, '-- Database: `'.DB::connection()->getDatabaseName()."`\n");
         fwrite($handle, "--\n");
         fwrite($handle, "\n");
     }
@@ -247,7 +251,7 @@ class DatabaseExport extends Command
         $createTableSql = $createTable->{'Create Table'} ?? null;
 
         if ($createTableSql) {
-            fwrite($handle, $createTableSql . ";\n");
+            fwrite($handle, $createTableSql.";\n");
             fwrite($handle, "\n");
         }
     }
@@ -270,7 +274,7 @@ class DatabaseExport extends Command
         // Get columns
         $columns = Schema::getColumnListing($table);
         $columnList = implode('`, `', $columns);
-        
+
         // Get data in chunks to avoid memory issues
         DB::table($table)->orderBy('id')->chunk(100, function ($rows) use ($handle, $table, $columns) {
             $values = [];
@@ -283,16 +287,16 @@ class DatabaseExport extends Command
                     } elseif (is_numeric($value)) {
                         $rowValues[] = $value;
                     } else {
-                        $rowValues[] = "'" . addslashes($value) . "'";
+                        $rowValues[] = "'".addslashes($value)."'";
                     }
                 }
-                $values[] = '(' . implode(', ', $rowValues) . ')';
+                $values[] = '('.implode(', ', $rowValues).')';
             }
-            
-            if (!empty($values)) {
+
+            if (! empty($values)) {
                 $columnList = implode('`, `', $columns);
                 fwrite($handle, "INSERT INTO `{$table}` (`{$columnList}`) VALUES\n");
-                fwrite($handle, implode(",\n", $values) . ";\n");
+                fwrite($handle, implode(",\n", $values).";\n");
                 fwrite($handle, "\n");
             }
         });
@@ -308,9 +312,9 @@ class DatabaseExport extends Command
         }
 
         $tables = DB::select('SHOW TABLES');
-        $tableName = 'Tables_in_' . DB::connection()->getDatabaseName();
-        
-        return array_map(function($table) use ($tableName) {
+        $tableName = 'Tables_in_'.DB::connection()->getDatabaseName();
+
+        return array_map(function ($table) use ($tableName) {
             return $table->$tableName;
         }, $tables);
     }
@@ -343,11 +347,11 @@ class DatabaseExport extends Command
     protected function formatBytes($bytes, $precision = 2)
     {
         $units = ['B', 'KB', 'MB', 'GB'];
-        
+
         for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
             $bytes /= 1024;
         }
-        
-        return round($bytes, $precision) . ' ' . $units[$i];
+
+        return round($bytes, $precision).' '.$units[$i];
     }
 }

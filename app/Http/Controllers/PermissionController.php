@@ -27,10 +27,10 @@ class PermissionController extends Controller
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('slug', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('slug', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -55,6 +55,7 @@ class PermissionController extends Controller
     public function create()
     {
         $modules = Permission::distinct()->pluck('module')->filter()->sort()->values();
+
         return view('permissions.create', compact('modules'));
     }
 
@@ -91,6 +92,7 @@ class PermissionController extends Controller
     public function show(Permission $permission)
     {
         $permission->load('roles');
+
         return view('permissions.show', compact('permission'));
     }
 
@@ -100,6 +102,7 @@ class PermissionController extends Controller
     public function edit(Permission $permission)
     {
         $modules = Permission::distinct()->pluck('module')->filter()->sort()->values();
+
         return view('permissions.edit', compact('permission', 'modules'));
     }
 
@@ -110,7 +113,7 @@ class PermissionController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:permissions,slug,' . $permission->id,
+            'slug' => 'required|string|max:255|unique:permissions,slug,'.$permission->id,
             'module' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'is_active' => 'boolean',
@@ -147,4 +150,3 @@ class PermissionController extends Controller
             ->with('success', 'Permission deleted successfully.');
     }
 }
-

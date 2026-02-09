@@ -51,14 +51,20 @@ class AffiliateBenefit extends Model
 
     // Benefit types
     const TYPE_COMMISSION = 'commission';
+
     const TYPE_BONUS = 'bonus';
+
     const TYPE_INCENTIVE = 'incentive';
+
     const TYPE_REWARD = 'reward';
 
     // Calculation methods
     const METHOD_PERCENTAGE = 'percentage';
+
     const METHOD_FIXED_AMOUNT = 'fixed_amount';
+
     const METHOD_TIERED_PERCENTAGE = 'tiered_percentage';
+
     const METHOD_TIERED_AMOUNT = 'tiered_amount';
 
     /**
@@ -91,7 +97,7 @@ class AffiliateBenefit extends Model
     public function calculateBenefit($revenue, $bookings = 0, $clients = 0, $floorPlanId = null, $userId = null)
     {
         // Check if benefit is active
-        if (!$this->is_active) {
+        if (! $this->is_active) {
             return 0;
         }
 
@@ -164,7 +170,7 @@ class AffiliateBenefit extends Model
      */
     private function calculateTieredPercentage($revenue)
     {
-        if (!$this->tier_structure || !is_array($this->tier_structure)) {
+        if (! $this->tier_structure || ! is_array($this->tier_structure)) {
             return 0;
         }
 
@@ -195,7 +201,7 @@ class AffiliateBenefit extends Model
      */
     private function calculateTieredAmount($revenue)
     {
-        if (!$this->tier_structure || !is_array($this->tier_structure)) {
+        if (! $this->tier_structure || ! is_array($this->tier_structure)) {
             return 0;
         }
 
@@ -233,9 +239,9 @@ class AffiliateBenefit extends Model
      */
     public function scopeForUser($query, $userId)
     {
-        return $query->where(function($q) use ($userId) {
+        return $query->where(function ($q) use ($userId) {
             $q->whereNull('user_id')
-              ->orWhere('user_id', $userId);
+                ->orWhere('user_id', $userId);
         });
     }
 
@@ -244,9 +250,9 @@ class AffiliateBenefit extends Model
      */
     public function scopeForFloorPlan($query, $floorPlanId)
     {
-        return $query->where(function($q) use ($floorPlanId) {
+        return $query->where(function ($q) use ($floorPlanId) {
             $q->whereNull('floor_plan_id')
-              ->orWhere('floor_plan_id', $floorPlanId);
+                ->orWhere('floor_plan_id', $floorPlanId);
         });
     }
 }

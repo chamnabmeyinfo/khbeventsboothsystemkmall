@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Helpers\DebugLogger;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Helpers\DebugLogger;
 
 class Event extends Model
 {
@@ -83,47 +83,52 @@ class Event extends Model
         ];
         DebugLogger::log($logData, 'Event.php:84', 'getFormattedStartDateAttribute entry');
         // #endregion
-        
+
         // Get raw attribute value before casting
         $rawAttributes = $this->getAttributes();
         $rawStartDate = $rawAttributes['start_date'] ?? null;
-        
+
         // Check for invalid dates
-        if (!$rawStartDate || $rawStartDate === '0000-00-00' || $rawStartDate === '' || $rawStartDate === null) {
+        if (! $rawStartDate || $rawStartDate === '0000-00-00' || $rawStartDate === '' || $rawStartDate === null) {
             // #region agent log
-            DebugLogger::log(['raw_start_date'=>$rawStartDate], 'Event.php:94', 'Invalid date detected, returning N/A');
+            DebugLogger::log(['raw_start_date' => $rawStartDate], 'Event.php:94', 'Invalid date detected, returning N/A');
+
             // #endregion
             return 'N/A';
         }
-        
+
         try {
             // Try to parse as Carbon if it's a string
             if (is_string($rawStartDate)) {
                 $date = \Carbon\Carbon::parse($rawStartDate);
                 $formatted = $date->format('M d, Y');
                 // #region agent log
-                DebugLogger::log(['formatted'=>$formatted], 'Event.php:105', 'Date formatted successfully');
+                DebugLogger::log(['formatted' => $formatted], 'Event.php:105', 'Date formatted successfully');
+
                 // #endregion
                 return $formatted;
             }
-            
+
             // If it's already a Carbon instance
             if (is_object($this->start_date) && method_exists($this->start_date, 'format')) {
                 $formatted = $this->start_date->format('M d, Y');
                 // #region agent log
-                DebugLogger::log(['formatted'=>$formatted], 'Event.php:114', 'Date is Carbon, formatted');
+                DebugLogger::log(['formatted' => $formatted], 'Event.php:114', 'Date is Carbon, formatted');
+
                 // #endregion
                 return $formatted;
             }
         } catch (\Exception $e) {
             // #region agent log
-            DebugLogger::log(['error'=>$e->getMessage(),'raw_start_date'=>$rawStartDate], 'Event.php:120', 'Exception in date formatting');
+            DebugLogger::log(['error' => $e->getMessage(), 'raw_start_date' => $rawStartDate], 'Event.php:120', 'Exception in date formatting');
+
             // #endregion
             return 'Invalid Date';
         }
-        
+
         // #region agent log
-        DebugLogger::log(['raw_start_date'=>$rawStartDate], 'Event.php:126', 'Falling back to N/A');
+        DebugLogger::log(['raw_start_date' => $rawStartDate], 'Event.php:126', 'Falling back to N/A');
+
         // #endregion
         return 'N/A';
     }
@@ -133,13 +138,14 @@ class Event extends Model
      */
     public function getFormattedEndDateAttribute()
     {
-        if (!$this->end_date || $this->end_date === '0000-00-00' || $this->getAttributes()['end_date'] === '0000-00-00') {
+        if (! $this->end_date || $this->end_date === '0000-00-00' || $this->getAttributes()['end_date'] === '0000-00-00') {
             return null;
         }
-        
+
         try {
             if (is_string($this->getAttributes()['end_date'])) {
                 $date = \Carbon\Carbon::parse($this->getAttributes()['end_date']);
+
                 return $date->format('M d, Y');
             }
             if (is_object($this->end_date) && method_exists($this->end_date, 'format')) {
@@ -148,7 +154,7 @@ class Event extends Model
         } catch (\Exception $e) {
             return 'Invalid Date';
         }
-        
+
         return 'N/A';
     }
 

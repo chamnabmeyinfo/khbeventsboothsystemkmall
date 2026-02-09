@@ -23,7 +23,7 @@ if (file_exists($servicesPath)) {
     $content = @file_get_contents($servicesPath);
     if ($content !== false
         && str_contains($content, 'CollisionServiceProvider')
-        && !class_exists('NunoMaduro\Collision\Adapters\Laravel\CollisionServiceProvider', false)) {
+        && ! class_exists('NunoMaduro\Collision\Adapters\Laravel\CollisionServiceProvider', false)) {
         @unlink($servicesPath);
     }
 }

@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Client;
 use App\Models\Book;
-use App\Models\Booth;
+use App\Models\Client;
 use App\Models\Payment;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 
 class ClientPortalController extends Controller
 {
@@ -37,8 +35,9 @@ class ClientPortalController extends Controller
         if ($client) {
             // In production, verify password here
             session(['client_id' => $client->id]);
+
             return redirect()->route('client-portal.dashboard')
-                ->with('success', 'Welcome back, ' . ($client->company ?? $client->name) . '!');
+                ->with('success', 'Welcome back, '.($client->company ?? $client->name).'!');
         }
 
         return back()->withErrors(['email' => 'Invalid credentials. Please contact administrator.']);
@@ -50,7 +49,7 @@ class ClientPortalController extends Controller
     public function dashboard()
     {
         $clientId = session('client_id');
-        if (!$clientId) {
+        if (! $clientId) {
             return redirect()->route('client-portal.login');
         }
 
@@ -68,11 +67,12 @@ class ClientPortalController extends Controller
     public function profile()
     {
         $clientId = session('client_id');
-        if (!$clientId) {
+        if (! $clientId) {
             return redirect()->route('client-portal.login');
         }
 
         $client = Client::findOrFail($clientId);
+
         return view('client-portal.profile', compact('client'));
     }
 
@@ -97,7 +97,7 @@ class ClientPortalController extends Controller
     {
         $clientId = session('client_id');
         $booking = Book::where('clientid', $clientId)->findOrFail($id);
-        
+
         return view('client-portal.booking', compact('booking'));
     }
 
@@ -107,7 +107,7 @@ class ClientPortalController extends Controller
     public function logout()
     {
         session()->forget('client_id');
+
         return redirect()->route('client-portal.login');
     }
 }
-

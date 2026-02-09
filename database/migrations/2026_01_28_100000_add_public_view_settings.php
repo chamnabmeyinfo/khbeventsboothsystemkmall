@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('settings')) {
+        if (! Schema::hasTable('settings')) {
             return;
         }
 
@@ -34,7 +34,7 @@ return new class extends Migration
 
         foreach ($defaults as $default) {
             $exists = DB::table('settings')->where('key', $default['key'])->exists();
-            if (!$exists) {
+            if (! $exists) {
                 DB::table('settings')->insert(array_merge($default, [
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -48,7 +48,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (!Schema::hasTable('settings')) {
+        if (! Schema::hasTable('settings')) {
             return;
         }
         DB::table('settings')->whereIn('key', [

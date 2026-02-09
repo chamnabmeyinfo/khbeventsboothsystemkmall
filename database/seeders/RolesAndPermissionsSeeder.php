@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Role;
 use App\Models\Permission;
+use App\Models\Role;
+use Illuminate\Database\Seeder;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
@@ -21,36 +21,36 @@ class RolesAndPermissionsSeeder extends Seeder
             ['name' => 'Edit Booths', 'slug' => 'booths.edit', 'module' => 'booths', 'description' => 'Edit existing booths'],
             ['name' => 'Delete Booths', 'slug' => 'booths.delete', 'module' => 'booths', 'description' => 'Delete booths'],
             ['name' => 'Manage Floor Plan', 'slug' => 'booths.floor-plan', 'module' => 'booths', 'description' => 'Manage floor plan layout'],
-            
+
             // Clients Module
             ['name' => 'View Clients', 'slug' => 'clients.view', 'module' => 'clients', 'description' => 'View client listings'],
             ['name' => 'Create Clients', 'slug' => 'clients.create', 'module' => 'clients', 'description' => 'Create new clients'],
             ['name' => 'Edit Clients', 'slug' => 'clients.edit', 'module' => 'clients', 'description' => 'Edit existing clients'],
             ['name' => 'Delete Clients', 'slug' => 'clients.delete', 'module' => 'clients', 'description' => 'Delete clients'],
-            
+
             // Bookings Module
             ['name' => 'View Bookings', 'slug' => 'bookings.view', 'module' => 'bookings', 'description' => 'View booking listings'],
             ['name' => 'Create Bookings', 'slug' => 'bookings.create', 'module' => 'bookings', 'description' => 'Create new bookings'],
             ['name' => 'Edit Bookings', 'slug' => 'bookings.edit', 'module' => 'bookings', 'description' => 'Edit existing bookings'],
             ['name' => 'Delete Bookings', 'slug' => 'bookings.delete', 'module' => 'bookings', 'description' => 'Delete bookings'],
             ['name' => 'Confirm Bookings', 'slug' => 'bookings.confirm', 'module' => 'bookings', 'description' => 'Confirm bookings'],
-            
+
             // Payments Module
             ['name' => 'View Payments', 'slug' => 'payments.view', 'module' => 'payments', 'description' => 'View payment records'],
             ['name' => 'Create Payments', 'slug' => 'payments.create', 'module' => 'payments', 'description' => 'Record payments'],
             ['name' => 'Edit Payments', 'slug' => 'payments.edit', 'module' => 'payments', 'description' => 'Edit payment records'],
             ['name' => 'View Invoices', 'slug' => 'payments.invoice', 'module' => 'payments', 'description' => 'View and print invoices'],
-            
+
             // Reports Module
             ['name' => 'View Reports', 'slug' => 'reports.view', 'module' => 'reports', 'description' => 'View reports and analytics'],
             ['name' => 'Export Reports', 'slug' => 'reports.export', 'module' => 'reports', 'description' => 'Export reports'],
-            
+
             // Users Module
             ['name' => 'View Users', 'slug' => 'users.view', 'module' => 'users', 'description' => 'View user listings'],
             ['name' => 'Create Users', 'slug' => 'users.create', 'module' => 'users', 'description' => 'Create new users'],
             ['name' => 'Edit Users', 'slug' => 'users.edit', 'module' => 'users', 'description' => 'Edit existing users'],
             ['name' => 'Delete Users', 'slug' => 'users.delete', 'module' => 'users', 'description' => 'Delete users'],
-            
+
             // Roles & Permissions Module
             ['name' => 'View Roles', 'slug' => 'roles.view', 'module' => 'roles', 'description' => 'View role listings'],
             ['name' => 'Create Roles', 'slug' => 'roles.create', 'module' => 'roles', 'description' => 'Create new roles'],
@@ -58,19 +58,19 @@ class RolesAndPermissionsSeeder extends Seeder
             ['name' => 'Delete Roles', 'slug' => 'roles.delete', 'module' => 'roles', 'description' => 'Delete roles'],
             ['name' => 'View Permissions', 'slug' => 'permissions.view', 'module' => 'roles', 'description' => 'View permission listings'],
             ['name' => 'Manage Permissions', 'slug' => 'permissions.manage', 'module' => 'roles', 'description' => 'Manage permissions'],
-            
+
             // Categories Module
             ['name' => 'View Categories', 'slug' => 'categories.view', 'module' => 'categories', 'description' => 'View category listings'],
             ['name' => 'Manage Categories', 'slug' => 'categories.manage', 'module' => 'categories', 'description' => 'Manage categories'],
-            
+
             // Settings Module
             ['name' => 'View Settings', 'slug' => 'settings.view', 'module' => 'settings', 'description' => 'View system settings'],
             ['name' => 'Manage Settings', 'slug' => 'settings.manage', 'module' => 'settings', 'description' => 'Manage system settings'],
-            
+
             // Communications Module
             ['name' => 'View Messages', 'slug' => 'communications.view', 'module' => 'communications', 'description' => 'View messages'],
             ['name' => 'Send Messages', 'slug' => 'communications.send', 'module' => 'communications', 'description' => 'Send messages'],
-            
+
             // Export/Import Module
             ['name' => 'Export Data', 'slug' => 'export.data', 'module' => 'export', 'description' => 'Export data'],
             ['name' => 'Import Data', 'slug' => 'import.data', 'module' => 'export', 'description' => 'Import data'],

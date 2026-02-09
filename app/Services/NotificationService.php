@@ -26,7 +26,8 @@ class NotificationService
                 'is_read' => false,
             ]);
         } catch (\Exception $e) {
-            Log::error('Failed to create notification: ' . $e->getMessage());
+            Log::error('Failed to create notification: '.$e->getMessage());
+
             return null;
         }
     }
@@ -38,14 +39,15 @@ class NotificationService
     {
         try {
             $admins = User::where('type', 1)->where('status', 1)->get();
-            
+
             foreach ($admins as $admin) {
                 self::create($type, $title, $message, $admin->id, $clientId, $bookingId, $link);
             }
-            
+
             return true;
         } catch (\Exception $e) {
-            Log::error('Failed to notify admins: ' . $e->getMessage());
+            Log::error('Failed to notify admins: '.$e->getMessage());
+
             return false;
         }
     }
@@ -57,7 +59,7 @@ class NotificationService
     {
         $user = $userId ? User::find($userId) : Auth::user();
         $actionUser = Auth::user();
-        
+
         $messages = [
             'created' => "Booth #{$booth->booth_number} has been created by {$actionUser->username}.",
             'updated' => "Booth #{$booth->booth_number} has been updated by {$actionUser->username}.",
@@ -65,7 +67,7 @@ class NotificationService
             'status_changed' => "Booth #{$booth->booth_number} status changed to {$booth->getStatusLabel()} by {$actionUser->username}.",
         ];
 
-        $title = "Booth " . ucfirst($action);
+        $title = 'Booth '.ucfirst($action);
         $message = $messages[$action] ?? "Booth #{$booth->booth_number} action: {$action}";
         $link = route('booths.show', $booth->id);
 
@@ -84,14 +86,14 @@ class NotificationService
     public static function notifyClientAction($action, $client, $userId = null)
     {
         $actionUser = Auth::user();
-        
+
         $messages = [
             'created' => "Client '{$client->name}' has been created by {$actionUser->username}.",
             'updated' => "Client '{$client->name}' has been updated by {$actionUser->username}.",
             'deleted' => "Client '{$client->name}' has been deleted by {$actionUser->username}.",
         ];
 
-        $title = "Client " . ucfirst($action);
+        $title = 'Client '.ucfirst($action);
         $message = $messages[$action] ?? "Client '{$client->name}' action: {$action}";
         $link = route('clients.show', $client->id);
 
@@ -111,7 +113,7 @@ class NotificationService
     {
         $actionUser = Auth::user();
         $targetUser = $userId ? User::find($userId) : $booking->user;
-        
+
         $messages = [
             'created' => "New booking #{$booking->id} has been created by {$actionUser->username}.",
             'updated' => "Booking #{$booking->id} has been updated by {$actionUser->username}.",
@@ -120,7 +122,7 @@ class NotificationService
             'cancelled' => "Booking #{$booking->id} has been cancelled by {$actionUser->username}.",
         ];
 
-        $title = "Booking " . ucfirst($action);
+        $title = 'Booking '.ucfirst($action);
         $message = $messages[$action] ?? "Booking #{$booking->id} action: {$action}";
         $link = route('books.show', $booking->id);
 
@@ -140,7 +142,7 @@ class NotificationService
     {
         $actionUser = Auth::user();
         $boothOwner = $booth->user;
-        
+
         $statusLabels = [
             1 => 'Available',
             2 => 'Confirmed',
@@ -152,7 +154,7 @@ class NotificationService
         $oldLabel = $statusLabels[$oldStatus] ?? 'Unknown';
         $newLabel = $statusLabels[$newStatus] ?? 'Unknown';
 
-        $title = "Booth Status Changed";
+        $title = 'Booth Status Changed';
         $message = "Booth #{$booth->booth_number} status changed from {$oldLabel} to {$newLabel} by {$actionUser->username}.";
         $link = route('booths.show', $booth->id);
 
@@ -172,9 +174,9 @@ class NotificationService
     {
         $actionUser = Auth::user();
         $boothOwner = $booth->user;
-        
-        $title = "Payment Received";
-        $message = "Payment of $" . number_format($amount, 2) . " received for Booth #{$booth->booth_number} by {$actionUser->username}.";
+
+        $title = 'Payment Received';
+        $message = 'Payment of $'.number_format($amount, 2)." received for Booth #{$booth->booth_number} by {$actionUser->username}.";
         $link = route('booths.show', $booth->id);
 
         // Notify the booth owner

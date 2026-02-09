@@ -7,7 +7,6 @@ use App\Models\FloorPlan;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class AffiliateBenefitController extends Controller
 {
@@ -17,7 +16,7 @@ class AffiliateBenefitController extends Controller
     public function index(Request $request)
     {
         // Check permissions
-        if (!Auth::check() || (!Auth::user()->isAdmin() && !Auth::user()->hasPermission('affiliates.manage'))) {
+        if (! Auth::check() || (! Auth::user()->isAdmin() && ! Auth::user()->hasPermission('affiliates.manage'))) {
             abort(403, 'Unauthorized access');
         }
 
@@ -34,16 +33,16 @@ class AffiliateBenefitController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
         $benefits = $query->orderBy('priority', 'desc')
-                          ->orderBy('created_at', 'desc')
-                          ->paginate(20)
-                          ->withQueryString();
+            ->orderBy('created_at', 'desc')
+            ->paginate(20)
+            ->withQueryString();
 
         $types = [
             AffiliateBenefit::TYPE_COMMISSION => 'Commission',
@@ -60,7 +59,7 @@ class AffiliateBenefitController extends Controller
      */
     public function create()
     {
-        if (!Auth::check() || (!Auth::user()->isAdmin() && !Auth::user()->hasPermission('affiliates.manage'))) {
+        if (! Auth::check() || (! Auth::user()->isAdmin() && ! Auth::user()->hasPermission('affiliates.manage'))) {
             abort(403, 'Unauthorized access');
         }
 
@@ -75,7 +74,7 @@ class AffiliateBenefitController extends Controller
      */
     public function store(Request $request)
     {
-        if (!Auth::check() || (!Auth::user()->isAdmin() && !Auth::user()->hasPermission('affiliates.manage'))) {
+        if (! Auth::check() || (! Auth::user()->isAdmin() && ! Auth::user()->hasPermission('affiliates.manage'))) {
             abort(403, 'Unauthorized access');
         }
 
@@ -101,15 +100,15 @@ class AffiliateBenefitController extends Controller
         ]);
 
         // Validate based on calculation method
-        if ($validated['calculation_method'] === 'percentage' && !$validated['percentage']) {
+        if ($validated['calculation_method'] === 'percentage' && ! $validated['percentage']) {
             return back()->withErrors(['percentage' => 'Percentage is required for percentage-based benefits.'])->withInput();
         }
 
-        if ($validated['calculation_method'] === 'fixed_amount' && !$validated['fixed_amount']) {
+        if ($validated['calculation_method'] === 'fixed_amount' && ! $validated['fixed_amount']) {
             return back()->withErrors(['fixed_amount' => 'Fixed amount is required for fixed amount benefits.'])->withInput();
         }
 
-        if (in_array($validated['calculation_method'], ['tiered_percentage', 'tiered_amount']) && !$validated['tier_structure']) {
+        if (in_array($validated['calculation_method'], ['tiered_percentage', 'tiered_amount']) && ! $validated['tier_structure']) {
             return back()->withErrors(['tier_structure' => 'Tier structure is required for tiered benefits.'])->withInput();
         }
 
@@ -132,7 +131,7 @@ class AffiliateBenefitController extends Controller
      */
     public function show(AffiliateBenefit $benefit)
     {
-        if (!Auth::check() || (!Auth::user()->isAdmin() && !Auth::user()->hasPermission('affiliates.manage'))) {
+        if (! Auth::check() || (! Auth::user()->isAdmin() && ! Auth::user()->hasPermission('affiliates.manage'))) {
             abort(403, 'Unauthorized access');
         }
 
@@ -146,7 +145,7 @@ class AffiliateBenefitController extends Controller
      */
     public function edit(AffiliateBenefit $benefit)
     {
-        if (!Auth::check() || (!Auth::user()->isAdmin() && !Auth::user()->hasPermission('affiliates.manage'))) {
+        if (! Auth::check() || (! Auth::user()->isAdmin() && ! Auth::user()->hasPermission('affiliates.manage'))) {
             abort(403, 'Unauthorized access');
         }
 
@@ -161,7 +160,7 @@ class AffiliateBenefitController extends Controller
      */
     public function update(Request $request, AffiliateBenefit $benefit)
     {
-        if (!Auth::check() || (!Auth::user()->isAdmin() && !Auth::user()->hasPermission('affiliates.manage'))) {
+        if (! Auth::check() || (! Auth::user()->isAdmin() && ! Auth::user()->hasPermission('affiliates.manage'))) {
             abort(403, 'Unauthorized access');
         }
 
@@ -187,15 +186,15 @@ class AffiliateBenefitController extends Controller
         ]);
 
         // Validate based on calculation method
-        if ($validated['calculation_method'] === 'percentage' && !$validated['percentage']) {
+        if ($validated['calculation_method'] === 'percentage' && ! $validated['percentage']) {
             return back()->withErrors(['percentage' => 'Percentage is required for percentage-based benefits.'])->withInput();
         }
 
-        if ($validated['calculation_method'] === 'fixed_amount' && !$validated['fixed_amount']) {
+        if ($validated['calculation_method'] === 'fixed_amount' && ! $validated['fixed_amount']) {
             return back()->withErrors(['fixed_amount' => 'Fixed amount is required for fixed amount benefits.'])->withInput();
         }
 
-        if (in_array($validated['calculation_method'], ['tiered_percentage', 'tiered_amount']) && !$validated['tier_structure']) {
+        if (in_array($validated['calculation_method'], ['tiered_percentage', 'tiered_amount']) && ! $validated['tier_structure']) {
             return back()->withErrors(['tier_structure' => 'Tier structure is required for tiered benefits.'])->withInput();
         }
 
@@ -217,7 +216,7 @@ class AffiliateBenefitController extends Controller
      */
     public function destroy(AffiliateBenefit $benefit)
     {
-        if (!Auth::check() || (!Auth::user()->isAdmin() && !Auth::user()->hasPermission('affiliates.manage'))) {
+        if (! Auth::check() || (! Auth::user()->isAdmin() && ! Auth::user()->hasPermission('affiliates.manage'))) {
             abort(403, 'Unauthorized access');
         }
 
@@ -232,18 +231,18 @@ class AffiliateBenefitController extends Controller
      */
     public function toggleStatus($id)
     {
-        if (!Auth::check() || (!Auth::user()->isAdmin() && !Auth::user()->hasPermission('affiliates.manage'))) {
+        if (! Auth::check() || (! Auth::user()->isAdmin() && ! Auth::user()->hasPermission('affiliates.manage'))) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         $benefit = AffiliateBenefit::findOrFail($id);
-        $benefit->is_active = !$benefit->is_active;
+        $benefit->is_active = ! $benefit->is_active;
         $benefit->save();
 
         return response()->json([
             'success' => true,
             'is_active' => $benefit->is_active,
-            'message' => 'Status updated successfully.'
+            'message' => 'Status updated successfully.',
         ]);
     }
 }

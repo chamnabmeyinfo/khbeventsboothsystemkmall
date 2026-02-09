@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use Database\Seeders\AffiliateDemoDataSeeder;
+use Illuminate\Console\Command;
 
 class SeedAffiliateDemoData extends Command
 {
@@ -29,14 +29,14 @@ class SeedAffiliateDemoData extends Command
         $this->info('Seeding affiliate demo data...');
         $this->newLine();
 
-        $seeder = new AffiliateDemoDataSeeder();
+        $seeder = new AffiliateDemoDataSeeder;
         $seeder->setCommand($this);
         $seeder->run();
 
         $this->newLine();
         $this->info('✅ Demo data seeded successfully!');
         $this->info('Visit /affiliates to view the affiliate dashboard');
-        
+
         return Command::SUCCESS;
     }
 }

@@ -5,6 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string|null $company
+ * @property string|null $email
+ * @property string|null $phone_number
+ * @property string|null $address
+ */
 class Client extends Model
 {
     use HasFactory;

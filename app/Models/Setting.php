@@ -23,8 +23,8 @@ class Setting extends Model
     {
         try {
             $setting = self::where('key', $key)->first();
-            
-            if (!$setting) {
+
+            if (! $setting) {
                 return $default;
             }
 
@@ -243,7 +243,7 @@ class Setting extends Model
 
         foreach ($defaults as $key => $config) {
             if (isset($settings[$key])) {
-                self::setValue('cdn_' . $key, $settings[$key], $config['type'], $config['description']);
+                self::setValue('cdn_'.$key, $settings[$key], $config['type'], $config['description']);
             }
         }
 
@@ -270,7 +270,7 @@ class Setting extends Model
             ];
 
             $savedSettings = self::getValue('module_display_settings', json_encode($defaultSettings));
-            
+
             if (is_string($savedSettings)) {
                 $decoded = json_decode($savedSettings, true);
                 if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
@@ -306,7 +306,7 @@ class Setting extends Model
             // Validate structure
             $validated = [];
             $allowedModules = ['dashboard', 'booths', 'bookings', 'clients', 'settings', 'reports', 'finance', 'hr', 'users', 'categories'];
-            
+
             foreach ($allowedModules as $module) {
                 if (isset($settings[$module])) {
                     $validated[$module] = [
@@ -328,7 +328,7 @@ class Setting extends Model
 
             return self::getModuleDisplaySettings();
         } catch (\Exception $e) {
-            \Log::error('Error saving module display settings: ' . $e->getMessage());
+            \Log::error('Error saving module display settings: '.$e->getMessage());
             throw $e;
         }
     }
@@ -343,6 +343,7 @@ class Setting extends Model
             if (isset($settings[$module])) {
                 return $settings[$module][$device] ?? true;
             }
+
             return true; // Default to visible if module not found
         } catch (\Exception $e) {
             return true; // Default to visible on error

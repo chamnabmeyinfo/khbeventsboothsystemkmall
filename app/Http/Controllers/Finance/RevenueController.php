@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
-use App\Models\Revenue;
-use App\Models\FinanceCategory;
-use App\Models\FloorPlan;
 use App\Models\Book;
 use App\Models\Client;
+use App\Models\FinanceCategory;
+use App\Models\FloorPlan;
+use App\Models\Revenue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -23,15 +23,15 @@ class RevenueController extends Controller
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('reference_number', 'like', "%{$search}%")
-                  ->orWhere('amount', 'like', "%{$search}%")
-                  ->orWhereHas('client', function($clientQuery) use ($search) {
-                      $clientQuery->where('name', 'like', "%{$search}%")
-                                   ->orWhere('company', 'like', "%{$search}%");
-                  });
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('reference_number', 'like', "%{$search}%")
+                    ->orWhere('amount', 'like', "%{$search}%")
+                    ->orWhereHas('client', function ($clientQuery) use ($search) {
+                        $clientQuery->where('name', 'like', "%{$search}%")
+                            ->orWhere('company', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -145,6 +145,7 @@ class RevenueController extends Controller
     public function show(Revenue $revenue)
     {
         $revenue->load(['category', 'client', 'floorPlan', 'booking', 'createdBy']);
+
         return view('finance.revenues.show', compact('revenue'));
     }
 

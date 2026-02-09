@@ -8,4 +8,3 @@ class Controller extends BaseController
 {
     //
 }
-

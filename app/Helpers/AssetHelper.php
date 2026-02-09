@@ -13,14 +13,14 @@ class AssetHelper
     {
         $cdnSettings = Setting::getCDNSettings();
         $useCDN = $cdnSettings['use_cdn'] ?? false;
-        
+
         if ($useCDN && $cdnUrl) {
             return $cdnUrl;
         }
-        
+
         return asset($path);
     }
-    
+
     /**
      * Get Chart.js URL
      */
@@ -31,7 +31,7 @@ class AssetHelper
             'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js'
         );
     }
-    
+
     /**
      * Get Chart.js CSS URL
      */

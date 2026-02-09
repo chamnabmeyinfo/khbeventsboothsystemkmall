@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Book;
 use App\Models\Booth;
 use App\Models\Client;
-use App\Models\Book;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -26,9 +26,9 @@ class SearchController extends Controller
 
         if ($type === 'all' || $type === 'booths') {
             $booths = Booth::where('booth_number', 'like', "%{$query}%")
-                ->orWhereHas('client', function($q) use ($query) {
+                ->orWhereHas('client', function ($q) use ($query) {
                     $q->where('company', 'like', "%{$query}%")
-                      ->orWhere('name', 'like', "%{$query}%");
+                        ->orWhere('name', 'like', "%{$query}%");
                 })
                 ->with(['client', 'category'])
                 ->limit(10)
@@ -38,8 +38,8 @@ class SearchController extends Controller
                 $results[] = [
                     'type' => 'booth',
                     'id' => $booth->id,
-                    'title' => 'Booth #' . $booth->booth_number,
-                    'description' => ($booth->client ? $booth->client->company : 'No client') . ' - ' . $booth->getStatusLabel(),
+                    'title' => 'Booth #'.$booth->booth_number,
+                    'description' => ($booth->client ? $booth->client->company : 'No client').' - '.$booth->getStatusLabel(),
                     'url' => route('booths.show', $booth),
                     'icon' => 'fas fa-cube',
                 ];
@@ -58,7 +58,7 @@ class SearchController extends Controller
                     'type' => 'client',
                     'id' => $client->id,
                     'title' => $client->company ?? $client->name,
-                    'description' => $client->name . ($client->phone_number ? ' - ' . $client->phone_number : ''),
+                    'description' => $client->name.($client->phone_number ? ' - '.$client->phone_number : ''),
                     'url' => route('clients.show', $client),
                     'icon' => 'fas fa-building',
                 ];
@@ -66,10 +66,10 @@ class SearchController extends Controller
         }
 
         if ($type === 'all' || $type === 'bookings') {
-            $bookings = Book::whereHas('client', function($q) use ($query) {
-                    $q->where('company', 'like', "%{$query}%")
-                      ->orWhere('name', 'like', "%{$query}%");
-                })
+            $bookings = Book::whereHas('client', function ($q) use ($query) {
+                $q->where('company', 'like', "%{$query}%")
+                    ->orWhere('name', 'like', "%{$query}%");
+            })
                 ->with('client')
                 ->limit(10)
                 ->get();
@@ -78,8 +78,8 @@ class SearchController extends Controller
                 $results[] = [
                     'type' => 'booking',
                     'id' => $booking->id,
-                    'title' => 'Booking #' . $booking->id,
-                    'description' => ($booking->client ? $booking->client->company : 'N/A') . ' - ' . $booking->date_book->format('Y-m-d'),
+                    'title' => 'Booking #'.$booking->id,
+                    'description' => ($booking->client ? $booking->client->company : 'N/A').' - '.$booking->date_book->format('Y-m-d'),
                     'url' => route('books.show', $booking),
                     'icon' => 'fas fa-calendar-check',
                 ];
@@ -106,4 +106,3 @@ class SearchController extends Controller
         return response()->json(['results' => $results]);
     }
 }
-

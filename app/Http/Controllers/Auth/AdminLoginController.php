@@ -30,7 +30,7 @@ class AdminLoginController extends Controller
 
         $admin = Admin::where('username', $request->username)->first();
 
-        if (!$admin) {
+        if (! $admin) {
             return back()->withErrors([
                 'username' => 'Invalid credentials.',
             ])->withInput();
@@ -40,7 +40,7 @@ class AdminLoginController extends Controller
         if (Hash::check($request->password, $admin->password)) {
             // Use custom guard for admin
             Auth::guard('admin')->login($admin, $request->filled('remember'));
-            
+
             $request->session()->regenerate();
             $request->session()->regenerateToken();
 
@@ -64,4 +64,3 @@ class AdminLoginController extends Controller
         return redirect('/admin/login');
     }
 }
-

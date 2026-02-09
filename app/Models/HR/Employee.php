@@ -173,7 +173,8 @@ class Employee extends Model
      */
     public function getFullNameAttribute()
     {
-        $name = trim($this->first_name . ' ' . ($this->middle_name ? $this->middle_name . ' ' : '') . $this->last_name);
+        $name = trim($this->first_name.' '.($this->middle_name ? $this->middle_name.' ' : '').$this->last_name);
+
         return $name;
     }
 

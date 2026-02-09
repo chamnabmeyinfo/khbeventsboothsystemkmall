@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable
 {
@@ -123,6 +122,7 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         $type = $this->type ?? $this->attributes['type'] ?? null;
+
         return $type === '1' || $type === 1;
     }
 
@@ -132,6 +132,7 @@ class User extends Authenticatable
     public function isActive(): bool
     {
         $status = $this->status ?? $this->attributes['status'] ?? null;
+
         return $status === '1' || $status === 1;
     }
 
@@ -165,25 +166,26 @@ class User extends Authenticatable
     public function getAffiliateStats($floorPlanId = null, $dateFrom = null, $dateTo = null)
     {
         $query = $this->affiliateBookings();
-        
+
         if ($floorPlanId) {
             $query->where('floor_plan_id', $floorPlanId);
         }
-        
+
         if ($dateFrom) {
             $query->where('date_book', '>=', $dateFrom);
         }
-        
+
         if ($dateTo) {
-            $query->where('date_book', '<=', $dateTo . ' 23:59:59');
+            $query->where('date_book', '<=', $dateTo.' 23:59:59');
         }
-        
+
         $bookings = $query->get();
-        
+
         return [
             'total_bookings' => $bookings->count(),
-            'total_revenue' => $bookings->sum(function($booking) {
+            'total_revenue' => $bookings->sum(function ($booking) {
                 $booths = $booking->booths();
+
                 return $booths->sum('price') ?? 0;
             }),
             'unique_clients' => $bookings->pluck('clientid')->unique()->count(),
@@ -219,7 +221,7 @@ class User extends Authenticatable
         }
 
         // Load role with permissions if not already loaded (prevents N+1 queries)
-        if (!$this->relationLoaded('role')) {
+        if (! $this->relationLoaded('role')) {
             $this->load('role.permissions');
         }
 
@@ -241,6 +243,7 @@ class User extends Authenticatable
                 return true;
             }
         }
+
         return false;
     }
 
@@ -250,10 +253,11 @@ class User extends Authenticatable
     public function hasAllPermissions(array $permissionSlugs): bool
     {
         foreach ($permissionSlugs as $slug) {
-            if (!$this->hasPermission($slug)) {
+            if (! $this->hasPermission($slug)) {
                 return false;
             }
         }
+
         return true;
     }
 

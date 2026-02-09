@@ -3,14 +3,13 @@
 namespace App\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
-use App\Models\HR\Employee;
-use App\Models\HR\Department;
-use App\Models\HR\Position;
 use App\Models\HR\Attendance;
+use App\Models\HR\Department;
+use App\Models\HR\Employee;
+use App\Models\HR\EmployeeTraining;
 use App\Models\HR\LeaveRequest;
 use App\Models\HR\PerformanceReview;
-use App\Models\HR\EmployeeTraining;
-use Illuminate\Http\Request;
+use App\Models\HR\Position;
 use Carbon\Carbon;
 
 class HRDashboardController extends Controller
@@ -97,7 +96,7 @@ class HRDashboardController extends Controller
             $month = Carbon::now()->subMonths($i);
             $monthStart = $month->copy()->startOfMonth();
             $monthEnd = $month->copy()->endOfMonth();
-            
+
             $attendanceTrend[] = [
                 'month' => $month->format('M Y'),
                 'present' => Attendance::whereBetween('date', [$monthStart, $monthEnd])

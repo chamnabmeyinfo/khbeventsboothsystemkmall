@@ -21,7 +21,7 @@ return new class extends Migration
             $table->boolean('email_sent')->default(false);
             $table->timestamp('email_sent_at')->nullable();
             $table->timestamps();
-            
+
             $table->foreign('user_id')->references('id')->on('user')->onDelete('cascade');
             $table->foreign('client_id')->references('id')->on('client')->onDelete('cascade');
         });

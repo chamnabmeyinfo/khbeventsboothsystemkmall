@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
+use App\Models\Book;
 use App\Models\Costing;
 use App\Models\FloorPlan;
-use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class CostingController extends Controller
 {
@@ -22,10 +21,10 @@ class CostingController extends Controller
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('notes', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('notes', 'like', "%{$search}%");
             });
         }
 
@@ -107,6 +106,7 @@ class CostingController extends Controller
     public function show(Costing $costing)
     {
         $costing->load(['floorPlan', 'booking', 'createdBy', 'approvedBy']);
+
         return view('finance.costings.show', compact('costing'));
     }
 

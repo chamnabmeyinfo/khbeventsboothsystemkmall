@@ -28,10 +28,10 @@ class EmailTemplateController extends Controller
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('subject', 'like', "%{$search}%")
-                  ->orWhere('slug', 'like', "%{$search}%");
+                    ->orWhere('subject', 'like', "%{$search}%")
+                    ->orWhere('slug', 'like', "%{$search}%");
             });
         }
 
@@ -56,6 +56,7 @@ class EmailTemplateController extends Controller
     public function create()
     {
         $categories = EmailTemplate::distinct()->pluck('category')->filter()->sort()->values();
+
         return view('email-templates.create', compact('categories'));
     }
 
@@ -96,6 +97,7 @@ class EmailTemplateController extends Controller
     public function edit(EmailTemplate $emailTemplate)
     {
         $categories = EmailTemplate::distinct()->pluck('category')->filter()->sort()->values();
+
         return view('email-templates.edit', compact('emailTemplate', 'categories'));
     }
 
@@ -106,7 +108,7 @@ class EmailTemplateController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:email_templates,slug,' . $emailTemplate->id,
+            'slug' => 'required|string|max:255|unique:email_templates,slug,'.$emailTemplate->id,
             'subject' => 'required|string|max:255',
             'body' => 'required|string',
             'category' => 'nullable|string|max:255',
@@ -161,12 +163,12 @@ class EmailTemplateController extends Controller
             // Note: Configure mail settings in .env for this to work
             Mail::raw($rendered['body'], function ($message) use ($rendered, $request) {
                 $message->to($request->email)
-                        ->subject($rendered['subject']);
+                    ->subject($rendered['subject']);
             });
 
             return back()->with('success', 'Test email sent successfully!');
         } catch (\Exception $e) {
-            return back()->with('error', 'Failed to send email: ' . $e->getMessage());
+            return back()->with('error', 'Failed to send email: '.$e->getMessage());
         }
     }
 
@@ -183,7 +185,7 @@ class EmailTemplateController extends Controller
         $lines = explode("\n", $variablesString);
         foreach ($lines as $line) {
             $line = trim($line);
-            if (!empty($line)) {
+            if (! empty($line)) {
                 $parts = explode(':', $line, 2);
                 if (count($parts) === 2) {
                     $variables[trim($parts[0])] = trim($parts[1]);
@@ -191,7 +193,7 @@ class EmailTemplateController extends Controller
             }
         }
 
-        return !empty($variables) ? $variables : null;
+        return ! empty($variables) ? $variables : null;
     }
 
     /**
@@ -228,4 +230,3 @@ class EmailTemplateController extends Controller
         return $categoryData[$category] ?? $default;
     }
 }
-

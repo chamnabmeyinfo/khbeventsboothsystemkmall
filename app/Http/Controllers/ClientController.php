@@ -2,11 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateClientRequest;
+use App\Http\Requests\UpdateClientRequest;
 use App\Models\Client;
+use App\Services\ClientService;
 use Illuminate\Http\Request;
 
 class ClientController extends Controller
 {
+    public function __construct(
+        private ClientService $clientService
+    ) {}
+
     public function index(Request $request)
     {
         // If AJAX request for lazy loading
@@ -14,53 +21,22 @@ class ClientController extends Controller
             return $this->lazyLoad($request);
         }
 
-        $query = Client::withCount(['booths', 'books']);
-        
-        // Search functionality
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('company', 'like', "%{$search}%")
-                  ->orWhere('phone_number', 'like', "%{$search}%")
-                  ->orWhere('position', 'like', "%{$search}%");
-            });
-        }
-        
-        // Filter by company
-        if ($request->filled('company')) {
-            $query->where('company', 'like', "%{$request->company}%");
-        }
-        
-        // Sort functionality
-        $sortBy = $request->get('sort_by', 'company');
-        $sortDir = $request->get('sort_dir', 'asc');
-        
-        if (in_array($sortBy, ['company', 'name', 'position', 'phone_number'])) {
-            $query->orderBy($sortBy, $sortDir);
-        } else {
-            $query->orderBy('company', 'asc');
-        }
-        
-        // Get initial 20 records for lazy loading
-        $clients = $query->limit(20)->get();
-        $total = $query->count();
-        
-        // Get statistics
-        $stats = [
-            'total_clients' => Client::count(),
-            'clients_with_bookings' => Client::has('books')->count(),
-            'clients_with_booths' => Client::has('booths')->count(),
-            'total_bookings' => \App\Models\Book::count(),
+        $filters = [
+            'search' => $request->input('search'),
+            'company' => $request->input('company'),
+            'sort_by' => $request->get('sort_by', 'company'),
+            'sort_dir' => $request->get('sort_dir', 'asc'),
         ];
-        
-        // Get unique companies for filter
-        $companies = Client::whereNotNull('company')
-            ->where('company', '!=', '')
-            ->distinct()
-            ->orderBy('company')
-            ->pluck('company');
-        
+
+        $result = $this->clientService->getClients($filters, 20, 1);
+        $clients = $result['clients'];
+        $total = $result['total'];
+        $sortBy = $result['sortBy'];
+        $sortDir = $result['sortDir'];
+
+        $stats = $this->clientService->getClientStatistics();
+        $companies = $this->clientService->getUniqueCompanies();
+
         return view('clients.index', compact('clients', 'total', 'sortBy', 'sortDir', 'stats', 'companies'));
     }
 
@@ -71,59 +47,59 @@ class ClientController extends Controller
     {
         // Use exact same query structure as index method
         $query = Client::withCount(['booths', 'books']);
-        
+
         // Search functionality (exact same as index)
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('company', 'like', "%{$search}%")
-                  ->orWhere('phone_number', 'like', "%{$search}%")
-                  ->orWhere('position', 'like', "%{$search}%");
+                    ->orWhere('company', 'like', "%{$search}%")
+                    ->orWhere('phone_number', 'like', "%{$search}%")
+                    ->orWhere('position', 'like', "%{$search}%");
             });
         }
-        
+
         // Filter by company (exact same as index)
         if ($request->filled('company')) {
             $query->where('company', 'like', "%{$request->company}%");
         }
-        
+
         // Sort functionality (exact same as index)
         $sortBy = $request->get('sort_by', 'company');
         $sortDir = $request->get('sort_dir', 'asc');
-        
+
         if (in_array($sortBy, ['company', 'name', 'position', 'phone_number'])) {
             $query->orderBy($sortBy, $sortDir);
         } else {
             $query->orderBy('company', 'asc');
         }
-        
+
         // Use same ordering and limit as initial load
         $page = $request->input('page', 1);
         $perPage = 20; // Same as initial load limit(20)
         $offset = ($page - 1) * $perPage;
-        
+
         // Get total before pagination
         $total = $query->count();
-        
+
         // Use exact same ordering as index method
         $clients = $query->offset($offset)->limit($perPage)->get();
         $hasMore = ($offset + $clients->count()) < $total;
-        
+
         $html = '';
         foreach ($clients as $client) {
             // Ensure relationships are loaded (same as initial load)
-            if (!$client->relationLoaded('booths')) {
+            if (! $client->relationLoaded('booths')) {
                 $client->load('booths');
             }
-            if (!$client->relationLoaded('books')) {
+            if (! $client->relationLoaded('books')) {
                 $client->load('books');
             }
-            
+
             // Table row HTML - partial will calculate everything internally to match main view exactly
             $html .= view('clients.partials.table-row', compact('client'))->render();
         }
-        
+
         return response()->json([
             'success' => true,
             'html' => $html,
@@ -131,7 +107,7 @@ class ClientController extends Controller
             'total' => $total,
             'loaded' => $offset + $clients->count(),
             'page' => $page,
-            'perPage' => $perPage
+            'perPage' => $perPage,
         ], 200, [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
@@ -140,164 +116,66 @@ class ClientController extends Controller
         return view('clients.create');
     }
 
-    public function store(Request $request)
+    public function store(CreateClientRequest $request)
     {
-        // Helper function to check if value is truly empty
-        $isEmpty = function($value) {
-            if ($value === null) return true;
-            if ($value === '') return true;
-            if (is_string($value) && trim($value) === '') return true;
-            return false;
-        };
-        
-        // Filter out empty string values and convert to null
-        $data = $request->all();
-        foreach ($data as $key => $value) {
-            if (is_string($value) && trim($value) === '') {
-                $data[$key] = null;
-            }
-        }
-        // Replace request data with cleaned data
-        $request->replace($data);
-        
-        // Build validation rules - all fields optional, use present() to conditionally validate
-        $rules = [
-            'name' => 'nullable|string|max:45',
-            'sex' => 'nullable|integer|in:1,2,3',
-            'position' => 'nullable|string|max:191',
-            'company' => 'nullable|string|max:191',
-            'company_name_khmer' => 'nullable|string|max:255',
-            'phone_number' => 'nullable|string|max:20',
-            'phone_1' => 'nullable|string|max:20',
-            'phone_2' => 'nullable|string|max:20',
-            'address' => 'nullable|string',
-            'tax_id' => 'nullable|string|max:50',
-            'notes' => 'nullable|string',
-        ];
-        
-        // Add email and website fields - make them all nullable with no format validation initially
-        // We'll validate format manually after basic validation passes
-        $rules['email'] = 'nullable|string|max:191';
-        $rules['email_1'] = 'nullable|string|max:191';
-        $rules['email_2'] = 'nullable|string|max:191';
-        $rules['website'] = 'nullable|string|max:255';
-        
         try {
-            $validated = $request->validate($rules);
-            
-            // Clean validated data - ensure null values are properly set
-            foreach ($validated as $key => $value) {
-                if ($isEmpty($value)) {
-                    $validated[$key] = null;
-                }
+            $validated = $request->validated();
+            $result = $this->clientService->createClient($validated);
+            $client = $result['client'];
+            $isUpdate = $result['isUpdate'];
+
+            // Return JSON if request expects JSON (for AJAX/modal requests)
+            if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => $isUpdate ? 'Client updated successfully (existing email found).' : 'Client created successfully.',
+                    'client' => [
+                        'id' => $client->id,
+                        'name' => $client->name,
+                        'company' => $client->company,
+                        'email' => $client->email,
+                        'phone_number' => $client->phone_number,
+                        'address' => $client->address,
+                        'position' => $client->position,
+                    ],
+                ], 200);
             }
-            
-            // Manual format validation for non-empty emails and URLs
-            if (!empty($validated['email']) && !filter_var($validated['email'], FILTER_VALIDATE_EMAIL)) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'email' => ['The email must be a valid email address.']
-                ]);
-            }
-            
-            if (!empty($validated['email_1']) && !filter_var($validated['email_1'], FILTER_VALIDATE_EMAIL)) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'email_1' => ['The email 1 must be a valid email address.']
-                ]);
-            }
-            
-            if (!empty($validated['email_2']) && !filter_var($validated['email_2'], FILTER_VALIDATE_EMAIL)) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'email_2' => ['The email 2 must be a valid email address.']
-                ]);
-            }
-            
-            if (!empty($validated['website']) && !filter_var($validated['website'], FILTER_VALIDATE_URL)) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'website' => ['The website must be a valid URL.']
-                ]);
-            }
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            // Log validation errors for debugging
-            \Log::error('Client creation validation failed', [
-                'errors' => $e->errors(),
-                'request_data' => $request->all(),
-                'rules' => $rules,
-                'cleaned_data' => $data
-            ]);
-            
-            // Return JSON error response for AJAX requests
+
+            return redirect()->route('clients.index')
+                ->with('success', $isUpdate ? 'Client updated successfully (existing email found).' : 'Client created successfully.');
+
+        } catch (\Exception $e) {
+            \Log::error('Client creation failed: '.$e->getMessage());
+
+            // Return JSON if request expects JSON
             if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Validation failed',
-                    'errors' => $e->errors()
-                ], 422);
+                    'message' => 'Failed to create client: '.$e->getMessage(),
+                ], 500);
             }
-            throw $e;
-        }
 
-        // Check if client with same email exists - if so, update it instead of creating new one
-        $client = null;
-        $isUpdate = false;
-        
-        if (!empty($validated['email']) && $validated['email'] !== null) {
-            $existing = Client::where('email', $validated['email'])->first();
-            if ($existing) {
-                // Update existing client - overwrite with new data
-                $existing->update($validated);
-                $client = $existing;
-                $isUpdate = true;
-            }
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Failed to create client. Please try again.']);
         }
-        
-        // If no existing client found, create new one
-        if (!$client) {
-            $client = Client::create($validated);
-        }
-
-        // Send notification about client action
-        try {
-            \App\Services\NotificationService::notifyClientAction($isUpdate ? 'updated' : 'created', $client, auth()->id());
-        } catch (\Exception $e) {
-            \Log::error('Failed to send client notification: ' . $e->getMessage());
-        }
-
-        // Return JSON if request expects JSON (for AJAX/modal requests)
-        if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
-            return response()->json([
-                'status' => 'success',
-                'message' => $isUpdate ? 'Client updated successfully (existing email found).' : 'Client created successfully.',
-                'client' => [
-                    'id' => $client->id,
-                    'name' => $client->name,
-                    'company' => $client->company,
-                    'email' => $client->email,
-                    'phone_number' => $client->phone_number,
-                    'address' => $client->address,
-                    'position' => $client->position,
-                ]
-            ], 200);
-        }
-
-        return redirect()->route('clients.index')
-            ->with('success', $isUpdate ? 'Client updated successfully (existing email found).' : 'Client created successfully.');
     }
 
     public function show(Client $client)
     {
         // Load valid relationships only (books.booths is not a real relationship)
         $client->load(['booths', 'books.user']);
-        
+
         // Manually load booths for each book since boothid is stored as JSON
-        $client->books->each(function($book) {
+        $client->books->each(function ($book) {
             $boothIds = json_decode($book->boothid, true) ?? [];
-            if (!empty($boothIds)) {
+            if (! empty($boothIds)) {
                 $book->setRelation('booths', \App\Models\Booth::whereIn('id', $boothIds)->get());
             } else {
                 $book->setRelation('booths', collect([]));
             }
         });
-        
+
         // Calculate statistics
         $stats = [
             'total_booths' => $client->booths->count(),
@@ -306,24 +184,24 @@ class ClientController extends Controller
             'confirmed_booths' => $client->booths->where('status', \App\Models\Booth::STATUS_CONFIRMED)->count(),
             'reserved_booths' => $client->booths->where('status', \App\Models\Booth::STATUS_RESERVED)->count(),
         ];
-        
+
         // Calculate total revenue from paid booths
         $totalRevenue = $client->booths->where('status', \App\Models\Booth::STATUS_PAID)->sum('price');
         $stats['total_revenue'] = $totalRevenue;
-        
+
         // Get recent bookings with user relationship
         $recentBookings = $client->books()->with('user')->latest('date_book')->take(10)->get();
-        
+
         // Manually load booths for recent bookings
-        $recentBookings->each(function($book) {
+        $recentBookings->each(function ($book) {
             $boothIds = json_decode($book->boothid, true) ?? [];
-            if (!empty($boothIds)) {
+            if (! empty($boothIds)) {
                 $book->setRelation('booths', \App\Models\Booth::whereIn('id', $boothIds)->with('category')->get());
             } else {
                 $book->setRelation('booths', collect([]));
             }
         });
-        
+
         // Return JSON if request expects JSON (for API calls)
         if (request()->expectsJson() || request()->wantsJson()) {
             return response()->json([
@@ -340,7 +218,7 @@ class ClientController extends Controller
                 'notes' => $client->notes,
             ]);
         }
-        
+
         return view('clients.show', compact('client', 'stats', 'recentBookings'));
     }
 
@@ -349,133 +227,59 @@ class ClientController extends Controller
         return view('clients.edit', compact('client'));
     }
 
-    public function update(Request $request, Client $client)
+    public function update(UpdateClientRequest $request, Client $client)
     {
-        // Helper function to check if value is truly empty
-        $isEmpty = function($value) {
-            return $value === null || $value === '' || (is_string($value) && trim($value) === '');
-        };
-        
-        // Filter out empty string values and convert to null
-        $data = $request->all();
-        foreach ($data as $key => $value) {
-            if (is_string($value) && trim($value) === '') {
-                $data[$key] = null;
-            }
-        }
-        // Replace request data with cleaned data
-        $request->replace($data);
-        
-        // Build validation rules - all fields optional
-        $rules = [
-            'name' => 'nullable|string|max:45',
-            'sex' => 'nullable|integer|in:1,2,3',
-            'position' => 'nullable|string|max:191',
-            'company' => 'nullable|string|max:191',
-            'company_name_khmer' => 'nullable|string|max:255',
-            'phone_number' => 'nullable|string|max:20',
-            'phone_1' => 'nullable|string|max:20',
-            'phone_2' => 'nullable|string|max:20',
-            'address' => 'nullable|string',
-            'tax_id' => 'nullable|string|max:50',
-            'notes' => 'nullable|string',
-        ];
-        
-        // Add email and website fields with conditional validation
-        // Check if values exist before adding format validation
-        $email = $request->input('email');
-        $email1 = $request->input('email_1');
-        $email2 = $request->input('email_2');
-        $website = $request->input('website');
-        
-        // Add email and website fields - make them all nullable with no format validation initially
-        // We'll validate format manually after basic validation passes
-        $rules['email'] = 'nullable|string|max:191';
-        $rules['email_1'] = 'nullable|string|max:191';
-        $rules['email_2'] = 'nullable|string|max:191';
-        $rules['website'] = 'nullable|string|max:255';
-        
         try {
-            $validated = $request->validate($rules);
-            
-            // Clean validated data - ensure null values are properly set
-            foreach ($validated as $key => $value) {
-                if ($isEmpty($value)) {
-                    $validated[$key] = null;
-                }
-            }
-            
-            // Manual format validation for non-empty emails and URLs
-            if (!empty($validated['email']) && !filter_var($validated['email'], FILTER_VALIDATE_EMAIL)) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'email' => ['The email must be a valid email address.']
-                ]);
-            }
-            
-            // Check email uniqueness if email is provided (excluding current client, only check if email is not null)
-            if (!empty($validated['email']) && $validated['email'] !== null) {
-                $existing = Client::where('email', $validated['email'])->where('id', '!=', $client->id)->first();
-                if ($existing) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        'email' => ['The email "' . $validated['email'] . '" has already been taken. Please use a different email or update the existing client.']
-                    ]);
-                }
-            }
-            
-            if (!empty($validated['email_1']) && !filter_var($validated['email_1'], FILTER_VALIDATE_EMAIL)) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'email_1' => ['The email 1 must be a valid email address.']
-                ]);
-            }
-            
-            if (!empty($validated['email_2']) && !filter_var($validated['email_2'], FILTER_VALIDATE_EMAIL)) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'email_2' => ['The email 2 must be a valid email address.']
-                ]);
-            }
-            
-            if (!empty($validated['website']) && !filter_var($validated['website'], FILTER_VALIDATE_URL)) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'website' => ['The website must be a valid URL.']
-                ]);
-            }
+            $validated = $request->validated();
+            $this->clientService->updateClient($client, $validated);
+
+            return redirect()->route('clients.index')
+                ->with('success', 'Client updated successfully.');
+
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // Return JSON error response for AJAX requests
+            // Return JSON if request expects JSON
             if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Validation failed',
-                    'errors' => $e->errors()
+                    'errors' => $e->errors(),
                 ], 422);
             }
-            throw $e;
-        }
 
-        $client->update($validated);
+            return back()
+                ->withInput()
+                ->withErrors($e->errors());
 
-        // Send notification about client update
-        try {
-            \App\Services\NotificationService::notifyClientAction('updated', $client, auth()->id());
         } catch (\Exception $e) {
-            \Log::error('Failed to send client update notification: ' . $e->getMessage());
-        }
+            \Log::error('Client update failed: '.$e->getMessage());
 
-        return redirect()->route('clients.index')
-            ->with('success', 'Client updated successfully.');
+            // Return JSON if request expects JSON
+            if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Failed to update client: '.$e->getMessage(),
+                ], 500);
+            }
+
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Failed to update client. Please try again.']);
+        }
     }
 
     public function destroy(Client $client)
     {
-        // Send notification about client deletion before deleting
         try {
-            \App\Services\NotificationService::notifyClientAction('deleted', $client, auth()->id());
-        } catch (\Exception $e) {
-            \Log::error('Failed to send client deletion notification: ' . $e->getMessage());
-        }
+            $this->clientService->deleteClient($client);
 
-        $client->delete();
-        return redirect()->route('clients.index')
-            ->with('success', 'Client deleted successfully.');
+            return redirect()->route('clients.index')
+                ->with('success', 'Client deleted successfully.');
+        } catch (\Exception $e) {
+            \Log::error('Client deletion failed: '.$e->getMessage());
+
+            return back()
+                ->withErrors(['error' => 'Failed to delete client: '.$e->getMessage()]);
+        }
     }
 
     /**
@@ -486,126 +290,16 @@ class ClientController extends Controller
         try {
             $query = $request->input('q', '');
             $clientId = $request->input('id', null);
-            
-            // If specific ID is requested, return that client (only if valid)
-            if ($clientId) {
-                $client = Client::find($clientId);
-                if ($client) {
-                    // Validate client has at least name or company
-                    $name = trim($client->name ?? '');
-                    $company = trim($client->company ?? '');
-                    
-                    // Only return if client is valid (has name or company)
-                    if (!empty($name) || !empty($company)) {
-                        return response()->json([[
-                            'id' => $client->id,
-                            'name' => $client->name ?? '',
-                            'company' => $client->company ?? '',
-                            'email' => property_exists($client, 'email') ? ($client->email ?? null) : null,
-                            'phone_number' => $client->phone_number ?? '',
-                            'address' => property_exists($client, 'address') ? ($client->address ?? null) : null,
-                            'position' => $client->position ?? '',
-                            'sex' => $client->sex ?? null,
-                            'tax_id' => property_exists($client, 'tax_id') ? ($client->tax_id ?? null) : null,
-                            'website' => property_exists($client, 'website') ? ($client->website ?? null) : null,
-                            'notes' => property_exists($client, 'notes') ? ($client->notes ?? null) : null,
-                            'display_text' => ($client->company ?? $client->name ?? 'N/A') . 
-                                (property_exists($client, 'email') && $client->email ? ' (' . $client->email . ')' : '') . 
-                                ($client->phone_number ? ' | ' . $client->phone_number : '')
-                        ]]);
-                    }
-                }
-                return response()->json([]);
-            }
-            
-            // Check which columns exist in the database
-            $columns = \DB::select("SHOW COLUMNS FROM `client`");
-            $columnNames = array_map(function($col) {
-                return $col->Field;
-            }, $columns);
-            
-            // Build query - if query is empty, load all clients (at least 150)
-            // Filter to only include valid clients (must have at least name or company)
-            if (empty($query)) {
-                // Load all clients with valid info, ordered by company then name
-                $clients = Client::where(function($q) {
-                        $q->where(function($subQ) {
-                            // Client must have at least a name or company (not both empty)
-                            $subQ->whereNotNull('name')
-                                ->where('name', '!=', '');
-                        })->orWhere(function($subQ) {
-                            $subQ->whereNotNull('company')
-                                ->where('company', '!=', '');
-                        });
-                    })
-                    ->orderByRaw('CASE WHEN company IS NULL OR company = "" THEN 1 ELSE 0 END')
-                    ->orderBy('company')
-                    ->orderBy('name')
-                    ->limit(150)
-                    ->get();
-            } else {
-                // Build search query with only existing columns
-                // Filter to only include valid clients (must have at least name or company)
-                $clients = Client::where(function($q) {
-                        // Valid client filter - must have at least name or company
-                        $q->where(function($subQ) {
-                            $subQ->whereNotNull('name')
-                                ->where('name', '!=', '');
-                        })->orWhere(function($subQ) {
-                            $subQ->whereNotNull('company')
-                                ->where('company', '!=', '');
-                        });
-                    })
-                    ->where(function($q) use ($query, $columnNames) {
-                        $q->where('name', 'like', "%{$query}%")
-                          ->orWhere('company', 'like', "%{$query}%")
-                          ->orWhere('phone_number', 'like', "%{$query}%");
-                        
-                        // Add email search only if column exists
-                        if (in_array('email', $columnNames)) {
-                            $q->orWhere('email', 'like', "%{$query}%");
-                        }
-                    });
-                
-                // Order by company (handle NULLs) then by name
-                $clients = $clients->orderByRaw('CASE WHEN company IS NULL OR company = "" THEN 1 ELSE 0 END')
-                    ->orderBy('company')
-                    ->orderBy('name')
-                    ->limit(150) // Increased limit for search results too
-                    ->get();
-            }
-            
-            // Filter and map results - ensure only valid clients are returned
-            $results = $clients->filter(function ($client) {
-                // Additional validation: ensure client has at least name or company
-                $name = trim($client->name ?? '');
-                $company = trim($client->company ?? '');
-                return !empty($name) || !empty($company);
-            })->map(function ($client) use ($columnNames) {
-                return [
-                    'id' => $client->id,
-                    'name' => $client->name ?? '',
-                    'company' => $client->company ?? '',
-                    'email' => in_array('email', $columnNames) ? ($client->email ?? null) : null,
-                    'phone_number' => $client->phone_number ?? '',
-                    'address' => in_array('address', $columnNames) ? ($client->address ?? null) : null,
-                    'position' => $client->position ?? '',
-                    'sex' => $client->sex ?? null,
-                    'tax_id' => in_array('tax_id', $columnNames) ? ($client->tax_id ?? null) : null,
-                    'website' => in_array('website', $columnNames) ? ($client->website ?? null) : null,
-                    'notes' => in_array('notes', $columnNames) ? ($client->notes ?? null) : null,
-                    'display_text' => ($client->company ?? $client->name ?? 'N/A') . 
-                        (in_array('email', $columnNames) && isset($client->email) && $client->email ? ' (' . $client->email . ')' : '') . 
-                        ($client->phone_number ? ' | ' . $client->phone_number : '')
-                ];
-            });
-            
-            return response()->json($results->values()->all());
+
+            $results = $this->clientService->searchClients($query, $clientId);
+
+            return response()->json($results);
         } catch (\Exception $e) {
-            \Log::error('Client search error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
+            \Log::error('Client search error: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['error' => 'Search failed: ' . $e->getMessage()], 500);
+
+            return response()->json(['error' => 'Search failed: '.$e->getMessage()], 500);
         }
     }
 
@@ -616,16 +310,16 @@ class ClientController extends Controller
     {
         try {
             $client = Client::findOrFail($id);
-            
+
             $validated = $request->validate([
                 'x' => 'required|numeric|min:0|max:100',
                 'y' => 'required|numeric|min:0|max:100',
                 'position' => 'nullable|string|max:50',
             ]);
-            
+
             // Store position as "x% y%" format
-            $position = $validated['position'] ?? ($validated['x'] . '% ' . $validated['y'] . '%');
-            
+            $position = $validated['position'] ?? ($validated['x'].'% '.$validated['y'].'%');
+
             // Check if cover_position column exists, if not store in settings
             if (\Illuminate\Support\Facades\Schema::hasColumn('client', 'cover_position')) {
                 $client->cover_position = $position;
@@ -633,23 +327,24 @@ class ClientController extends Controller
             } else {
                 // Store in settings table as fallback
                 \App\Models\Setting::setValue(
-                    'client_' . $id . '_cover_position',
+                    'client_'.$id.'_cover_position',
                     $position,
                     'string',
-                    'Cover image position for client ' . $id
+                    'Cover image position for client '.$id
                 );
             }
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Cover position updated successfully.',
-                'position' => $position
+                'position' => $position,
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error updating cover position: ' . $e->getMessage());
+            \Log::error('Error updating cover position: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error updating cover position: ' . $e->getMessage()
+                'message' => 'Error updating cover position: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -707,27 +402,27 @@ class ClientController extends Controller
                         'value' => $value,
                         'keep_client_id' => $keepClient->id,
                         'keep_client_name' => $keepClient->name,
-                        'duplicates' => []
+                        'duplicates' => [],
                     ];
 
                     foreach ($clientsToDelete as $clientToDelete) {
-                        if (!$dryRun) {
+                        if (! $dryRun) {
                             // Merge data before deleting
                             $this->mergeClientData($keepClient, $clientToDelete);
                             $clientToDelete->delete();
                             $totalDeleted++;
                         }
-                        
+
                         $groupDetails['duplicates'][] = [
                             'id' => $clientToDelete->id,
-                            'name' => $clientToDelete->name
+                            'name' => $clientToDelete->name,
                         ];
                     }
 
-                    if (!$dryRun) {
+                    if (! $dryRun) {
                         $totalMerged++;
                     }
-                    
+
                     $details[] = $groupDetails;
                 }
             }
@@ -740,8 +435,8 @@ class ClientController extends Controller
                     'details' => $details,
                     'summary' => [
                         'duplicate_groups' => count($details),
-                        'would_delete' => $totalDeleted
-                    ]
+                        'would_delete' => $totalDeleted,
+                    ],
                 ]);
             }
 
@@ -750,16 +445,17 @@ class ClientController extends Controller
                 'message' => "Removed {$totalDeleted} duplicate clients across {$totalMerged} groups",
                 'summary' => [
                     'duplicate_groups_merged' => $totalMerged,
-                    'clients_deleted' => $totalDeleted
+                    'clients_deleted' => $totalDeleted,
                 ],
-                'details' => $details
+                'details' => $details,
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error removing duplicate clients: ' . $e->getMessage());
+            \Log::error('Error removing duplicate clients: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error removing duplicates: ' . $e->getMessage()
+                'message' => 'Error removing duplicates: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -773,13 +469,13 @@ class ClientController extends Controller
             'name', 'sex', 'position', 'company', 'company_name_khmer',
             'phone_number', 'phone_1', 'phone_2',
             'email', 'email_1', 'email_2',
-            'address', 'tax_id', 'website', 'notes'
+            'address', 'tax_id', 'website', 'notes',
         ];
 
         $updated = false;
         foreach ($fieldsToMerge as $field) {
             // If kept client field is empty/null and duplicate has a value, use duplicate's value
-            if (empty($keepClient->$field) && !empty($duplicateClient->$field)) {
+            if (empty($keepClient->$field) && ! empty($duplicateClient->$field)) {
                 $keepClient->$field = $duplicateClient->$field;
                 $updated = true;
             }
@@ -790,4 +486,3 @@ class ClientController extends Controller
         }
     }
 }
-

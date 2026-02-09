@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
-use App\Models\HR\EmployeeTraining;
 use App\Models\HR\Employee;
+use App\Models\HR\EmployeeTraining;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 

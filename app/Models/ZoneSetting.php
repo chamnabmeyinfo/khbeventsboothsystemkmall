@@ -42,7 +42,7 @@ class ZoneSetting extends Model
         'opacity' => 'float',
         'price' => 'decimal:2',
     ];
-    
+
     /**
      * Get the floor plan that owns this zone setting
      */
@@ -57,7 +57,7 @@ class ZoneSetting extends Model
     public static function getByZoneName($zoneName, $floorPlanId = null)
     {
         $query = self::where('zone_name', $zoneName);
-        
+
         // Filter by floor plan if specified
         if ($floorPlanId) {
             $query->where('floor_plan_id', $floorPlanId);
@@ -65,7 +65,7 @@ class ZoneSetting extends Model
             // If no floor plan specified, get global settings (backward compatibility)
             $query->whereNull('floor_plan_id');
         }
-        
+
         return $query->first();
     }
 
@@ -75,14 +75,14 @@ class ZoneSetting extends Model
     public static function saveZoneSettings($zoneName, $settings, $floorPlanId = null)
     {
         $whereClause = ['zone_name' => $zoneName];
-        
+
         // Include floor_plan_id in unique constraint
         if ($floorPlanId) {
             $whereClause['floor_plan_id'] = $floorPlanId;
         } else {
             $whereClause['floor_plan_id'] = null; // Global settings (backward compatibility)
         }
-        
+
         return self::updateOrCreate(
             $whereClause,
             [
@@ -114,7 +114,7 @@ class ZoneSetting extends Model
     public static function getZoneDefaults($zoneName, $floorPlanId = null)
     {
         $zoneSetting = self::getByZoneName($zoneName, $floorPlanId);
-        
+
         if ($zoneSetting) {
             return [
                 'width' => $zoneSetting->width,
@@ -159,4 +159,3 @@ class ZoneSetting extends Model
         ];
     }
 }
-

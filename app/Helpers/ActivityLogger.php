@@ -15,7 +15,8 @@ class ActivityLogger
             return ActivityLog::log($action, $model, $description, $oldValues, $newValues);
         } catch (\Exception $e) {
             // Silently fail - don't break the application
-            \Log::error('Activity logging failed: ' . $e->getMessage());
+            \Log::error('Activity logging failed: '.$e->getMessage());
+
             return null;
         }
     }

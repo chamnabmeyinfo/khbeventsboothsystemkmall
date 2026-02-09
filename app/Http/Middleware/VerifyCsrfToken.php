@@ -2,8 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Middleware;
 use App\Helpers\DebugLogger;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Middleware;
 
 class VerifyCsrfToken extends Middleware
 {
@@ -15,12 +15,11 @@ class VerifyCsrfToken extends Middleware
     protected $except = [
         //
     ];
-    
+
     /**
      * Handle an incoming request.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
      * @return mixed
      */
     public function handle($request, \Closure $next)
@@ -36,30 +35,30 @@ class VerifyCsrfToken extends Middleware
                     'token_from_header' => $request->header('X-CSRF-TOKEN'),
                     'token_from_session' => session()->token(),
                     'all_post_data' => array_keys($request->all()),
-                    'content_type' => $request->header('Content-Type')
+                    'content_type' => $request->header('Content-Type'),
                 ],
                 'VerifyCsrfToken.php:29',
                 'CSRF check started'
             );
         }
         // #endregion
-        
+
         try {
             $response = parent::handle($request, $next);
-            
+
             // #region agent log
             if ($request->method() !== 'GET') {
                 DebugLogger::log(
                     [
                         'method' => $request->method(),
-                        'uri' => $request->path()
+                        'uri' => $request->path(),
                     ],
                     'VerifyCsrfToken.php:38',
                     'CSRF check passed'
                 );
             }
             // #endregion
-            
+
             return $response;
         } catch (\Illuminate\Session\TokenMismatchException $e) {
             // #region agent log
@@ -71,13 +70,13 @@ class VerifyCsrfToken extends Middleware
                     'token_from_request' => $request->input('_token'),
                     'token_from_header' => $request->header('X-CSRF-TOKEN'),
                     'token_from_session' => session()->token(),
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ],
                 'VerifyCsrfToken.php:45',
                 'CSRF token mismatch'
             );
             // #endregion
-            
+
             throw $e;
         }
     }

@@ -49,7 +49,7 @@ class RemoveDuplicateClients extends Command
 
         foreach ($fieldsToCheck as $checkField) {
             $this->info("📋 Checking duplicates for field: <fg=cyan>{$checkField}</>");
-            
+
             // Find duplicates - groups of clients with the same non-null value
             $duplicates = Client::select($checkField, DB::raw('COUNT(*) as count'))
                 ->whereNotNull($checkField)
@@ -61,11 +61,12 @@ class RemoveDuplicateClients extends Command
             if ($duplicates->isEmpty()) {
                 $this->comment("   ✅ No duplicates found for {$checkField}");
                 $this->newLine();
+
                 continue;
             }
 
-            $this->comment("   Found " . $duplicates->count() . " duplicate groups");
-            
+            $this->comment('   Found '.$duplicates->count().' duplicate groups');
+
             foreach ($duplicates as $duplicate) {
                 $value = $duplicate->$checkField;
                 $count = $duplicate->count;
@@ -88,19 +89,19 @@ class RemoveDuplicateClients extends Command
                     } else {
                         // Before deleting, merge any important data that might be missing in the kept client
                         $this->mergeClientData($keepClient, $clientToDelete);
-                        
+
                         // Delete the duplicate
                         $clientToDelete->delete();
                         $this->comment("      ✅ Deleted: Client ID {$clientToDelete->id} ({$clientToDelete->name})");
                         $totalDeleted++;
                     }
                 }
-                
-                if (!$dryRun) {
+
+                if (! $dryRun) {
                     $totalMerged++;
                 }
             }
-            
+
             $this->newLine();
         }
 
@@ -108,7 +109,7 @@ class RemoveDuplicateClients extends Command
             $this->warn('⚠️  DRY RUN MODE - No changes were made');
             $this->info('💡 Run without --dry-run to apply changes');
         } else {
-            $this->info("✅ Process completed!");
+            $this->info('✅ Process completed!');
             $this->info("   - Duplicate groups merged: {$totalMerged}");
             $this->info("   - Clients deleted: {$totalDeleted}");
         }
@@ -126,13 +127,13 @@ class RemoveDuplicateClients extends Command
             'name', 'sex', 'position', 'company', 'company_name_khmer',
             'phone_number', 'phone_1', 'phone_2',
             'email', 'email_1', 'email_2',
-            'address', 'tax_id', 'website', 'notes'
+            'address', 'tax_id', 'website', 'notes',
         ];
 
         $updated = false;
         foreach ($fieldsToMerge as $field) {
             // If kept client field is empty/null and duplicate has a value, use duplicate's value
-            if (empty($keepClient->$field) && !empty($duplicateClient->$field)) {
+            if (empty($keepClient->$field) && ! empty($duplicateClient->$field)) {
                 $keepClient->$field = $duplicateClient->$field;
                 $updated = true;
             }

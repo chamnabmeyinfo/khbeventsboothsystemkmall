@@ -5,8 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
-use App\Models\BoothStatusSetting;
 
+/**
+ * @property-read Client|null $client
+ */
 class Booth extends Model
 {
     use HasFactory;
@@ -77,9 +79,13 @@ class Booth extends Model
 
     // Status constants
     const STATUS_AVAILABLE = 1;
+
     const STATUS_CONFIRMED = 2;
+
     const STATUS_RESERVED = 3;
+
     const STATUS_HIDDEN = 4;
+
     const STATUS_PAID = 5;
 
     /**
@@ -204,9 +210,9 @@ class Booth extends Model
         if ($statusSetting) {
             return $statusSetting->status_name;
         }
-        
+
         // Fallback to hardcoded values
-        return match($this->status) {
+        return match ($this->status) {
             self::STATUS_AVAILABLE => 'Available',
             self::STATUS_CONFIRMED => 'Confirmed',
             self::STATUS_RESERVED => 'Reserved',
@@ -226,9 +232,9 @@ class Booth extends Model
         if ($statusSetting && $statusSetting->badge_color) {
             return $statusSetting->badge_color;
         }
-        
+
         // Fallback to hardcoded values
-        return match($this->status) {
+        return match ($this->status) {
             self::STATUS_AVAILABLE => 'success',
             self::STATUS_CONFIRMED => 'info',
             self::STATUS_RESERVED => 'warning',
@@ -252,9 +258,9 @@ class Booth extends Model
                 'text' => $statusSetting->text_color,
             ];
         }
-        
+
         // Fallback to hardcoded values
-        return match($this->status) {
+        return match ($this->status) {
             self::STATUS_AVAILABLE => ['background' => '#28a745', 'border' => '#28a745', 'text' => '#ffffff'],
             self::STATUS_CONFIRMED => ['background' => '#0dcaf0', 'border' => '#0dcaf0', 'text' => '#ffffff'],
             self::STATUS_RESERVED => ['background' => '#ffc107', 'border' => '#ffc107', 'text' => '#333333'],
@@ -274,23 +280,23 @@ class Booth extends Model
         // Before creating, check for duplicate booth_number within the same floor plan (floor-plan-specific)
         static::creating(function ($booth) {
             $query = self::where('booth_number', $booth->booth_number);
-            
+
             // Filter by floor_plan_id if specified (floor-plan-specific uniqueness)
-            if (!empty($booth->floor_plan_id)) {
+            if (! empty($booth->floor_plan_id)) {
                 $query->where('floor_plan_id', $booth->floor_plan_id);
             } else {
                 // If no floor_plan_id specified, check globally (backward compatibility)
                 // This allows booths without floor_plan_id to still work
             }
-            
+
             $existing = $query->first();
             if ($existing) {
-                $message = !empty($booth->floor_plan_id) 
+                $message = ! empty($booth->floor_plan_id)
                     ? 'This booth number already exists in this floor plan. Please choose a different number.'
                     : 'This booth number already exists. Please choose a different number.';
-                
+
                 throw ValidationException::withMessages([
-                    'booth_number' => $message
+                    'booth_number' => $message,
                 ]);
             }
         });
@@ -299,20 +305,20 @@ class Booth extends Model
         static::updating(function ($booth) {
             $query = self::where('booth_number', $booth->booth_number)
                 ->where('id', '!=', $booth->id);
-            
+
             // Filter by floor_plan_id if specified (floor-plan-specific uniqueness)
-            if (!empty($booth->floor_plan_id)) {
+            if (! empty($booth->floor_plan_id)) {
                 $query->where('floor_plan_id', $booth->floor_plan_id);
             }
-            
+
             $existing = $query->first();
             if ($existing) {
-                $message = !empty($booth->floor_plan_id) 
+                $message = ! empty($booth->floor_plan_id)
                     ? 'This booth number already exists in this floor plan. Please choose a different number.'
                     : 'This booth number already exists. Please choose a different number.';
-                
+
                 throw ValidationException::withMessages([
-                    'booth_number' => $message
+                    'booth_number' => $message,
                 ]);
             }
         });
@@ -324,17 +330,17 @@ class Booth extends Model
     public static function numberExists(string $boothNumber, ?int $excludeId = null, ?int $floorPlanId = null): bool
     {
         $query = self::where('booth_number', $boothNumber);
-        
+
         // Filter by floor_plan_id if specified (floor-plan-specific uniqueness)
         if ($floorPlanId !== null) {
             $query->where('floor_plan_id', $floorPlanId);
         }
-        
+
         // Exclude current booth when checking for updates
         if ($excludeId) {
             $query->where('id', '!=', $excludeId);
         }
-        
+
         return $query->exists();
     }
 }

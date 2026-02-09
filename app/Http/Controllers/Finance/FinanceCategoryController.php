@@ -19,9 +19,9 @@ class FinanceCategoryController extends Controller
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -91,17 +91,17 @@ class FinanceCategoryController extends Controller
     public function show(FinanceCategory $category)
     {
         $category->load('createdBy');
-        
+
         // Get related records
         $expenseCount = 0;
         $revenueCount = 0;
-        
+
         if ($category->type === FinanceCategory::TYPE_EXPENSE) {
             $expenseCount = \App\Models\Expense::where('category_id', $category->id)->count();
         } elseif ($category->type === FinanceCategory::TYPE_REVENUE) {
             $revenueCount = \App\Models\Revenue::where('category_id', $category->id)->count();
         }
-        
+
         return view('finance.categories.show', compact('category', 'expenseCount', 'revenueCount'));
     }
 
@@ -141,16 +141,16 @@ class FinanceCategoryController extends Controller
         // Check if category is in use
         $inUse = false;
         $usageCount = 0;
-        
+
         if ($category->type === FinanceCategory::TYPE_EXPENSE) {
             $usageCount = \App\Models\Expense::where('category_id', $category->id)->count();
         } elseif ($category->type === FinanceCategory::TYPE_REVENUE) {
             $usageCount = \App\Models\Revenue::where('category_id', $category->id)->count();
         }
-        
+
         if ($usageCount > 0) {
             return redirect()->route('finance.categories.index')
-                ->with('error', "Cannot delete category. It is currently used by {$usageCount} " . ($category->type === FinanceCategory::TYPE_EXPENSE ? 'expense(s)' : 'revenue(s)') . ".");
+                ->with('error', "Cannot delete category. It is currently used by {$usageCount} ".($category->type === FinanceCategory::TYPE_EXPENSE ? 'expense(s)' : 'revenue(s)').'.');
         }
 
         $category->delete();

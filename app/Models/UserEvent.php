@@ -84,6 +84,6 @@ class UserEvent extends Authenticatable
      */
     public function getFullNameAttribute()
     {
-        return trim($this->firstname . ' ' . $this->lastname);
+        return trim($this->firstname.' '.$this->lastname);
     }
 }

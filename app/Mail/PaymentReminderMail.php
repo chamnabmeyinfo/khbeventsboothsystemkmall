@@ -2,19 +2,19 @@
 
 namespace App\Mail;
 
+use App\Models\Booth;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Booth;
 
 class PaymentReminderMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     public $booth;
+
     public $reminderType;
 
     /**
@@ -31,12 +31,12 @@ class PaymentReminderMail extends Mailable
      */
     public function envelope(): Envelope
     {
-        $subject = match($this->reminderType) {
-            'overdue' => '⚠️ OVERDUE: Payment Reminder for Booth ' . $this->booth->booth_number,
-            'due_today' => '🔔 Payment Due TODAY for Booth ' . $this->booth->booth_number,
-            default => '📅 Payment Reminder for Booth ' . $this->booth->booth_number,
+        $subject = match ($this->reminderType) {
+            'overdue' => '⚠️ OVERDUE: Payment Reminder for Booth '.$this->booth->booth_number,
+            'due_today' => '🔔 Payment Due TODAY for Booth '.$this->booth->booth_number,
+            default => '📅 Payment Reminder for Booth '.$this->booth->booth_number,
         };
-        
+
         return new Envelope(
             subject: $subject,
         );
@@ -58,7 +58,7 @@ class PaymentReminderMail extends Mailable
                 'depositPaid' => $this->booth->deposit_paid,
                 'balanceDue' => $this->booth->balance_due,
                 'balancePaid' => $this->booth->balance_paid,
-                'totalDue' => ($this->booth->deposit_amount - $this->booth->deposit_paid) + 
+                'totalDue' => ($this->booth->deposit_amount - $this->booth->deposit_paid) +
                               ($this->booth->balance_due - $this->booth->balance_paid),
             ],
         );

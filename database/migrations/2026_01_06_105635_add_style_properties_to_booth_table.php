@@ -12,19 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('booth', function (Blueprint $table) {
-            if (!Schema::hasColumn('booth', 'z_index')) {
+            if (! Schema::hasColumn('booth', 'z_index')) {
                 $table->integer('z_index')->nullable()->default(10)->after('rotation');
             }
-            if (!Schema::hasColumn('booth', 'font_size')) {
+            if (! Schema::hasColumn('booth', 'font_size')) {
                 $table->integer('font_size')->nullable()->default(14)->after('z_index');
             }
-            if (!Schema::hasColumn('booth', 'border_width')) {
+            if (! Schema::hasColumn('booth', 'border_width')) {
                 $table->integer('border_width')->nullable()->default(2)->after('font_size');
             }
-            if (!Schema::hasColumn('booth', 'border_radius')) {
+            if (! Schema::hasColumn('booth', 'border_radius')) {
                 $table->integer('border_radius')->nullable()->default(6)->after('border_width');
             }
-            if (!Schema::hasColumn('booth', 'opacity')) {
+            if (! Schema::hasColumn('booth', 'opacity')) {
                 $table->decimal('opacity', 3, 2)->nullable()->default(1.00)->after('border_radius');
             }
         });

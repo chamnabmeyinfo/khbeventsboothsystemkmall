@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('costings')) {
+        if (! Schema::hasTable('costings')) {
             Schema::create('costings', function (Blueprint $table) {
                 $table->id();
                 $table->string('name', 255); // Costing name/title
@@ -27,7 +27,7 @@ return new class extends Migration
                 $table->unsignedBigInteger('approved_by')->nullable();
                 $table->timestamp('approved_at')->nullable();
                 $table->timestamps();
-                
+
                 $table->index('costing_date');
                 $table->index('status');
                 $table->index('floor_plan_id');

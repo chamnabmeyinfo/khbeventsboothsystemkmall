@@ -20,7 +20,7 @@ return new class extends Migration
             $table->timestamp('paid_at')->nullable();
             $table->unsignedBigInteger('user_id')->nullable(); // Who processed the payment
             $table->timestamps();
-            
+
             $table->foreign('booking_id')->references('id')->on('book')->onDelete('cascade');
             $table->foreign('client_id')->references('id')->on('client')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('user')->onDelete('set null');

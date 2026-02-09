@@ -61,28 +61,38 @@ if (empty($_SERVER['SERVER_NAME'])) {
 if (empty($_SERVER['SERVER_PORT'])) {
     $_SERVER['SERVER_PORT'] = '8000';
 }
-if (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === null) {
+if (! isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === null) {
     $_SERVER['HTTPS'] = '';
 }
 if (empty($_SERVER['SCRIPT_NAME'])) {
     $_SERVER['SCRIPT_NAME'] = '/index.php';
 }
-if (!isset($_SERVER['QUERY_STRING'])) {
+if (! isset($_SERVER['QUERY_STRING'])) {
     $_SERVER['QUERY_STRING'] = '';
 }
-if (!isset($_SERVER['SERVER_PROTOCOL'])) {
+if (! isset($_SERVER['SERVER_PROTOCOL'])) {
     $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.1';
 }
-if (!isset($_SERVER['REQUEST_SCHEME'])) {
+if (! isset($_SERVER['REQUEST_SCHEME'])) {
     $_SERVER['REQUEST_SCHEME'] = 'http';
 }
 
 // Ensure all superglobals are initialized and don't have null values
-if (!isset($_GET)) $_GET = [];
-if (!isset($_POST)) $_POST = [];
-if (!isset($_COOKIE)) $_COOKIE = [];
-if (!isset($_FILES)) $_FILES = [];
-if (!isset($_SERVER)) $_SERVER = [];
+if (! isset($_GET)) {
+    $_GET = [];
+}
+if (! isset($_POST)) {
+    $_POST = [];
+}
+if (! isset($_COOKIE)) {
+    $_COOKIE = [];
+}
+if (! isset($_FILES)) {
+    $_FILES = [];
+}
+if (! isset($_SERVER)) {
+    $_SERVER = [];
+}
 
 // Ensure $_SERVER array doesn't have null values that could cause issues
 // Also ensure nested arrays don't have null values
@@ -92,15 +102,19 @@ foreach ($_SERVER as $key => $value) {
         $_SERVER[$key] = '';
     } elseif (is_array($value)) {
         // Recursively clean nested arrays - ensure no null values
-        $_SERVER[$key] = array_filter(array_map(function($v) {
-            return $v === null ? '' : (is_array($v) ? array_filter($v, function($item) { return $item !== null; }) : $v);
-        }, $value), function($v) { return $v !== null; });
+        $_SERVER[$key] = array_filter(array_map(function ($v) {
+            return $v === null ? '' : (is_array($v) ? array_filter($v, function ($item) {
+                return $item !== null;
+            }) : $v);
+        }, $value), function ($v) {
+            return $v !== null;
+        });
     }
 }
 
 // Ensure all HTTP_* headers are strings (not null or arrays)
 foreach ($_SERVER as $key => $value) {
-    if (str_starts_with($key, 'HTTP_') && (!is_string($value) || $value === null)) {
+    if (str_starts_with($key, 'HTTP_') && (! is_string($value) || $value === null)) {
         $_SERVER[$key] = is_string($value) ? $value : '';
     }
 }
@@ -126,7 +140,7 @@ $requiredHeaders = [
 ];
 
 foreach ($requiredHeaders as $header => $default) {
-    if (!isset($_SERVER[$header]) || $_SERVER[$header] === null || $_SERVER[$header] === '') {
+    if (! isset($_SERVER[$header]) || $_SERVER[$header] === null || $_SERVER[$header] === '') {
         $_SERVER[$header] = $default;
     }
 }
@@ -141,7 +155,7 @@ $requiredServerVars = [
 ];
 
 foreach ($requiredServerVars as $var => $default) {
-    if (!isset($_SERVER[$var]) || $_SERVER[$var] === null || $_SERVER[$var] === '') {
+    if (! isset($_SERVER[$var]) || $_SERVER[$var] === null || $_SERVER[$var] === '') {
         $_SERVER[$var] = $default;
     }
 }
@@ -154,11 +168,13 @@ foreach ($_SERVER as $key => $value) {
         $cleanServer[$key] = '';
     } elseif (is_array($value)) {
         // Clean nested arrays - remove null values completely
-        $cleanServer[$key] = array_filter(array_map(function($v) {
+        $cleanServer[$key] = array_filter(array_map(function ($v) {
             return $v === null ? '' : $v;
-        }, $value), function($v) { return $v !== null; });
+        }, $value), function ($v) {
+            return $v !== null;
+        });
     } else {
-        $cleanServer[$key] = (string)$value; // Convert to string to ensure type safety
+        $cleanServer[$key] = (string) $value; // Convert to string to ensure type safety
     }
 }
 $_SERVER = $cleanServer;
@@ -169,7 +185,7 @@ foreach ($_SERVER as $key => $value) {
         if ($value === null || is_array($value)) {
             $_SERVER[$key] = '';
         } else {
-            $_SERVER[$key] = (string)$value;
+            $_SERVER[$key] = (string) $value;
         }
     }
 }
@@ -180,33 +196,33 @@ $requiredKeys = [
     'REQUEST_URI', 'REQUEST_METHOD', 'HTTP_HOST', 'SERVER_NAME', 'SERVER_PORT',
     'SCRIPT_NAME', 'QUERY_STRING', 'SERVER_PROTOCOL', 'REQUEST_SCHEME',
     'REMOTE_ADDR', 'REQUEST_TIME', 'REQUEST_TIME_FLOAT', 'PATH_INFO',
-    'SCRIPT_FILENAME', 'HTTPS', 'DOCUMENT_ROOT'
+    'SCRIPT_FILENAME', 'HTTPS', 'DOCUMENT_ROOT',
 ];
 
 foreach ($requiredKeys as $key) {
     $value = $_SERVER[$key] ?? '';
     if ($key === 'REQUEST_TIME') {
-        $cleanServerArray[$key] = is_numeric($value) ? (int)$value : time();
+        $cleanServerArray[$key] = is_numeric($value) ? (int) $value : time();
     } elseif ($key === 'REQUEST_TIME_FLOAT') {
-        $cleanServerArray[$key] = is_numeric($value) ? (float)$value : microtime(true);
+        $cleanServerArray[$key] = is_numeric($value) ? (float) $value : microtime(true);
     } elseif ($key === 'SERVER_PORT') {
-        $cleanServerArray[$key] = is_numeric($value) ? (int)$value : 8000;
+        $cleanServerArray[$key] = is_numeric($value) ? (int) $value : 8000;
     } else {
-        $cleanServerArray[$key] = (string)$value;
+        $cleanServerArray[$key] = (string) $value;
     }
 }
 
 // Add all HTTP_* headers as strings (only non-null, non-array values)
 foreach ($_SERVER as $key => $value) {
-    if (str_starts_with($key, 'HTTP_') && $value !== null && !is_array($value)) {
-        $cleanServerArray[$key] = (string)$value;
+    if (str_starts_with($key, 'HTTP_') && $value !== null && ! is_array($value)) {
+        $cleanServerArray[$key] = (string) $value;
     }
 }
 
 // Add CONTENT_TYPE, CONTENT_LENGTH if they exist
 foreach (['CONTENT_TYPE', 'CONTENT_LENGTH', 'CONTENT_MD5'] as $key) {
-    if (isset($_SERVER[$key]) && $_SERVER[$key] !== null && !is_array($_SERVER[$key])) {
-        $cleanServerArray[$key] = (string)$_SERVER[$key];
+    if (isset($_SERVER[$key]) && $_SERVER[$key] !== null && ! is_array($_SERVER[$key])) {
+        $cleanServerArray[$key] = (string) $_SERVER[$key];
     }
 }
 
@@ -237,11 +253,11 @@ try {
         $_FILES ?? [],
         $cleanServerArray
     );
-    
+
     // Convert to Laravel Request
     Request::enableHttpMethodParameterOverride();
     $request = Request::createFromBase($symfonyRequest);
-    
+
     $response = $kernel->handle($request)->send();
     $kernel->terminate($request, $response);
 } catch (\Throwable $e) {
@@ -265,7 +281,7 @@ try {
             'SCRIPT_FILENAME' => __FILE__,
             'HTTPS' => '',
         ];
-        
+
         $symfonyRequest = \Symfony\Component\HttpFoundation\Request::create(
             '/',
             'GET',
@@ -274,10 +290,10 @@ try {
             [],
             $minimalServer
         );
-        
+
         Request::enableHttpMethodParameterOverride();
         $request = Request::createFromBase($symfonyRequest);
-        
+
         $response = $kernel->handle($request)->send();
         $kernel->terminate($request, $response);
     } else {

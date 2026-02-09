@@ -60,7 +60,7 @@ class BoothImage extends Model
             'teardown' => 'Teardown',
             'facility' => 'Facility',
         ];
-        
+
         return $labels[$this->image_type] ?? 'Photo';
     }
 

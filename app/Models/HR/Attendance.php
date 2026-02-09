@@ -59,14 +59,14 @@ class Attendance extends Model
      */
     public function calculateTotalHours()
     {
-        if (!$this->check_in_time || !$this->check_out_time) {
+        if (! $this->check_in_time || ! $this->check_out_time) {
             return 0;
         }
 
-        $checkIn = \Carbon\Carbon::parse($this->date . ' ' . $this->check_in_time);
-        $checkOut = \Carbon\Carbon::parse($this->date . ' ' . $this->check_out_time);
+        $checkIn = \Carbon\Carbon::parse($this->date.' '.$this->check_in_time);
+        $checkOut = \Carbon\Carbon::parse($this->date.' '.$this->check_out_time);
         $totalMinutes = $checkOut->diffInMinutes($checkIn) - ($this->break_duration ?? 0);
-        
+
         return round($totalMinutes / 60, 2);
     }
 

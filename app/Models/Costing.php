@@ -34,9 +34,13 @@ class Costing extends Model
     ];
 
     const STATUS_DRAFT = 'draft';
+
     const STATUS_APPROVED = 'approved';
+
     const STATUS_IN_PROGRESS = 'in_progress';
+
     const STATUS_COMPLETED = 'completed';
+
     const STATUS_CANCELLED = 'cancelled';
 
     /**
@@ -79,6 +83,7 @@ class Costing extends Model
         if ($this->estimated_cost && $this->actual_cost) {
             return $this->actual_cost - $this->estimated_cost;
         }
+
         return null;
     }
 

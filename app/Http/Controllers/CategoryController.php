@@ -48,21 +48,21 @@ class CategoryController extends Controller
      */
     public function createCategory(Request $request)
     {
-        if (!$request->has('name') || !$request->has('limit')) {
+        if (! $request->has('name') || ! $request->has('limit')) {
             return response()->json(['error' => 'Missing required fields'], 400);
         }
-        
+
         if (empty($request->name) || empty($request->limit)) {
             return response()->json(['error' => 'Name and limit are required'], 400);
         }
-        
+
         $category = Category::create([
             'name' => $request->name,
             'limit' => $request->limit,
             'parent_id' => $request->parent_id ?? 0,
             'status' => $request->status ?? 1,
         ]);
-        
+
         return response('success');
     }
 
@@ -72,14 +72,14 @@ class CategoryController extends Controller
      */
     public function updateCategory(Request $request)
     {
-        if (!$request->has('id') || !$request->has('name') || !$request->has('limit')) {
+        if (! $request->has('id') || ! $request->has('name') || ! $request->has('limit')) {
             return response()->json(['error' => 'Missing required fields'], 400);
         }
-        
+
         if (empty($request->id) || empty($request->name) || empty($request->limit)) {
             return response()->json(['error' => 'ID, name and limit are required'], 400);
         }
-        
+
         $category = Category::findOrFail($request->id);
         $category->update([
             'name' => $request->name,
@@ -87,7 +87,7 @@ class CategoryController extends Controller
             'parent_id' => $request->parent_id ?? $category->parent_id,
             'status' => $request->status ?? $category->status,
         ]);
-        
+
         return response('success');
     }
 
@@ -99,7 +99,7 @@ class CategoryController extends Controller
     {
         $category = Category::findOrFail($id);
         $category->delete();
-        
+
         return response('success');
     }
 
@@ -109,21 +109,21 @@ class CategoryController extends Controller
      */
     public function createSubCategory(Request $request)
     {
-        if (!$request->has('name') || !$request->has('limit') || !$request->has('parent_id')) {
+        if (! $request->has('name') || ! $request->has('limit') || ! $request->has('parent_id')) {
             return response()->json(['error' => 'Missing required fields'], 400);
         }
-        
+
         if (empty($request->name) || empty($request->limit) || empty($request->parent_id)) {
             return response()->json(['error' => 'Name, limit and parent_id are required'], 400);
         }
-        
+
         $category = Category::create([
             'name' => $request->name,
             'limit' => $request->limit,
             'parent_id' => $request->parent_id,
             'status' => $request->status ?? 1,
         ]);
-        
+
         return response('success');
     }
 
@@ -133,14 +133,14 @@ class CategoryController extends Controller
      */
     public function updateSubCategory(Request $request)
     {
-        if (!$request->has('id') || !$request->has('name') || !$request->has('limit')) {
+        if (! $request->has('id') || ! $request->has('name') || ! $request->has('limit')) {
             return response()->json(['error' => 'Missing required fields'], 400);
         }
-        
+
         if (empty($request->id) || empty($request->name) || empty($request->limit)) {
             return response()->json(['error' => 'ID, name and limit are required'], 400);
         }
-        
+
         $category = Category::findOrFail($request->id);
         $category->update([
             'name' => $request->name,
@@ -148,7 +148,7 @@ class CategoryController extends Controller
             'parent_id' => $request->parent_id ?? $category->parent_id,
             'status' => $request->status ?? $category->status,
         ]);
-        
+
         return response('success');
     }
 
@@ -158,6 +158,7 @@ class CategoryController extends Controller
     public function create()
     {
         $parents = Category::where('parent_id', 0)->orderBy('name')->get();
+
         return view('categories.create', compact('parents'));
     }
 
@@ -183,7 +184,7 @@ class CategoryController extends Controller
                     'parent_id' => $category->parent_id,
                     'limit' => $category->limit,
                     'status' => $category->status,
-                ]
+                ],
             ], 200);
         }
 
@@ -194,6 +195,7 @@ class CategoryController extends Controller
     public function edit(Category $category)
     {
         $parents = Category::where('parent_id', 0)->where('id', '!=', $category->id)->orderBy('name')->get();
+
         return view('categories.edit', compact('category', 'parents'));
     }
 
@@ -215,8 +217,8 @@ class CategoryController extends Controller
     public function destroy(Category $category)
     {
         $category->delete();
+
         return redirect()->route('categories.index')
             ->with('success', 'Category deleted successfully.');
     }
 }
-

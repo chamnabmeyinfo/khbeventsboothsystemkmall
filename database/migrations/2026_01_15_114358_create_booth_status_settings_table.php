@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -12,7 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('booth_status_settings')) {
+        if (! Schema::hasTable('booth_status_settings')) {
             Schema::create('booth_status_settings', function (Blueprint $table) {
                 $table->id();
                 $table->integer('status_code')->unique()->comment('Status code (1, 2, 3, 4, 5, etc.)');
@@ -26,12 +26,12 @@ return new class extends Migration
                 $table->integer('sort_order')->default(0)->comment('Display order');
                 $table->boolean('is_default')->default(false)->comment('Is this the default status for new booths');
                 $table->timestamps();
-                
+
                 $table->index('status_code');
                 $table->index('is_active');
                 $table->index('sort_order');
             });
-            
+
             // Insert default statuses
             DB::table('booth_status_settings')->insert([
                 [

@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('old_status')->nullable(); // Previous status
             $table->string('new_status')->nullable(); // New status
             $table->timestamps();
-            
+
             // Indexes
             $table->index('booking_id');
             $table->index('booth_id');

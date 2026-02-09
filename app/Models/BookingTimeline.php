@@ -67,7 +67,7 @@ class BookingTimeline extends Model
             'modified' => 'Modified',
             'status_changed' => 'Status Changed',
         ];
-        
+
         return $labels[$this->action] ?? ucfirst(str_replace('_', ' ', $this->action));
     }
 
@@ -87,7 +87,7 @@ class BookingTimeline extends Model
             'modified' => 'fa-edit',
             'status_changed' => 'fa-exchange-alt',
         ];
-        
+
         return $icons[$this->action] ?? 'fa-circle';
     }
 
@@ -107,7 +107,7 @@ class BookingTimeline extends Model
             'modified' => 'secondary',
             'status_changed' => 'info',
         ];
-        
+
         return $colors[$this->action] ?? 'secondary';
     }
 

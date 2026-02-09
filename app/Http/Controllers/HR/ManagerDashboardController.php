@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
+use App\Models\HR\Attendance;
 use App\Models\HR\Employee;
 use App\Models\HR\LeaveRequest;
-use App\Models\HR\Attendance;
 use App\Models\HR\PerformanceReview;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class ManagerDashboardController extends Controller
 {
@@ -23,8 +23,8 @@ class ManagerDashboardController extends Controller
     public function index()
     {
         $manager = auth()->user()->employee;
-        
-        if (!$manager) {
+
+        if (! $manager) {
             return redirect()->route('dashboard')
                 ->with('error', 'Employee profile not found. Please contact HR.');
         }
@@ -80,8 +80,8 @@ class ManagerDashboardController extends Controller
 
         $monthPresent = $monthAttendance->where('status', 'present')->count();
         $monthAbsent = $monthAttendance->where('status', 'absent')->count();
-        $attendanceRate = $monthAttendance->count() > 0 
-            ? round(($monthPresent / $monthAttendance->count()) * 100, 1) 
+        $attendanceRate = $monthAttendance->count() > 0
+            ? round(($monthPresent / $monthAttendance->count()) * 100, 1)
             : 0;
 
         // Upcoming Leaves (Next 7 Days)
@@ -142,15 +142,15 @@ class ManagerDashboardController extends Controller
     public function approveLeave(Request $request, LeaveRequest $leaveRequest)
     {
         $manager = auth()->user()->employee;
-        
-        if (!$manager) {
+
+        if (! $manager) {
             return back()->with('error', 'Unauthorized.');
         }
 
         // Verify this leave request belongs to a team member
         $teamMemberIds = Employee::where('manager_id', $manager->id)->pluck('id');
-        
-        if (!$teamMemberIds->contains($leaveRequest->employee_id)) {
+
+        if (! $teamMemberIds->contains($leaveRequest->employee_id)) {
             return back()->with('error', 'You can only approve leave requests for your team members.');
         }
 
@@ -172,7 +172,7 @@ class ManagerDashboardController extends Controller
         }
 
         // Send notification to employee
-        $notificationService = new \App\Services\HRNotificationService();
+        $notificationService = new \App\Services\HRNotificationService;
         $notificationService->notifyLeaveApproved($leaveRequest);
 
         return back()->with('success', 'Leave request approved successfully.');
@@ -184,15 +184,15 @@ class ManagerDashboardController extends Controller
     public function rejectLeave(Request $request, LeaveRequest $leaveRequest)
     {
         $manager = auth()->user()->employee;
-        
-        if (!$manager) {
+
+        if (! $manager) {
             return back()->with('error', 'Unauthorized.');
         }
 
         // Verify this leave request belongs to a team member
         $teamMemberIds = Employee::where('manager_id', $manager->id)->pluck('id');
-        
-        if (!$teamMemberIds->contains($leaveRequest->employee_id)) {
+
+        if (! $teamMemberIds->contains($leaveRequest->employee_id)) {
             return back()->with('error', 'You can only reject leave requests for your team members.');
         }
 
@@ -204,7 +204,7 @@ class ManagerDashboardController extends Controller
         ]);
 
         // Send notification to employee
-        $notificationService = new \App\Services\HRNotificationService();
+        $notificationService = new \App\Services\HRNotificationService;
         $notificationService->notifyLeaveRejected($leaveRequest);
 
         return back()->with('success', 'Leave request rejected.');
@@ -216,15 +216,15 @@ class ManagerDashboardController extends Controller
     public function approveAttendance(Request $request, Attendance $attendance)
     {
         $manager = auth()->user()->employee;
-        
-        if (!$manager) {
+
+        if (! $manager) {
             return back()->with('error', 'Unauthorized.');
         }
 
         // Verify this attendance belongs to a team member
         $teamMemberIds = Employee::where('manager_id', $manager->id)->pluck('id');
-        
-        if (!$teamMemberIds->contains($attendance->employee_id)) {
+
+        if (! $teamMemberIds->contains($attendance->employee_id)) {
             return back()->with('error', 'You can only approve attendance for your team members.');
         }
 
@@ -243,8 +243,8 @@ class ManagerDashboardController extends Controller
     public function bulkApproveLeaves(Request $request)
     {
         $manager = auth()->user()->employee;
-        
-        if (!$manager) {
+
+        if (! $manager) {
             return back()->with('error', 'Unauthorized.');
         }
 
@@ -275,10 +275,10 @@ class ManagerDashboardController extends Controller
             }
 
             // Send notification to employee
-            $notificationService = new \App\Services\HRNotificationService();
+            $notificationService = new \App\Services\HRNotificationService;
             $notificationService->notifyLeaveApproved($leaveRequest);
         }
 
-        return back()->with('success', count($leaveRequests) . ' leave request(s) approved successfully.');
+        return back()->with('success', count($leaveRequests).' leave request(s) approved successfully.');
     }
 }

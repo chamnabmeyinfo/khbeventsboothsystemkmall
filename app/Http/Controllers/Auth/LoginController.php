@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\DebugLogger;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
-use App\Helpers\DebugLogger;
 
 class LoginController extends Controller
 {
@@ -21,13 +21,13 @@ class LoginController extends Controller
             [
                 'session_id' => session()->getId(),
                 'csrf_token' => csrf_token(),
-                'session_token' => session()->token()
+                'session_token' => session()->token(),
             ],
             'LoginController.php:16',
             'Login form shown'
         );
         // #endregion
-        
+
         return view('auth.login');
     }
 
@@ -41,13 +41,13 @@ class LoginController extends Controller
             [
                 'username' => $request->username,
                 'session_id' => $request->session()->getId(),
-                'csrf_token_before' => csrf_token()
+                'csrf_token_before' => csrf_token(),
             ],
             'LoginController.php:28',
             'Login attempt started'
         );
         // #endregion
-        
+
         $request->validate([
             'username' => 'required|string',
             'password' => 'required|string',
@@ -56,13 +56,13 @@ class LoginController extends Controller
         // Load user with role and permissions to prevent N+1 queries
         $user = User::with('role.permissions')->where('username', $request->username)->first();
 
-        if (!$user) {
+        if (! $user) {
             return back()->withErrors([
                 'username' => 'Invalid credentials.',
             ])->withInput();
         }
 
-        if (!$user->isActive()) {
+        if (! $user->isActive()) {
             return back()->withErrors([
                 'username' => 'Account is inactive.',
             ])->withInput();
@@ -74,52 +74,52 @@ class LoginController extends Controller
             DebugLogger::log(
                 [
                     'session_id_before' => $request->session()->getId(),
-                    'csrf_before' => csrf_token()
+                    'csrf_before' => csrf_token(),
                 ],
                 'LoginController.php:54',
                 'Password verified, before Auth::login'
             );
             // #endregion
-            
+
             // Login without remember token (column doesn't exist in database)
             Auth::login($user, false);
-            
+
             // #region agent log
             DebugLogger::log(
                 [
                     'session_id_after_login' => $request->session()->getId(),
-                    'csrf_after_login' => csrf_token()
+                    'csrf_after_login' => csrf_token(),
                 ],
                 'LoginController.php:60',
                 'After Auth::login, before regenerate'
             );
             // #endregion
-            
+
             // Note: last_login update removed as column doesn't exist in actual database
-            
+
             // Regenerate session and CSRF token
             $request->session()->regenerate();
-            
+
             // #region agent log
             DebugLogger::log(
                 [
                     'session_id_after_regenerate' => $request->session()->getId(),
-                    'csrf_after_regenerate' => csrf_token()
+                    'csrf_after_regenerate' => csrf_token(),
                 ],
                 'LoginController.php:69',
                 'After regenerate, before regenerateToken'
             );
             // #endregion
-            
+
             $request->session()->regenerateToken();
-            
+
             // #region agent log
             DebugLogger::log(
                 [
                     'session_id_final' => $request->session()->getId(),
                     'csrf_final' => csrf_token(),
                     'session_data' => session()->all(),
-                    'intended_url' => '/dashboard'
+                    'intended_url' => '/dashboard',
                 ],
                 'LoginController.php:75',
                 'After regenerateToken, before redirect'
@@ -127,18 +127,18 @@ class LoginController extends Controller
             // #endregion
 
             $redirect = redirect()->intended('/dashboard');
-            
+
             // #region agent log
             DebugLogger::log(
                 [
                     'redirect_url' => $redirect->getTargetUrl(),
-                    'status_code' => $redirect->getStatusCode()
+                    'status_code' => $redirect->getStatusCode(),
                 ],
                 'LoginController.php:81',
                 'Redirect created, returning'
             );
             // #endregion
-            
+
             return $redirect;
         }
 
@@ -159,4 +159,3 @@ class LoginController extends Controller
         return redirect('/login');
     }
 }
-

@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
-use App\Models\HR\Employee;
 use App\Models\HR\Department;
+use App\Models\HR\Employee;
 use App\Models\HR\Position;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class EmployeeController extends Controller
 {
@@ -23,12 +21,12 @@ class EmployeeController extends Controller
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('employee_code', 'like', "%{$search}%")
-                  ->orWhere('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%");
+                    ->orWhere('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
             });
         }
 
@@ -53,7 +51,7 @@ class EmployeeController extends Controller
         }
 
         $employees = $query->orderBy('first_name')->orderBy('last_name')->paginate(20)->withQueryString();
-        
+
         $departments = Department::active()->orderBy('name')->get();
         $positions = Position::active()->orderBy('name')->get();
 
@@ -151,27 +149,27 @@ class EmployeeController extends Controller
     public function show(Employee $employee)
     {
         $employee->load([
-            'department', 
-            'position', 
-            'manager', 
-            'user', 
+            'department',
+            'position',
+            'manager',
+            'user',
             'directReports',
-            'attendance' => function($q) {
+            'attendance' => function ($q) {
                 $q->latest('date')->limit(30);
             },
-            'leaveRequests' => function($q) {
+            'leaveRequests' => function ($q) {
                 $q->latest()->limit(10);
             },
-            'performanceReviews' => function($q) {
+            'performanceReviews' => function ($q) {
                 $q->latest('review_date')->limit(5);
             },
             'documents',
-            'training' => function($q) {
+            'training' => function ($q) {
                 $q->latest()->limit(10);
             },
-            'salaryHistory' => function($q) {
+            'salaryHistory' => function ($q) {
                 $q->latest('effective_date')->limit(10);
-            }
+            },
         ]);
 
         // Get statistics
@@ -195,11 +193,11 @@ class EmployeeController extends Controller
         $positions = Position::active()->orderBy('name')->get();
         $managers = Employee::active()->where('id', '!=', $employee->id)->orderBy('first_name')->orderBy('last_name')->get();
         $users = User::where('status', 1)
-            ->where(function($q) use ($employee) {
+            ->where(function ($q) use ($employee) {
                 $q->whereDoesntHave('employee')
-                  ->orWhereHas('employee', function($q2) use ($employee) {
-                      $q2->where('id', $employee->id);
-                  });
+                    ->orWhereHas('employee', function ($q2) use ($employee) {
+                        $q2->where('id', $employee->id);
+                    });
             })
             ->orderBy('username')
             ->get();
@@ -213,12 +211,12 @@ class EmployeeController extends Controller
     public function update(Request $request, Employee $employee)
     {
         $validated = $request->validate([
-            'user_id' => 'nullable|exists:user,id|unique:employees,user_id,' . $employee->id,
-            'employee_code' => 'required|string|max:50|unique:employees,employee_code,' . $employee->id,
+            'user_id' => 'nullable|exists:user,id|unique:employees,user_id,'.$employee->id,
+            'employee_code' => 'required|string|max:50|unique:employees,employee_code,'.$employee->id,
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|max:255|unique:employees,email,' . $employee->id,
+            'email' => 'nullable|email|max:255|unique:employees,email,'.$employee->id,
             'phone' => 'nullable|string|max:50',
             'mobile' => 'nullable|string|max:50',
             'date_of_birth' => 'nullable|date',
@@ -295,7 +293,7 @@ class EmployeeController extends Controller
     {
         $newEmployee = $employee->replicate();
         $newEmployee->employee_code = $this->generateEmployeeCode();
-        $newEmployee->first_name = $employee->first_name . ' (Copy)';
+        $newEmployee->first_name = $employee->first_name.' (Copy)';
         $newEmployee->email = null; // Clear email to avoid unique constraint
         $newEmployee->user_id = null; // Clear user link
         $newEmployee->status = 'inactive'; // Set as inactive by default
@@ -324,7 +322,7 @@ class EmployeeController extends Controller
             $newNumber = 1;
         }
 
-        return $prefix . $year . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+        return $prefix.$year.str_pad($newNumber, 4, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -337,7 +335,7 @@ class EmployeeController extends Controller
 
         foreach ($leaveTypes as $leaveType) {
             $allocated = $leaveType->max_days_per_year ?? 0;
-            
+
             $employee->leaveBalances()->create([
                 'leave_type_id' => $leaveType->id,
                 'year' => $year,

@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
-use App\Models\HR\Employee;
-use App\Models\HR\LeaveRequest;
-use App\Models\HR\LeaveBalance;
-use App\Models\HR\LeaveType;
 use App\Models\HR\Attendance;
+use App\Models\HR\Employee;
 use App\Models\HR\EmployeeDocument;
+use App\Models\HR\LeaveBalance;
+use App\Models\HR\LeaveRequest;
+use App\Models\HR\LeaveType;
 use App\Models\HR\PerformanceReview;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class EmployeePortalController extends Controller
@@ -27,8 +27,8 @@ class EmployeePortalController extends Controller
     public function dashboard()
     {
         $employee = auth()->user()->employee;
-        
-        if (!$employee) {
+
+        if (! $employee) {
             return redirect()->route('dashboard')
                 ->with('error', 'Employee profile not found. Please contact HR.');
         }
@@ -42,8 +42,9 @@ class EmployeePortalController extends Controller
             ->where('year', $thisYear)
             ->with('leaveType')
             ->get()
-            ->map(function($balance) {
+            ->map(function ($balance) {
                 $balance->balance = $balance->remaining_days; // Add balance alias for views
+
                 return $balance;
             });
 
@@ -117,8 +118,8 @@ class EmployeePortalController extends Controller
     public function profile()
     {
         $employee = auth()->user()->employee;
-        
-        if (!$employee) {
+
+        if (! $employee) {
             return redirect()->route('dashboard')
                 ->with('error', 'Employee profile not found.');
         }
@@ -134,8 +135,8 @@ class EmployeePortalController extends Controller
     public function updateProfile(Request $request)
     {
         $employee = auth()->user()->employee;
-        
-        if (!$employee) {
+
+        if (! $employee) {
             return redirect()->route('employee.dashboard')
                 ->with('error', 'Employee profile not found.');
         }
@@ -177,8 +178,8 @@ class EmployeePortalController extends Controller
     public function leaves(Request $request)
     {
         $employee = auth()->user()->employee;
-        
-        if (!$employee) {
+
+        if (! $employee) {
             return redirect()->route('dashboard')
                 ->with('error', 'Employee profile not found.');
         }
@@ -206,8 +207,9 @@ class EmployeePortalController extends Controller
             ->where('year', Carbon::now()->year)
             ->with('leaveType')
             ->get()
-            ->map(function($balance) {
+            ->map(function ($balance) {
                 $balance->balance = $balance->remaining_days; // Add balance alias for views
+
                 return $balance;
             });
 
@@ -223,8 +225,8 @@ class EmployeePortalController extends Controller
     public function applyLeave(Request $request)
     {
         $employee = auth()->user()->employee;
-        
-        if (!$employee) {
+
+        if (! $employee) {
             return back()->with('error', 'Employee profile not found.');
         }
 
@@ -242,7 +244,7 @@ class EmployeePortalController extends Controller
             ->where('year', Carbon::parse($validated['start_date'])->year)
             ->first();
 
-        if (!$leaveBalance || $leaveBalance->remaining_days <= 0) {
+        if (! $leaveBalance || $leaveBalance->remaining_days <= 0) {
             return back()->with('error', 'Insufficient leave balance.');
         }
 
@@ -259,12 +261,12 @@ class EmployeePortalController extends Controller
         $overlapping = LeaveRequest::where('employee_id', $employee->id)
             ->where('status', '!=', 'rejected')
             ->where('status', '!=', 'cancelled')
-            ->where(function($query) use ($startDate, $endDate) {
+            ->where(function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('start_date', [$startDate, $endDate])
                     ->orWhereBetween('end_date', [$startDate, $endDate])
-                    ->orWhere(function($q) use ($startDate, $endDate) {
+                    ->orWhere(function ($q) use ($startDate, $endDate) {
                         $q->where('start_date', '<=', $startDate)
-                          ->where('end_date', '>=', $endDate);
+                            ->where('end_date', '>=', $endDate);
                     });
             })
             ->exists();
@@ -280,7 +282,7 @@ class EmployeePortalController extends Controller
         $leaveRequest = LeaveRequest::create($validated);
 
         // Send notification to manager
-        $notificationService = new \App\Services\HRNotificationService();
+        $notificationService = new \App\Services\HRNotificationService;
         $notificationService->notifyLeaveRequestSubmitted($leaveRequest);
 
         return redirect()->route('employee.leaves')
@@ -293,8 +295,8 @@ class EmployeePortalController extends Controller
     public function attendance(Request $request)
     {
         $employee = auth()->user()->employee;
-        
-        if (!$employee) {
+
+        if (! $employee) {
             return redirect()->route('dashboard')
                 ->with('error', 'Employee profile not found.');
         }
@@ -311,7 +313,7 @@ class EmployeePortalController extends Controller
             // Default to current month
             $query->whereBetween('date', [
                 Carbon::now()->startOfMonth(),
-                Carbon::now()->endOfMonth()
+                Carbon::now()->endOfMonth(),
             ]);
         }
 
@@ -343,8 +345,8 @@ class EmployeePortalController extends Controller
     public function documents()
     {
         $employee = auth()->user()->employee;
-        
-        if (!$employee) {
+
+        if (! $employee) {
             return redirect()->route('dashboard')
                 ->with('error', 'Employee profile not found.');
         }
@@ -362,12 +364,12 @@ class EmployeePortalController extends Controller
     public function downloadDocument(EmployeeDocument $document)
     {
         $employee = auth()->user()->employee;
-        
-        if (!$employee || $document->employee_id != $employee->id) {
+
+        if (! $employee || $document->employee_id != $employee->id) {
             return back()->with('error', 'Unauthorized access.');
         }
 
-        if (!Storage::disk('public')->exists($document->file_path)) {
+        if (! Storage::disk('public')->exists($document->file_path)) {
             return back()->with('error', 'File not found.');
         }
 

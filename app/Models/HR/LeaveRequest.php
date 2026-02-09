@@ -70,13 +70,13 @@ class LeaveRequest extends Model
      */
     public function calculateTotalDays()
     {
-        if (!$this->start_date || !$this->end_date) {
+        if (! $this->start_date || ! $this->end_date) {
             return 0;
         }
 
         $start = \Carbon\Carbon::parse($this->start_date);
         $end = \Carbon\Carbon::parse($this->end_date);
-        
+
         return $start->diffInDays($end) + 1; // Include both start and end dates
     }
 

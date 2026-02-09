@@ -63,7 +63,8 @@ class ActivityLog extends Model
             ]);
         } catch (\Exception $e) {
             // Silently fail if logging fails - don't break the application
-            \Log::error('Activity log failed: ' . $e->getMessage());
+            \Log::error('Activity log failed: '.$e->getMessage());
+
             return null;
         }
     }

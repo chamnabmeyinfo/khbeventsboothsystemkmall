@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
+use App\Models\Book;
 use App\Models\Expense;
 use App\Models\FinanceCategory;
 use App\Models\FloorPlan;
-use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class ExpenseController extends Controller
 {
@@ -23,12 +22,12 @@ class ExpenseController extends Controller
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('reference_number', 'like', "%{$search}%")
-                  ->orWhere('vendor_name', 'like', "%{$search}%")
-                  ->orWhere('amount', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('reference_number', 'like', "%{$search}%")
+                    ->orWhere('vendor_name', 'like', "%{$search}%")
+                    ->orWhere('amount', 'like', "%{$search}%");
             });
         }
 
@@ -133,6 +132,7 @@ class ExpenseController extends Controller
     public function show(Expense $expense)
     {
         $expense->load(['category', 'floorPlan', 'booking', 'createdBy', 'approvedBy']);
+
         return view('finance.expenses.show', compact('expense'));
     }
 

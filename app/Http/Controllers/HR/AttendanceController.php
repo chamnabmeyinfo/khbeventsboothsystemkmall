@@ -5,8 +5,8 @@ namespace App\Http\Controllers\HR;
 use App\Http\Controllers\Controller;
 use App\Models\HR\Attendance;
 use App\Models\HR\Employee;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class AttendanceController extends Controller
 {
@@ -66,8 +66,8 @@ class AttendanceController extends Controller
 
         // Calculate total hours if check-in and check-out are provided
         if ($validated['check_in_time'] && $validated['check_out_time']) {
-            $checkIn = Carbon::parse($validated['date'] . ' ' . $validated['check_in_time']);
-            $checkOut = Carbon::parse($validated['date'] . ' ' . $validated['check_out_time']);
+            $checkIn = Carbon::parse($validated['date'].' '.$validated['check_in_time']);
+            $checkOut = Carbon::parse($validated['date'].' '.$validated['check_out_time']);
             $totalMinutes = $checkOut->diffInMinutes($checkIn) - ($validated['break_duration'] ?? 0);
             $validated['total_hours'] = round($totalMinutes / 60, 2);
         }
@@ -118,8 +118,8 @@ class AttendanceController extends Controller
 
         // Recalculate total hours
         if ($validated['check_in_time'] && $validated['check_out_time']) {
-            $checkIn = Carbon::parse($validated['date'] . ' ' . $validated['check_in_time']);
-            $checkOut = Carbon::parse($validated['date'] . ' ' . $validated['check_out_time']);
+            $checkIn = Carbon::parse($validated['date'].' '.$validated['check_in_time']);
+            $checkOut = Carbon::parse($validated['date'].' '.$validated['check_out_time']);
             $totalMinutes = $checkOut->diffInMinutes($checkIn) - ($validated['break_duration'] ?? 0);
             $validated['total_hours'] = round($totalMinutes / 60, 2);
         } else {

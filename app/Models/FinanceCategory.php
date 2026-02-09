@@ -26,7 +26,9 @@ class FinanceCategory extends Model
     ];
 
     const TYPE_EXPENSE = 'expense';
+
     const TYPE_REVENUE = 'revenue';
+
     const TYPE_COSTING = 'costing';
 
     /**

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
-use App\Models\HR\Position;
 use App\Models\HR\Department;
+use App\Models\HR\Position;
 use Illuminate\Http\Request;
 
 class PositionController extends Controller
@@ -15,9 +15,9 @@ class PositionController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%");
+                    ->orWhere('code', 'like', "%{$search}%");
             });
         }
 
@@ -80,7 +80,7 @@ class PositionController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'nullable|string|max:50|unique:positions,code,' . $position->id,
+            'code' => 'nullable|string|max:50|unique:positions,code,'.$position->id,
             'department_id' => 'nullable|exists:departments,id',
             'description' => 'nullable|string',
             'requirements' => 'nullable|string',
@@ -115,7 +115,7 @@ class PositionController extends Controller
     public function duplicate(Position $position)
     {
         $newPosition = $position->replicate();
-        $newPosition->name = $position->name . ' (Copy)';
+        $newPosition->name = $position->name.' (Copy)';
         $newPosition->code = null; // Clear code to avoid unique constraint
         $newPosition->is_active = false; // Set as inactive by default
         $newPosition->save();

@@ -16,27 +16,27 @@ class BoothPricingController extends Controller
     public function index(Request $request)
     {
         $query = Booth::with(['floorPlan']);
-        
+
         // Filter by floor plan if provided
         if ($request->filled('floor_plan_id')) {
             $query->where('floor_plan_id', $request->floor_plan_id);
         }
-        
+
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('booth_number', 'like', '%' . $search . '%')
-                  ->orWhere('id', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('booth_number', 'like', '%'.$search.'%')
+                    ->orWhere('id', 'like', '%'.$search.'%');
             });
         }
-        
+
         // Get all floor plans for filter dropdown
         $floorPlans = FloorPlan::orderBy('name')->get();
-        
+
         // Get all booths (no pagination)
         $booths = $query->orderBy('booth_number')->get();
-        
+
         // Organize booths by zone
         $zones = [];
         foreach ($booths as $booth) {
@@ -47,17 +47,17 @@ class BoothPricingController extends Controller
                 $zone = strtoupper($matches[1]);
             } else {
                 // If no letter found, use first character or default to "OTHER"
-                $zone = !empty($boothNumber) ? strtoupper(substr($boothNumber, 0, 1)) : 'OTHER';
+                $zone = ! empty($boothNumber) ? strtoupper(substr($boothNumber, 0, 1)) : 'OTHER';
             }
-            
-            if (!isset($zones[$zone])) {
+
+            if (! isset($zones[$zone])) {
                 $zones[$zone] = [];
             }
             $zones[$zone][] = $booth;
         }
         // Sort zones alphabetically
         ksort($zones);
-        
+
         // Get statistics (based on filtered query)
         $baseQuery = Booth::query();
         if ($request->filled('floor_plan_id')) {
@@ -65,12 +65,12 @@ class BoothPricingController extends Controller
         }
         if ($request->filled('search')) {
             $search = $request->search;
-            $baseQuery->where(function($q) use ($search) {
-                $q->where('booth_number', 'like', '%' . $search . '%')
-                  ->orWhere('id', 'like', '%' . $search . '%');
+            $baseQuery->where(function ($q) use ($search) {
+                $q->where('booth_number', 'like', '%'.$search.'%')
+                    ->orWhere('id', 'like', '%'.$search.'%');
             });
         }
-        
+
         $stats = [
             'total_booths' => $baseQuery->count(),
             'total_value' => $baseQuery->sum('price') ?? 0,
@@ -78,7 +78,7 @@ class BoothPricingController extends Controller
             'min_price' => $baseQuery->min('price') ?? 0,
             'max_price' => $baseQuery->max('price') ?? 0,
         ];
-        
+
         return view('finance.booth-pricing.index', compact('booths', 'floorPlans', 'stats', 'zones'));
     }
 
@@ -88,7 +88,7 @@ class BoothPricingController extends Controller
     public function edit($id)
     {
         $booth = Booth::with(['floorPlan'])->findOrFail($id);
-        
+
         return view('finance.booth-pricing.edit', compact('booth'));
     }
 
@@ -103,7 +103,7 @@ class BoothPricingController extends Controller
         ]);
 
         $booth = Booth::findOrFail($id);
-        
+
         DB::beginTransaction();
         try {
             $booth->price = $request->price;
@@ -112,32 +112,32 @@ class BoothPricingController extends Controller
                 // For now, we'll just update the price
             }
             $booth->save();
-            
+
             DB::commit();
-            
+
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Booth pricing updated successfully',
-                    'booth' => $booth
+                    'booth' => $booth,
                 ]);
             }
-            
+
             return redirect()->route('finance.booth-pricing.index')
                 ->with('success', 'Booth pricing updated successfully.');
-                
+
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error updating booth pricing: ' . $e->getMessage()
+                    'message' => 'Error updating booth pricing: '.$e->getMessage(),
                 ], 500);
             }
-            
+
             return back()->withInput()
-                ->with('error', 'Error updating booth pricing: ' . $e->getMessage());
+                ->with('error', 'Error updating booth pricing: '.$e->getMessage());
         }
     }
 
@@ -156,21 +156,21 @@ class BoothPricingController extends Controller
         try {
             $updated = Booth::whereIn('id', $request->booth_ids)
                 ->update(['price' => $request->price]);
-            
+
             DB::commit();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => "Successfully updated pricing for {$updated} booth(s)",
-                'updated_count' => $updated
+                'updated_count' => $updated,
             ]);
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error updating booth pricing: ' . $e->getMessage()
+                'message' => 'Error updating booth pricing: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -181,26 +181,26 @@ class BoothPricingController extends Controller
     public function export(Request $request)
     {
         $query = Booth::with(['floorPlan']);
-        
+
         if ($request->filled('floor_plan_id')) {
             $query->where('floor_plan_id', $request->floor_plan_id);
         }
-        
+
         $booths = $query->orderBy('booth_number')->get();
-        
-        $filename = 'booth_pricing_export_' . date('Y-m-d_His') . '.csv';
-        
+
+        $filename = 'booth_pricing_export_'.date('Y-m-d_His').'.csv';
+
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
-        
-        $callback = function() use ($booths) {
+
+        $callback = function () use ($booths) {
             $file = fopen('php://output', 'w');
-            
+
             // Add CSV headers
             fputcsv($file, ['Booth ID', 'Booth Number', 'Floor Plan', 'Price', 'Status', 'Updated At']);
-            
+
             // Add data rows
             foreach ($booths as $booth) {
                 fputcsv($file, [
@@ -212,10 +212,10 @@ class BoothPricingController extends Controller
                     $booth->updated_at ? $booth->updated_at->format('Y-m-d H:i:s') : 'N/A',
                 ]);
             }
-            
+
             fclose($file);
         };
-        
+
         return response()->stream($callback, 200, $headers);
     }
 }

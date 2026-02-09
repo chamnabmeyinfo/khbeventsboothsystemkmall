@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
-use App\Models\HR\EmployeeDocument;
 use App\Models\HR\Employee;
+use App\Models\HR\EmployeeDocument;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -82,7 +82,7 @@ class DocumentController extends Controller
 
     public function download(EmployeeDocument $document)
     {
-        if (!Storage::disk('public')->exists($document->file_path)) {
+        if (! Storage::disk('public')->exists($document->file_path)) {
             return back()->with('error', 'File not found.');
         }
 

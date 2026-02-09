@@ -41,7 +41,7 @@ class Book extends Model
         'payment_due_date',
         'notes',
     ];
-    
+
     /**
      * Get fillable attributes that actually exist in the database
      */
@@ -49,13 +49,13 @@ class Book extends Model
     {
         $fillable = $this->fillable;
         $existingColumns = [];
-        
+
         foreach ($fillable as $column) {
             if (Schema::hasColumn($this->getTable(), $column)) {
                 $existingColumns[] = $column;
             }
         }
-        
+
         return $existingColumns;
     }
 
@@ -70,10 +70,15 @@ class Book extends Model
 
     // Status constants
     const STATUS_PENDING = 1;
+
     const STATUS_CONFIRMED = 2;
+
     const STATUS_RESERVED = 3;
+
     const STATUS_PAID = 4;
+
     const STATUS_PARTIALLY_PAID = 5;
+
     const STATUS_CANCELLED = 6;
 
     /**
@@ -109,9 +114,10 @@ class Book extends Model
         if (empty($boothIds)) {
             return collect([]);
         }
+
         return Booth::whereIn('id', $boothIds)->get();
     }
-    
+
     /**
      * Get the floor plan this booking belongs to
      */
@@ -119,7 +125,7 @@ class Book extends Model
     {
         return $this->belongsTo(FloorPlan::class, 'floor_plan_id');
     }
-    
+
     /**
      * Get the event/project this booking belongs to
      */
@@ -133,6 +139,7 @@ class Book extends Model
                 return null;
             }
         }
+
         return null;
     }
 
@@ -161,8 +168,8 @@ class Book extends Model
         if ($statusSetting) {
             return $statusSetting->status_name;
         }
-        
-        return match($this->status) {
+
+        return match ($this->status) {
             self::STATUS_PENDING => 'Pending',
             self::STATUS_CONFIRMED => 'Confirmed',
             self::STATUS_RESERVED => 'Reserved',
@@ -199,14 +206,14 @@ class Book extends Model
         $this->total_amount = $this->calculateTotalAmount();
         $this->paid_amount = $this->calculatePaidAmount();
         $this->balance_amount = $this->total_amount - $this->paid_amount;
-        
+
         // Auto-update status based on payment
         if ($this->balance_amount <= 0 && $this->total_amount > 0) {
             $this->status = self::STATUS_PAID;
         } elseif ($this->paid_amount > 0 && $this->balance_amount > 0) {
             $this->status = self::STATUS_PARTIALLY_PAID;
         }
-        
+
         $this->save();
     }
 }

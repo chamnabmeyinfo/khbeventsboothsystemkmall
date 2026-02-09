@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Message;
 use App\Models\Client;
+use App\Models\Message;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,10 +15,10 @@ class CommunicationController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Message::where(function($q) {
-                $q->where('to_user_id', Auth::id())
-                  ->orWhere('from_user_id', Auth::id());
-            })
+        $query = Message::where(function ($q) {
+            $q->where('to_user_id', Auth::id())
+                ->orWhere('from_user_id', Auth::id());
+        })
             ->with(['fromUser', 'toUser', 'client']);
 
         // Filter by type
@@ -38,9 +38,9 @@ class CommunicationController extends Controller
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('subject', 'like', "%{$search}%")
-                  ->orWhere('message', 'like', "%{$search}%");
+                    ->orWhere('message', 'like', "%{$search}%");
             });
         }
 
@@ -89,7 +89,7 @@ class CommunicationController extends Controller
     {
         $users = User::where('status', 1)->get();
         $clients = Client::all();
-        
+
         return view('communications.create', compact('users', 'clients'));
     }
 
@@ -99,9 +99,9 @@ class CommunicationController extends Controller
     public function show($id)
     {
         $message = Message::with(['fromUser', 'toUser', 'client'])->findOrFail($id);
-        
+
         // Mark as read if recipient
-        if ($message->to_user_id == Auth::id() && !$message->is_read) {
+        if ($message->to_user_id == Auth::id() && ! $message->is_read) {
             $message->markAsRead();
         }
 
@@ -120,7 +120,7 @@ class CommunicationController extends Controller
 
         // Send to all active users
         $users = User::where('status', 1)->get();
-        
+
         foreach ($users as $user) {
             Message::create([
                 'from_user_id' => Auth::id(),
@@ -135,4 +135,3 @@ class CommunicationController extends Controller
             ->with('success', 'Announcement sent to all users');
     }
 }
-

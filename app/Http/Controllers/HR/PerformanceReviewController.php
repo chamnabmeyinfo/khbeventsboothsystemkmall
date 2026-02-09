@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
+use App\Models\HR\Employee;
 use App\Models\HR\PerformanceReview;
 use App\Models\HR\PerformanceReviewCriterion;
-use App\Models\HR\Employee;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
 
 class PerformanceReviewController extends Controller
 {
@@ -79,7 +78,7 @@ class PerformanceReviewController extends Controller
 
         // Calculate overall rating if criteria exist
         if ($review->criteria()->count() > 0) {
-            $weightedSum = $review->criteria()->sum(function($c) {
+            $weightedSum = $review->criteria()->sum(function ($c) {
                 return ($c->rating ?? 0) * ($c->weight ?? 1);
             });
             $totalWeight = $review->criteria()->sum('weight') ?: 1;
@@ -155,7 +154,7 @@ class PerformanceReviewController extends Controller
 
         // Recalculate overall rating
         if ($performanceReview->criteria()->count() > 0) {
-            $weightedSum = $performanceReview->criteria()->sum(function($c) {
+            $weightedSum = $performanceReview->criteria()->sum(function ($c) {
                 return ($c->rating ?? 0) * ($c->weight ?? 1);
             });
             $totalWeight = $performanceReview->criteria()->sum('weight') ?: 1;
