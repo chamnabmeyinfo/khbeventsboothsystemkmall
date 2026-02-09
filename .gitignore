@@ -1,9 +1,18 @@
+# -----------------------------------------------------------------------------
+# Laravel / PHP
+# -----------------------------------------------------------------------------
+/vendor
 /node_modules
+.env
+.env.backup
+.env.production
+.env.testing
+.env.*.local
+!.env.example
+
 /public/build
 /public/hot
 /public/storage
-# User-uploaded client avatars (keep server uploads out of repo)
-/public/images/*
 /storage/*.key
 /storage/framework/sessions/*
 !/storage/framework/sessions/.gitkeep
@@ -13,31 +22,51 @@
 !/storage/framework/cache/.gitkeep
 /storage/logs/*.log
 !/storage/logs/.gitkeep
-/vendor
-.env
-.env.backup
-.env.production
-.env.*.local
+
 /bootstrap/cache/*
 !/bootstrap/cache/.gitkeep
+
 .phpunit.result.cache
+.phpunit.cache
+auth.json
+composer.phar
 Homestead.json
 Homestead.yaml
-auth.json
-npm-debug.log
-yarn-error.log
+
+# -----------------------------------------------------------------------------
+# IDE / Editor
+# -----------------------------------------------------------------------------
 /.fleet
 /.idea
 /.vscode
 /.cursor
-# SFTP/remote config with credentials (use sftp.json.example as template)
-sftp.json
+
+# -----------------------------------------------------------------------------
+# OS
+# -----------------------------------------------------------------------------
 .DS_Store
 Thumbs.db
+
+# -----------------------------------------------------------------------------
+# Credentials & local config (do not commit)
+# -----------------------------------------------------------------------------
+# SFTP/remote config — use sftp.json.example as template
+sftp.json
+
+# -----------------------------------------------------------------------------
+# Project-specific: user uploads, internal docs, backups
+# -----------------------------------------------------------------------------
+# User-uploaded client avatars (keep server uploads out of repo)
+/public/images/*
+
+# Personal / internal notes and documents
 /chamnab_note/my note.txt
-# Development/Setup files (not needed on server)
-*.ps1
-*.sh
+/chamnabmey_documents/
+
+# Backup folders
+backup_*/
+
+# One-off / setup scripts and temp test files (not needed in repo)
 setup-config.php
 verify-setup.php
 organize-code.ps1
@@ -47,13 +76,7 @@ test-db-connection.php
 test-local-db.php
 list-databases.php
 
-# Backup folders
-backup_*/
-
-# Project/internal documents (not in repo)
-/chamnabmey_documents/
-
-# Temporary documentation
+# Temporary documentation (root-level; keep docs/ and README.md tracked)
 MOVE-TO-ROOT.md
 ORGANIZATION-COMPLETE.md
 GITHUB_SETUP.md
@@ -68,10 +91,13 @@ QUICK-SETUP.md
 README-DIRECT-DOMAIN.md
 ROOT-DEPLOYMENT.md
 
-
-#Any SQL Files
+# -----------------------------------------------------------------------------
+# SQL dumps (often contain data; use migrations for schema)
+# -----------------------------------------------------------------------------
 *.sql
 
-
-# MD Files.
-*.md 
+# -----------------------------------------------------------------------------
+# Build / package manager logs
+# -----------------------------------------------------------------------------
+npm-debug.log
+yarn-error.log
