@@ -1,8 +1,8 @@
 @extends('layouts.adminlte')
 
-@section('title', 'Messages & Communications')
-@section('page-title', 'Messages & Communications')
-@section('breadcrumb', 'Communication / Messages')
+@section('title', 'Staff Chat & Messages')
+@section('page-title', 'Staff Chat & Messages')
+@section('breadcrumb', 'Communication / Staff Chat')
 
 @push('styles')
 <style>
@@ -147,6 +147,9 @@
                     <button type="button" class="btn btn-info" onclick="refreshPage()">
                         <i class="fas fa-sync-alt mr-1"></i>Refresh
                     </button>
+                </div>
+                <div class="col-md-6 text-right text-muted small">
+                    <i class="fas fa-bell mr-1"></i>Enable <a href="{{ route('notifications.index') }}">push notifications</a> to get alerts for new messages when the tab is in the background.
                 </div>
             </div>
         </div>
@@ -308,11 +311,26 @@
 @push('scripts')
 <script>
 function refreshPage() {
-    showLoading();
-    setTimeout(() => {
-        location.reload();
-    }, 500);
+    if (typeof showLoading === 'function') showLoading();
+    setTimeout(function() { location.reload(); }, 500);
 }
+var initialUnread = {{ $stats['unread_messages'] ?? 0 }};
+var messagesCheckInterval = setInterval(function() {
+    fetch('{{ route("communications.unread-count") }}')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var unread = data.count || 0;
+            if (unread > initialUnread && typeof toastr !== 'undefined') {
+                toastr.info('You have new message(s).', 'New Message', {
+                    timeOut: 5000,
+                    closeButton: true,
+                    onclick: function() { window.location.href = '{{ route("communications.index") }}'; }
+                });
+                initialUnread = unread;
+            }
+        })
+        .catch(function() {});
+}, 20000);
 </script>
 @endpush
 

@@ -2181,7 +2181,7 @@
                     <li class="nav-item">
                         <a href="{{ route('communications.index') }}" class="nav-link {{ request()->routeIs('communications.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-envelope"></i>
-                            <p>Messages</p>
+                            <p>Messages <span id="messages-badge" class="badge badge-warning right" style="display: none;">0</span></p>
                         </a>
                     </li>
                     @endif
@@ -2490,6 +2490,58 @@
 @stack('scripts')
 
 <script>
+// Push notifications config (for Web Push)
+@php
+    $pushConfig = [
+        'enabled' => \App\Models\Setting::getValue('push_notifications_enabled', true) && (bool) config('notifications.push.enabled', true),
+        'vapidPublicKey' => \App\Models\Setting::getValue('push_vapid_public_key', '') ?: (string) config('notifications.push.vapid_public_key', ''),
+    ];
+@endphp
+window.PUSH_CONFIG = @json($pushConfig);
+window.PUSH_SUBSCRIBE_URL = '{{ route("notifications.push-subscribe") }}';
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('{{ asset("sw.js") }}').catch(function() {});
+}
+function urlBase64ToUint8Array(base64String) {
+    var padding = '='.repeat((4 - base64String.length % 4) % 4);
+    var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    var rawData = atob(base64);
+    var output = new Uint8Array(rawData.length);
+    for (var i = 0; i < rawData.length; ++i) output[i] = rawData.charCodeAt(i);
+    return output;
+}
+window.subscribePush = function() {
+    if (!window.PUSH_CONFIG.enabled || !window.PUSH_CONFIG.vapidPublicKey) {
+        if (typeof toastr !== 'undefined') toastr.warning('Push notifications are not configured.');
+        return Promise.reject(new Error('Push not configured'));
+    }
+    return navigator.serviceWorker.ready.then(function(reg) {
+        return reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(window.PUSH_CONFIG.vapidPublicKey)
+        });
+    }).then(function(sub) {
+        function abToBase64Url(buf) {
+            var u8 = new Uint8Array(buf);
+            var bin = '';
+            for (var i = 0; i < u8.length; i++) bin += String.fromCharCode(u8[i]);
+            return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        }
+        var payload = {
+            endpoint: sub.endpoint,
+            keys: { p256dh: abToBase64Url(sub.getKey('p256dh')), auth: abToBase64Url(sub.getKey('auth')) },
+            contentEncoding: 'aesgcm'
+        };
+        return fetch(window.PUSH_SUBSCRIBE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'), 'Accept': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+    }).then(function(r) {
+        if (!r.ok) throw new Error('Subscribe failed');
+        return r.json();
+    });
+};
 // Configure Toastr
 toastr.options = {
     "closeButton": true,
@@ -2575,6 +2627,22 @@ function showNotificationAlert(count) {
 // Update badge on page load and every 15 seconds for real-time updates
 updateNotificationBadge();
 setInterval(updateNotificationBadge, 15000);
+
+// Messages (communications) unread badge
+function updateMessagesBadge() {
+    var badge = document.getElementById('messages-badge');
+    if (!badge) return;
+    fetch('{{ route("communications.unread-count") }}')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var n = data.count || 0;
+            badge.textContent = n;
+            badge.style.display = n > 0 ? 'inline-block' : 'none';
+        })
+        .catch(function() {});
+}
+updateMessagesBadge();
+setInterval(updateMessagesBadge, 15000);
 
 // Global Search - Enhanced Dynamic Search
 let searchTimeout;

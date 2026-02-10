@@ -58,7 +58,15 @@
             <p class="text-muted small mb-0">Activity across the system — bookings, clients, payments, and more</p>
         </div>
         <div>
-            <button type="button" onclick="markAllAsRead()" class="btn btn-outline-primary btn-sm">
+            @if(config('notifications.push.enabled', true) && (\App\Models\Setting::getValue('push_vapid_public_key', '') ?: config('notifications.push.vapid_public_key')))
+            <button type="button" id="btnEnablePush" class="btn btn-outline-success btn-sm ml-1" title="Allow this browser to receive push notifications">
+                <i class="fas fa-bell mr-1"></i>Enable push notifications
+            </button>
+            <button type="button" id="btnSendTestPush" class="btn btn-outline-info btn-sm ml-1" title="Send a test push to this device">
+                <i class="fas fa-paper-plane mr-1"></i>Send test push
+            </button>
+            @endif
+            <button type="button" onclick="markAllAsRead()" class="btn btn-outline-primary btn-sm ml-1">
                 <i class="fas fa-check-double mr-1"></i>Mark all as read
             </button>
             <a href="{{ route('notifications.index') }}" class="btn btn-outline-secondary btn-sm ml-1"><i class="fas fa-sync-alt mr-1"></i>Refresh</a>
@@ -257,5 +265,58 @@ document.querySelectorAll('[data-filter]').forEach(function(btn) {
         });
     });
 });
+
+// Push notifications: Enable and Test
+var btnEnable = document.getElementById('btnEnablePush');
+if (btnEnable) {
+    btnEnable.addEventListener('click', function() {
+        if (!('Notification' in window)) {
+            if (typeof toastr !== 'undefined') toastr.warning('This browser does not support notifications.');
+            return;
+        }
+        if (!window.PUSH_CONFIG || !window.PUSH_CONFIG.enabled || !window.PUSH_CONFIG.vapidPublicKey) {
+            if (typeof toastr !== 'undefined') toastr.warning('Push notifications are not configured.');
+            return;
+        }
+        Notification.requestPermission().then(function(perm) {
+            if (perm !== 'granted') {
+                if (typeof toastr !== 'undefined') toastr.info('Permission not granted. Enable notifications in your browser settings.');
+                return;
+            }
+            if (typeof subscribePush !== 'function') return;
+            subscribePush().then(function() {
+                if (typeof toastr !== 'undefined') toastr.success('Push notifications enabled. You will receive alerts even when the tab is in the background.');
+            }).catch(function(err) {
+                if (typeof toastr !== 'undefined') toastr.error('Could not enable push: ' + (err.message || 'unknown error'));
+            });
+        });
+    });
+}
+var btnTest = document.getElementById('btnSendTestPush');
+if (btnTest) {
+    btnTest.addEventListener('click', function() {
+        btnTest.disabled = true;
+        fetch('{{ route("notifications.send-test-push") }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+        .then(function(res) {
+            if (res.ok && res.data.success) {
+                if (typeof toastr !== 'undefined') toastr.success(res.data.message || 'Test push sent. Check your browser or system tray.');
+            } else {
+                if (typeof toastr !== 'undefined') toastr.warning(res.data.message || 'Failed to send test push.');
+            }
+        })
+        .catch(function() {
+            if (typeof toastr !== 'undefined') toastr.error('Request failed.');
+        })
+        .finally(function() { btnTest.disabled = false; });
+    });
+}
 </script>
 @endpush

@@ -184,6 +184,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/recent', [\App\Http\Controllers\NotificationController::class, 'recent'])->name('recent');
         Route::post('/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('mark-read');
         Route::post('/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+        Route::post('/push-subscribe', [\App\Http\Controllers\NotificationController::class, 'pushSubscribe'])->name('push-subscribe');
+        Route::post('/send-test-push', [\App\Http\Controllers\NotificationController::class, 'sendTestPush'])->name('send-test-push');
     });
 
     // Finance Module
@@ -212,9 +214,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('booth-pricing/export', [\App\Http\Controllers\Finance\BoothPricingController::class, 'export'])->name('booth-pricing.export');
     });
 
-    // Communications
+    // Communications (staff chat / messages)
     Route::prefix('communications')->name('communications.')->group(function () {
         Route::get('/', [\App\Http\Controllers\CommunicationController::class, 'index'])->name('index');
+        Route::get('/unread-count', [\App\Http\Controllers\CommunicationController::class, 'unreadCount'])->name('unread-count');
         Route::get('/create', [\App\Http\Controllers\CommunicationController::class, 'create'])->name('create');
         Route::post('/send', [\App\Http\Controllers\CommunicationController::class, 'send'])->name('send');
         Route::get('/{id}', [\App\Http\Controllers\CommunicationController::class, 'show'])->name('show');
@@ -347,6 +350,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/settings/optimize', [SettingsController::class, 'optimize'])->name('settings.optimize');
         Route::get('/settings/public-view', [SettingsController::class, 'getPublicViewSettings'])->name('settings.public-view');
         Route::post('/settings/public-view', [SettingsController::class, 'savePublicViewSettings'])->name('settings.public-view.save');
+        Route::get('/settings/push-notifications', [SettingsController::class, 'getPushNotificationSettings'])->name('settings.push-notifications');
+        Route::post('/settings/push-notifications', [SettingsController::class, 'savePushNotificationSettings'])->name('settings.push-notifications.save');
 
         // Booth Default Settings API
         Route::get('/settings/booth-defaults', [SettingsController::class, 'getBoothDefaults'])->name('settings.booth-defaults');

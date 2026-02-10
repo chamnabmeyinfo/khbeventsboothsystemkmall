@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notification;
+use App\Models\PushSubscription;
+use App\Services\PushSender;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -94,5 +96,60 @@ class NotificationController extends Controller
             ]);
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Save browser push subscription for the current user (Web Push).
+     */
+    public function pushSubscribe(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'endpoint' => 'required|string|max:1024',
+            'keys' => 'required|array',
+            'keys.p256dh' => 'required|string|max:256',
+            'keys.auth' => 'required|string|max:256',
+            'contentEncoding' => 'nullable|string|in:aesgcm,aes128gcm',
+        ]);
+
+        $endpointHash = hash('sha256', $validated['endpoint']);
+        PushSubscription::updateOrCreate(
+            [
+                'user_id' => Auth::id(),
+                'endpoint_hash' => $endpointHash,
+            ],
+            [
+                'endpoint' => $validated['endpoint'],
+                'public_key' => $validated['keys']['p256dh'],
+                'auth_token' => $validated['keys']['auth'],
+                'content_encoding' => $validated['contentEncoding'] ?? 'aesgcm',
+            ]
+        );
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Send a test push notification to the current user (for testing).
+     */
+    public function sendTestPush(Request $request): JsonResponse
+    {
+        if (! PushSender::isPushEnabled()) {
+            return response()->json(['success' => false, 'message' => 'Push notifications are not enabled or VAPID keys are missing.'], 400);
+        }
+
+        $user = Auth::user();
+        $subs = PushSubscription::where('user_id', $user->id)->count();
+        if ($subs === 0) {
+            return response()->json(['success' => false, 'message' => 'No push subscription. Enable push in your browser first (e.g. click "Enable push notifications" on the Notifications page).'], 400);
+        }
+
+        PushSender::sendToUser(
+            $user->id,
+            'Test notification',
+            'If you see this, push notifications are working!',
+            route('notifications.index')
+        );
+
+        return response()->json(['success' => true, 'message' => 'Test push sent. Check your browser or system tray.']);
     }
 }

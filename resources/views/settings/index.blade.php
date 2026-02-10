@@ -287,6 +287,40 @@
     </div>
 </div>
 
+<!-- Push Notifications -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Push Notifications</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Enable browser push notifications so users receive alerts (e.g. new bookings, booth updates) even when the tab is in the background. Uses Web Push (VAPID).</p>
+                <form id="pushNotificationSettingsForm" action="{{ route('settings.push-notifications.save') }}" method="POST">
+                    @csrf
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="push_notifications_enabled" id="push_notifications_enabled" value="1" {{ ($pushNotificationsEnabled ?? true) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="push_notifications_enabled">
+                                <strong>Enable push notifications</strong>
+                            </label>
+                        </div>
+                        <small class="text-muted d-block mt-1">When enabled, the system will send browser push notifications for in-app events (requires VAPID keys and user permission).</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="push_vapid_public_key">VAPID public key (optional)</label>
+                        <input type="text" class="form-control font-monospace" name="push_vapid_public_key" id="push_vapid_public_key" value="{{ old('push_vapid_public_key', $pushVapidPublicKey ?? '') }}" placeholder="e.g. BN1a2b3c..." maxlength="500">
+                        <small class="text-muted d-block mt-1">Required for Web Push. Generate with <code>php artisan webpush:vapid</code> (or similar). You can also set <code>PUSH_VAPID_PUBLIC_KEY</code> and <code>PUSH_VAPID_PRIVATE_KEY</code> in <code>.env</code>; the private key must never be stored in the database.</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Save Push Notification Settings
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row mt-4">
     <div class="col-md-12">
         <div class="card">

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Notification;
 use App\Models\User;
+use App\Services\PushSender;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -38,7 +39,7 @@ class NotificationService
                 $notifiableId = $notifiable->getKey();
             }
 
-            return Notification::create([
+            $notification = Notification::create([
                 'type' => $type,
                 'title' => $title,
                 'message' => $message,
@@ -52,6 +53,16 @@ class NotificationService
                 'link' => $link,
                 'is_read' => false,
             ]);
+
+            if ($userId && $notification) {
+                try {
+                    PushSender::sendToUser($userId, $title, $message, $link);
+                } catch (\Throwable $e) {
+                    Log::warning('Push send failed after creating notification: '.$e->getMessage());
+                }
+            }
+
+            return $notification;
         } catch (\Exception $e) {
             Log::error('Failed to create notification: '.$e->getMessage());
 

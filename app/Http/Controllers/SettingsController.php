@@ -42,12 +42,16 @@ class SettingsController extends Controller
         $bookedTickSizeMode = $tickSettings['size_mode'];
         $bookedTickRelativePercent = $tickSettings['relative_percent'];
 
+        $pushNotificationsEnabled = Setting::getValue('push_notifications_enabled', true);
+        $pushVapidPublicKey = Setting::getValue('push_vapid_public_key', '') ?: config('notifications.push.vapid_public_key', '');
+
         return view('settings.index', compact(
             'publicViewAllowCreate', 'publicViewRestrictOwn', 'showBookedTick',
             'bookedTickColor', 'bookedTickSize', 'bookedTickShape', 'bookedTickPosition', 'bookedTickAnimation', 'bookedTickBgColor',
             'bookedTickBorderWidth', 'bookedTickBorderColor', 'bookedTickFontSize',
             'bookedTickSizeMode', 'bookedTickRelativePercent',
-            'floorPlans', 'tickFloorPlanId'
+            'floorPlans', 'tickFloorPlanId',
+            'pushNotificationsEnabled', 'pushVapidPublicKey'
         ));
     }
 
@@ -1194,5 +1198,45 @@ class SettingsController extends Controller
         }
 
         return redirect()->route('settings.index', ['tick_floor_plan_id' => $tickFloorPlanId ?: null])->with('success', 'Public view settings saved successfully.');
+    }
+
+    /**
+     * Get push notification settings (API).
+     */
+    public function getPushNotificationSettings()
+    {
+        $enabled = Setting::getValue('push_notifications_enabled', true);
+        $vapidPublicKey = Setting::getValue('push_vapid_public_key', '') ?: config('notifications.push.vapid_public_key', '');
+
+        return response()->json([
+            'push_notifications_enabled' => $enabled,
+            'push_vapid_public_key' => $vapidPublicKey,
+        ]);
+    }
+
+    /**
+     * Save push notification settings.
+     */
+    public function savePushNotificationSettings(Request $request)
+    {
+        $request->validate([
+            'push_notifications_enabled' => 'nullable|boolean',
+            'push_vapid_public_key' => 'nullable|string|max:500',
+        ]);
+
+        $enabled = $request->boolean('push_notifications_enabled');
+        $vapidPublicKey = trim($request->input('push_vapid_public_key', ''));
+
+        Setting::setValue('push_notifications_enabled', $enabled ? '1' : '0', 'boolean', 'Enable browser push notifications (Web Push).');
+        Setting::setValue('push_vapid_public_key', $vapidPublicKey, 'string', 'VAPID public key for Web Push (optional; PUSH_VAPID_PRIVATE_KEY must stay in .env only).');
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Push notification settings saved successfully.',
+            ]);
+        }
+
+        return redirect()->route('settings.index')->with('success', 'Push notification settings saved successfully.');
     }
 }

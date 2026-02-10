@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\Message;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class CommunicationController extends Controller
 {
@@ -15,9 +17,10 @@ class CommunicationController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Message::where(function ($q) {
-            $q->where('to_user_id', Auth::id())
-                ->orWhere('from_user_id', Auth::id());
+        $userId = (int) auth()->user()->id;
+        $query = Message::where(function ($q) use ($userId) {
+            $q->where('to_user_id', $userId)
+                ->orWhere('from_user_id', $userId);
         })
             ->with(['fromUser', 'toUser', 'client']);
 
@@ -29,9 +32,9 @@ class CommunicationController extends Controller
         // Filter by status
         if ($request->filled('status')) {
             if ($request->status == 'unread') {
-                $query->where('to_user_id', Auth::id())->where('is_read', false);
+                $query->where('to_user_id', $userId)->where('is_read', false);
             } elseif ($request->status == 'read') {
-                $query->where('to_user_id', Auth::id())->where('is_read', true);
+                $query->where('to_user_id', $userId)->where('is_read', true);
             }
         }
 
@@ -48,10 +51,10 @@ class CommunicationController extends Controller
 
         // Statistics
         $stats = [
-            'total_messages' => Message::where('to_user_id', Auth::id())->orWhere('from_user_id', Auth::id())->count(),
-            'unread_messages' => Message::where('to_user_id', Auth::id())->where('is_read', false)->count(),
-            'sent_messages' => Message::where('from_user_id', Auth::id())->count(),
-            'announcements' => Message::where('to_user_id', Auth::id())->where('type', 'announcement')->count(),
+            'total_messages' => Message::where('to_user_id', $userId)->orWhere('from_user_id', $userId)->count(),
+            'unread_messages' => Message::where('to_user_id', $userId)->where('is_read', false)->count(),
+            'sent_messages' => Message::where('from_user_id', $userId)->count(),
+            'announcements' => Message::where('to_user_id', $userId)->where('type', 'announcement')->count(),
         ];
 
         return view('communications.index', compact('messages', 'stats'));
@@ -69,14 +72,24 @@ class CommunicationController extends Controller
             'message' => 'required|string',
         ]);
 
-        Message::create([
-            'from_user_id' => Auth::id(),
-            'to_user_id' => $request->to_user_id,
+        $userId = (int) auth()->user()->id;
+
+        $message = Message::create([
+            'from_user_id' => $userId,
+            'to_user_id' => $request->to_user_id ? (int) $request->to_user_id : null,
             'client_id' => $request->client_id,
             'subject' => $request->subject,
             'message' => $request->message,
             'type' => 'message',
         ]);
+
+        if ($request->to_user_id && (int) $request->to_user_id !== $userId) {
+            $fromName = Auth::user()->username ?? 'Staff';
+            $title = 'New message: '.Str::limit($request->subject, 50);
+            $body = $fromName.' wrote: '.Str::limit($request->message, 100);
+            $link = route('communications.show', $message->id);
+            NotificationService::create('system', $title, $body, (int) $request->to_user_id, null, null, $link, null, $message, $userId);
+        }
 
         return redirect()->route('communications.index')
             ->with('success', 'Message sent successfully');
@@ -101,7 +114,7 @@ class CommunicationController extends Controller
         $message = Message::with(['fromUser', 'toUser', 'client'])->findOrFail($id);
 
         // Mark as read if recipient
-        if ($message->to_user_id == Auth::id() && ! $message->is_read) {
+        if ($message->to_user_id == (int) auth()->user()->id && ! $message->is_read) {
             $message->markAsRead();
         }
 
@@ -118,20 +131,38 @@ class CommunicationController extends Controller
             'message' => 'required|string',
         ]);
 
-        // Send to all active users
         $users = User::where('status', 1)->get();
+        $title = 'Announcement: '.Str::limit($request->subject, 50);
+        $body = Str::limit($request->message, 120);
+        $actorId = (int) auth()->user()->id;
 
         foreach ($users as $user) {
-            Message::create([
-                'from_user_id' => Auth::id(),
-                'to_user_id' => $user->id,
+            $message = Message::create([
+                'from_user_id' => $actorId,
+                'to_user_id' => (int) $user->id,
                 'subject' => $request->subject,
                 'message' => $request->message,
                 'type' => 'announcement',
             ]);
+
+            if ((int) $user->id !== $actorId) {
+                NotificationService::create('system', $title, $body, (int) $user->id, null, null, route('communications.show', $message->id), null, $message, $actorId);
+            }
         }
 
         return redirect()->route('communications.index')
             ->with('success', 'Announcement sent to all users');
+    }
+
+    /**
+     * Get unread messages count (API for badge / polling)
+     */
+    public function unreadCount()
+    {
+        $count = Message::where('to_user_id', (int) auth()->user()->id)
+            ->where('is_read', false)
+            ->count();
+
+        return response()->json(['count' => $count]);
     }
 }
