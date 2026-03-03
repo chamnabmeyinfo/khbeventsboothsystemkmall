@@ -22,10 +22,14 @@ class SettingsController extends Controller
         $publicViewAllowCreate = Setting::getValue('public_view_allow_create_booking', true);
         $publicViewRestrictOwn = Setting::getValue('public_view_restrict_crud_to_own_booking', true);
 
-        $floorPlans = FloorPlan::where('is_active', true)
-            ->orderBy('is_default', 'desc')
-            ->orderBy('name', 'asc')
-            ->get(['id', 'name', 'is_default']);
+        try {
+            $floorPlans = FloorPlan::where('is_active', true)
+                ->orderBy('is_default', 'desc')
+                ->orderBy('name', 'asc')
+                ->get(['id', 'name', 'is_default']);
+        } catch (\Throwable $e) {
+            $floorPlans = collect([]);
+        }
 
         $tickFloorPlanId = $request->input('tick_floor_plan_id', $request->old('tick_floor_plan_id'));
         $tickSettings = FloorPlanTickSetting::getForFloorPlan($tickFloorPlanId ? (int) $tickFloorPlanId : null);

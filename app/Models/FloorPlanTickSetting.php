@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class FloorPlanTickSetting extends Model
 {
     use HasFactory;
+
+    protected $table = 'floor_plan_tick_settings';
 
     protected $fillable = [
         'floor_plan_id',
@@ -37,6 +40,7 @@ class FloorPlanTickSetting extends Model
 
     /**
      * Get tick settings for a floor plan. If the floor plan has its own row, use it; otherwise fall back to global Setting.
+     * Safe when table does not exist (e.g. migration not run yet).
      */
     public static function getForFloorPlan(?int $floorPlanId): array
     {
@@ -55,26 +59,38 @@ class FloorPlanTickSetting extends Model
             'relative_percent' => '12',
         ];
 
-        if ($floorPlanId) {
-            $row = self::where('floor_plan_id', $floorPlanId)->first();
-            if ($row) {
-                return [
-                    'show_tick' => (bool) $row->show_tick,
-                    'color' => $row->color ?? $defaults['color'],
-                    'size' => $row->size ?? $defaults['size'],
-                    'shape' => $row->shape ?? $defaults['shape'],
-                    'position' => $row->position ?? $defaults['position'],
-                    'animation' => $row->animation ?? $defaults['animation'],
-                    'bg_color' => $row->bg_color ?? $defaults['bg_color'],
-                    'border_width' => $row->border_width ?? $defaults['border_width'],
-                    'border_color' => $row->border_color ?? $defaults['border_color'],
-                    'font_size' => $row->font_size ?? $defaults['font_size'],
-                    'size_mode' => $row->size_mode ?? $defaults['size_mode'],
-                    'relative_percent' => $row->relative_percent ?? $defaults['relative_percent'],
-                ];
+        try {
+            if (! Schema::hasTable('floor_plan_tick_settings')) {
+                return self::getGlobalTickSettings($defaults);
             }
+            if ($floorPlanId) {
+                $row = self::where('floor_plan_id', $floorPlanId)->first();
+                if ($row) {
+                    return [
+                        'show_tick' => (bool) $row->show_tick,
+                        'color' => $row->color ?? $defaults['color'],
+                        'size' => $row->size ?? $defaults['size'],
+                        'shape' => $row->shape ?? $defaults['shape'],
+                        'position' => $row->position ?? $defaults['position'],
+                        'animation' => $row->animation ?? $defaults['animation'],
+                        'bg_color' => $row->bg_color ?? $defaults['bg_color'],
+                        'border_width' => $row->border_width ?? $defaults['border_width'],
+                        'border_color' => $row->border_color ?? $defaults['border_color'],
+                        'font_size' => $row->font_size ?? $defaults['font_size'],
+                        'size_mode' => $row->size_mode ?? $defaults['size_mode'],
+                        'relative_percent' => $row->relative_percent ?? $defaults['relative_percent'],
+                    ];
+                }
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('FloorPlanTickSetting::getForFloorPlan failed, using global', ['error' => $e->getMessage()]);
         }
 
+        return self::getGlobalTickSettings($defaults);
+    }
+
+    protected static function getGlobalTickSettings(array $defaults): array
+    {
         return [
             'show_tick' => Setting::getValue('booth_booked_show_tick', $defaults['show_tick']),
             'color' => Setting::getValue('booth_booked_tick_color', $defaults['color']),
@@ -92,10 +108,45 @@ class FloorPlanTickSetting extends Model
     }
 
     /**
+     * Persist tick settings to global Setting (used when per-floor-plan table is missing or save fails).
+     */
+    protected static function saveToGlobalSettings(array $data): void
+    {
+        Setting::setValue('booth_booked_show_tick', (! empty($data['show_tick'])) ? '1' : '0', 'boolean', 'Show tick on booked booths.');
+        Setting::setValue('booth_booked_tick_color', $data['color'] ?? '#28a745', 'string', 'Tick color.');
+        Setting::setValue('booth_booked_tick_size', $data['size'] ?? 'medium', 'string', 'Tick size.');
+        Setting::setValue('booth_booked_tick_shape', $data['shape'] ?? 'round', 'string', 'Tick shape.');
+        Setting::setValue('booth_booked_tick_position', $data['position'] ?? 'top-right', 'string', 'Tick position.');
+        Setting::setValue('booth_booked_tick_animation', $data['animation'] ?? 'pulse', 'string', 'Tick animation.');
+        Setting::setValue('booth_booked_tick_bg_color', $data['bg_color'] ?? '', 'string', 'Tick background.');
+        Setting::setValue('booth_booked_tick_border_width', $data['border_width'] ?? '0', 'string', 'Tick border width.');
+        Setting::setValue('booth_booked_tick_border_color', $data['border_color'] ?? '#ffffff', 'string', 'Tick border color.');
+        Setting::setValue('booth_booked_tick_font_size', $data['font_size'] ?? 'medium', 'string', 'Tick font size.');
+        Setting::setValue('booth_booked_tick_size_mode', $data['size_mode'] ?? 'fixed', 'string', 'Tick size mode.');
+        Setting::setValue('booth_booked_tick_relative_percent', $data['relative_percent'] ?? '12', 'string', 'Tick relative percent.');
+    }
+
+    /**
      * Save tick settings for a floor plan.
+     * Safe when table does not exist: falls back to global Setting.
      */
     public static function saveForFloorPlan(int $floorPlanId, array $data): self
     {
+        try {
+            if (! Schema::hasTable('floor_plan_tick_settings')) {
+                self::saveToGlobalSettings($data);
+                $m = new self;
+                $m->floor_plan_id = $floorPlanId;
+                return $m;
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('FloorPlanTickSetting::saveForFloorPlan failed, saving to global', ['error' => $e->getMessage()]);
+            self::saveToGlobalSettings($data);
+            $m = new self;
+            $m->floor_plan_id = $floorPlanId;
+            return $m;
+        }
+
         return self::updateOrCreate(
             ['floor_plan_id' => $floorPlanId],
             [
