@@ -955,7 +955,7 @@
         /* Public view: interactive booking-only popup (same flow as /books/create) */
         .public-booking-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10002; justify-content: center; align-items: center; animation: fadeIn 0.2s ease; padding: 12px; box-sizing: border-box; }
         .public-booking-modal.active { display: flex; }
-        .public-booking-modal .modal-content-inner { background: white; border-radius: 16px; width: 100%; max-width: 640px; min-width: 280px; max-height: min(94vh, 900px); overflow: hidden; box-shadow: 0 12px 48px rgba(0,0,0,0.3); animation: slideUp 0.3s ease; display: flex; flex-direction: column; flex-shrink: 0; margin: auto; }
+        .public-booking-modal .modal-content-inner { background: white; border-radius: 16px; width: 100%; max-width: 640px; min-width: 280px; height: 94vh; max-height: 94vh; overflow: hidden; box-shadow: 0 12px 48px rgba(0,0,0,0.3); animation: slideUp 0.3s ease; display: flex; flex-direction: column; flex-shrink: 0; margin: auto; }
         .public-booking-modal .modal-content-inner form.public-booking-form { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
         .public-booking-modal .modal-header-inner { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 20px; border-radius: 16px 16px 0 0; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
         .public-booking-modal .modal-header-inner h3 { margin: 0; font-size: 1.2rem; font-weight: 700; }
@@ -1036,7 +1036,7 @@
         .public-booking-modal .bf-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
         @media (max-width: 576px) {
             .public-booking-modal { padding: 8px; align-items: flex-start; padding-top: 24px; padding-bottom: 24px; }
-            .public-booking-modal .modal-content-inner { max-height: none; height: auto; max-height: calc(100vh - 48px); }
+            .public-booking-modal .modal-content-inner { height: calc(100vh - 48px); max-height: calc(100vh - 48px); }
             .public-booking-modal .modal-body-inner { padding: 16px; }
             .public-booking-modal .bf-form-row .bf-field { min-width: 100%; }
             .public-booking-modal .bf-section-title-row { flex-direction: column; align-items: flex-start; }
