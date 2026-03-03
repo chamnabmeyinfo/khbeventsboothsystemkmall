@@ -64,12 +64,15 @@ class BookingService
             // Calculate total amount
             $totalAmount = $this->repository->calculateTotalAmount($data['booth_ids']);
 
+            // Use the user's primary key (id), not auth identifier (username) - book.userid is an integer column
+            $userId = auth()->user() ? auth()->user()->getKey() : null;
+
             // Prepare booking data
             $bookingData = [
                 'clientid' => $data['clientid'],
                 'boothid' => json_encode($data['booth_ids']),
                 'date_book' => $data['date_book'] ?? now(),
-                'userid' => auth()->id(),
+                'userid' => $userId,
                 'type' => $data['type'] ?? 1,
                 'floor_plan_id' => $floorPlanId,
                 'event_id' => $eventId ?? $data['event_id'] ?? null,
@@ -90,7 +93,7 @@ class BookingService
                 $booth->update([
                     'status' => Booth::STATUS_RESERVED,
                     'client_id' => $data['clientid'],
-                    'userid' => auth()->id(),
+                    'userid' => $userId,
                     'bookid' => $booking->id,
                 ]);
             }
@@ -105,7 +108,7 @@ class BookingService
             }
 
             try {
-                NotificationService::notifyBookingAction('created', $booking, auth()->id(), $activity?->id);
+                NotificationService::notifyBookingAction('created', $booking, $userId, $activity?->id);
             } catch (\Exception $e) {
                 Log::error('Failed to send booking creation notification: '.$e->getMessage());
             }
@@ -584,11 +587,12 @@ class BookingService
     private function createTimelineEntry(Book $booking, string $action, string $description): void
     {
         try {
+            $userId = auth()->user() ? auth()->user()->getKey() : null;
             BookingTimeline::create([
                 'book_id' => $booking->id,
                 'action' => $action,
                 'description' => $description,
-                'user_id' => auth()->id(),
+                'user_id' => $userId,
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to create booking timeline entry: '.$e->getMessage());
