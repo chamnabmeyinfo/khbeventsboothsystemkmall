@@ -953,22 +953,24 @@
         }
 
         /* Public view: interactive booking-only popup (same flow as /books/create) */
-        .public-booking-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10002; justify-content: center; align-items: center; animation: fadeIn 0.2s ease; padding: 16px; box-sizing: border-box; }
+        .public-booking-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10002; justify-content: center; align-items: center; animation: fadeIn 0.2s ease; padding: 12px; box-sizing: border-box; }
         .public-booking-modal.active { display: flex; }
-        .public-booking-modal .modal-content-inner { background: white; border-radius: 16px; width: 100%; max-width: 560px; max-height: 92vh; overflow: hidden; box-shadow: 0 12px 48px rgba(0,0,0,0.3); animation: slideUp 0.3s ease; display: flex; flex-direction: column; }
+        .public-booking-modal .modal-content-inner { background: white; border-radius: 16px; width: 100%; max-width: 640px; min-width: 280px; max-height: min(94vh, 900px); overflow: hidden; box-shadow: 0 12px 48px rgba(0,0,0,0.3); animation: slideUp 0.3s ease; display: flex; flex-direction: column; flex-shrink: 0; margin: auto; }
         .public-booking-modal .modal-content-inner form.public-booking-form { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
         .public-booking-modal .modal-header-inner { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 20px; border-radius: 16px 16px 0 0; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
         .public-booking-modal .modal-header-inner h3 { margin: 0; font-size: 1.2rem; font-weight: 700; }
-        .public-booking-modal .modal-body-inner { padding: 20px; overflow-y: auto; flex: 1 1 0; min-height: 0; -webkit-overflow-scrolling: touch; }
+        .public-booking-modal .modal-body-inner { padding: 20px; overflow-y: auto; flex: 1 1 0; min-height: 0; -webkit-overflow-scrolling: touch; scroll-padding-bottom: 24px; }
+        .public-booking-modal .bf-body-end-spacer { height: 24px; flex-shrink: 0; }
         .public-booking-modal .btn-close-inner { background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
         .public-booking-modal .btn-close-inner:hover { background: rgba(255,255,255,0.3); }
-        .public-booking-modal .bf-section { margin-bottom: 20px; }
-        .public-booking-modal .bf-section-title { font-size: 0.85rem; font-weight: 700; color: #667eea; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+        .public-booking-modal .bf-section { margin-bottom: 24px; }
+        .public-booking-modal .bf-section:last-of-type { margin-bottom: 8px; }
+        .public-booking-modal .bf-section-title { font-size: 0.9rem; font-weight: 700; color: #667eea; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
         .public-booking-modal .bf-form-row { display: flex; gap: 12px; flex-wrap: wrap; }
         .public-booking-modal .bf-form-row .bf-field { flex: 1; min-width: 140px; }
         .public-booking-modal .bf-field { margin-bottom: 12px; }
         .public-booking-modal .bf-field label { display: block; font-weight: 600; color: #495057; margin-bottom: 4px; font-size: 0.85rem; }
-        .public-booking-modal .bf-field input, .public-booking-modal .bf-field select, .public-booking-modal .bf-field textarea { width: 100%; padding: 8px 12px; border: 1px solid #dee2e6; border-radius: 8px; font-size: 0.9rem; box-sizing: border-box; }
+        .public-booking-modal .bf-field input, .public-booking-modal .bf-field select, .public-booking-modal .bf-field textarea { width: 100%; padding: 10px 12px; border: 1px solid #dee2e6; border-radius: 8px; font-size: 0.9rem; box-sizing: border-box; }
         .public-booking-modal .bf-field .req { color: #dc3545; }
         .public-booking-modal .bf-section-title-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
         .public-booking-modal .bf-section-title-row .bf-section-title { margin-bottom: 0; }
@@ -976,8 +978,8 @@
         .public-booking-modal .bf-view-btn { width: 32px; height: 32px; border: 1px solid #dee2e6; background: #fff; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; color: #6c757d; font-size: 0.85rem; transition: all 0.2s; }
         .public-booking-modal .bf-view-btn:hover { background: #f8f9fa; color: #667eea; border-color: #667eea; }
         .public-booking-modal .bf-view-btn.active { background: #667eea; color: #fff; border-color: #667eea; }
-        .public-booking-modal .bf-booths { max-height: 220px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 8px; padding: 10px; background: #f8f9fa; }
-        .public-booking-modal .bf-booth-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; cursor: pointer; }
+        .public-booking-modal .bf-booths { min-height: 80px; max-height: 260px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 8px; padding: 12px; background: #f8f9fa; -webkit-overflow-scrolling: touch; }
+        .public-booking-modal .bf-booth-item { display: flex; align-items: center; gap: 8px; padding: 8px 0; cursor: pointer; }
         .public-booking-modal .bf-booth-item input { width: auto; margin: 0; flex-shrink: 0; }
         .public-booking-modal .bf-booth-item label { margin: 0; font-weight: 500; cursor: pointer; flex: 1; }
         .public-booking-modal .bf-booth-item-info { font-size: 0.75rem; color: #6c757d; margin-top: 2px; }
@@ -1018,20 +1020,31 @@
         .public-booking-modal .bf-btn-change { padding: 6px 12px; font-size: 0.8rem; background: #fff; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer; }
         .public-booking-modal .bf-btn-change:hover { background: #f8f9fa; }
         .public-booking-modal .bf-new-client-form { margin-top: 14px; padding-top: 14px; border-top: 1px solid #e9ecef; }
-        .public-booking-modal .bf-new-client-form-full .bf-new-client-form-scroll { max-height: 320px; overflow-y: auto; padding-right: 6px; margin-bottom: 14px; }
+        .public-booking-modal .bf-new-client-form-full .bf-new-client-form-scroll { max-height: none; overflow-y: visible; padding-right: 0; margin-bottom: 14px; }
         .public-booking-modal .bf-form-subsection { margin-bottom: 16px; }
         .public-booking-modal .bf-form-subsection:last-child { margin-bottom: 0; }
         .public-booking-modal .bf-form-subtitle { font-size: 0.8rem; font-weight: 700; color: #6c757d; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-        .public-booking-modal .bf-new-client-actions { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e9ecef; }
-        .public-booking-modal .bf-new-client-create-booking-row { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e9ecef; display: flex; justify-content: flex-end; }
+        .public-booking-modal .bf-new-client-actions { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e9ecef; display: flex; flex-wrap: wrap; gap: 10px; }
+        .public-booking-modal .bf-new-client-create-booking-row { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e9ecef; display: flex; justify-content: flex-end; flex-wrap: wrap; }
         .public-booking-modal .bf-alert { padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 0.85rem; display: none; }
         .public-booking-modal .bf-alert.show { display: block; }
         .public-booking-modal .bf-alert-error { background: #f8d7da; color: #721c24; }
-        .public-booking-modal .bf-footer { padding: 16px 20px; border-top: 1px solid #e9ecef; background: #f8f9fa; border-radius: 0 0 16px 16px; display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0; margin-top: auto; box-shadow: 0 -4px 12px rgba(0,0,0,0.06); position: relative; z-index: 5; }
+        .public-booking-modal .bf-footer { padding: 16px 20px; border-top: 1px solid #e9ecef; background: #f8f9fa; border-radius: 0 0 16px 16px; display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0; margin-top: auto; box-shadow: 0 -4px 12px rgba(0,0,0,0.06); position: relative; z-index: 5; flex-wrap: wrap; }
         .public-booking-modal .bf-btn { padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; }
         .public-booking-modal .bf-btn-secondary { background: #fff; color: #495057; border: 1px solid #dee2e6; }
         .public-booking-modal .bf-btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
         .public-booking-modal .bf-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        @media (max-width: 576px) {
+            .public-booking-modal { padding: 8px; align-items: flex-start; padding-top: 24px; padding-bottom: 24px; }
+            .public-booking-modal .modal-content-inner { max-height: none; height: auto; max-height: calc(100vh - 48px); }
+            .public-booking-modal .modal-body-inner { padding: 16px; }
+            .public-booking-modal .bf-form-row .bf-field { min-width: 100%; }
+            .public-booking-modal .bf-section-title-row { flex-direction: column; align-items: flex-start; }
+            .public-booking-modal .bf-booths.view-large { grid-template-columns: 1fr; }
+            .public-booking-modal .bf-booths.view-medium { grid-template-columns: repeat(2, 1fr); }
+            .public-booking-modal .bf-footer { padding: 12px 16px; flex-direction: column-reverse; }
+            .public-booking-modal .bf-footer .bf-btn { width: 100%; justify-content: center; }
+        }
         
         .booth-detail-row {
             display: flex;
@@ -1427,6 +1440,7 @@
                         </div>
                         <div class="bf-field"><label>Notes</label><textarea name="notes" id="publicBookingNotes" rows="2" placeholder="Optional notes..."></textarea></div>
                     </div>
+                    <div class="bf-body-end-spacer" aria-hidden="true"></div>
                 </div>
                 <div class="bf-footer">
                     <button type="button" class="bf-btn bf-btn-secondary" id="publicBookingCancel">Cancel</button>
