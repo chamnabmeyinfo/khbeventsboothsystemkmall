@@ -114,7 +114,7 @@
                            onchange="previewFeatureImage(this)">
                     <small class="form-text text-muted">
                         <i class="fas fa-info-circle mr-1"></i>
-                        Upload a feature image for this event/floor plan (JPEG, PNG, GIF). Max size: 5MB. This is different from the floor plan map image.
+                        Upload a feature image. {{ \App\Helpers\UploadSettingsHelper::getHint('floor_plan') }}. This is different from the floor plan map image.
                     </small>
                     @error('feature_image')
                         <div class="invalid-feedback d-block">{{ $message }}</div>

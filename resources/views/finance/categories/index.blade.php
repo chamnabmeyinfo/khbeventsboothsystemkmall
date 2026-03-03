@@ -66,14 +66,6 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
-    .filter-bar {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        padding: 24px;
-        margin-bottom: 24px;
-    }
     .table-row-hover { transition: all 0.2s; }
     .table-row-hover:hover { background-color: #f8f9fc; }
     .color-badge {

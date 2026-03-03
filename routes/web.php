@@ -352,6 +352,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/settings/public-view', [SettingsController::class, 'savePublicViewSettings'])->name('settings.public-view.save');
         Route::get('/settings/push-notifications', [SettingsController::class, 'getPushNotificationSettings'])->name('settings.push-notifications');
         Route::post('/settings/push-notifications', [SettingsController::class, 'savePushNotificationSettings'])->name('settings.push-notifications.save');
+        Route::post('/settings/upload-control', [SettingsController::class, 'saveUploadSettings'])->name('settings.upload-control.save');
 
         // Booth Default Settings API
         Route::get('/settings/booth-defaults', [SettingsController::class, 'getBoothDefaults'])->name('settings.booth-defaults');

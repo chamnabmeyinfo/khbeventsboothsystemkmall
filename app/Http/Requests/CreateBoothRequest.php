@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Helpers\UploadSettingsHelper;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreateBoothRequest extends FormRequest
@@ -39,7 +40,7 @@ class CreateBoothRequest extends FormRequest
             'area_sqm' => 'nullable|numeric|min:0',
             'electricity_power' => 'nullable|string|max:50',
             'notes' => 'nullable|string|max:2000',
-            'booth_image' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:5120',
+            'booth_image' => UploadSettingsHelper::getRules(UploadSettingsHelper::CONTEXT_BOOTH, 'booth_image', false)['booth_image'],
             // Position and styling fields
             'position_x' => 'nullable|numeric',
             'position_y' => 'nullable|numeric',
@@ -87,7 +88,7 @@ class CreateBoothRequest extends FormRequest
             'floor_plan_id.exists' => 'Selected floor plan does not exist.',
             'booth_image.image' => 'Booth image must be an image file.',
             'booth_image.mimes' => 'Booth image must be a jpeg, jpg, png, or gif file.',
-            'booth_image.max' => 'Booth image cannot exceed 5MB.',
+            'booth_image.max' => 'Booth image cannot exceed '.(UploadSettingsHelper::getMaxSizeKb(UploadSettingsHelper::CONTEXT_BOOTH) / 1024).' MB.',
         ];
     }
 

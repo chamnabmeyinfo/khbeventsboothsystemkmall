@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\ActivityLog;
+use App\Observers\ActivityLogObserver;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -21,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        ActivityLog::observe(ActivityLogObserver::class);
+
         // Fix: Ensure database prefix is always a string, not an array
         $prefix = Config::get('database.connections.mysql.prefix', '');
         if (! is_string($prefix)) {

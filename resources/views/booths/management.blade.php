@@ -3341,7 +3341,7 @@
                                          onmouseout="this.style.borderColor='#667eea'; this.style.transform='scale(1)'">
                                         <i class="fas fa-cloud-upload-alt fa-4x mb-3" style="color: #667eea;"></i>
                                         <p class="mb-2" style="font-size: 1.1rem; font-weight: 600; color: #495057;">Click to upload or drag and drop</p>
-                                        <small class="text-muted">PNG, JPG, GIF up to 5MB</small>
+                                        <small class="text-muted">{{ \App\Helpers\UploadSettingsHelper::getHint('booth') }}</small>
                                     </div>
                                     <input type="file" name="booth_image" id="booth_image" class="d-none" accept="image/*" onchange="previewImage(this)">
                                     <div id="imagePreviewContainer" class="image-preview-container" style="display: none; margin-top: 20px; position: relative; text-align: center;">

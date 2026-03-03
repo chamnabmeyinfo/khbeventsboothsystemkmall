@@ -246,7 +246,7 @@
                     <div class="form-group">
                         <label>Select Images (Max 10)</label>
                         <input type="file" class="form-control" name="images[]" id="imageFiles" multiple accept="image/*" required>
-                        <small class="form-text text-muted">You can select multiple images. Max 5MB per image.</small>
+                        <small class="form-text text-muted">You can select multiple images. {{ \App\Helpers\UploadSettingsHelper::getHint('booth') }} per image.</small>
                     </div>
                     
                     <div class="form-group">

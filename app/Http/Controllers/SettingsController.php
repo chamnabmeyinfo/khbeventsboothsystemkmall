@@ -48,6 +48,7 @@ class SettingsController extends Controller
 
         $pushNotificationsEnabled = Setting::getValue('push_notifications_enabled', true);
         $pushVapidPublicKey = Setting::getValue('push_vapid_public_key', '') ?: config('notifications.push.vapid_public_key', '');
+        $uploadSettings = Setting::getUploadSettings();
 
         return view('settings.index', compact(
             'publicViewAllowCreate', 'publicViewRestrictOwn', 'showBookedTick',
@@ -55,7 +56,8 @@ class SettingsController extends Controller
             'bookedTickBorderWidth', 'bookedTickBorderColor', 'bookedTickFontSize',
             'bookedTickSizeMode', 'bookedTickRelativePercent',
             'floorPlans', 'tickFloorPlanId',
-            'pushNotificationsEnabled', 'pushVapidPublicKey'
+            'pushNotificationsEnabled', 'pushVapidPublicKey',
+            'uploadSettings'
         ));
     }
 
@@ -1242,5 +1244,51 @@ class SettingsController extends Controller
         }
 
         return redirect()->route('settings.index')->with('success', 'Push notification settings saved successfully.');
+    }
+
+    /**
+     * Save upload control settings.
+     */
+    public function saveUploadSettings(Request $request)
+    {
+        $request->validate([
+            'uploads_enabled' => 'nullable|boolean',
+            'uploads_max_size_mb' => 'nullable|numeric|min:0|max:100',
+            'uploads_allowed_extensions' => 'nullable|string|max:500',
+            'uploads_floor_plan_max_size_mb' => 'nullable|numeric|min:0|max:100',
+            'uploads_floor_plan_allowed_extensions' => 'nullable|string|max:200',
+            'uploads_booth_max_size_mb' => 'nullable|numeric|min:0|max:100',
+            'uploads_booth_allowed_extensions' => 'nullable|string|max:200',
+            'uploads_avatar_max_size_mb' => 'nullable|numeric|min:0|max:100',
+            'uploads_avatar_allowed_extensions' => 'nullable|string|max:200',
+            'uploads_cover_max_size_mb' => 'nullable|numeric|min:0|max:100',
+            'uploads_cover_allowed_extensions' => 'nullable|string|max:200',
+            'uploads_document_max_size_mb' => 'nullable|numeric|min:0|max:100',
+            'uploads_document_allowed_extensions' => 'nullable|string|max:200',
+            'uploads_training_certificate_max_size_mb' => 'nullable|numeric|min:0|max:100',
+            'uploads_training_certificate_allowed_extensions' => 'nullable|string|max:200',
+            'uploads_company_logo_max_size_mb' => 'nullable|numeric|min:0|max:100',
+            'uploads_company_logo_allowed_extensions' => 'nullable|string|max:200',
+        ]);
+
+        $data = [
+            'uploads_enabled' => $request->boolean('uploads_enabled'),
+            'uploads_max_size_mb' => $request->input('uploads_max_size_mb'),
+            'uploads_allowed_extensions' => $request->input('uploads_allowed_extensions', ''),
+        ];
+        foreach (['floor_plan', 'booth', 'avatar', 'cover', 'document', 'training_certificate', 'company_logo'] as $ctx) {
+            $data["uploads_{$ctx}_max_size_mb"] = $request->input("uploads_{$ctx}_max_size_mb");
+            $data["uploads_{$ctx}_allowed_extensions"] = $request->input("uploads_{$ctx}_allowed_extensions", '');
+        }
+        Setting::saveUploadSettings($data);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Upload settings saved successfully.',
+            ]);
+        }
+
+        return redirect()->route('settings.index')->with('success', 'Upload settings saved successfully.');
     }
 }

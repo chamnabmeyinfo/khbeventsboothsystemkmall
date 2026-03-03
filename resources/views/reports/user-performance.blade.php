@@ -44,15 +44,6 @@
     .rank-badge.rank-1 { background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%); }
     .rank-badge.rank-2 { background: linear-gradient(135deg, #6c757d 0%, #495057 100%); }
     .rank-badge.rank-3 { background: linear-gradient(135deg, #cd7f32 0%, #b8860b 100%); }
-
-    .filter-bar {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        padding: 24px;
-        margin-bottom: 24px;
-    }
 </style>
 @endpush
 

@@ -1555,10 +1555,15 @@
         textarea.form-control:not(.form-control-modern) {
             border-radius: 12px;
             border: 2px solid rgba(102, 126, 234, 0.1);
-            padding: 0.75rem 1rem;
+            padding: -0.25rem 1rem;
             transition: all 0.3s ease;
             font-size: 0.95rem;
             background: white;
+            width: 100%;
+            max-width: 100%;
+            overflow: visible;
+            white-space: normal;
+            word-wrap: break-word;
         }
         
         .form-control:not(.form-control-modern):focus,
@@ -1575,7 +1580,7 @@
         .form-control-modern {
             border-radius: 12px !important;
             border: 2px solid rgba(102, 126, 234, 0.1) !important;
-            padding: 0.75rem 1rem !important;
+            padding: -0.25rem 1rem !important;
             transition: all 0.3s ease !important;
         }
         
@@ -1600,6 +1605,9 @@
         textarea.form-control-modern {
             min-height: 100px;
             resize: vertical;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
     </style>
     

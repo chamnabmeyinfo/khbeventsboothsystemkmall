@@ -334,6 +334,98 @@ class Setting extends Model
     }
 
     /**
+     * Check if uploads are enabled (file uploads across the system)
+     */
+    public static function getUploadsEnabled(): bool
+    {
+        return (bool) self::getValue('uploads_enabled', true);
+    }
+
+    /**
+     * Get max file size in MB (0 or null = no limit)
+     */
+    public static function getUploadMaxSizeMb(): ?float
+    {
+        $val = self::getValue('uploads_max_size_mb', null);
+        if ($val === null || $val === '' || (float) $val <= 0) {
+            return null;
+        }
+
+        return (float) $val;
+    }
+
+    /**
+     * Get allowed file extensions (empty array = all allowed)
+     * Returns lowercase extensions without leading dot
+     */
+    public static function getUploadAllowedExtensions(): array
+    {
+        $val = self::getValue('uploads_allowed_extensions', '');
+        if ($val === null || trim((string) $val) === '') {
+            return [];
+        }
+
+        $exts = array_map('trim', explode(',', (string) $val));
+
+        return array_values(array_filter(array_map(function ($e) {
+            return strtolower(ltrim($e, '.'));
+        }, $exts)));
+    }
+
+    protected static array $uploadContexts = [
+        'floor_plan', 'booth', 'avatar', 'cover', 'document', 'training_certificate', 'company_logo',
+    ];
+
+    /**
+     * Save all upload control settings
+     */
+    public static function saveUploadSettings(array $settings): array
+    {
+        $enabled = $settings['uploads_enabled'] ?? true;
+        self::setValue('uploads_enabled', $enabled ? '1' : '0', 'boolean', 'Enable or disable all file uploads');
+
+        $maxMb = isset($settings['uploads_max_size_mb']) ? (float) $settings['uploads_max_size_mb'] : null;
+        self::setValue('uploads_max_size_mb', $maxMb > 0 ? (string) $maxMb : '', 'string', 'Max file size in MB (empty = no limit)');
+
+        $exts = $settings['uploads_allowed_extensions'] ?? '';
+        self::setValue('uploads_allowed_extensions', is_string($exts) ? trim($exts) : '', 'string', 'Allowed extensions comma-separated (empty = all)');
+
+        foreach (self::$uploadContexts as $ctx) {
+            $keyMb = "uploads_{$ctx}_max_size_mb";
+            $keyExt = "uploads_{$ctx}_allowed_extensions";
+            if (array_key_exists($keyMb, $settings)) {
+                $v = $settings[$keyMb];
+                self::setValue($keyMb, ($v !== null && $v !== '' && (float) $v > 0) ? (string) $v : '', 'string', "Max size MB for {$ctx}");
+            }
+            if (array_key_exists($keyExt, $settings)) {
+                $v = $settings[$keyExt];
+                self::setValue($keyExt, is_string($v) ? trim($v) : '', 'string', "Allowed extensions for {$ctx}");
+            }
+        }
+
+        return self::getUploadSettings();
+    }
+
+    /**
+     * Get all upload settings (global + per-context)
+     */
+    public static function getUploadSettings(): array
+    {
+        $out = [
+            'uploads_enabled' => self::getUploadsEnabled(),
+            'uploads_max_size_mb' => self::getUploadMaxSizeMb(),
+            'uploads_allowed_extensions' => implode(', ', self::getUploadAllowedExtensions()),
+        ];
+
+        foreach (self::$uploadContexts as $ctx) {
+            $out["uploads_{$ctx}_max_size_mb"] = self::getValue("uploads_{$ctx}_max_size_mb", '') ?: '';
+            $out["uploads_{$ctx}_allowed_extensions"] = self::getValue("uploads_{$ctx}_allowed_extensions", '') ?: '';
+        }
+
+        return $out;
+    }
+
+    /**
      * Check if a module should be displayed on a specific device
      */
     public static function isModuleVisible($module, $device = 'mobile')

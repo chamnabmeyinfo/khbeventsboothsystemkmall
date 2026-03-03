@@ -51,7 +51,7 @@ class DocumentController extends Controller
             'employee_id' => 'required|exists:employees,id',
             'document_type' => 'required|string|max:100',
             'document_name' => 'required|string|max:255',
-            'file' => 'required|file|mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx|max:10240',
+            'file' => \App\Helpers\UploadSettingsHelper::getRules(\App\Helpers\UploadSettingsHelper::CONTEXT_DOCUMENT, 'file', true)['file'],
             'expiry_date' => 'nullable|date',
             'description' => 'nullable|string',
         ]);
@@ -102,7 +102,7 @@ class DocumentController extends Controller
             'employee_id' => 'required|exists:employees,id',
             'document_type' => 'required|string|max:100',
             'document_name' => 'required|string|max:255',
-            'file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx|max:10240',
+            'file' => \App\Helpers\UploadSettingsHelper::getRules(\App\Helpers\UploadSettingsHelper::CONTEXT_DOCUMENT, 'file', false)['file'],
             'expiry_date' => 'nullable|date',
             'description' => 'nullable|string',
         ]);

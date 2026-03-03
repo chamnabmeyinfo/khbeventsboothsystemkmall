@@ -35,6 +35,7 @@
         }
     },
     "scripts": {
+        "serve-uploads": "php -d upload_max_filesize=20M -d post_max_size=25M artisan serve",
         "post-autoload-dump": [
             "Illuminate\\Foundation\\Composer\\Scripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

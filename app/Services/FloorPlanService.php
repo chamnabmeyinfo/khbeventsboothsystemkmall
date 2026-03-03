@@ -19,14 +19,23 @@ class FloorPlanService
         $imageExtension = $image->getClientOriginalExtension();
         $imageName = time().'_floor_plan_'.$floorPlanId.'.'.$imageExtension;
 
-        // Ensure floor plans images directory exists
+        // Ensure floor plans images directory exists and is writable
         $floorPlansPath = public_path('images/floor-plans');
         if (! file_exists($floorPlansPath)) {
-            mkdir($floorPlansPath, 0755, true);
+            if (! @mkdir($floorPlansPath, 0755, true)) {
+                throw new \Exception('Could not create upload directory. Check folder permissions.');
+            }
+        }
+        if (! is_writable($floorPlansPath)) {
+            throw new \Exception('Upload directory is not writable. Check folder permissions.');
         }
 
         // Save new image FIRST before deleting old one (prevents data loss if save fails)
-        $image->move($floorPlansPath, $imageName);
+        try {
+            $image->move($floorPlansPath, $imageName);
+        } catch (\Exception $e) {
+            throw new \Exception('Failed to save image: '.$e->getMessage());
+        }
 
         // Verify the new file was created successfully
         $newImagePath = $floorPlansPath.'/'.$imageName;

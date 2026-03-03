@@ -138,7 +138,7 @@
                            onchange="previewFeatureImage(this)">
                     <small class="form-text text-muted">
                         <i class="fas fa-info-circle mr-1"></i>
-                        Upload a feature image for this event/floor plan (JPEG, PNG, GIF). Max size: 5MB. This is different from the floor plan map image.
+                        Upload a feature image. {{ \App\Helpers\UploadSettingsHelper::getHint('floor_plan') }}. This is different from the floor plan map image.
                         @if($featureImageExists)
                             <br><span class="text-warning"><i class="fas fa-exclamation-triangle mr-1"></i>Uploading a new image will replace the current one.</span>
                         @endif
@@ -338,7 +338,7 @@
                                onchange="previewImage(this)">
                         <small class="form-text text-muted">
                             <i class="fas fa-info-circle mr-1"></i>
-                            Upload a floor plan image (JPEG, PNG, GIF). Max size: 5MB. 
+                            Upload a floor plan image. {{ \App\Helpers\UploadSettingsHelper::getHint('floor_plan') }}. 
                             The canvas will automatically adjust its size to match the uploaded image.
                             @if($imageExists)
                                 <br><span class="text-warning"><i class="fas fa-exclamation-triangle mr-1"></i>Uploading a new image will replace the current one.</span>

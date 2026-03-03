@@ -171,8 +171,8 @@ class FloorPlanController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'project_name' => 'nullable|string|max:255',
-            'floor_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
-            'feature_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
+            'floor_image' => \App\Helpers\UploadSettingsHelper::getRules(\App\Helpers\UploadSettingsHelper::CONTEXT_FLOOR_PLAN, 'floor_image', false)['floor_image'],
+            'feature_image' => \App\Helpers\UploadSettingsHelper::getRules(\App\Helpers\UploadSettingsHelper::CONTEXT_FLOOR_PLAN, 'feature_image', false)['feature_image'],
             'google_map_location' => 'nullable|string',
             'proposal' => 'nullable|string',
             'event_start_date' => 'nullable|date',
@@ -214,7 +214,16 @@ class FloorPlanController extends Controller
             $imageName = time().'_floor_plan_temp.'.$imageExtension; // Temporary name, will update after creation
             $imagePath = public_path('images/floor-plans');
             if (! file_exists($imagePath)) {
-                mkdir($imagePath, 0755, true);
+                if (! @mkdir($imagePath, 0755, true)) {
+                    return redirect()->route('floor-plans.create')
+                        ->withInput()
+                        ->with('error', 'Could not create upload directory. Check folder permissions.');
+                }
+            }
+            if (! is_writable($imagePath)) {
+                return redirect()->route('floor-plans.create')
+                    ->withInput()
+                    ->with('error', 'Upload directory is not writable. Check folder permissions.');
             }
             $image->move($imagePath, $imageName);
             $validated['floor_image'] = 'images/floor-plans/'.$imageName;
@@ -389,8 +398,8 @@ class FloorPlanController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'project_name' => 'nullable|string|max:255',
-            'floor_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-            'feature_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'floor_image' => \App\Helpers\UploadSettingsHelper::getRules(\App\Helpers\UploadSettingsHelper::CONTEXT_FLOOR_PLAN, 'floor_image', false)['floor_image'],
+            'feature_image' => \App\Helpers\UploadSettingsHelper::getRules(\App\Helpers\UploadSettingsHelper::CONTEXT_FLOOR_PLAN, 'feature_image', false)['feature_image'],
             'google_map_location' => 'nullable|string',
             'proposal' => 'nullable|string',
             'event_start_date' => 'nullable|date',
@@ -423,19 +432,42 @@ class FloorPlanController extends Controller
             $rules['event_id'] = 'nullable';
         }
 
+        // Check for PHP upload errors BEFORE validation (e.g. upload_max_filesize exceeded)
+        if ($request->hasFile('floor_image')) {
+            $image = $request->file('floor_image');
+            if (! $image->isValid()) {
+                $phpMax = ini_get('upload_max_filesize');
+                $errMsg = $image->getErrorMessage();
+                if ($image->getError() === UPLOAD_ERR_INI_SIZE) {
+                    $errMsg = "File exceeds PHP upload limit ({$phpMax}). Increase upload_max_filesize in php.ini or add .user.ini in public folder.";
+                } elseif ($image->getError() === UPLOAD_ERR_FORM_SIZE) {
+                    $errMsg = 'File exceeds form size limit.';
+                }
+
+                return redirect()->route('floor-plans.edit', $floorPlan)
+                    ->withInput()
+                    ->with('error', 'The floor image failed to upload. '.$errMsg);
+            }
+        }
+
         $validated = $request->validate($rules);
 
         // Handle image upload (from edit form)
         // CRITICAL: Save new image FIRST before deleting old one (prevents data loss)
         if ($request->hasFile('floor_image')) {
+            $image = $request->file('floor_image');
             try {
-                $image = $request->file('floor_image');
                 $imageExtension = $image->getClientOriginalExtension();
                 $imageName = time().'_floor_plan_'.$floorPlan->id.'.'.$imageExtension; // Include floor_plan_id for uniqueness
 
                 $imagePath = public_path('images/floor-plans');
                 if (! file_exists($imagePath)) {
-                    mkdir($imagePath, 0755, true);
+                    if (! @mkdir($imagePath, 0755, true)) {
+                        throw new \Exception('Could not create upload directory. Check folder permissions.');
+                    }
+                }
+                if (! is_writable($imagePath)) {
+                    throw new \Exception('Upload directory is not writable. Check folder permissions.');
                 }
 
                 // Save new image FIRST (before deleting old one)
@@ -471,10 +503,9 @@ class FloorPlanController extends Controller
                     'trace' => $e->getTraceAsString(),
                 ]);
 
-                // Remove floor_image from validated if upload failed
-                unset($validated['floor_image']);
-                unset($validated['canvas_width']);
-                unset($validated['canvas_height']);
+                return redirect()->route('floor-plans.edit', $floorPlan)
+                    ->withInput()
+                    ->with('error', 'The floor image failed to upload. '.$e->getMessage());
             }
         }
 

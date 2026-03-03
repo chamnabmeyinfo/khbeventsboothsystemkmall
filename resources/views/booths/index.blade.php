@@ -3123,7 +3123,7 @@
                             <i class="fas fa-image"></i> Select Floorplan Image
                         </label>
                         <input type="file" class="form-control-file" id="floorplanImageInput" name="floorplan_image" accept="image/*" required>
-                        <small class="form-text text-muted" id="uploadSizeLimitText">Supported formats: JPG, PNG, GIF. Maximum size: 10MB</small>
+                        <small class="form-text text-muted" id="uploadSizeLimitText">{{ \App\Helpers\UploadSettingsHelper::getHint('floor_plan') }}</small>
                     </div>
                     <div class="form-group">
                         <div class="preview-container" id="imagePreview" style="display: none; margin-top: 15px;">
@@ -15652,8 +15652,8 @@ const FloorPlanDesigner = {
             // Create FormData
             const formData = new FormData(form);
             
-            // Add floor_plan_id to form data
-            const floorPlanId = @if(isset($floorPlanId) && $floorPlanId){{ $floorPlanId }}@else null @endif;
+            // Add floor_plan_id to form data (from URL param or current floor plan)
+            const floorPlanId = @if(isset($floorPlanId) && $floorPlanId){{ $floorPlanId }}@else @if(isset($currentFloorPlan) && $currentFloorPlan){{ $currentFloorPlan->id }}@else null @endif @endif;
             if (floorPlanId) {
                 formData.append('floor_plan_id', floorPlanId);
             } else {
@@ -15795,10 +15795,18 @@ const FloorPlanDesigner = {
                     }
                 },
                 error: function(xhr) {
-                    let errorMsg = 'Failed to upload floorplan.';
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        errorMsg = xhr.responseJSON.message;
+                    let errorMsg = 'The floorplan image failed to upload.';
+                    if (xhr.responseJSON) {
+                        if (xhr.responseJSON.errors && xhr.responseJSON.errors.floorplan_image) {
+                            errorMsg = xhr.responseJSON.errors.floorplan_image[0] || errorMsg;
+                        } else if (xhr.responseJSON.errors && typeof xhr.responseJSON.errors === 'object') {
+                            const firstError = Object.values(xhr.responseJSON.errors).flat()[0];
+                            if (firstError) errorMsg = firstError;
+                        } else if (xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
                     }
+                    console.warn('[Upload Floorplan] 422/Error:', xhr.status, xhr.responseJSON || xhr.responseText);
                     customAlert(errorMsg, 'error');
                 },
                 complete: function() {

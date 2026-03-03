@@ -1,4 +1,13 @@
 # ============================================
+# PHP UPLOAD LIMITS (floor plan images, documents, etc.)
+# ============================================
+# Required for file uploads. Override if your host allows.
+<IfModule mod_php.c>
+    php_value upload_max_filesize 20M
+    php_value post_max_size 25M
+</IfModule>
+
+# ============================================
 # PHP VERSION (cPanel / EasyApache 4)
 # ============================================
 # Forces PHP 8.1 on cPanel. Ignored on XAMPP (handler not present).

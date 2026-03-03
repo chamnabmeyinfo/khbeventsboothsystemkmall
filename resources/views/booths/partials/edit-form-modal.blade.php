@@ -196,7 +196,7 @@
                                     <div class="image-upload-area" id="canvasImageUploadArea" onclick="document.getElementById('canvas_booth_image').click()" style="border: 2px dashed #667eea; border-radius: 12px; padding: 40px; text-align: center; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); cursor: pointer;">
                                         <i class="fas fa-cloud-upload-alt fa-4x mb-3" style="color: #667eea;"></i>
                                         <p class="mb-2" style="font-size: 1.1rem; font-weight: 600; color: #495057;">Click to upload or drag and drop</p>
-                                        <small class="text-muted">PNG, JPG, GIF up to 5MB</small>
+                                        <small class="text-muted">{{ \App\Helpers\UploadSettingsHelper::getHint('booth') }}</small>
                                     </div>
                                     <input type="file" name="booth_image" id="canvas_booth_image" class="d-none" accept="image/*">
                                     <div id="canvasImagePreviewContainer" style="display: none; margin-top: 20px; text-align: center;">

@@ -130,6 +130,75 @@
     </div>
 </div>
 
+<!-- Upload Control -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-upload me-2"></i>Upload Control</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Control file uploads across the system. Set global defaults or per-context limits (floor plan, booth, avatar, etc.).</p>
+                <form action="{{ route('settings.upload-control.save') }}" method="POST">
+                    @csrf
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="uploads_enabled" id="uploads_enabled" value="1" {{ ($uploadSettings['uploads_enabled'] ?? true) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="uploads_enabled">
+                                <strong>Allow file uploads</strong>
+                            </label>
+                        </div>
+                        <small class="text-muted d-block mt-1">When disabled, all users cannot upload files.</small>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label" for="uploads_max_size_mb">Global max size (MB)</label>
+                            <input type="number" class="form-control" name="uploads_max_size_mb" id="uploads_max_size_mb" value="{{ old('uploads_max_size_mb', $uploadSettings['uploads_max_size_mb'] ?? '') }}" min="0" max="100" step="0.5" placeholder="10">
+                            <small class="text-muted">Default for all uploads. Override per context below.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="uploads_allowed_extensions">Global allowed extensions</label>
+                            <input type="text" class="form-control" name="uploads_allowed_extensions" id="uploads_allowed_extensions" value="{{ old('uploads_allowed_extensions', $uploadSettings['uploads_allowed_extensions'] ?? '') }}" placeholder="jpg, png, gif, pdf">
+                            <small class="text-muted">Comma-separated. Empty = use context defaults.</small>
+                        </div>
+                    </div>
+                    <hr class="my-4">
+                    <h6 class="mb-3">Per-context limits (override global)</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Context</th>
+                                    <th style="width: 140px;">Max size (MB)</th>
+                                    <th>Allowed extensions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach(['floor_plan' => 'Floor plan images', 'booth' => 'Booth images', 'avatar' => 'Avatars', 'cover' => 'Cover images', 'document' => 'HR documents', 'training_certificate' => 'Training certificates', 'company_logo' => 'Company logo/favicon'] as $ctx => $label)
+                                <tr>
+                                    <td>{{ $label }}</td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm" name="uploads_{{ $ctx }}_max_size_mb" value="{{ old("uploads_{$ctx}_max_size_mb", $uploadSettings["uploads_{$ctx}_max_size_mb"] ?? '') }}" min="0" max="100" step="0.5" placeholder="—">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control form-control-sm" name="uploads_{{ $ctx }}_allowed_extensions" value="{{ old("uploads_{$ctx}_allowed_extensions", $uploadSettings["uploads_{$ctx}_allowed_extensions"] ?? '') }}" placeholder="e.g. jpg, png, gif">
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Public view actions (logged-in users on public floor plan) -->
 <div class="row mt-4">
     <div class="col-md-12">

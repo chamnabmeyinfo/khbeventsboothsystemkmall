@@ -41,7 +41,7 @@ class SecurityHeaders
         $csp = "default-src 'self'; "
             ."script-src 'self' 'unsafe-inline' 'unsafe-eval' https://code.jquery.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net; "
             ."style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://code.ionicframework.com https://cdn.datatables.net https://fonts.googleapis.com; "
-            ."img-src 'self' data: https:; "
+            ."img-src 'self' data: blob: https:; "
             ."font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com https://cdnjs.cloudflare.com https://code.ionicframework.com; "
             .'connect-src '.$connectSrc."; frame-ancestors 'self';";
         $response->headers->set('Content-Security-Policy', $csp);

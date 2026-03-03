@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Helpers\UploadSettingsHelper;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UploadBoothImageRequest extends FormRequest
@@ -13,11 +14,10 @@ class UploadBoothImageRequest extends FormRequest
 
     public function rules(): array
     {
-        $maxSizeKB = env('UPLOAD_MAX_SIZE_KB', 10240); // Default 10MB
+        $rules = UploadSettingsHelper::getRules(UploadSettingsHelper::CONTEXT_BOOTH, 'booth_image', true);
 
-        return [
-            'booth_image' => 'required|image|mimes:jpeg,jpg,png,gif|max:'.$maxSizeKB,
+        return array_merge($rules, [
             'floor_plan_id' => 'nullable|exists:floor_plans,id',
-        ];
+        ]);
     }
 }

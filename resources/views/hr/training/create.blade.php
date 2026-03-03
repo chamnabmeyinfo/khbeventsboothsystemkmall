@@ -94,7 +94,7 @@
                         <div class="form-group">
                             <label for="certificate_file">Certificate File</label>
                             <input type="file" class="form-control" id="certificate_file" name="certificate_file" accept=".pdf,.jpg,.jpeg,.png">
-                            <small class="form-text text-muted">PDF, JPG, PNG (Max 5MB)</small>
+                            <small class="form-text text-muted">{{ \App\Helpers\UploadSettingsHelper::getHint('training_certificate') }}</small>
                         </div>
                     </div>
                 </div>

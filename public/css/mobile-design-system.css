@@ -514,6 +514,8 @@
   .mobile-form-select,
   .mobile-form-textarea {
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
     min-height: var(--touch-target);
     padding: var(--space-4) var(--space-5);
     font-size: 16px; /* Prevents iOS zoom */
@@ -524,6 +526,9 @@
     -webkit-appearance: none;
     appearance: none;
     box-shadow: var(--shadow-sm);
+    overflow: visible;
+    white-space: normal;
+    word-wrap: break-word;
   }
 
   .mobile-form-input:focus,
@@ -539,6 +544,9 @@
     min-height: 140px;
     resize: vertical;
     padding-top: var(--space-4);
+    overflow: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
   }
 
   .mobile-form-hint {

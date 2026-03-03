@@ -53,7 +53,7 @@ class TrainingController extends Controller
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'status' => 'required|in:scheduled,in-progress,completed,cancelled',
             'certificate_number' => 'nullable|string|max:100',
-            'certificate_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'certificate_file' => \App\Helpers\UploadSettingsHelper::getRules(\App\Helpers\UploadSettingsHelper::CONTEXT_TRAINING_CERTIFICATE, 'certificate_file', false)['certificate_file'],
             'cost' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
         ]);
@@ -99,7 +99,7 @@ class TrainingController extends Controller
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'status' => 'required|in:scheduled,in-progress,completed,cancelled',
             'certificate_number' => 'nullable|string|max:100',
-            'certificate_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'certificate_file' => \App\Helpers\UploadSettingsHelper::getRules(\App\Helpers\UploadSettingsHelper::CONTEXT_TRAINING_CERTIFICATE, 'certificate_file', false)['certificate_file'],
             'cost' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
         ]);

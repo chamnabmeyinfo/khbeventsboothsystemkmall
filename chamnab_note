@@ -42,3 +42,55 @@ php artisan db:seed --class=PermissionsTableSeeder
 php artisan db:seed --class=RoleHasPermissionsTableSeeder
 php artisan db:seed --class=ModelHasRolesTableSeeder
 php artisan db:seed --class=ModelHasPermissionsTableSeeder
+
+
+# Pull database from remote server to local (overwrites local DB):
+# This command connects to the remote database (using credentials set in your .env file) 
+# and copies its data into your LOCAL database, completely replacing current local data. 
+# The --force flag skips confirmation.
+php artisan db:pull --force
+
+# Push local database to remote server (overwrites remote DB):
+# This command sends your LOCAL database to the remote server, 
+# overwriting remote data with your current local data. 
+# Be careful: all changes on remote will be replaced with your local database content.
+php artisan db:push --force
+
+# Sync databases (make both local and remote the same):
+# This command attempts to synchronize the local and remote databases so they're identical. 
+# The direction (which database is the source) usually depends on additional options or interactive prompts, 
+# but --force skips confirmation and may default to a set direction (consult your artisan command docs).
+php artisan db:sync --force
+
+# Export database to a SQL file on your local machine:
+# This exports your current local database schema and data into an SQL dump file, 
+# which you can backup, move, or import elsewhere. 
+# The --force flag overwrites any existing export without confirmation.
+php artisan db:export --force
+
+# Import a local SQL file into your database:
+# This imports a previously exported SQL file (typically from db:export) into your local database. 
+# Make sure the SQL file exists in the expected location. The --force flag skips confirmation.
+php artisan db:import --force
+
+
+# Artisan Storage Pull from remote server
+php artisan storage:pull --force
+
+# Artisan Storage Push to remote server
+php artisan storage:push --force
+
+# Artisan Storage Sync from remote server
+php artisan storage:sync --force
+
+# Artisan Storage Export to local file
+php artisan storage:export --force
+
+# Artisan Storage Import from local file
+php artisan storage:import --force
+
+# Artisan Storage Sync from remote server
+php artisan storage:sync --force
+
+# Artisan Storage Export to local file
+php artisan storage:export --force

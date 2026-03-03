@@ -1,5 +1,15 @@
 # 🚀 Deploy Code & Database Updates from Localhost to Live Server
 
+## Workflow: Local + Live DB
+
+If you use **live database** from local (see `docs/04-deployment/LOCAL-LIVE-WORKFLOW.md`):
+
+- Local code connects to live DB — no `db:pull` needed
+- Push code to GitHub as normal (`.env` is never committed)
+- Deploy = `git pull` on server + migrations + cache
+
+---
+
 ## ⚠️ IMPORTANT: Before You Start
 
 1. **Commit all changes locally** and push to Git
@@ -43,6 +53,15 @@ git pull origin main
 
 # Or if composer is in PATH:
 composer install --no-dev --optimize-autoloader
+```
+
+---
+
+## Step 3b: Build Frontend Assets (if using Vite/npm)
+
+```bash
+npm ci
+npm run build
 ```
 
 ---

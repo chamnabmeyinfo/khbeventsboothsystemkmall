@@ -62,7 +62,7 @@
                     <label for="file">File <span class="text-danger">*</span></label>
                     <div class="custom-file">
                         <input type="file" name="file" id="file" class="custom-file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" required>
-                        <label class="custom-file-label" for="file">Choose file (PDF, Images, Word, Excel - Max 10MB)</label>
+                        <label class="custom-file-label" for="file">Choose file ({{ \App\Helpers\UploadSettingsHelper::getHint('document') }})</label>
                     </div>
                     <small class="form-text text-muted">Accepted formats: PDF, JPG, PNG, DOC, DOCX, XLS, XLSX (Max 10MB)</small>
                     @error('file')<span class="text-danger">{{ $message }}</span>@enderror
