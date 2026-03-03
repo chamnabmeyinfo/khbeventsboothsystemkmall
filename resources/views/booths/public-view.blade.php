@@ -956,10 +956,10 @@
         .public-booking-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10002; justify-content: center; align-items: center; animation: fadeIn 0.2s ease; padding: 16px; box-sizing: border-box; }
         .public-booking-modal.active { display: flex; }
         .public-booking-modal .modal-content-inner { background: white; border-radius: 16px; width: 100%; max-width: 560px; max-height: 92vh; overflow: hidden; box-shadow: 0 12px 48px rgba(0,0,0,0.3); animation: slideUp 0.3s ease; display: flex; flex-direction: column; }
-        .public-booking-modal .modal-content-inner form.public-booking-form { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+        .public-booking-modal .modal-content-inner form.public-booking-form { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
         .public-booking-modal .modal-header-inner { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 20px; border-radius: 16px 16px 0 0; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
         .public-booking-modal .modal-header-inner h3 { margin: 0; font-size: 1.2rem; font-weight: 700; }
-        .public-booking-modal .modal-body-inner { padding: 20px; overflow-y: auto; flex: 1; min-height: 0; }
+        .public-booking-modal .modal-body-inner { padding: 20px; overflow-y: auto; flex: 1 1 0; min-height: 0; -webkit-overflow-scrolling: touch; }
         .public-booking-modal .btn-close-inner { background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
         .public-booking-modal .btn-close-inner:hover { background: rgba(255,255,255,0.3); }
         .public-booking-modal .bf-section { margin-bottom: 20px; }
@@ -1023,10 +1023,11 @@
         .public-booking-modal .bf-form-subsection:last-child { margin-bottom: 0; }
         .public-booking-modal .bf-form-subtitle { font-size: 0.8rem; font-weight: 700; color: #6c757d; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
         .public-booking-modal .bf-new-client-actions { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e9ecef; }
+        .public-booking-modal .bf-new-client-create-booking-row { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e9ecef; display: flex; justify-content: flex-end; }
         .public-booking-modal .bf-alert { padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 0.85rem; display: none; }
         .public-booking-modal .bf-alert.show { display: block; }
         .public-booking-modal .bf-alert-error { background: #f8d7da; color: #721c24; }
-        .public-booking-modal .bf-footer { padding: 16px 20px; border-top: 1px solid #e9ecef; background: #f8f9fa; border-radius: 0 0 16px 16px; display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0; margin-top: auto; }
+        .public-booking-modal .bf-footer { padding: 16px 20px; border-top: 1px solid #e9ecef; background: #f8f9fa; border-radius: 0 0 16px 16px; display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0; margin-top: auto; box-shadow: 0 -4px 12px rgba(0,0,0,0.06); position: relative; z-index: 5; }
         .public-booking-modal .bf-btn { padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; }
         .public-booking-modal .bf-btn-secondary { background: #fff; color: #495057; border: 1px solid #dee2e6; }
         .public-booking-modal .bf-btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
@@ -1399,6 +1400,9 @@
                                 <button type="button" class="bf-btn bf-btn-secondary" id="publicNewClientCancel">Cancel</button>
                                 <button type="button" class="bf-btn bf-btn-primary" id="publicNewClientSave"><i class="fas fa-save"></i> Save &amp; Select</button>
                             </div>
+                            <div class="bf-form-row bf-new-client-create-booking-row">
+                                <button type="button" class="bf-btn bf-btn-primary" id="publicNewClientCreateBookingBtn"><i class="fas fa-calendar-plus"></i> Create booking</button>
+                            </div>
                         </div>
                     </div>
 
@@ -1671,6 +1675,13 @@
         document.getElementById('publicNewClientCancel').addEventListener('click', function() {
             publicNewClientForm.style.display = 'none';
             publicSearchClientUI.style.display = 'block';
+        });
+        document.getElementById('publicNewClientCreateBookingBtn').addEventListener('click', function() {
+            if (publicBookingFormEl.requestSubmit) {
+                publicBookingFormEl.requestSubmit();
+            } else {
+                publicBookingSubmitBtn.click();
+            }
         });
         document.getElementById('publicNewClientSave').addEventListener('click', function() {
             var name = document.getElementById('newClientName') ? document.getElementById('newClientName').value.trim() : '';
