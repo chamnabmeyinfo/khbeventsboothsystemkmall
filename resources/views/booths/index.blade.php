@@ -767,14 +767,14 @@
     backdrop-filter: blur(10px) saturate(180%);
     -webkit-backdrop-filter: blur(10px) saturate(180%);
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap;
     align-items: center;
+    justify-content: space-between;
+    gap: 10px 14px;
     padding: 12px 16px;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    flex-wrap: wrap;
-    gap: 8px;
 }
 
 .zone-header:hover {
@@ -784,13 +784,16 @@
 .zone-header-left {
     display: flex;
     align-items: center;
-    gap: 10px;
-    flex: 1;
+    gap: 8px;
     min-width: 0;
+    flex-shrink: 0;
 }
 
 .zone-header-left .zone-chevron {
+    flex-shrink: 0;
+    width: 14px;
     font-size: 12px;
+    text-align: center;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     color: rgba(255, 255, 255, 0.9);
 }
@@ -799,20 +802,42 @@
     transform: rotate(-90deg);
 }
 
+.zone-section.collapsed .zone-content {
+    display: none;
+}
+
 .zone-name {
+    flex-shrink: 0;
     font-weight: 600;
     font-size: 14px;
     color: white;
     letter-spacing: 0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
 }
 
 .zone-count {
+    flex-shrink: 0;
     font-size: 12px;
     color: rgba(255, 255, 255, 0.8);
     background: rgba(255, 255, 255, 0.15);
     padding: 2px 8px;
     border-radius: 12px;
     font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Actions group: prevents overlap with title; wraps to next row when needed */
+.zone-header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
 .btn-add-all-zone,
@@ -822,6 +847,7 @@
 .btn-zone-appearance,
 .btn-zone-clear,
 .btn-zone-zoom,
+.btn-zone-select-all,
 .btn-zone-add-new,
 .btn-zone-delete {
     background: rgba(255, 255, 255, 0.15);
@@ -839,8 +865,26 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
     min-width: 32px;
+    min-height: 32px;
     height: 32px;
+    flex-shrink: 0;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-add-all-zone i,
+.btn-add-selected-zone i,
+.btn-add-all-zone-click i,
+.btn-zone-settings i,
+.btn-zone-appearance i,
+.btn-zone-clear i,
+.btn-zone-zoom i,
+.btn-zone-select-all i,
+.btn-zone-add-new i,
+.btn-zone-delete i {
+    flex-shrink: 0;
+    width: 1em;
+    font-size: 11px;
+    text-align: center;
 }
 
 .btn-add-all-zone:hover,
@@ -849,6 +893,7 @@
 .btn-zone-settings:hover,
 .btn-zone-appearance:hover,
 .btn-zone-zoom:hover,
+.btn-zone-select-all:hover,
 .btn-zone-add-new:hover {
     background: rgba(255, 255, 255, 0.25);
     border-color: rgba(255, 255, 255, 0.35);
@@ -871,21 +916,10 @@
 .btn-zone-appearance:active,
 .btn-zone-clear:active,
 .btn-zone-zoom:active,
+.btn-zone-select-all:active,
 .btn-zone-add-new:active,
 .btn-zone-delete:active {
     transform: translateY(0);
-}
-
-.btn-add-all-zone i,
-.btn-add-selected-zone i,
-.btn-add-all-zone-click i,
-.btn-zone-settings i,
-.btn-zone-appearance i,
-.btn-zone-clear i,
-.btn-zone-zoom i,
-.btn-zone-add-new i,
-.btn-zone-delete i {
-    font-size: 11px;
 }
 
 /* Specific button color overrides */
@@ -937,6 +971,16 @@
 .btn-zone-zoom:hover {
     background: rgba(0, 123, 255, 1);
     border-color: rgba(0, 123, 255, 1);
+}
+
+.btn-zone-select-all {
+    background: rgba(23, 162, 184, 0.8);
+    border-color: rgba(23, 162, 184, 0.6);
+}
+
+.btn-zone-select-all:hover {
+    background: rgba(23, 162, 184, 1);
+    border-color: rgba(23, 162, 184, 1);
 }
 
 .btn-zone-add-new {
@@ -1134,13 +1178,24 @@
     }
     
     .zone-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px 12px;
     }
     
     .zone-header-left {
+        width: auto;
+        max-width: 100%;
+    }
+    
+    .zone-header-actions {
         width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .zone-name {
+        max-width: 100%;
     }
     
     .btn-add-all-zone,
@@ -1150,6 +1205,7 @@
     .btn-zone-appearance,
     .btn-zone-clear,
     .btn-zone-zoom,
+    .btn-zone-select-all,
     .btn-zone-add-new,
     .btn-zone-delete {
         font-size: 10px;
@@ -1256,6 +1312,7 @@
     .btn-zone-appearance,
     .btn-zone-clear,
     .btn-zone-zoom,
+    .btn-zone-select-all,
     .btn-zone-add-new,
     .btn-zone-delete {
         font-size: 9px;
@@ -1803,10 +1860,87 @@
 }
 
 .dropped-booth.selected {
+    border-width: 3px;
     border-color: #ffc107;
-    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.3);
-    outline: 2px solid #ffc107;
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.6),
+                0 0 16px 4px rgba(255, 215, 0, 0.4),
+                0 2px 8px rgba(0,0,0,0.2);
+    outline: 3px solid rgba(255, 193, 7, 0.9);
+    outline-offset: 3px;
+    animation: selection-golden-flare 2s ease-in-out infinite;
+    position: relative;
+}
+
+/* Golden flare circle behind selected booth */
+.dropped-booth.selected::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 140%;
+    height: 140%;
+    margin-left: -70%;
+    margin-top: -70%;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        rgba(255, 215, 0, 0.35) 0%,
+        rgba(255, 193, 7, 0.2) 30%,
+        rgba(255, 193, 7, 0.08) 55%,
+        transparent 70%
+    );
+    pointer-events: none;
+    z-index: -1;
+    animation: flare-circle-pulse 2s ease-in-out infinite;
+}
+
+@keyframes selection-golden-flare {
+    0%, 100% {
+        box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.6),
+                    0 0 16px 4px rgba(255, 215, 0, 0.4),
+                    0 2px 8px rgba(0,0,0,0.2);
+    }
+    50% {
+        box-shadow: 0 0 0 5px rgba(255, 193, 7, 0.5),
+                    0 0 28px 8px rgba(255, 215, 0, 0.5),
+                    0 0 40px 12px rgba(255, 193, 7, 0.25),
+                    0 2px 8px rgba(0,0,0,0.2);
+    }
+}
+
+@keyframes flare-circle-pulse {
+    0%, 100% {
+        transform: scale(0.85);
+        opacity: 0.7;
+    }
+    50% {
+        transform: scale(1.15);
+        opacity: 1;
+    }
+}
+
+/* Canvas text (PowerPoint-style): wrapper needs overflow visible for resize/rotate handles */
+.canvas-text {
+    position: absolute;
+    box-sizing: border-box;
+    overflow: visible;
+    cursor: default;
+    min-width: 40px;
+    min-height: 24px;
+}
+.canvas-text-inner {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    word-wrap: break-word;
+    outline: none;
+}
+.canvas-text-selected {
+    outline: 2px solid rgba(255, 193, 7, 0.9);
     outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.5), 0 0 12px 4px rgba(255, 215, 0, 0.35);
+    animation: selection-golden-flare 2s ease-in-out infinite;
 }
 
 /* Color picker button removed - now accessed via right-click context menu */
@@ -2654,6 +2788,10 @@
                         <i class="fas fa-ruler"></i>
                         <span class="tool-label">Measure</span>
                     </button>
+                    <button class="toolbar-btn" id="btnTextTool" title="Text Tool (T) - Click on canvas to add text" data-tool="text">
+                        <i class="fas fa-font"></i>
+                        <span class="tool-label">Text</span>
+                    </button>
                 </div>
                 <div class="toolbar-divider"></div>
                 <button class="toolbar-btn" id="btnGrid" title="Toggle Grid (Show/Hide)" data-toggle="grid">
@@ -2967,10 +3105,11 @@
                                 <div class="zone-section" data-zone="{{ $zoneName }}">
                                     <div class="zone-header" data-zone-toggle="{{ $zoneName }}">
                                         <div class="zone-header-left">
-                                            <i class="fas fa-chevron-down zone-chevron"></i>
+                                            <i class="fas fa-chevron-down zone-chevron" aria-hidden="true"></i>
                                             <span class="zone-name">Zone {{ $zoneName }}</span>
                                             <span class="zone-count">({{ count($zoneBooths) }})</span>
                                         </div>
+                                        <div class="zone-header-actions">
                                         <button class="btn-add-all-zone" 
                                                 data-zone="{{ $zoneName }}" 
                                                 title="Add All Booths in Zone {{ $zoneName }} to Canvas"
@@ -3013,6 +3152,12 @@
                                                 onclick="event.stopPropagation(); FloorPlanDesigner.zoomToZone('{{ $zoneName }}');">
                                             <i class="fas fa-search-plus"></i>
                                         </button>
+                                        <button class="btn-zone-select-all" 
+                                                data-zone="{{ $zoneName }}" 
+                                                title="Select All Booths from Zone {{ $zoneName }} on Canvas"
+                                                onclick="event.stopPropagation(); FloorPlanDesigner.selectAllBoothsByZone('{{ $zoneName }}');">
+                                            <i class="fas fa-mouse-pointer"></i>
+                                        </button>
                                         <button class="btn-zone-add-new" 
                                                 data-zone="{{ $zoneName }}" 
                                                 title="Add New Booth ID to Zone {{ $zoneName }}"
@@ -3025,6 +3170,7 @@
                                                 onclick="event.stopPropagation(); FloorPlanDesigner.showDeleteBoothModal('{{ $zoneName }}');">
                                             <i class="fas fa-trash"></i>
                                         </button>
+                                        </div>
                                     </div>
                                     <div class="zone-content" id="zoneContent{{ $zoneName }}">
                                         @foreach($zoneBooths as $booth)
@@ -3214,7 +3360,7 @@
                         <label for="gridSize">
                             <i class="fas fa-th"></i> Grid Size (px)
                         </label>
-                        <input type="number" class="form-control" id="gridSize" min="1" max="100" step="1" value="1">
+                        <input type="number" class="form-control" id="gridSize" min="1" max="100" step="1" value="1" placeholder="1">
                         <small class="form-text text-muted">Size of grid cells in pixels. Affects both visual grid and snap-to-grid behavior.</small>
                     </div>
                     <div class="form-group">
@@ -4767,6 +4913,14 @@ const FloorPlanDesigner = {
                 self.switchTool('measure');
                 const btn = document.getElementById('btnMeasureTool');
                 if (btn) btn.click();
+            } else if (e.key === 't' || e.key === 'T') {
+                e.preventDefault();
+                if (!self.isSpacePanning && self.currentTool !== 'text') {
+                    self.previousTool = self.currentTool;
+                }
+                self.switchTool('text');
+                const btn = document.getElementById('btnTextTool');
+                if (btn) btn.click();
             }
             // Ctrl + Plus/Equal (=) to zoom in at cursor position
             // Handles both main keyboard (=/+ with Shift) and numeric keypad (+)
@@ -5031,6 +5185,11 @@ const FloorPlanDesigner = {
             setTimeout(function() {
                 self.syncSidebarWithCanvas();
             }, 500); // Small delay to ensure all booths are loaded
+            
+            // Save initial state for undo/redo so we have a snapshot to undo back to
+            setTimeout(function() {
+                self.saveState();
+            }, 700);
             
             // Auto-fit canvas to show entire image after positions are loaded (early)
             setTimeout(function() {
@@ -9737,7 +9896,7 @@ const FloorPlanDesigner = {
         // Update canvas classes and cursor
         const canvas = document.getElementById('print');
         if (canvas) {
-            canvas.classList.remove('tool-select', 'tool-pan', 'tool-zoom', 'tool-align', 'tool-distribute', 'tool-measure');
+            canvas.classList.remove('tool-select', 'tool-pan', 'tool-zoom', 'tool-align', 'tool-distribute', 'tool-measure', 'tool-text');
             canvas.classList.add('tool-' + tool);
             
             // Set appropriate cursor
@@ -9760,6 +9919,9 @@ const FloorPlanDesigner = {
                 case 'measure':
                     canvas.style.cursor = 'crosshair';
                     break;
+                case 'text':
+                    canvas.style.cursor = 'text';
+                    break;
             }
         }
         
@@ -9781,7 +9943,8 @@ const FloorPlanDesigner = {
             'zoom': 'Zoom Tool',
             'align': 'Align Tool',
             'distribute': 'Distribute Tool',
-            'measure': 'Measure Tool'
+            'measure': 'Measure Tool',
+            'text': 'Text Tool'
         };
         Swal.fire({
             icon: 'info',
@@ -9966,6 +10129,33 @@ const FloorPlanDesigner = {
                 
                 document.addEventListener('mousemove', handleZoomMove);
                 document.addEventListener('mouseup', handleZoomUp);
+            }
+        });
+        
+        // Text Tool - Click on canvas to add a text label
+        container.addEventListener('mousedown', function(e) {
+            if (self.currentTool === 'text' && e.button === 0) {
+                if (e.target.classList.contains('dropped-booth') || e.target.closest('.dropped-booth') ||
+                    e.target.classList.contains('canvas-text') || e.target.closest('.canvas-text')) {
+                    return;
+                }
+                e.preventDefault();
+                e.stopPropagation();
+                const canvasRect = canvas.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                let scale = 1, panX = 0, panY = 0;
+                if (self.panzoomInstance) {
+                    if (self.panzoomInstance.getScale) scale = self.panzoomInstance.getScale();
+                    if (self.panzoomInstance.getTransform) {
+                        const t = self.panzoomInstance.getTransform();
+                        panX = t.x || 0; panY = t.y || 0;
+                    }
+                }
+                const clickX = e.clientX - containerRect.left;
+                const clickY = e.clientY - containerRect.top;
+                const canvasX = (clickX - panX) / scale;
+                const canvasY = (clickY - panY) / scale;
+                self.createCanvasTextElement(canvasX, canvasY);
             }
         });
         
@@ -10460,13 +10650,28 @@ const FloorPlanDesigner = {
                 FloorPlanDesigner.zoomToZone(zoneName);
             };
             
+            const selectAllZoneBtn = document.createElement('button');
+            selectAllZoneBtn.className = 'btn-zone-select-all';
+            selectAllZoneBtn.setAttribute('data-zone', zoneName);
+            selectAllZoneBtn.setAttribute('title', 'Select All Booths from Zone ' + zoneName + ' on Canvas');
+            selectAllZoneBtn.innerHTML = '<i class="fas fa-mouse-pointer"></i>';
+            selectAllZoneBtn.onclick = function(e) {
+                e.stopPropagation();
+                FloorPlanDesigner.selectAllBoothsByZone(zoneName);
+            };
+            
+            const zoneHeaderActions = document.createElement('div');
+            zoneHeaderActions.className = 'zone-header-actions';
+            zoneHeaderActions.appendChild(addAllBtn);
+            zoneHeaderActions.appendChild(addSelectedBtn);
+            zoneHeaderActions.appendChild(clickToPlaceBtn);
+            zoneHeaderActions.appendChild(zoneSettingsBtn);
+            zoneHeaderActions.appendChild(clearZoneBtn);
+            zoneHeaderActions.appendChild(zoomToZoneBtn);
+            zoneHeaderActions.appendChild(selectAllZoneBtn);
+            
             zoneHeader.appendChild(zoneHeaderLeft);
-            zoneHeader.appendChild(addAllBtn);
-            zoneHeader.appendChild(addSelectedBtn);
-            zoneHeader.appendChild(clickToPlaceBtn);
-            zoneHeader.appendChild(zoneSettingsBtn);
-            zoneHeader.appendChild(clearZoneBtn);
-            zoneHeader.appendChild(zoomToZoneBtn);
+            zoneHeader.appendChild(zoneHeaderActions);
             
             // Create zone content
             const zoneContent = document.createElement('div');
@@ -10966,6 +11171,244 @@ const FloorPlanDesigner = {
         return div;
     },
     
+    // Create a text box on the canvas (PowerPoint-like: resize, rotate, font, background, border)
+    createCanvasTextElement: function(x, y) {
+        const self = this;
+        const canvas = document.getElementById('print');
+        if (!canvas) return;
+        const wrap = document.createElement('div');
+        wrap.className = 'canvas-text';
+        wrap.setAttribute('data-x', x);
+        wrap.setAttribute('data-y', y);
+        wrap.setAttribute('data-width', 160);
+        wrap.setAttribute('data-height', 60);
+        wrap.setAttribute('data-rotation', 0);
+        wrap.setAttribute('data-font-size', 14);
+        wrap.setAttribute('data-font-family', 'Arial, sans-serif');
+        wrap.setAttribute('data-color', '#333333');
+        wrap.setAttribute('data-background-color', 'rgba(255,255,255,0.95)');
+        wrap.setAttribute('data-border-width', 1);
+        wrap.setAttribute('data-border-color', '#667eea');
+        wrap.setAttribute('data-border-radius', 6);
+        wrap.setAttribute('data-text-align', 'left');
+        wrap.setAttribute('data-opacity', '1');
+        wrap.setAttribute('data-z-index', '50');
+        wrap.style.left = x + 'px';
+        wrap.style.top = y + 'px';
+        wrap.style.position = 'absolute';
+        wrap.style.width = '160px';
+        wrap.style.height = '60px';
+        wrap.style.minWidth = '40px';
+        wrap.style.minHeight = '24px';
+        wrap.style.transform = 'rotate(0deg)';
+        wrap.style.transformOrigin = 'center center';
+        wrap.style.zIndex = '50';
+        wrap.style.cursor = 'move';
+        wrap.style.boxSizing = 'border-box';
+        const inner = document.createElement('div');
+        inner.className = 'canvas-text-inner';
+        inner.contentEditable = 'true';
+        inner.setAttribute('data-placeholder', 'Type here...');
+        inner.textContent = '';
+        inner.style.width = '100%';
+        inner.style.height = '100%';
+        inner.style.boxSizing = 'border-box';
+        inner.style.padding = '6px 10px';
+        inner.style.margin = '0';
+        inner.style.background = 'rgba(255,255,255,0.95)';
+        inner.style.border = '1px solid #667eea';
+        inner.style.borderRadius = '6px';
+        inner.style.fontSize = '14px';
+        inner.style.fontFamily = 'Arial, sans-serif';
+        inner.style.color = '#333333';
+        inner.style.textAlign = 'left';
+        inner.style.outline = 'none';
+        inner.style.wordWrap = 'break-word';
+        inner.style.whiteSpace = 'pre-wrap';
+        inner.style.overflow = 'auto';
+        inner.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+        wrap.appendChild(inner);
+        ['nw','ne','sw','se','n','s','w','e'].forEach(function(c) {
+            const h = document.createElement('div');
+            h.className = 'resize-handle ' + c;
+            h.style.display = 'none';
+            wrap.appendChild(h);
+        });
+        const rot = document.createElement('div');
+        rot.className = 'rotate-handle';
+        rot.style.display = 'none';
+        wrap.appendChild(rot);
+        canvas.appendChild(wrap);
+        self.updateCanvasTextHandlesSize(wrap);
+        self.makeCanvasTextDraggable(wrap);
+        self.setupResizeHandlesForCanvasText(wrap);
+        self.setupRotateHandleForCanvasText(wrap);
+        inner.focus();
+        showNotification('Text box added. Drag to move; resize/rotate when selected. Use toolbar or Format for font, colors, border.', 'success');
+    },
+    
+    updateCanvasTextHandlesSize: function(wrap) {
+        const w = parseFloat(wrap.style.width) || 160;
+        const h = parseFloat(wrap.style.height) || 60;
+        const minDim = Math.min(w, h);
+        const size = Math.max(8, Math.min(14, minDim * 0.12));
+        const offset = size / 2;
+        wrap.querySelectorAll('.resize-handle').forEach(function(handle) {
+            const c = handle.className.split(' ')[1];
+            handle.style.width = size + 'px';
+            handle.style.height = size + 'px';
+            handle.style.borderWidth = '1px';
+            if (c === 'nw') { handle.style.top = -offset + 'px'; handle.style.left = -offset + 'px'; }
+            else if (c === 'ne') { handle.style.top = -offset + 'px'; handle.style.right = -offset + 'px'; }
+            else if (c === 'sw') { handle.style.bottom = -offset + 'px'; handle.style.left = -offset + 'px'; }
+            else if (c === 'se') { handle.style.bottom = -offset + 'px'; handle.style.right = -offset + 'px'; }
+            else if (c === 'n') { handle.style.top = -offset + 'px'; handle.style.left = '50%'; handle.style.marginLeft = -offset + 'px'; }
+            else if (c === 's') { handle.style.bottom = -offset + 'px'; handle.style.left = '50%'; handle.style.marginLeft = -offset + 'px'; }
+            else if (c === 'w') { handle.style.left = -offset + 'px'; handle.style.top = '50%'; handle.style.marginTop = -offset + 'px'; }
+            else if (c === 'e') { handle.style.right = -offset + 'px'; handle.style.top = '50%'; handle.style.marginTop = -offset + 'px'; }
+        });
+        const rh = wrap.querySelector('.rotate-handle');
+        if (rh) {
+            const rs = Math.max(14, Math.min(22, minDim * 0.2));
+            rh.style.width = rs + 'px';
+            rh.style.height = rs + 'px';
+            rh.style.marginLeft = (-rs/2) + 'px';
+            rh.style.top = (-rs - 4) + 'px';
+        }
+    },
+    
+    setupResizeHandlesForCanvasText: function(wrap) {
+        const self = this;
+        let isResizing = false, startX, startY, startW, startH, startLeft, startTop, handleClass = null;
+        wrap.querySelectorAll('.resize-handle').forEach(function(handle) {
+            handle.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                isResizing = true;
+                handleClass = handle.className.split(' ')[1];
+                startX = e.clientX;
+                startY = e.clientY;
+                startW = parseFloat(wrap.style.width) || 160;
+                startH = parseFloat(wrap.style.height) || 60;
+                startLeft = parseFloat(wrap.style.left) || 0;
+                startTop = parseFloat(wrap.style.top) || 0;
+                document.addEventListener('mousemove', onResize);
+                document.addEventListener('mouseup', onResizeEnd);
+            });
+        });
+        function onResize(e) {
+            if (!isResizing || !handleClass) return;
+            let scale = 1;
+            if (self.panzoomInstance && self.panzoomInstance.getScale) scale = self.panzoomInstance.getScale();
+            const dx = (e.clientX - startX) / scale;
+            const dy = (e.clientY - startY) / scale;
+            let nw = startW, nh = startH, nL = startLeft, nT = startTop;
+            if (handleClass.includes('e')) nw = Math.max(40, startW + dx);
+            if (handleClass.includes('w')) { nw = Math.max(40, startW - dx); nL = startLeft + dx; }
+            if (handleClass.includes('s')) nh = Math.max(24, startH + dy);
+            if (handleClass.includes('n')) { nh = Math.max(24, startH - dy); nT = startTop + dy; }
+            wrap.style.width = nw + 'px';
+            wrap.style.height = nh + 'px';
+            wrap.style.left = nL + 'px';
+            wrap.style.top = nT + 'px';
+            wrap.setAttribute('data-width', nw);
+            wrap.setAttribute('data-height', nh);
+            wrap.setAttribute('data-x', nL);
+            wrap.setAttribute('data-y', nT);
+            self.updateCanvasTextHandlesSize(wrap);
+            if (self.selectedCanvasText === wrap) self.updateInfoToolbar(wrap);
+        }
+        function onResizeEnd() {
+            isResizing = false;
+            handleClass = null;
+            document.removeEventListener('mousemove', onResize);
+            document.removeEventListener('mouseup', onResizeEnd);
+        }
+    },
+    
+    setupRotateHandleForCanvasText: function(wrap) {
+        const self = this;
+        const rot = wrap.querySelector('.rotate-handle');
+        if (!rot) return;
+        rot.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const rect = wrap.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            let startAngle = Math.atan2(e.clientY - cy, e.clientX - cx);
+            let currentRotation = parseFloat(wrap.getAttribute('data-rotation')) || parseFloat((wrap.style.transform || '').match(/rotate\(([^)]+)\)/)?.[1]) || 0;
+            function onMove(ev) {
+                const angle = Math.atan2(ev.clientY - cy, ev.clientX - cx);
+                currentRotation += (angle - startAngle) * 180 / Math.PI;
+                startAngle = angle;
+                wrap.style.transform = 'rotate(' + currentRotation + 'deg)';
+                wrap.setAttribute('data-rotation', currentRotation);
+                if (self.selectedCanvasText === wrap) self.updateInfoToolbar(wrap);
+            }
+            function onUp() {
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+            }
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+        });
+    },
+    
+    // Make canvas text wrapper draggable; on select show handles and update toolbar
+    makeCanvasTextDraggable: function(wrap) {
+        const self = this;
+        const inner = wrap.querySelector('.canvas-text-inner');
+        let isDragging = false, startX, startY, startLeft, startTop;
+        function showHandles(show) {
+            wrap.querySelectorAll('.resize-handle').forEach(function(h) { h.style.display = show ? 'block' : 'none'; });
+            const r = wrap.querySelector('.rotate-handle');
+            if (r) r.style.display = show ? 'flex' : 'none';
+        }
+        wrap.addEventListener('mousedown', function(e) {
+            if (e.target.classList.contains('resize-handle') || e.target.classList.contains('rotate-handle')) return;
+            if (e.button !== 0) return;
+            if (e.target === inner && document.activeElement === inner && window.getSelection().toString().length > 0) return;
+            e.preventDefault();
+            e.stopPropagation();
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = parseFloat(wrap.style.left) || 0;
+            startTop = parseFloat(wrap.style.top) || 0;
+            self.selectedCanvasText = wrap;
+            self.selectedBooths = [];
+            document.querySelectorAll('.canvas-text').forEach(function(t) { t.classList.remove('canvas-text-selected'); });
+            wrap.classList.add('canvas-text-selected');
+            showHandles(true);
+            self.updateInfoToolbar(wrap);
+            const onMove = function(e) {
+                if (!isDragging) return;
+                let scale = 1;
+                if (self.panzoomInstance && self.panzoomInstance.getScale) scale = self.panzoomInstance.getScale();
+                wrap.style.left = (startLeft + (e.clientX - startX) / scale) + 'px';
+                wrap.style.top = (startTop + (e.clientY - startY) / scale) + 'px';
+            };
+            const onUp = function() {
+                isDragging = false;
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+            };
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+        });
+        wrap.addEventListener('click', function(e) {
+            if (e.target.classList.contains('resize-handle') || e.target.classList.contains('rotate-handle')) return;
+            e.stopPropagation();
+            self.selectedCanvasText = wrap;
+            self.selectedBooths = [];
+            document.querySelectorAll('.canvas-text').forEach(function(t) { t.classList.remove('canvas-text-selected'); });
+            wrap.classList.add('canvas-text-selected');
+            showHandles(true);
+            self.updateInfoToolbar(wrap);
+        });
+    },
+    
     // Update rotation indicator to show current rotation angle
     updateRotationIndicator: function(element) {
         const rotation = parseFloat(element.getAttribute('data-rotation')) || parseFloat(element.style.transform.match(/rotate\(([^)]+)\)/)?.[1]) || 0;
@@ -11095,7 +11538,83 @@ const FloorPlanDesigner = {
         showNotification(allBooths.length + ' booth(s) selected', 'success');
     },
     
-    // Update selection bounding box (Photoshop-like) around all selected booths
+    // When user clicks .btn-zone-select-all for a zone: select ALL booth IDs on the canvas
+    // that belong to that zone. Uses data-booth-zone when set; otherwise derives zone from booth number.
+    selectAllBoothsByZone: function(zoneName) {
+        const self = this;
+        const canvas = document.getElementById('print');
+        if (!canvas) return;
+        zoneName = String(zoneName || '').trim();
+        const zoneNameNorm = zoneName.toUpperCase();
+        const allCanvasBooths = canvas.querySelectorAll('.dropped-booth');
+        const zoneBooths = [];
+        for (let i = 0; i < allCanvasBooths.length; i++) {
+            const booth = allCanvasBooths[i];
+            const attrZone = (booth.getAttribute('data-booth-zone') || '').trim().toUpperCase();
+            const boothNumber = (booth.getAttribute('data-booth-number') || booth.textContent || '').trim();
+            const derivedZone = (self.getZoneFromBoothNumber(boothNumber) || '').toUpperCase();
+            if (attrZone === zoneNameNorm || derivedZone === zoneNameNorm) {
+                zoneBooths.push(booth);
+            }
+        }
+        if (zoneBooths.length === 0) {
+            showNotification('No booths from Zone ' + zoneName + ' on canvas to select', 'info');
+            return;
+        }
+        if (self.selectedBooths && self.selectedBooths.length > 0) {
+            self.selectedBooths.forEach(function(booth) {
+                booth.classList.remove('selected');
+                const ctrl = booth.querySelector('.transform-controls');
+                if (ctrl) {
+                    ctrl.style.display = 'none';
+                    ctrl.style.visibility = 'hidden';
+                    ctrl.style.opacity = '0';
+                }
+                const handles = booth.querySelectorAll('.resize-handle');
+                handles.forEach(function(h) { h.style.display = 'none'; });
+                const rot = booth.querySelector('.rotate-handle');
+                if (rot) rot.style.display = 'none';
+            });
+        }
+        self.selectedBooths = Array.from(zoneBooths);
+        self.selectedBooths.forEach(function(booth) {
+            booth.classList.add('selected');
+        });
+        self.updateSelectionBoundingBox();
+        if (self.selectedBooths.length === 1) {
+            self.updateInfoToolbar(self.selectedBooths[0]);
+            const el = self.selectedBooths[0];
+            const controls = el.querySelector('.transform-controls');
+            if (controls) {
+                controls.style.display = '';
+                controls.style.visibility = '';
+                controls.style.opacity = '';
+            }
+            if (!el.classList.contains('locked')) {
+                const handles = el.querySelectorAll('.resize-handle');
+                handles.forEach(function(h) { h.style.display = 'block'; });
+                self.updateResizeHandlesSize(el);
+                const rotateHandle = el.querySelector('.rotate-handle');
+                if (rotateHandle) rotateHandle.style.display = 'flex';
+                self.updateRotationIndicator(el);
+            }
+        } else {
+            self.updateInfoToolbar(null);
+            self.selectedBooths.forEach(function(booth) {
+                const ctrl = booth.querySelector('.transform-controls');
+                if (ctrl) {
+                    ctrl.style.display = 'none';
+                    ctrl.style.visibility = 'hidden';
+                    ctrl.style.opacity = '0';
+                }
+                const handles = booth.querySelectorAll('.resize-handle');
+                handles.forEach(function(h) { h.style.display = 'none'; });
+                const rot = booth.querySelector('.rotate-handle');
+                if (rot) rot.style.display = 'none';
+            });
+        }
+        showNotification(zoneBooths.length + ' booth(s) from Zone ' + zoneName + ' selected', 'success');
+    },
     updateSelectionBoundingBox: function() {
         const self = this;
         const boundingBox = document.getElementById('selectionBoundingBox');
@@ -11445,6 +11964,11 @@ const FloorPlanDesigner = {
                 e.stopPropagation();
                 e.preventDefault();
                 return;
+            }
+            
+            // Ctrl + drag: temporary lock - do not move booth, let canvas pan (avoid accidental move)
+            if (e.ctrlKey) {
+                return; // Do not start booth drag; do not stopPropagation so Panzoom can handle pan
             }
             
             // Skip if middle mouse button (handled separately)
@@ -11977,6 +12501,43 @@ const FloorPlanDesigner = {
             return;
         }
         
+        // Canvas text box selected: show position, size, rotation, font, border, opacity
+        if (element && element.classList.contains('canvas-text')) {
+            const inner = element.querySelector('.canvas-text-inner');
+            const x = Math.round(parseFloat(element.style.left) || 0);
+            const y = Math.round(parseFloat(element.style.top) || 0);
+            const w = Math.round(parseFloat(element.style.width) || 160);
+            const h = Math.round(parseFloat(element.style.height) || 60);
+            const r = Math.round(parseFloat(element.getAttribute('data-rotation')) || parseFloat((element.style.transform || '').match(/rotate\(([^)]+)\)/)?.[1]) || 0);
+            const z = Math.round(parseFloat(element.style.zIndex) || 50);
+            const fs = inner ? Math.round(parseFloat(inner.style.fontSize) || 14) : 14;
+            const bw = inner ? Math.round(parseFloat(inner.style.borderWidth) || 1) : 1;
+            const br = inner ? Math.round(parseFloat(inner.style.borderRadius) || 6) : 6;
+            const op = inner ? parseFloat(inner.style.opacity) || 1 : 1;
+            const set = function(id, text) {
+                const el = document.getElementById(id);
+                if (el && !el.classList.contains('info-editing') && !el.querySelector('input')) el.textContent = text;
+            };
+            set('infoX', x);
+            set('infoY', y);
+            set('infoW', w);
+            set('infoH', h);
+            set('infoR', r + '°');
+            set('infoZ', z);
+            set('infoFontSize', fs);
+            set('infoBorderWidth', bw);
+            set('infoBorderRadius', br);
+            set('infoOpacity', op.toFixed(2));
+            set('infoStatus', 'Text');
+            set('infoCompany', '-');
+            if (infoToolbar) {
+                infoToolbar.style.display = 'flex';
+                infoToolbar.style.visibility = 'visible';
+                infoToolbar.style.opacity = '1';
+            }
+            return;
+        }
+        
         if (!element) {
             // Check if multiple booths are selected
             if (self.selectedBooths.length > 1) {
@@ -12223,8 +12784,8 @@ const FloorPlanDesigner = {
             return;
         }
         
-        // Get booth element if one is selected
-        const boothElement = self.selectedBooths.length > 0 ? self.selectedBooths[0] : null;
+        // Get selected element (booth or canvas text) for reading current values
+        const boothElement = self.selectedBooths.length > 0 ? self.selectedBooths[0] : (self.selectedCanvasText || null);
         
         let fieldsConverted = 0;
         
@@ -12257,8 +12818,10 @@ const FloorPlanDesigner = {
             // Get current value - prioritize getting from booth element, then from field text
             let currentValue = '';
             
-            // First, try to get from booth element if available
+            // First, try to get from selected element (booth or canvas text) if available
             if (boothElement) {
+                const inner = boothElement.classList.contains('canvas-text') ? boothElement.querySelector('.canvas-text-inner') : null;
+                const el = inner && (property === 'fontsize' || property === 'borderwidth' || property === 'borderradius' || property === 'opacity') ? inner : boothElement;
                 switch(property) {
                     case 'x':
                         currentValue = (parseFloat(boothElement.style.left) || 0).toString();
@@ -12267,28 +12830,28 @@ const FloorPlanDesigner = {
                         currentValue = (parseFloat(boothElement.style.top) || 0).toString();
                         break;
                     case 'w':
-                        currentValue = (parseFloat(boothElement.style.width) || 80).toString();
+                        currentValue = (parseFloat(boothElement.style.width) || (boothElement.classList.contains('canvas-text') ? 160 : 80)).toString();
                         break;
                     case 'h':
-                        currentValue = (parseFloat(boothElement.style.height) || 50).toString();
+                        currentValue = (parseFloat(boothElement.style.height) || (boothElement.classList.contains('canvas-text') ? 60 : 50)).toString();
                         break;
                     case 'r':
-                        currentValue = (parseFloat(boothElement.getAttribute('data-rotation')) || 0).toString();
+                        currentValue = (parseFloat(boothElement.getAttribute('data-rotation')) || parseFloat((boothElement.style.transform || '').match(/rotate\(([^)]+)\)/)?.[1]) || 0).toString();
                         break;
                     case 'z':
-                        currentValue = (parseFloat(boothElement.style.zIndex) || 10).toString();
+                        currentValue = (parseFloat(boothElement.style.zIndex) || (boothElement.classList.contains('canvas-text') ? 50 : 10)).toString();
                         break;
                     case 'fontsize':
-                        currentValue = (parseFloat(boothElement.style.fontSize) || 14).toString();
+                        currentValue = (parseFloat(el.style.fontSize) || 14).toString();
                         break;
                     case 'borderwidth':
-                        currentValue = (parseFloat(boothElement.style.borderWidth) || 2).toString();
+                        currentValue = (parseFloat(el.style.borderWidth) || (boothElement.classList.contains('canvas-text') ? 1 : 2)).toString();
                         break;
                     case 'borderradius':
-                        currentValue = (parseFloat(boothElement.style.borderRadius) || 6).toString();
+                        currentValue = (parseFloat(el.style.borderRadius) || 6).toString();
                         break;
                     case 'opacity':
-                        currentValue = (parseFloat(boothElement.style.opacity) || 1).toFixed(2);
+                        currentValue = (parseFloat(el.style.opacity) || 1).toFixed(2);
                         break;
                 }
             }
@@ -12666,12 +13229,36 @@ const FloorPlanDesigner = {
         });
     },
     
-    // Apply value from info toolbar input to booth element(s) - supports multi-select
+    // Apply value from info toolbar input to booth element(s) or canvas text - supports multi-select
     applyInfoToolbarValue: function(field, property, value) {
         const self = this;
         
         // Exit edit mode
         field.classList.remove('info-editing');
+        
+        // Apply to selected canvas text when no booth selected
+        if (self.selectedCanvasText && self.selectedBooths.length === 0) {
+            const wrap = self.selectedCanvasText;
+            const inner = wrap.querySelector('.canvas-text-inner');
+            const num = parseFloat(value) || 0;
+            const setWrap = function(style, v) { wrap.style[style] = v; };
+            const setInner = function(style, v) { if (inner) inner.style[style] = v; };
+            switch (property) {
+                case 'x': wrap.style.left = num + 'px'; wrap.setAttribute('data-x', num); break;
+                case 'y': wrap.style.top = num + 'px'; wrap.setAttribute('data-y', num); break;
+                case 'w': wrap.style.width = Math.max(40, num) + 'px'; wrap.setAttribute('data-width', Math.max(40, num)); self.updateCanvasTextHandlesSize(wrap); break;
+                case 'h': wrap.style.height = Math.max(24, num) + 'px'; wrap.setAttribute('data-height', Math.max(24, num)); self.updateCanvasTextHandlesSize(wrap); break;
+                case 'r': wrap.style.transform = 'rotate(' + num + 'deg)'; wrap.setAttribute('data-rotation', num); break;
+                case 'z': wrap.style.zIndex = Math.max(1, Math.min(1000, num)); break;
+                case 'fontsize': setInner('fontSize', Math.max(8, Math.min(72, num)) + 'px'); if (inner) wrap.setAttribute('data-font-size', num); break;
+                case 'borderwidth': setInner('borderWidth', Math.max(0, Math.min(10, num)) + 'px'); if (inner) wrap.setAttribute('data-border-width', num); break;
+                case 'borderradius': setInner('borderRadius', Math.max(0, Math.min(50, num)) + 'px'); if (inner) wrap.setAttribute('data-border-radius', num); break;
+                case 'opacity': setInner('opacity', Math.max(0, Math.min(1, num))); break;
+            }
+            field.textContent = property === 'r' ? value + '°' : (property === 'opacity' ? parseFloat(value).toFixed(2) : value);
+            self.updateInfoToolbar(wrap);
+            return;
+        }
         
         // Get selected booths
         if (self.selectedBooths.length === 0) {
@@ -14884,6 +15471,8 @@ const FloorPlanDesigner = {
                     existingBooth.style.top = booth.position_y + 'px';
                     existingBooth.setAttribute('data-x', booth.position_x);
                     existingBooth.setAttribute('data-y', booth.position_y);
+                    const existingZone = self.getZoneFromBoothNumber(booth.booth_number || '');
+                    existingBooth.setAttribute('data-booth-zone', existingZone);
                     
                     // Update dimensions if they exist
                     if (booth.width) {
@@ -15050,10 +15639,12 @@ const FloorPlanDesigner = {
                     boothTypeId: booth.booth_type_id || ''
                 };
                 
+                const zoneFromNumber = self.getZoneFromBoothNumber(booth.booth_number || '');
                 const extendedBoothData = {
                     id: boothData.id,
                     number: boothData.number,
                     status: boothData.status,
+                    zone: zoneFromNumber,
                     clientId: boothData.clientId,
                     userId: boothData.userId,
                     categoryId: boothData.categoryId,
@@ -16397,8 +16988,9 @@ const FloorPlanDesigner = {
             $('#toggleSidebar').attr('title', 'Expand Booth Number Area');
         }
         
-        // Setup zone toggles (expand/collapse zones)
-        $(document).on('click', '.zone-header', function() {
+        // Setup zone toggles (expand/collapse zones) - only toggle when click is not on a button
+        $(document).on('click', '.zone-header', function(e) {
+            if ($(e.target).closest('button').length) return;
             const zoneSection = $(this).closest('.zone-section');
             zoneSection.toggleClass('collapsed');
         });
@@ -17115,10 +17707,15 @@ const FloorPlanDesigner = {
             panOnlyWhenZoomed: false,
             // Exclude booth elements from Panzoom interactions
             // This prevents Panzoom from handling events on these elements
-            exclude: ['.dropped-booth', '.resize-handle', '.rotate-handle', '.transform-controls', '.booth-number-item'],
+            exclude: ['.dropped-booth', '.resize-handle', '.rotate-handle', '.transform-controls', '.booth-number-item', '.canvas-text'],
             // Also exclude by checking the target in event handlers
             handleStartEvent: function(e) {
                 const target = e.target;
+                
+                // Ctrl + drag: temporary lock - pan canvas only, do not move booths (avoid accidental booth move)
+                if (e.ctrlKey) {
+                    return true; // Let Panzoom handle pan; booth drag will not start
+                }
                 
                 // Don't let Panzoom handle events on booth elements
                 if (target.closest('.dropped-booth') || 
@@ -17297,7 +17894,7 @@ const FloorPlanDesigner = {
             }
         }, { passive: true });
         
-        // Ctrl + Mouse wheel = zoom in/out at cursor position
+        // Ctrl + Mouse wheel = zoom in/out at cursor position (zoom follows mouse)
         const container = document.getElementById('printContainer');
         if (container) {
             container.addEventListener('wheel', function(e) {
@@ -17305,36 +17902,26 @@ const FloorPlanDesigner = {
                 e.preventDefault();
                 e.stopPropagation();
                 
-                const containerRect = container.getBoundingClientRect();
-                const mouseX = e.clientX - containerRect.left;
-                const mouseY = e.clientY - containerRect.top;
-                
                 let currentScale = 1;
-                let panX = 0, panY = 0;
                 if (self.panzoomInstance.getScale) currentScale = self.panzoomInstance.getScale();
-                if (self.panzoomInstance.getTransform) {
-                    const t = self.panzoomInstance.getTransform();
-                    panX = t.x || 0;
-                    panY = t.y || 0;
-                }
-                const focalX = (mouseX - panX) / currentScale;
-                const focalY = (mouseY - panY) / currentScale;
-                
-                const zoomFactor = 1.15;
+                // Gentler step (1.08) for smoother feel; short animation for fluid transition
+                const zoomFactor = 1.08;
                 const newScale = e.deltaY < 0
                     ? Math.min(5, currentScale * zoomFactor)
                     : Math.max(0.1, currentScale / zoomFactor);
                 
                 try {
-                    if (self.panzoomInstance.zoom) {
-                        self.panzoomInstance.zoom(newScale, {
-                            animate: false,
-                            focal: { x: focalX, y: focalY }
-                        });
+                    if (self.panzoomInstance.zoomToPoint) {
+                        self.panzoomInstance.zoomToPoint(newScale, {
+                            clientX: e.clientX,
+                            clientY: e.clientY
+                        }, { animate: true, duration: 100 });
+                    } else if (self.panzoomInstance.zoom) {
+                        self.panzoomInstance.zoom(newScale, { animate: true, duration: 100 });
                     }
                 } catch (err) {
                     if (self.panzoomInstance.zoom) {
-                        self.panzoomInstance.zoom(newScale, { animate: false });
+                        self.panzoomInstance.zoom(newScale, { animate: true, duration: 100 });
                     }
                 }
                 
@@ -17532,9 +18119,9 @@ const FloorPlanDesigner = {
         document.addEventListener('keydown', spaceKeyHandler);
         document.addEventListener('keyup', spaceKeyHandler);
         
-        // Click on canvas background to deselect booths
+        // Click on canvas background to deselect booths and canvas text
         canvas.addEventListener('click', function(e) {
-            // Only deselect if clicking directly on canvas (not on booths)
+            // Only deselect if clicking directly on canvas (not on booths or canvas-text)
             if (e.target === canvas || e.target.id === 'print') {
                 // Deselect all booths
                 document.querySelectorAll('.dropped-booth').forEach(function(booth) {
@@ -17558,6 +18145,16 @@ const FloorPlanDesigner = {
                 });
                 
                 self.selectedBooths = [];
+                
+                // Deselect canvas text: remove selection class and hide handles
+                if (self.selectedCanvasText) {
+                    self.selectedCanvasText.classList.remove('canvas-text-selected');
+                    const wrap = self.selectedCanvasText;
+                    const handles = wrap.querySelectorAll('.resize-handle, .rotate-handle');
+                    handles.forEach(function(h) { h.style.display = 'none'; });
+                    self.selectedCanvasText = null;
+                }
+                
                 self.updateInfoToolbar(null);
                 
                 // Hide properties panel
@@ -17648,7 +18245,18 @@ const FloorPlanDesigner = {
                 }
             }
             
-            // Delete key
+            // Delete key - canvas text (no booth selected)
+            if (e.key === 'Delete' && self.selectedCanvasText && self.selectedBooths.length === 0) {
+                e.preventDefault();
+                const wrap = self.selectedCanvasText;
+                wrap.remove();
+                self.selectedCanvasText = null;
+                self.updateInfoToolbar(null);
+                // Hide resize/rotate handles (handles are children of wrap, already removed)
+                return;
+            }
+            
+            // Delete key - booths
             if (e.key === 'Delete' && self.selectedBooths.length > 0) {
                 e.preventDefault(); // Prevent browser default delete behavior
                 
@@ -17720,19 +18328,31 @@ const FloorPlanDesigner = {
         });
     },
     
-    // Save state for undo/redo
+    // Save state for undo/redo (full booth position/size/rotation)
     saveState: function() {
         const canvas = document.getElementById('print');
         if (!canvas) return;
         
+        const self = this;
         const booths = canvas.querySelectorAll('.dropped-booth');
         const state = [];
         
         booths.forEach(function(booth) {
+            const id = booth.getAttribute('data-booth-id');
+            const x = parseFloat(booth.style.left);
+            const y = parseFloat(booth.style.top);
+            const w = parseFloat(booth.style.width);
+            const h = parseFloat(booth.style.height);
+            const rot = parseFloat(booth.getAttribute('data-rotation')) ||
+                parseFloat((booth.style.transform || '').match(/rotate\(([^)]+)\)/)?.[1]) || 0;
+            
             state.push({
-                id: booth.getAttribute('data-booth-id'),
-                x: parseInt(booth.style.left),
-                y: parseInt(booth.style.top)
+                id: id,
+                x: !isNaN(x) ? x : 0,
+                y: !isNaN(y) ? y : 0,
+                width: !isNaN(w) ? w : (parseFloat(booth.offsetWidth) || 80),
+                height: !isNaN(h) ? h : (parseFloat(booth.offsetHeight) || 50),
+                rotation: !isNaN(rot) ? rot : 0
             });
         });
         
@@ -17963,20 +18583,45 @@ const FloorPlanDesigner = {
         });
     },
     
-    // Restore state
+    // Restore state (apply saved positions/sizes/rotations and persist to server)
     restoreState: function(state) {
         const canvas = this.getElement('print');
-        if (!canvas) return;
+        if (!canvas || !state || !Array.isArray(state)) return;
         
-        const booths = canvas.querySelectorAll('.dropped-booth');
-        booths.forEach(function(booth) {
-            const boothId = booth.getAttribute('data-booth-id');
-            const savedState = state.find(function(s) { return s.id === boothId; });
-            if (savedState) {
-                booth.style.left = savedState.x + 'px';
-                booth.style.top = savedState.y + 'px';
+        const self = this;
+        state.forEach(function(saved) {
+            const boothId = saved.id;
+            const booth = canvas.querySelector('.dropped-booth[data-booth-id="' + boothId + '"]');
+            if (!booth) return;
+            
+            const x = typeof saved.x === 'number' ? saved.x : parseFloat(saved.x) || 0;
+            const y = typeof saved.y === 'number' ? saved.y : parseFloat(saved.y) || 0;
+            const w = typeof saved.width === 'number' ? saved.width : (parseFloat(saved.width) || 80);
+            const h = typeof saved.height === 'number' ? saved.height : (parseFloat(saved.height) || 50);
+            const rot = typeof saved.rotation === 'number' ? saved.rotation : (parseFloat(saved.rotation) || 0);
+            
+            booth.style.left = x + 'px';
+            booth.style.top = y + 'px';
+            booth.style.width = w + 'px';
+            booth.style.height = h + 'px';
+            booth.setAttribute('data-x', x);
+            booth.setAttribute('data-y', y);
+            booth.setAttribute('data-rotation', rot);
+            if (rot !== 0) {
+                booth.style.transform = 'rotate(' + rot + 'deg)';
+            } else {
+                booth.style.transform = '';
             }
+            
+            // Persist to server (saveBoothPosition reads zIndex, fontSize, etc. from element)
+            self.saveBoothPosition(boothId, x, y, w, h, rot);
         });
+        
+        // Update selection box and info toolbar if needed
+        if (this.updateSelectionBoundingBox) this.updateSelectionBoundingBox();
+        if (this.selectedBooths && this.selectedBooths.length === 1 && this.updateInfoToolbar) {
+            this.updateInfoToolbar(this.selectedBooths[0]);
+        }
     },
     
     // Open individual booth color picker modal

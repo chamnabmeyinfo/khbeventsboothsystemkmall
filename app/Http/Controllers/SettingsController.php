@@ -312,7 +312,7 @@ class SettingsController extends Controller
                         'canvas_width' => 1200,
                         'canvas_height' => 800,
                         'canvas_resolution' => 300,
-                        'grid_size' => 10,
+                        'grid_size' => 1,
                         'zoom_level' => 1.00,
                         'pan_x' => 0,
                         'pan_y' => 0,
@@ -391,7 +391,7 @@ class SettingsController extends Controller
                 'canvas_width' => $settings->canvas_width ?? 1200,
                 'canvas_height' => $settings->canvas_height ?? 800,
                 'canvas_resolution' => $settings->canvas_resolution ?? 300,
-                'grid_size' => $settings->grid_size ?? 10,
+                'grid_size' => $settings->grid_size ?? 1,
                 'zoom_level' => $settings->zoom_level ?? 1.00,
                 'pan_x' => $settings->pan_x ?? 0,
                 'pan_y' => $settings->pan_y ?? 0,
@@ -415,7 +415,7 @@ class SettingsController extends Controller
                     'canvas_width' => 1200,
                     'canvas_height' => 800,
                     'canvas_resolution' => 300,
-                    'grid_size' => 10,
+                    'grid_size' => 1,
                     'zoom_level' => 1.00,
                     'pan_x' => 0,
                     'pan_y' => 0,
@@ -476,7 +476,7 @@ class SettingsController extends Controller
                 $data['canvas_resolution'] = max(72, min(600, (int) $input['canvas_resolution']));
             }
             if (isset($input['grid_size']) && is_numeric($input['grid_size'])) {
-                $data['grid_size'] = max(5, min(100, (int) $input['grid_size']));
+                $data['grid_size'] = max(1, min(100, (int) $input['grid_size']));
             }
             if (isset($input['zoom_level']) && is_numeric($input['zoom_level'])) {
                 $data['zoom_level'] = max(0.1, min(10, (float) $input['zoom_level']));

@@ -318,7 +318,7 @@ class FloorPlanController extends Controller
                     'canvas_width' => $floorPlan->canvas_width ?? 1200,
                     'canvas_height' => $floorPlan->canvas_height ?? 800,
                     'canvas_resolution' => 300,
-                    'grid_size' => 10,
+                    'grid_size' => 1,
                     'zoom_level' => 1.00,
                     'pan_x' => 0,
                     'pan_y' => 0,
