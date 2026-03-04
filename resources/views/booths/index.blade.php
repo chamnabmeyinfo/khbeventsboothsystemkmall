@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Floor Plan Management')
+@section('title', isset($currentFloorPlan) && $currentFloorPlan ? (e($currentFloorPlan->name) . ' — Floor Plan') : 'Floor Plan Management')
 
 @push('styles')
 <style>
@@ -265,6 +265,31 @@
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.24);
     border: 1px solid rgba(255, 255, 255, 0.04);
+    position: relative;
+}
+
+/* Canvas loading overlay - single responsive implementation */
+.canvas-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(11, 16, 32, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9998;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+.canvas-loading-overlay.canvas-loaded {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+.canvas-loading-content {
+    text-align: center;
+    color: #e2e8f0;
 }
 
 /* Toolbar - Compact, Modern */
@@ -2557,6 +2582,14 @@
                     </div>
     
     <div class="floorplan-designer">
+        <!-- Canvas loading overlay: hidden once floor plan and booths are ready -->
+        <div id="canvasLoadingOverlay" class="canvas-loading-overlay" aria-live="polite" aria-busy="true">
+            <div class="canvas-loading-content">
+                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"><span class="sr-only">Loading...</span></div>
+                <p class="mt-3 mb-0 font-weight-bold">Loading floor plan…</p>
+                <p class="small text-muted">Setting up canvas and booths</p>
+            </div>
+        </div>
         <!-- Toolbar -->
         <div class="designer-toolbar">
             <div class="toolbar-section">
@@ -2686,9 +2719,6 @@
                     <button class="toolbar-btn" id="zoomIn" title="Zoom In">
                         <i class="fas fa-plus"></i>
                     </button>
-                    <button class="toolbar-btn" id="zoomReset" title="Reset Zoom">
-                <i class="fas fa-home"></i>
-            </button>
                     <button class="toolbar-btn" id="zoomFit" title="Fit to Canvas (Center and Fit Image)">
                 <i class="fas fa-expand-arrows-alt"></i>
             </button>
@@ -3184,7 +3214,7 @@
                         <label for="gridSize">
                             <i class="fas fa-th"></i> Grid Size (px)
                         </label>
-                        <input type="number" class="form-control" id="gridSize" min="5" max="100" step="1" value="10">
+                        <input type="number" class="form-control" id="gridSize" min="1" max="100" step="1" value="1">
                         <small class="form-text text-muted">Size of grid cells in pixels. Affects both visual grid and snap-to-grid behavior.</small>
                     </div>
                     <div class="form-group">
@@ -4499,6 +4529,11 @@ $(document).ajaxError(function(event, jqXHR, settings, thrownError) {
 // Advanced Floor Plan Designer
 // ============================================
 
+function hideCanvasLoader() {
+    var el = document.getElementById('canvasLoadingOverlay');
+    if (el) el.classList.add('canvas-loaded');
+}
+
 // Global State
 const FloorPlanDesigner = {
     // State
@@ -4509,7 +4544,7 @@ const FloorPlanDesigner = {
     historyIndex: -1,
     gridEnabled: false, // Grid visibility (can be toggled)
     snapEnabled: true,
-    gridSize: 10, // Smaller grid size (10px instead of 20px)
+    gridSize: 1, // Grid size in px (default 1px)
     centerMarkerEnabled: false, // Show/hide canvas center marker
     zoomLevel: 1,
     panzoomInstance: null,
@@ -4907,8 +4942,11 @@ const FloorPlanDesigner = {
                                     // AUTOMATICALLY fit canvas to view after resize
                                     setTimeout(function() {
                                         self.fitCanvasToView(false);
+                                        setTimeout(hideCanvasLoader, 150);
                                     }, 100);
                                 }, 100);
+                            } else {
+                                setTimeout(hideCanvasLoader, 200);
                             }
                         }
                     };
@@ -4944,6 +4982,7 @@ const FloorPlanDesigner = {
                                 }
                                 // Show user-friendly error
                                 customAlert('Floor plan image could not be loaded. Please check if the image file exists.', 'warning');
+                                hideCanvasLoader();
                             }
                         };
                         
@@ -4968,6 +5007,7 @@ const FloorPlanDesigner = {
                     });
                     // Fallback: load canvas settings
                     self.loadCanvasSettings();
+                    setTimeout(hideCanvasLoader, 300);
                 }
             @else
                 // No floor plan image from Blade - load canvas settings (may have image from canvas_settings)
@@ -4977,6 +5017,7 @@ const FloorPlanDesigner = {
                 if (!localStorage.getItem('canvasWidth') || !localStorage.getItem('canvasHeight')) {
                     self.setCanvasSize(self.canvasWidth, self.canvasHeight);
                 }
+                setTimeout(hideCanvasLoader, 600);
             @endif
             
             // Check if there's an existing floorplan image and resize canvas to match (fallback for other cases)
@@ -5022,6 +5063,7 @@ const FloorPlanDesigner = {
             self.detectAndResizeCanvasToImage();
             self.loadSavedPositions();
             self.saveState();
+            setTimeout(hideCanvasLoader, 600);
         });
         
         // Auto-fit canvas to show entire image on EVERY page load
@@ -12315,7 +12357,7 @@ const FloorPlanDesigner = {
             switch(property) {
                 case 'x':
                 case 'y':
-                    input.step = self.gridSize || 10;
+                    input.step = self.gridSize || 1;
                     break;
                 case 'w':
                     input.min = 5;
@@ -12546,7 +12588,7 @@ const FloorPlanDesigner = {
         switch(property) {
             case 'x':
             case 'y':
-                input.step = self.gridSize || 10;
+                input.step = self.gridSize || 1;
                 break;
             case 'w':
                 input.min = 5;
@@ -12851,9 +12893,9 @@ const FloorPlanDesigner = {
         propHtml += '<input type="number" class="form-control form-control-sm prop-price" value="' + (Number.isFinite(boothPrice) ? boothPrice.toFixed(2) : '0.00') + '" min="0" step="0.01"></div>';
         propHtml += '<div class="mb-3 mt-3"><strong>Position</strong></div>';
         propHtml += '<div class="mb-2"><label class="form-label small"><i class="fas fa-arrows-alt-h"></i> Position X (px):</label>';
-        propHtml += '<input type="number" class="form-control form-control-sm prop-x" value="' + Math.round(x) + '" step="' + (Number(self.gridSize) || 10) + '"></div>';
+        propHtml += '<input type="number" class="form-control form-control-sm prop-x" value="' + Math.round(x) + '" step="' + (Number(self.gridSize) || 1) + '"></div>';
         propHtml += '<div class="mb-2"><label class="form-label small"><i class="fas fa-arrows-alt-v"></i> Position Y (px):</label>';
-        propHtml += '<input type="number" class="form-control form-control-sm prop-y" value="' + Math.round(y) + '" step="' + (Number(self.gridSize) || 10) + '"></div>';
+        propHtml += '<input type="number" class="form-control form-control-sm prop-y" value="' + Math.round(y) + '" step="' + (Number(self.gridSize) || 1) + '"></div>';
         propHtml += '<div class="mb-3 mt-3"><strong>Size</strong></div>';
         propHtml += '<div class="mb-2"><label class="form-label small"><i class="fas fa-arrows-alt-h"></i> Width (px):</label>';
         propHtml += '<input type="number" class="form-control form-control-sm prop-w" value="' + Math.round(width) + '" min="5" step="1"></div>';
@@ -13963,7 +14005,7 @@ const FloorPlanDesigner = {
         
         // Grid settings - Always save current state
         if (self.gridSize !== undefined && self.gridSize !== null) {
-            settings.grid_size = parseInt(self.gridSize) || 10;
+            settings.grid_size = parseInt(self.gridSize) || 1;
         }
         // Save grid enabled state (show/hide grid) - Always save current state
         settings.grid_enabled = self.gridEnabled !== undefined ? Boolean(self.gridEnabled) : false;
@@ -14380,7 +14422,7 @@ const FloorPlanDesigner = {
                 self.canvasWidth = settings.canvas_width || 1200;
                 self.canvasHeight = settings.canvas_height || 800;
                 self.canvasResolution = settings.canvas_resolution || 300;
-                self.setGridSize(settings.grid_size || 10);
+                self.setGridSize(settings.grid_size || 1);
                 self.gridEnabled = settings.grid_enabled !== undefined ? settings.grid_enabled : true;
                 self.snapEnabled = settings.snap_to_grid !== undefined ? settings.snap_to_grid : false;
                 
@@ -15939,7 +15981,7 @@ const FloorPlanDesigner = {
             const width = parseInt($('#canvasWidth').val()) || 1200;
             const height = parseInt($('#canvasHeight').val()) || 800;
             const resolution = parseInt($('#canvasResolution').val()) || 300;
-            const gridSize = parseInt($('#gridSize').val()) || 10;
+            const gridSize = parseInt($('#gridSize').val()) || 1;
             const uploadSizeLimit = parseInt($('#uploadSizeLimit').val()) || 10;
             
             self.setCanvasSize(width, height);
@@ -16306,31 +16348,6 @@ const FloorPlanDesigner = {
                 }
             }, 200);
         };
-        
-        $('#zoomReset').on('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            if (self.panzoomInstance) {
-                self.panzoomInstance.reset();
-                self.zoomLevel = 1;
-                $('#zoomLevel').text('100%');
-                
-                // Ensure zoom level is updated
-                setTimeout(function() {
-                    if (self.panzoomInstance && self.panzoomInstance.getScale) {
-                        const scale = self.panzoomInstance.getScale();
-                        if (!isNaN(scale) && scale > 0) {
-                    self.zoomLevel = scale;
-                    $('#zoomLevel').text(Math.round(scale * 100) + '%');
-                        } else {
-                            // Fallback if getScale returns invalid value
-                            self.zoomLevel = 1;
-                            $('#zoomLevel').text('100%');
-                        }
-                    }
-                }, 100);
-            }
-        });
         
         // Fit to Canvas - Center and fit the entire image to show it completely
         $('#zoomFit').on('click', function(e) {
@@ -17279,6 +17296,53 @@ const FloorPlanDesigner = {
                 }, 50);
             }
         }, { passive: true });
+        
+        // Ctrl + Mouse wheel = zoom in/out at cursor position
+        const container = document.getElementById('printContainer');
+        if (container) {
+            container.addEventListener('wheel', function(e) {
+                if (!e.ctrlKey || !self.panzoomInstance) return;
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const containerRect = container.getBoundingClientRect();
+                const mouseX = e.clientX - containerRect.left;
+                const mouseY = e.clientY - containerRect.top;
+                
+                let currentScale = 1;
+                let panX = 0, panY = 0;
+                if (self.panzoomInstance.getScale) currentScale = self.panzoomInstance.getScale();
+                if (self.panzoomInstance.getTransform) {
+                    const t = self.panzoomInstance.getTransform();
+                    panX = t.x || 0;
+                    panY = t.y || 0;
+                }
+                const focalX = (mouseX - panX) / currentScale;
+                const focalY = (mouseY - panY) / currentScale;
+                
+                const zoomFactor = 1.15;
+                const newScale = e.deltaY < 0
+                    ? Math.min(5, currentScale * zoomFactor)
+                    : Math.max(0.1, currentScale / zoomFactor);
+                
+                try {
+                    if (self.panzoomInstance.zoom) {
+                        self.panzoomInstance.zoom(newScale, {
+                            animate: false,
+                            focal: { x: focalX, y: focalY }
+                        });
+                    }
+                } catch (err) {
+                    if (self.panzoomInstance.zoom) {
+                        self.panzoomInstance.zoom(newScale, { animate: false });
+                    }
+                }
+                
+                self.zoomLevel = newScale;
+                const zoomLevelEl = document.getElementById('zoomLevel');
+                if (zoomLevelEl) zoomLevelEl.textContent = Math.round(newScale * 100) + '%';
+            }, { passive: false, capture: true });
+        }
         
         // Initial zoom level - use setTimeout to ensure Panzoom is fully initialized
         setTimeout(function() {
