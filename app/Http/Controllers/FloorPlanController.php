@@ -456,8 +456,16 @@ class FloorPlanController extends Controller
             'proposal' => 'nullable|string',
             'event_start_date' => 'nullable|date',
             'event_end_date' => 'nullable|date|after_or_equal:event_start_date',
-            'event_start_time' => 'nullable|date_format:H:i,H:i:s',
-            'event_end_time' => 'nullable|date_format:H:i,H:i:s',
+            'event_start_time' => ['nullable', function ($attribute, $value, $fail) {
+                if ($value !== null && ! preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $value)) {
+                    $fail('The '.$attribute.' must be a valid time (HH:MM or HH:MM:SS).');
+                }
+            }],
+            'event_end_time' => ['nullable', function ($attribute, $value, $fail) {
+                if ($value !== null && ! preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $value)) {
+                    $fail('The '.$attribute.' must be a valid time (HH:MM or HH:MM:SS).');
+                }
+            }],
             'event_location' => 'nullable|string|max:255',
             'event_venue' => 'nullable|string|max:255',
             'canvas_width' => 'nullable|integer|min:100|max:5000',
