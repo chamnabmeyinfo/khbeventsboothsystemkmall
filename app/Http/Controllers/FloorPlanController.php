@@ -413,6 +413,22 @@ class FloorPlanController extends Controller
      */
     public function update(Request $request, FloorPlan $floorPlan)
     {
+        // Detect post_max_size exceeded: PHP empties $_POST/$_FILES silently
+        if ($request->isMethod('PUT') || $request->isMethod('POST')) {
+            $contentLength = $request->server('CONTENT_LENGTH', 0);
+            $postMaxBytes = $this->parsePhpSize(ini_get('post_max_size') ?: '8M');
+            if ($contentLength > 0 && $postMaxBytes > 0 && $contentLength > $postMaxBytes) {
+                $postMaxMb = round($postMaxBytes / 1024 / 1024, 1);
+                $sentMb = round($contentLength / 1024 / 1024, 1);
+                \Log::error("Floor plan update: post_max_size exceeded ({$sentMb}MB sent, limit {$postMaxMb}MB)", [
+                    'floor_plan_id' => $floorPlan->id,
+                ]);
+
+                return redirect()->route('floor-plans.edit', $floorPlan)
+                    ->with('error', "Upload failed: the request size ({$sentMb} MB) exceeds the server limit ({$postMaxMb} MB). Please upload a smaller image or contact the administrator to increase post_max_size.");
+            }
+        }
+
         try {
             return $this->performUpdate($request, $floorPlan);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -421,14 +437,37 @@ class FloorPlanController extends Controller
             \Log::error('Floor plan update failed with unhandled error', [
                 'floor_plan_id' => $floorPlan->id,
                 'error' => $e->getMessage(),
+                'class' => get_class($e),
                 'file' => $e->getFile().':'.$e->getLine(),
                 'trace' => $e->getTraceAsString(),
+                'php_version' => PHP_VERSION,
+                'post_max_size' => ini_get('post_max_size'),
+                'upload_max_filesize' => ini_get('upload_max_filesize'),
+                'has_floor_image' => $request->hasFile('floor_image'),
+                'request_keys' => array_keys($request->all()),
             ]);
 
             return redirect()->route('floor-plans.edit', $floorPlan)
                 ->withInput()
                 ->with('error', 'An unexpected error occurred while updating the floor plan: '.$e->getMessage());
         }
+    }
+
+    /**
+     * Parse PHP size string (e.g. '8M', '128K', '1G') to bytes.
+     */
+    private function parsePhpSize(string $size): int
+    {
+        $size = trim($size);
+        $value = (int) $size;
+        $unit = strtoupper(substr($size, -1));
+
+        return match ($unit) {
+            'G' => $value * 1024 * 1024 * 1024,
+            'M' => $value * 1024 * 1024,
+            'K' => $value * 1024,
+            default => $value,
+        };
     }
 
     /**
