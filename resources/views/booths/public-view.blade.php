@@ -601,6 +601,33 @@
             cursor: grabbing;
         }
         
+        /* Canvas text (read-only on public view) */
+        .canvas-text-public {
+            position: absolute;
+            box-sizing: border-box;
+            overflow: visible;
+            pointer-events: none;
+            z-index: 50;
+        }
+        .canvas-text-public-inner {
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+            word-wrap: break-word;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4px 8px;
+            /* Defaults so text is always visible */
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(102, 126, 234, 0.5);
+            border-radius: 6px;
+            color: #333;
+            font-size: 14px;
+        }
+        
         .dropped-booth {
             position: absolute;
             border: 2px solid;
@@ -2130,6 +2157,40 @@
                 canvas.appendChild(boothElement);
             }
         });
+        
+        // Load canvas text items (labels added in designer)
+        const canvasTextItems = @json($canvasTextItems ?? []);
+        if (Array.isArray(canvasTextItems) && canvasTextItems.length > 0) {
+            canvasTextItems.forEach(function(item) {
+                const wrap = document.createElement('div');
+                wrap.className = 'canvas-text-public';
+                const x = item.x != null ? Number(item.x) : 0;
+                const y = item.y != null ? Number(item.y) : 0;
+                const w = item.w != null ? Number(item.w) : 160;
+                const h = item.h != null ? Number(item.h) : 60;
+                const r = item.r != null ? Number(item.r) : 0;
+                wrap.style.left = x + 'px';
+                wrap.style.top = y + 'px';
+                wrap.style.width = w + 'px';
+                wrap.style.height = h + 'px';
+                wrap.style.transform = 'rotate(' + r + 'deg)';
+                wrap.style.zIndex = item.z != null ? String(item.z) : '50';
+                const inner = document.createElement('div');
+                inner.className = 'canvas-text-public-inner';
+                inner.style.width = '100%';
+                inner.style.height = '100%';
+                if (item.fontSize) inner.style.fontSize = item.fontSize + 'px';
+                if (item.color) inner.style.color = item.color;
+                if (item.backgroundColor) inner.style.backgroundColor = item.backgroundColor;
+                if (item.borderWidth) inner.style.borderWidth = item.borderWidth + 'px';
+                if (item.borderRadius) inner.style.borderRadius = item.borderRadius + 'px';
+                if (item.opacity != null) inner.style.opacity = item.opacity;
+                if (item.fontFamily) inner.style.fontFamily = item.fontFamily;
+                inner.textContent = (item.text || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                wrap.appendChild(inner);
+                canvas.appendChild(wrap);
+            });
+        }
 
         // Right-click on canvas (empty area): show Create Booking when logged-in user can create
         if (container && window.publicViewCanCreateBooking) {

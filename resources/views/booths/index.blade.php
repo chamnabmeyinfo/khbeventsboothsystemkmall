@@ -418,6 +418,97 @@
     margin: 0 5px;
 }
 
+/* Text Format Panel (Photoshop-style) - shown when canvas text is selected */
+.text-format-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 12px;
+    background: rgba(13, 19, 38, 0.98);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    flex-wrap: wrap;
+}
+.text-format-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.text-format-label {
+    color: rgba(255,255,255,0.7);
+    font-size: 11px;
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap;
+}
+.text-format-select {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    min-width: 100px;
+    max-width: 140px;
+}
+.text-format-select-sm {
+    min-width: 70px;
+    max-width: 90px;
+}
+.text-format-input {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    width: 60px;
+    box-sizing: border-box;
+}
+.text-format-input-num {
+    width: 44px;
+}
+.text-format-input-wide {
+    width: 160px;
+    min-width: 120px;
+}
+.text-format-color {
+    width: 28px;
+    height: 26px;
+    padding: 2px;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+}
+.text-format-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.2s, border-color 0.2s;
+}
+.text-format-btn:hover {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.4);
+}
+.text-format-btn.active {
+    background: rgba(102, 126, 234, 0.6);
+    border-color: rgba(102, 126, 234, 0.8);
+}
+@media (max-width: 768px) {
+    .text-format-panel .text-format-row { gap: 6px; }
+    .text-format-input-wide { width: 120px; min-width: 100px; }
+}
+
 .toolbar-section {
     display: flex;
     align-items: center;
@@ -1693,6 +1784,8 @@
     background-position: top left !important;
     cursor: default;
     pointer-events: auto;
+    /* Ensure all content (booths, text, handles when visible) is never clipped */
+    overflow: visible;
     /* Unlimited canvas size - can expand infinitely */
     min-width: 10000px;
     min-height: 10000px;
@@ -2977,7 +3070,64 @@
                     <span class="info-label"><i class="fas fa-th-large"></i> Booths:</span>
                     <span class="info-value" id="infoBoothsOnCanvas">{{ $totalBooths ?? 0 }}</span>
                 </div>
-        </div>
+            </div>
+            </div>
+            <!-- Text Format Panel (Photoshop-style) - visible when a canvas text is selected -->
+            <div class="text-format-panel" id="textFormatPanel" style="display: none;" aria-label="Text format options">
+                <div class="text-format-row">
+                    <label class="text-format-label">Font</label>
+                    <select id="textFormatFontFamily" class="text-format-select" title="Font family">
+                        <option value="Arial, sans-serif">Arial</option>
+                        <option value="'Helvetica Neue', Helvetica, sans-serif">Helvetica</option>
+                        <option value="Georgia, serif">Georgia</option>
+                        <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                        <option value="'Courier New', Courier, monospace">Courier New</option>
+                        <option value="Verdana, sans-serif">Verdana</option>
+                        <option value="Tahoma, sans-serif">Tahoma</option>
+                        <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                        <option value="'Palatino Linotype', Palatino, serif">Palatino</option>
+                        <option value="'Khmer OS Battambang', 'Hanuman', sans-serif">Khmer OS</option>
+                    </select>
+                    <label class="text-format-label">Size</label>
+                    <input type="number" id="textFormatFontSize" class="text-format-input text-format-input-num" min="8" max="120" value="14" title="Font size (px)">
+                    <button type="button" class="text-format-btn" id="textFormatBold" title="Bold"><i class="fas fa-bold"></i></button>
+                    <button type="button" class="text-format-btn" id="textFormatItalic" title="Italic"><i class="fas fa-italic"></i></button>
+                    <button type="button" class="text-format-btn" id="textFormatUnderline" title="Underline"><i class="fas fa-underline"></i></button>
+                    <button type="button" class="text-format-btn" id="textFormatStrike" title="Strikethrough"><i class="fas fa-strikethrough"></i></button>
+                </div>
+                <div class="text-format-row">
+                    <span class="text-format-label">Align</span>
+                    <button type="button" class="text-format-btn text-format-align" data-align="left" title="Align left"><i class="fas fa-align-left"></i></button>
+                    <button type="button" class="text-format-btn text-format-align" data-align="center" title="Align center"><i class="fas fa-align-center"></i></button>
+                    <button type="button" class="text-format-btn text-format-align" data-align="right" title="Align right"><i class="fas fa-align-right"></i></button>
+                    <button type="button" class="text-format-btn text-format-align" data-align="justify" title="Justify"><i class="fas fa-align-justify"></i></button>
+                    <label class="text-format-label">Color</label>
+                    <input type="color" id="textFormatColor" class="text-format-color" value="#333333" title="Text color">
+                    <label class="text-format-label">Bg</label>
+                    <input type="color" id="textFormatBg" class="text-format-color" value="#ffffff" title="Background color">
+                    <label class="text-format-label">Border</label>
+                    <input type="color" id="textFormatBorderColor" class="text-format-color" value="#667eea" title="Border color">
+                    <input type="number" id="textFormatBorderWidth" class="text-format-input text-format-input-num" min="0" max="20" value="1" title="Border width (px)">
+                    <select id="textFormatBorderStyle" class="text-format-select text-format-select-sm" title="Border style">
+                        <option value="solid">Solid</option>
+                        <option value="dashed">Dashed</option>
+                        <option value="dotted">Dotted</option>
+                        <option value="double">Double</option>
+                    </select>
+                    <label class="text-format-label">Radius</label>
+                    <input type="number" id="textFormatBorderRadius" class="text-format-input text-format-input-num" min="0" max="50" value="6" title="Border radius (px)">
+                </div>
+                <div class="text-format-row">
+                    <label class="text-format-label">Box shadow</label>
+                    <input type="text" id="textFormatBoxShadow" class="text-format-input text-format-input-wide" placeholder="0 2px 8px rgba(0,0,0,0.2)" title="Box shadow (CSS)">
+                    <label class="text-format-label">Text shadow</label>
+                    <input type="text" id="textFormatTextShadow" class="text-format-input text-format-input-wide" placeholder="0 1px 2px rgba(0,0,0,0.3)" title="Text shadow (CSS)">
+                    <label class="text-format-label">Spacing</label>
+                    <input type="text" id="textFormatLetterSpacing" class="text-format-input text-format-input-num" placeholder="0px" title="Letter spacing">
+                    <label class="text-format-label">Line H</label>
+                    <input type="text" id="textFormatLineHeight" class="text-format-input text-format-input-num" placeholder="1.2" title="Line height">
+                </div>
+            </div>
         </div>
         
         <!-- Main Content Row: Canvas and Sidebar -->
@@ -4681,6 +4831,9 @@ function hideCanvasLoader() {
 }
 
 // Global State
+window.floorPlanIdForCanvas = @json($floorPlanId ?? null);
+window.canvasTextItems = @json($canvasTextItems ?? []);
+
 const FloorPlanDesigner = {
     // State
     draggedElement: null,
@@ -5030,6 +5183,7 @@ const FloorPlanDesigner = {
         ]).then(function() {
             self.setupDragAndDrop();
             self.setupToolbar();
+            self.setupTextFormatPanel();
             self.setupCanvas();
             self.setupKeyboard();
             self.setupZoomSelection(); // Setup Photoshop-like zoom selection (Ctrl+Space)
@@ -5211,6 +5365,7 @@ const FloorPlanDesigner = {
             // Continue with initialization even if settings load fails
             self.setupDragAndDrop();
             self.setupToolbar();
+            self.setupTextFormatPanel();
             self.setupCanvas();
             self.setupZoneBoothSelection();
             self.setupKeyboard();
@@ -11243,8 +11398,154 @@ const FloorPlanDesigner = {
         self.makeCanvasTextDraggable(wrap);
         self.setupResizeHandlesForCanvasText(wrap);
         self.setupRotateHandleForCanvasText(wrap);
+        inner.addEventListener('blur', function() { self.saveCanvasTextToServer(); });
         inner.focus();
         showNotification('Text box added. Drag to move; resize/rotate when selected. Use toolbar or Format for font, colors, border.', 'success');
+        var selfRef = self;
+        setTimeout(function() { selfRef.saveCanvasTextToServer(); }, 400);
+    },
+    
+    loadCanvasTextItemsOnCanvas: function() {
+        const self = this;
+        const canvas = document.getElementById('print');
+        if (!canvas || !window.canvasTextItems || !Array.isArray(window.canvasTextItems) || window.canvasTextItems.length === 0) return;
+        window.canvasTextItems.forEach(function(item) {
+            const wrap = document.createElement('div');
+            wrap.className = 'canvas-text';
+            const x = item.x != null ? Number(item.x) : 0;
+            const y = item.y != null ? Number(item.y) : 0;
+            const w = item.w != null ? Number(item.w) : 160;
+            const h = item.h != null ? Number(item.h) : 60;
+            const r = item.r != null ? Number(item.r) : 0;
+            const z = item.z != null ? Number(item.z) : 50;
+            wrap.setAttribute('data-x', x);
+            wrap.setAttribute('data-y', y);
+            wrap.setAttribute('data-width', w);
+            wrap.setAttribute('data-height', h);
+            wrap.setAttribute('data-rotation', r);
+            wrap.style.left = x + 'px';
+            wrap.style.top = y + 'px';
+            wrap.style.position = 'absolute';
+            wrap.style.width = w + 'px';
+            wrap.style.height = h + 'px';
+            wrap.style.minWidth = '40px';
+            wrap.style.minHeight = '24px';
+            wrap.style.transform = 'rotate(' + r + 'deg)';
+            wrap.style.transformOrigin = 'center center';
+            wrap.style.zIndex = z;
+            wrap.style.cursor = 'move';
+            wrap.style.boxSizing = 'border-box';
+            const inner = document.createElement('div');
+            inner.className = 'canvas-text-inner';
+            inner.contentEditable = 'true';
+            inner.setAttribute('data-placeholder', 'Type here...');
+            inner.textContent = item.text || '';
+            inner.style.width = '100%';
+            inner.style.height = '100%';
+            inner.style.boxSizing = 'border-box';
+            inner.style.padding = '6px 10px';
+            inner.style.margin = '0';
+            inner.style.background = item.backgroundColor || 'rgba(255,255,255,0.95)';
+            inner.style.border = (item.borderWidth != null ? item.borderWidth : 1) + 'px ' + (item.borderStyle || 'solid') + ' ' + (item.borderColor || '#667eea');
+            inner.style.borderRadius = (item.borderRadius != null ? item.borderRadius : 6) + 'px';
+            inner.style.fontSize = (item.fontSize != null ? item.fontSize : 14) + 'px';
+            inner.style.fontFamily = item.fontFamily || 'Arial, sans-serif';
+            inner.style.color = item.color || '#333333';
+            inner.style.textAlign = item.textAlign || 'left';
+            inner.style.fontWeight = item.fontWeight || 'normal';
+            inner.style.fontStyle = item.fontStyle || 'normal';
+            inner.style.textDecoration = item.textDecoration || 'none';
+            if (item.letterSpacing) inner.style.letterSpacing = item.letterSpacing;
+            if (item.lineHeight) inner.style.lineHeight = item.lineHeight;
+            if (item.boxShadow) inner.style.boxShadow = item.boxShadow;
+            if (item.textShadow) inner.style.textShadow = item.textShadow;
+            inner.style.outline = 'none';
+            inner.style.wordWrap = 'break-word';
+            inner.style.whiteSpace = 'pre-wrap';
+            inner.style.overflow = 'auto';
+            inner.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+            if (item.opacity != null) inner.style.opacity = item.opacity;
+            wrap.appendChild(inner);
+            ['nw','ne','sw','se','n','s','w','e'].forEach(function(c) {
+                const hEl = document.createElement('div');
+                hEl.className = 'resize-handle ' + c;
+                hEl.style.display = 'none';
+                wrap.appendChild(hEl);
+            });
+            const rot = document.createElement('div');
+            rot.className = 'rotate-handle';
+            rot.style.display = 'none';
+            wrap.appendChild(rot);
+            canvas.appendChild(wrap);
+            self.updateCanvasTextHandlesSize(wrap);
+            self.makeCanvasTextDraggable(wrap);
+            self.setupResizeHandlesForCanvasText(wrap);
+            self.setupRotateHandleForCanvasText(wrap);
+            inner.addEventListener('blur', function() { self.saveCanvasTextToServer(); });
+        });
+    },
+    
+    getCanvasTextItemsFromDom: function() {
+        const canvas = document.getElementById('print');
+        if (!canvas) return [];
+        const items = [];
+        canvas.querySelectorAll('.canvas-text').forEach(function(wrap) {
+            const inner = wrap.querySelector('.canvas-text-inner');
+            const r = parseFloat(wrap.getAttribute('data-rotation')) || parseFloat((wrap.style.transform || '').match(/rotate\(([^)]+)\)/)?.[1]) || 0;
+            const borderStyle = inner && inner.style.borderStyle ? inner.style.borderStyle : 'solid';
+            const borderColor = inner && inner.style.borderColor ? inner.style.borderColor : '';
+            items.push({
+                x: parseFloat(wrap.style.left) || 0,
+                y: parseFloat(wrap.style.top) || 0,
+                w: parseFloat(wrap.style.width) || 160,
+                h: parseFloat(wrap.style.height) || 60,
+                r: r,
+                z: parseFloat(wrap.style.zIndex) || 50,
+                text: inner ? (inner.innerText || inner.textContent || '').trim() : '',
+                fontSize: inner ? (parseFloat(inner.style.fontSize) || 14) : 14,
+                borderWidth: inner ? (parseFloat(inner.style.borderWidth) || 1) : 1,
+                borderRadius: inner ? (parseFloat(inner.style.borderRadius) || 6) : 6,
+                opacity: inner ? (parseFloat(inner.style.opacity) || 1) : 1,
+                backgroundColor: inner ? (inner.style.backgroundColor || '') : '',
+                color: inner ? (inner.style.color || '') : '',
+                fontFamily: inner ? (inner.style.fontFamily || '') : '',
+                textAlign: inner ? (inner.style.textAlign || 'left') : 'left',
+                fontWeight: inner ? (inner.style.fontWeight || 'normal') : 'normal',
+                fontStyle: inner ? (inner.style.fontStyle || 'normal') : 'normal',
+                textDecoration: inner ? (inner.style.textDecoration || 'none') : 'none',
+                letterSpacing: inner ? (inner.style.letterSpacing || '') : '',
+                lineHeight: inner ? (inner.style.lineHeight || '') : '',
+                borderColor: borderColor,
+                borderStyle: borderStyle,
+                boxShadow: inner ? (inner.style.boxShadow || '') : '',
+                textShadow: inner ? (inner.style.textShadow || '') : ''
+            });
+        });
+        return items;
+    },
+    
+    saveCanvasTextToServer: function() {
+        const self = this;
+        let floorPlanId = window.floorPlanIdForCanvas;
+        if (!floorPlanId && typeof URLSearchParams !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const fromUrl = params.get('floor_plan_id');
+            if (fromUrl) floorPlanId = parseInt(fromUrl, 10);
+        }
+        if (!floorPlanId) return Promise.resolve();
+        const items = self.getCanvasTextItemsFromDom();
+        const token = document.querySelector('meta[name="csrf-token"]');
+        const csrf = token ? token.getAttribute('content') : '';
+        return fetch('/booths/canvas-text', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+            body: JSON.stringify({ floor_plan_id: floorPlanId, items: items })
+        }).then(function(r) {
+            if (!r.ok) throw new Error('Save failed');
+            return r.json();
+        }).catch(function(err) {
+            console.warn('Canvas text save failed:', err);
+        });
     },
     
     updateCanvasTextHandlesSize: function(wrap) {
@@ -12501,7 +12802,10 @@ const FloorPlanDesigner = {
             return;
         }
         
-        // Canvas text box selected: show position, size, rotation, font, border, opacity
+        const textFormatPanel = document.getElementById('textFormatPanel');
+        if (textFormatPanel) textFormatPanel.style.display = 'none';
+        
+        // Canvas text box selected: show position, size, rotation, font, border, opacity + format panel
         if (element && element.classList.contains('canvas-text')) {
             const inner = element.querySelector('.canvas-text-inner');
             const x = Math.round(parseFloat(element.style.left) || 0);
@@ -12534,6 +12838,46 @@ const FloorPlanDesigner = {
                 infoToolbar.style.display = 'flex';
                 infoToolbar.style.visibility = 'visible';
                 infoToolbar.style.opacity = '1';
+            }
+            if (textFormatPanel && inner) {
+                textFormatPanel.style.display = 'flex';
+                var fp = document.getElementById('textFormatFontFamily');
+                if (fp) fp.value = inner.style.fontFamily || 'Arial, sans-serif';
+                var fs = document.getElementById('textFormatFontSize');
+                if (fs) fs.value = Math.round(parseFloat(inner.style.fontSize) || 14);
+                document.getElementById('textFormatBold').classList.toggle('active', (inner.style.fontWeight === 'bold' || inner.style.fontWeight === '700'));
+                document.getElementById('textFormatItalic').classList.toggle('active', inner.style.fontStyle === 'italic');
+                document.getElementById('textFormatUnderline').classList.toggle('active', (inner.style.textDecoration || '').indexOf('underline') !== -1);
+                document.getElementById('textFormatStrike').classList.toggle('active', (inner.style.textDecoration || '').indexOf('line-through') !== -1);
+                document.querySelectorAll('.text-format-align').forEach(function(btn) {
+                    btn.classList.toggle('active', (btn.getAttribute('data-align') || '') === (inner.style.textAlign || 'left'));
+                });
+                var tc = document.getElementById('textFormatColor');
+                if (tc) tc.value = (inner.style.color || '#333333').replace(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/, function(m,r,g,b){ return '#' + [r,g,b].map(function(x){ return ('0'+parseInt(x,10).toString(16)).slice(-2); }).join(''); }) || '#333333';
+                var tb = document.getElementById('textFormatBg');
+                if (tb && inner.style.backgroundColor) {
+                    var bg = inner.style.backgroundColor;
+                    if (bg.indexOf('rgb') === 0) {
+                        var match = bg.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+                        if (match) tb.value = '#' + [match[1],match[2],match[3]].map(function(x){ return ('0'+parseInt(x,10).toString(16)).slice(-2); }).join('');
+                    } else tb.value = bg;
+                }
+                var tbc = document.getElementById('textFormatBorderColor');
+                if (tbc && inner.style.borderColor) tbc.value = inner.style.borderColor.replace(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/, function(m,r,g,b){ return '#' + [r,g,b].map(function(x){ return ('0'+parseInt(x,10).toString(16)).slice(-2); }).join(''); }) || '#667eea';
+                var tbw = document.getElementById('textFormatBorderWidth');
+                if (tbw) tbw.value = Math.round(parseFloat(inner.style.borderWidth) || 1);
+                var tbs = document.getElementById('textFormatBorderStyle');
+                if (tbs) tbs.value = (inner.style.borderStyle || 'solid');
+                var tbr = document.getElementById('textFormatBorderRadius');
+                if (tbr) tbr.value = Math.round(parseFloat(inner.style.borderRadius) || 6);
+                var tbox = document.getElementById('textFormatBoxShadow');
+                if (tbox) tbox.value = inner.style.boxShadow || '';
+                var tts = document.getElementById('textFormatTextShadow');
+                if (tts) tts.value = inner.style.textShadow || '';
+                var tls = document.getElementById('textFormatLetterSpacing');
+                if (tls) tls.value = inner.style.letterSpacing || '';
+                var tlh = document.getElementById('textFormatLineHeight');
+                if (tlh) tlh.value = inner.style.lineHeight || '';
             }
             return;
         }
@@ -13257,6 +13601,7 @@ const FloorPlanDesigner = {
             }
             field.textContent = property === 'r' ? value + '°' : (property === 'opacity' ? parseFloat(value).toFixed(2) : value);
             self.updateInfoToolbar(wrap);
+            self.saveCanvasTextToServer();
             return;
         }
         
@@ -15443,6 +15788,15 @@ const FloorPlanDesigner = {
         if (typeof window.boothsData === 'undefined') {
             window.boothsData = @json($boothsForJS);
         }
+        if (typeof window.floorPlanIdForCanvas === 'undefined') {
+            window.floorPlanIdForCanvas = @json($floorPlanId ?? null);
+        }
+        if (typeof window.canvasTextItems === 'undefined') {
+            window.canvasTextItems = @json($canvasTextItems ?? []);
+        }
+        
+        // Clear any existing canvas text so we can re-load from saved data
+        canvas.querySelectorAll('.canvas-text').forEach(function(el) { el.remove(); });
         
         // CRITICAL: Always use database values from $boothsForJS - never use localStorage for positions
         // This ensures all users see the exact same booth arrangement as defined in the database
@@ -15877,6 +16231,9 @@ const FloorPlanDesigner = {
         if (removedCount > 0) {
             console.log('✅ Synced sidebar: Removed ' + removedCount + ' booth(s) that are already on canvas or have saved positions');
         }
+        
+        // Load canvas text items (labels) from saved data
+        self.loadCanvasTextItemsOnCanvas();
         
         // Update booth count
         if (self.updateBoothCount) {
@@ -18252,6 +18609,7 @@ const FloorPlanDesigner = {
                 wrap.remove();
                 self.selectedCanvasText = null;
                 self.updateInfoToolbar(null);
+                self.saveCanvasTextToServer();
                 // Hide resize/rotate handles (handles are children of wrap, already removed)
                 return;
             }
@@ -18365,6 +18723,8 @@ const FloorPlanDesigner = {
             this.history.shift();
             this.historyIndex--;
         }
+        
+        this.saveCanvasTextToServer();
     },
     
     // Undo
@@ -18436,6 +18796,8 @@ const FloorPlanDesigner = {
         const selectionBoxes = canvas.querySelectorAll('.selection-box');
         const transformControls = canvas.querySelectorAll('.transform-controls');
         const zoomSelection = canvas.querySelector('.zoom-selection');
+        const canvasTextHandles = canvas.querySelectorAll('.canvas-text .resize-handle, .canvas-text .rotate-handle');
+        const canvasTextSelected = canvas.querySelectorAll('.canvas-text-selected');
         
         // Store original display states and styles
         const originalStates = {
@@ -18457,6 +18819,12 @@ const FloorPlanDesigner = {
             control.style.display = 'none';
         });
         if (zoomSelection) zoomSelection.style.display = 'none';
+        canvasTextHandles.forEach(function(h) {
+            h.style.setProperty('display', 'none', 'important');
+        });
+        canvasTextSelected.forEach(function(el) {
+            el.classList.remove('canvas-text-selected');
+        });
         
         // Ensure canvas is visible and properly sized for capture
         const originalCanvasOverflow = canvas.style.overflow;
@@ -18489,6 +18857,13 @@ const FloorPlanDesigner = {
             });
             transformControls.forEach(function(control) {
                 control.style.display = '';
+            });
+            // Restore canvas-text selection and handles
+            canvasTextSelected.forEach(function(el) {
+                el.classList.add('canvas-text-selected');
+            });
+            canvasTextHandles.forEach(function(h) {
+                h.style.removeProperty('display');
             });
             
             // Convert canvas to image data URL
@@ -18576,6 +18951,12 @@ const FloorPlanDesigner = {
                 control.style.display = '';
             });
             if (zoomSelection) zoomSelection.style.display = '';
+            canvasTextSelected.forEach(function(el) {
+                el.classList.add('canvas-text-selected');
+            });
+            canvasTextHandles.forEach(function(h) {
+                h.style.removeProperty('display');
+            });
             
             Swal.close();
             console.error('Print error:', error);
@@ -19075,6 +19456,13 @@ $(document).ready(function() {
     });
     
     $('#btnDelete').on('click', function() {
+        if (FloorPlanDesigner.selectedCanvasText && FloorPlanDesigner.selectedBooths.length === 0) {
+            FloorPlanDesigner.selectedCanvasText.remove();
+            FloorPlanDesigner.selectedCanvasText = null;
+            FloorPlanDesigner.updateInfoToolbar(null);
+            FloorPlanDesigner.saveCanvasTextToServer();
+            return;
+        }
         if (FloorPlanDesigner.selectedBooths.length > 0) {
             FloorPlanDesigner.selectedBooths.forEach(function(booth) {
                 booth.remove();

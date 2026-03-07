@@ -113,6 +113,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/booths/update-external-view', [BoothController::class, 'updateExternalView'])->name('booths.update-external-view');
     Route::post('/booths/{id}/save-position', [BoothController::class, 'savePosition'])->name('booths.save-position');
     Route::post('/booths/save-all-positions', [BoothController::class, 'saveAllPositions'])->name('booths.save-all-positions');
+    Route::post('/booths/canvas-text', [BoothController::class, 'saveCanvasText'])->name('booths.canvas-text');
     Route::post('/booths/upload-floorplan', [BoothController::class, 'uploadFloorplan'])->name('booths.upload-floorplan');
     Route::post('/booths/remove-floorplan', [BoothController::class, 'removeFloorplan'])->name('booths.remove-floorplan');
     Route::get('/booths/check-duplicate/{boothNumber}', [BoothController::class, 'checkDuplicate'])->name('booths.check-duplicate');

@@ -21,6 +21,7 @@ use App\Models\Asset;
 use App\Models\Book;
 use App\Models\Booth;
 use App\Models\BoothType;
+use App\Models\CanvasSetting;
 use App\Models\Category;
 use App\Models\Client;
 use App\Models\FloorPlan;
@@ -354,6 +355,13 @@ class BoothController extends Controller
         $bookedTickSizeMode = $tickSettings['size_mode'];
         $bookedTickRelativePercent = $tickSettings['relative_percent'];
 
+        // Canvas text items (labels on canvas) for current floor plan
+        $canvasTextItems = [];
+        if ($floorPlanId) {
+            $canvasSetting = CanvasSetting::getForFloorPlan((int) $floorPlanId);
+            $canvasTextItems = ($canvasSetting && $canvasSetting->canvas_text_items) ? $canvasSetting->canvas_text_items : [];
+        }
+
         return view('booths.index', compact(
             'booths',
             'boothsForJS',
@@ -387,6 +395,7 @@ class BoothController extends Controller
             'canvasHeight',
             'floorImage',
             'canEditCanvas',
+            'canvasTextItems',
             'showBookedTick',
             'bookedTickColor',
             'bookedTickSize',
@@ -1019,6 +1028,55 @@ class BoothController extends Controller
                 'message' => 'Error saving positions: '.$e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Save canvas text items for a floor plan (designer text boxes shown on public view).
+     */
+    public function saveCanvasText(Request $request)
+    {
+        $request->validate([
+            'floor_plan_id' => 'required|integer|exists:floor_plans,id',
+            'items' => 'nullable|array',
+            'items.*.x' => 'nullable|numeric',
+            'items.*.y' => 'nullable|numeric',
+            'items.*.w' => 'nullable|numeric',
+            'items.*.h' => 'nullable|numeric',
+            'items.*.r' => 'nullable|numeric',
+            'items.*.z' => 'nullable|numeric',
+            'items.*.fontSize' => 'nullable|numeric',
+            'items.*.borderWidth' => 'nullable|numeric',
+            'items.*.borderRadius' => 'nullable|numeric',
+            'items.*.opacity' => 'nullable|numeric',
+            'items.*.text' => 'nullable|string',
+            'items.*.backgroundColor' => 'nullable|string',
+            'items.*.color' => 'nullable|string',
+            'items.*.fontFamily' => 'nullable|string',
+        ]);
+
+        $floorPlanId = (int) $request->input('floor_plan_id');
+        $items = $request->input('items', []);
+
+        try {
+            $setting = CanvasSetting::getForFloorPlan($floorPlanId);
+            $setting->canvas_text_items = is_array($items) ? $items : [];
+            $setting->save();
+        } catch (\Throwable $e) {
+            \Log::warning('Canvas text save failed: '.$e->getMessage(), [
+                'floor_plan_id' => $floorPlanId,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Failed to save canvas text. If this persists, run: php artisan migrate',
+            ], 500);
+        }
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Canvas text saved.',
+        ]);
     }
 
     /**
@@ -1804,6 +1862,11 @@ class BoothController extends Controller
         $bookedTickSizeMode = $tickSettings['size_mode'];
         $bookedTickRelativePercent = $tickSettings['relative_percent'];
 
+        // Canvas text items for public view (labels/labels on floor plan)
+        $canvasSetting = CanvasSetting::getForFloorPlan((int) $id);
+        $rawItems = ($canvasSetting && $canvasSetting->canvas_text_items) ? $canvasSetting->canvas_text_items : [];
+        $canvasTextItems = is_array($rawItems) ? $rawItems : (is_object($rawItems) ? (array) $rawItems : []);
+
         return view('booths.public-view', compact(
             'floorPlan',
             'booths',
@@ -1813,6 +1876,7 @@ class BoothController extends Controller
             'floorImage',
             'floorImageUrl',
             'floorImageExists',
+            'canvasTextItems',
             'statusSettings',
             'statusColors',
             'authUser',
