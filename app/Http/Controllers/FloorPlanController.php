@@ -479,10 +479,16 @@ class FloorPlanController extends Controller
                     throw new \Exception('Failed to upload image file - file not found after move');
                 }
 
-                // Get image dimensions from the new file
-                $imageInfo = getimagesize($newImagePath);
-                $imageWidth = $imageInfo[0] ?? $floorPlan->canvas_width ?? 1200;
-                $imageHeight = $imageInfo[1] ?? $floorPlan->canvas_height ?? 800;
+                // Get image dimensions from the new file (getimagesize returns false if not a valid image)
+                $imageInfo = @getimagesize($newImagePath);
+                if ($imageInfo === false || ! isset($imageInfo[0], $imageInfo[1])) {
+                    if (file_exists($newImagePath)) {
+                        @unlink($newImagePath);
+                    }
+                    throw new \Exception('The uploaded file is not a valid image or the image format is not supported. Please use a valid JPG, PNG, or GIF file.');
+                }
+                $imageWidth = (int) $imageInfo[0];
+                $imageHeight = (int) $imageInfo[1];
 
                 // Update validated array with new image path and dimensions
                 $validated['floor_image'] = 'images/floor-plans/'.$imageName;
