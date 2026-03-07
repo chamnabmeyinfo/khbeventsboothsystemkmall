@@ -177,8 +177,8 @@ class FloorPlanController extends Controller
             'proposal' => 'nullable|string',
             'event_start_date' => 'nullable|date',
             'event_end_date' => 'nullable|date|after_or_equal:event_start_date',
-            'event_start_time' => 'nullable',
-            'event_end_time' => 'nullable',
+            'event_start_time' => 'nullable|date_format:H:i',
+            'event_end_time' => 'nullable|date_format:H:i',
             'event_location' => 'nullable|string|max:255',
             'event_venue' => 'nullable|string|max:255',
             'canvas_width' => 'nullable|integer|min:100|max:5000',
@@ -206,6 +206,25 @@ class FloorPlanController extends Controller
         }
 
         $validated = $request->validate($rules);
+
+        // Normalize optional text/date/time fields to null (avoid SQL errors on empty string for DATE/TIME columns)
+        foreach ([
+            'event_id',
+            'description',
+            'project_name',
+            'google_map_location',
+            'proposal',
+            'event_start_date',
+            'event_end_date',
+            'event_start_time',
+            'event_end_time',
+            'event_location',
+            'event_venue',
+        ] as $nullableField) {
+            if (array_key_exists($nullableField, $validated) && $validated[$nullableField] === '') {
+                $validated[$nullableField] = null;
+            }
+        }
 
         // Handle floor image upload (store with unique name including floor_plan_id will be added after creation)
         if ($request->hasFile('floor_image')) {
@@ -394,55 +413,75 @@ class FloorPlanController extends Controller
      */
     public function update(Request $request, FloorPlan $floorPlan)
     {
+        try {
+            return $this->performUpdate($request, $floorPlan);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            \Log::error('Floor plan update failed with unhandled error', [
+                'floor_plan_id' => $floorPlan->id,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile().':'.$e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return redirect()->route('floor-plans.edit', $floorPlan)
+                ->withInput()
+                ->with('error', 'An unexpected error occurred while updating the floor plan: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Internal: perform the actual floor plan update logic.
+     */
+    private function performUpdate(Request $request, FloorPlan $floorPlan)
+    {
+        // --- 1. Build validation rules ---
+        $uploadRule = 'nullable|image|mimes:jpeg,jpg,png,gif|max:10240';
+        try {
+            $uploadRule = \App\Helpers\UploadSettingsHelper::getRules(
+                \App\Helpers\UploadSettingsHelper::CONTEXT_FLOOR_PLAN, 'floor_image', false
+            )['floor_image'];
+        } catch (\Throwable $e) {
+            \Log::warning('Could not load upload rules, using defaults: '.$e->getMessage());
+        }
+
         $rules = [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'project_name' => 'nullable|string|max:255',
-            'floor_image' => \App\Helpers\UploadSettingsHelper::getRules(\App\Helpers\UploadSettingsHelper::CONTEXT_FLOOR_PLAN, 'floor_image', false)['floor_image'],
-            'feature_image' => \App\Helpers\UploadSettingsHelper::getRules(\App\Helpers\UploadSettingsHelper::CONTEXT_FLOOR_PLAN, 'feature_image', false)['feature_image'],
+            'floor_image' => $uploadRule,
+            'feature_image' => $uploadRule,
             'google_map_location' => 'nullable|string',
             'proposal' => 'nullable|string',
             'event_start_date' => 'nullable|date',
             'event_end_date' => 'nullable|date|after_or_equal:event_start_date',
-            'event_start_time' => 'nullable',
-            'event_end_time' => 'nullable',
+            'event_start_time' => 'nullable|date_format:H:i,H:i:s',
+            'event_end_time' => 'nullable|date_format:H:i,H:i:s',
             'event_location' => 'nullable|string|max:255',
             'event_venue' => 'nullable|string|max:255',
             'canvas_width' => 'nullable|integer|min:100|max:5000',
             'canvas_height' => 'nullable|integer|min:100|max:5000',
-            'is_active' => 'nullable|boolean',
+            'is_active' => 'nullable',
         ];
 
-        // Only validate event_id if events table exists (safe check - avoid exists rule if table doesn't exist)
         try {
-            // Try to check if table exists - if query fails, table doesn't exist
             $tables = DB::select("SHOW TABLES LIKE 'events'");
-            if (! empty($tables)) {
-                // Table exists - validate with exists rule
-                $rules['event_id'] = 'nullable|exists:events,id';
-            } else {
-                // Table doesn't exist - just validate as nullable (no exists check)
-                $rules['event_id'] = 'nullable';
-            }
-        } catch (\Illuminate\Database\QueryException $e) {
-            // Table check failed - don't validate event_id with exists rule
-            $rules['event_id'] = 'nullable';
-        } catch (\Exception $e) {
-            // Any other error - don't validate event_id with exists rule
+            $rules['event_id'] = ! empty($tables) ? 'nullable|exists:events,id' : 'nullable';
+        } catch (\Throwable $e) {
             $rules['event_id'] = 'nullable';
         }
 
-        // Check for PHP upload errors BEFORE validation (e.g. upload_max_filesize exceeded)
+        // --- 2. Check PHP upload errors before validation ---
         if ($request->hasFile('floor_image')) {
-            $image = $request->file('floor_image');
-            if (! $image->isValid()) {
+            $file = $request->file('floor_image');
+            if (! $file->isValid()) {
                 $phpMax = ini_get('upload_max_filesize');
-                $errMsg = $image->getErrorMessage();
-                if ($image->getError() === UPLOAD_ERR_INI_SIZE) {
-                    $errMsg = "File exceeds PHP upload limit ({$phpMax}). Increase upload_max_filesize in php.ini or add .user.ini in public folder.";
-                } elseif ($image->getError() === UPLOAD_ERR_FORM_SIZE) {
-                    $errMsg = 'File exceeds form size limit.';
-                }
+                $errMsg = match ($file->getError()) {
+                    UPLOAD_ERR_INI_SIZE => "File exceeds PHP upload limit ({$phpMax}). Increase upload_max_filesize in php.ini.",
+                    UPLOAD_ERR_FORM_SIZE => 'File exceeds form size limit.',
+                    default => $file->getErrorMessage(),
+                };
 
                 return redirect()->route('floor-plans.edit', $floorPlan)
                     ->withInput()
@@ -450,224 +489,177 @@ class FloorPlanController extends Controller
             }
         }
 
+        // --- 3. Validate ---
         $validated = $request->validate($rules);
 
-        // Handle image upload (from edit form)
-        // CRITICAL: Save new image FIRST before deleting old one (prevents data loss)
+        // Normalize empty strings to null for nullable DB columns
+        $nullableFields = [
+            'event_id', 'description', 'project_name', 'google_map_location',
+            'proposal', 'event_start_date', 'event_end_date', 'event_start_time',
+            'event_end_time', 'event_location', 'event_venue',
+        ];
+        foreach ($nullableFields as $field) {
+            if (array_key_exists($field, $validated) && ($validated[$field] === '' || $validated[$field] === null)) {
+                $validated[$field] = null;
+            }
+        }
+
+        // Normalize is_active from select value
+        $validated['is_active'] = (int) $request->input('is_active', 0) === 1;
+
+        // --- 4. Handle floor plan image upload ---
         if ($request->hasFile('floor_image')) {
             $image = $request->file('floor_image');
+            $imageExtension = strtolower($image->getClientOriginalExtension());
+            $imageName = time().'_floor_plan_'.$floorPlan->id.'.'.$imageExtension;
+            $imagePath = public_path('images/floor-plans');
+
+            if (! file_exists($imagePath) && ! @mkdir($imagePath, 0755, true)) {
+                return redirect()->route('floor-plans.edit', $floorPlan)
+                    ->withInput()
+                    ->with('error', 'Could not create upload directory. Check server folder permissions.');
+            }
+
+            if (! is_writable($imagePath)) {
+                return redirect()->route('floor-plans.edit', $floorPlan)
+                    ->withInput()
+                    ->with('error', 'Upload directory is not writable. Check server folder permissions.');
+            }
+
+            $newImageFullPath = $imagePath.DIRECTORY_SEPARATOR.$imageName;
+
             try {
-                $imageExtension = $image->getClientOriginalExtension();
-                $imageName = time().'_floor_plan_'.$floorPlan->id.'.'.$imageExtension; // Include floor_plan_id for uniqueness
-
-                $imagePath = public_path('images/floor-plans');
-                if (! file_exists($imagePath)) {
-                    if (! @mkdir($imagePath, 0755, true)) {
-                        throw new \Exception('Could not create upload directory. Check folder permissions.');
-                    }
-                }
-                if (! is_writable($imagePath)) {
-                    throw new \Exception('Upload directory is not writable. Check folder permissions.');
-                }
-
-                // Save new image FIRST (before deleting old one)
-                $newImagePath = $imagePath.'/'.$imageName;
                 $image->move($imagePath, $imageName);
-
-                // Verify the new file was created successfully
-                if (! file_exists($newImagePath)) {
-                    throw new \Exception('Failed to upload image file - file not found after move');
-                }
-
-                // Get image dimensions from the new file (getimagesize returns false if not a valid image)
-                $imageInfo = @getimagesize($newImagePath);
-                if ($imageInfo === false || ! isset($imageInfo[0], $imageInfo[1])) {
-                    if (file_exists($newImagePath)) {
-                        @unlink($newImagePath);
-                    }
-                    throw new \Exception('The uploaded file is not a valid image or the image format is not supported. Please use a valid JPG, PNG, or GIF file.');
-                }
-                $imageWidth = (int) $imageInfo[0];
-                $imageHeight = (int) $imageInfo[1];
-
-                // Update validated array with new image path and dimensions
-                $validated['floor_image'] = 'images/floor-plans/'.$imageName;
-                $validated['canvas_width'] = $imageWidth;
-                $validated['canvas_height'] = $imageHeight;
-
-                \Log::info('Floor plan image uploaded from edit form', [
-                    'floor_plan_id' => $floorPlan->id,
-                    'floor_plan_name' => $floorPlan->name,
-                    'new_image_path' => $validated['floor_image'],
-                    'new_image_width' => $imageWidth,
-                    'new_image_height' => $imageHeight,
-                    'old_image_path' => $floorPlan->floor_image,
-                ]);
             } catch (\Throwable $e) {
-                \Log::error('Error uploading floor plan image from edit form: '.$e->getMessage(), [
+                \Log::error('Floor plan image move() failed', [
                     'floor_plan_id' => $floorPlan->id,
-                    'trace' => $e->getTraceAsString(),
+                    'error' => $e->getMessage(),
                 ]);
 
                 return redirect()->route('floor-plans.edit', $floorPlan)
                     ->withInput()
-                    ->with('error', 'The floor image failed to upload. '.$e->getMessage());
+                    ->with('error', 'Failed to save uploaded image: '.$e->getMessage());
             }
+
+            if (! file_exists($newImageFullPath)) {
+                return redirect()->route('floor-plans.edit', $floorPlan)
+                    ->withInput()
+                    ->with('error', 'Image file was not found after upload. Please try again.');
+            }
+
+            $imageInfo = @getimagesize($newImageFullPath);
+            if ($imageInfo === false || ! isset($imageInfo[0], $imageInfo[1])) {
+                @unlink($newImageFullPath);
+
+                return redirect()->route('floor-plans.edit', $floorPlan)
+                    ->withInput()
+                    ->with('error', 'The uploaded file is not a valid image. Please use a JPG, PNG, or GIF file.');
+            }
+
+            $validated['floor_image'] = 'images/floor-plans/'.$imageName;
+            $validated['canvas_width'] = (int) $imageInfo[0];
+            $validated['canvas_height'] = (int) $imageInfo[1];
+
+            \Log::info('Floor plan image uploaded', [
+                'floor_plan_id' => $floorPlan->id,
+                'new_image' => $validated['floor_image'],
+                'dimensions' => $validated['canvas_width'].'x'.$validated['canvas_height'],
+            ]);
         }
 
-        // Preserve existing canvas dimensions if not uploading new image
-        if (! $request->hasFile('floor_image')) {
-            // Not uploading image - preserve existing dimensions
-            if (! isset($validated['canvas_width'])) {
-                unset($validated['canvas_width']);
-            }
-            if (! isset($validated['canvas_height'])) {
-                unset($validated['canvas_height']);
-            }
-        }
-
-        $validated['is_active'] = $request->has('is_active') ? true : false;
-
-        // Handle feature image upload
+        // --- 5. Handle feature image upload ---
         if ($request->hasFile('feature_image')) {
             try {
-                $image = $request->file('feature_image');
-                $imageExtension = $image->getClientOriginalExtension();
-                $imageName = time().'_feature_'.$floorPlan->id.'.'.$imageExtension;
+                $fImage = $request->file('feature_image');
+                $fName = time().'_feature_'.$floorPlan->id.'.'.strtolower($fImage->getClientOriginalExtension());
+                $fPath = public_path('images/floor-plans/features');
 
-                $imagePath = public_path('images/floor-plans/features');
-                if (! file_exists($imagePath)) {
-                    mkdir($imagePath, 0755, true);
+                if (! file_exists($fPath)) {
+                    @mkdir($fPath, 0755, true);
                 }
 
-                $newImagePath = $imagePath.'/'.$imageName;
-                $image->move($imagePath, $imageName);
+                $fImage->move($fPath, $fName);
 
-                if (! file_exists($newImagePath)) {
-                    throw new \Exception('Failed to upload feature image file');
+                if (file_exists($fPath.DIRECTORY_SEPARATOR.$fName)) {
+                    $validated['feature_image'] = 'images/floor-plans/features/'.$fName;
                 }
-
-                $validated['feature_image'] = 'images/floor-plans/features/'.$imageName;
             } catch (\Throwable $e) {
-                \Log::error('Error uploading feature image: '.$e->getMessage());
-                unset($validated['feature_image']);
+                \Log::error('Feature image upload failed: '.$e->getMessage());
             }
         }
 
-        // IMPORTANT: Preserve existing floor_image unless explicitly uploading new one
+        // --- 6. Preserve existing values for fields not being updated ---
         if (! isset($validated['floor_image'])) {
-            // Not uploading image - preserve existing floor_image
             unset($validated['floor_image']);
         }
-
-        // IMPORTANT: Preserve existing feature_image unless explicitly uploading new one
         if (! isset($validated['feature_image'])) {
-            // Not uploading image - preserve existing feature_image
             unset($validated['feature_image']);
         }
-
-        // Store old image paths before update (for cleanup after successful save)
-        $oldImagePath = $floorPlan->floor_image ? public_path($floorPlan->floor_image) : null;
-        $oldImageExists = $oldImagePath && file_exists($oldImagePath);
-        $isUploadingNewImage = isset($validated['floor_image']);
-
-        $oldFeatureImagePath = $floorPlan->feature_image ? public_path($floorPlan->feature_image) : null;
-        $oldFeatureImageExists = $oldFeatureImagePath && file_exists($oldFeatureImagePath);
-        $isUploadingNewFeatureImage = isset($validated['feature_image']);
-
-        // Update floor plan (only fields that were provided)
-        try {
-            $floorPlan->update($validated);
-        } catch (\Throwable $e) {
-            \Log::error('Error updating floor plan record: '.$e->getMessage(), [
-                'floor_plan_id' => $floorPlan->id,
-                'validated_keys' => array_keys($validated),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return redirect()->route('floor-plans.edit', $floorPlan)
-                ->withInput()
-                ->with('error', 'Failed to update floor plan. '.$e->getMessage());
+        if (! $request->hasFile('floor_image')) {
+            unset($validated['canvas_width'], $validated['canvas_height']);
         }
 
-        // Refresh floor plan from database to get latest values
+        // --- 7. Store old image paths before DB update ---
+        $oldFloorImage = $floorPlan->floor_image;
+        $oldFeatureImage = $floorPlan->feature_image;
+        $isUploadingNewImage = isset($validated['floor_image']);
+        $isUploadingNewFeature = isset($validated['feature_image']);
+
+        // --- 8. Update database ---
+        $floorPlan->update($validated);
         $floorPlan->refresh();
 
-        // Delete old floor image AFTER successful database update (only if uploading new image)
-        if ($isUploadingNewImage && $oldImageExists) {
-            try {
-                $newImagePath = $floorPlan->floor_image ? public_path($floorPlan->floor_image) : null;
-                // Only delete if it's different from the new image
-                if ($newImagePath && $oldImagePath !== $newImagePath) {
-                    unlink($oldImagePath);
-                    \Log::info('Deleted old floor plan image after successful upload from edit form', [
-                        'floor_plan_id' => $floorPlan->id,
-                        'old_image' => str_replace(public_path().'/', '', $oldImagePath),
-                        'new_image' => $floorPlan->floor_image,
-                    ]);
-                }
-            } catch (\Throwable $e) {
-                \Log::warning('Could not delete old floor plan image (non-critical): '.$e->getMessage(), [
-                    'floor_plan_id' => $floorPlan->id,
-                    'old_image_path' => $oldImagePath,
-                ]);
-            }
+        // --- 9. Cleanup old images (non-critical) ---
+        if ($isUploadingNewImage && $oldFloorImage) {
+            $this->safeDeleteOldImage($oldFloorImage, $floorPlan->floor_image, $floorPlan->id);
+        }
+        if ($isUploadingNewFeature && $oldFeatureImage) {
+            $this->safeDeleteOldImage($oldFeatureImage, $floorPlan->feature_image, $floorPlan->id);
         }
 
-        // Delete old feature image AFTER successful database update (only if uploading new image)
-        if ($isUploadingNewFeatureImage && $oldFeatureImageExists) {
-            try {
-                $newFeatureImagePath = $floorPlan->feature_image ? public_path($floorPlan->feature_image) : null;
-                // Only delete if it's different from the new image
-                if ($newFeatureImagePath && $oldFeatureImagePath !== $newFeatureImagePath) {
-                    unlink($oldFeatureImagePath);
-                    \Log::info('Deleted old feature image after successful upload from edit form', [
-                        'floor_plan_id' => $floorPlan->id,
-                        'old_image' => str_replace(public_path().'/', '', $oldFeatureImagePath),
-                        'new_image' => $floorPlan->feature_image,
-                    ]);
-                }
-            } catch (\Throwable $e) {
-                \Log::warning('Could not delete old feature image (non-critical): '.$e->getMessage(), [
-                    'floor_plan_id' => $floorPlan->id,
-                    'old_image_path' => $oldFeatureImagePath,
-                ]);
-            }
-        }
-
-        // CRITICAL: Always sync canvas_settings with floor_plans.floor_image after update
-        // This ensures the canvas automatically loads the correct image when viewing booths
+        // --- 10. Sync canvas settings (non-critical) ---
         try {
-            $canvasSetting = CanvasSetting::updateOrCreate(
+            CanvasSetting::updateOrCreate(
                 ['floor_plan_id' => $floorPlan->id],
                 [
                     'canvas_width' => $floorPlan->canvas_width ?? 1200,
                     'canvas_height' => $floorPlan->canvas_height ?? 800,
-                    'floorplan_image' => $floorPlan->floor_image, // Always sync with floor_plans.floor_image
+                    'floorplan_image' => $floorPlan->floor_image,
                 ]
             );
-
-            \Log::info('Canvas settings synced after floor plan update', [
-                'floor_plan_id' => $floorPlan->id,
-                'floor_image' => $floorPlan->floor_image,
-                'canvas_width' => $floorPlan->canvas_width,
-                'canvas_height' => $floorPlan->canvas_height,
-            ]);
         } catch (\Throwable $e) {
+            \Log::warning('Could not sync canvas settings: '.$e->getMessage());
+        }
 
-            \Log::warning('Could not update canvas settings for floor plan: '.$e->getMessage(), [
-                'floor_plan_id' => $floorPlan->id,
+        // --- 11. Redirect with success ---
+        $message = 'Floor plan updated successfully.';
+        if ($isUploadingNewImage) {
+            $message .= ' Floor plan image uploaded. The canvas will automatically load this image.';
+        }
+
+        return redirect()->route('floor-plans.index')->with('success', $message);
+    }
+
+    /**
+     * Safely delete an old image file after a new one has been saved.
+     */
+    private function safeDeleteOldImage(string $oldRelativePath, ?string $newRelativePath, int $floorPlanId): void
+    {
+        try {
+            if ($oldRelativePath === $newRelativePath) {
+                return;
+            }
+            $oldFullPath = public_path($oldRelativePath);
+            if (file_exists($oldFullPath)) {
+                @unlink($oldFullPath);
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('Could not delete old image (non-critical)', [
+                'floor_plan_id' => $floorPlanId,
+                'old_image' => $oldRelativePath,
+                'error' => $e->getMessage(),
             ]);
         }
-
-        // Prepare success message
-        $message = 'Floor plan updated successfully.';
-        if ($isUploadingNewImage && $floorPlan->floor_image) {
-            $message .= ' Floor plan image uploaded successfully. The canvas will automatically load this image when you click "View Booths" for this floor plan.';
-        }
-
-        return redirect()->route('floor-plans.index')
-            ->with('success', $message);
     }
 
     /**
