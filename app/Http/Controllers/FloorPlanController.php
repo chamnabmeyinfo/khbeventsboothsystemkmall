@@ -503,7 +503,7 @@ class FloorPlanController extends Controller
                     'new_image_height' => $imageHeight,
                     'old_image_path' => $floorPlan->floor_image,
                 ]);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 \Log::error('Error uploading floor plan image from edit form: '.$e->getMessage(), [
                     'floor_plan_id' => $floorPlan->id,
                     'trace' => $e->getTraceAsString(),
@@ -548,7 +548,7 @@ class FloorPlanController extends Controller
                 }
 
                 $validated['feature_image'] = 'images/floor-plans/features/'.$imageName;
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 \Log::error('Error uploading feature image: '.$e->getMessage());
                 unset($validated['feature_image']);
             }
@@ -576,7 +576,19 @@ class FloorPlanController extends Controller
         $isUploadingNewFeatureImage = isset($validated['feature_image']);
 
         // Update floor plan (only fields that were provided)
-        $floorPlan->update($validated);
+        try {
+            $floorPlan->update($validated);
+        } catch (\Throwable $e) {
+            \Log::error('Error updating floor plan record: '.$e->getMessage(), [
+                'floor_plan_id' => $floorPlan->id,
+                'validated_keys' => array_keys($validated),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return redirect()->route('floor-plans.edit', $floorPlan)
+                ->withInput()
+                ->with('error', 'Failed to update floor plan. '.$e->getMessage());
+        }
 
         // Refresh floor plan from database to get latest values
         $floorPlan->refresh();
@@ -594,7 +606,7 @@ class FloorPlanController extends Controller
                         'new_image' => $floorPlan->floor_image,
                     ]);
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 \Log::warning('Could not delete old floor plan image (non-critical): '.$e->getMessage(), [
                     'floor_plan_id' => $floorPlan->id,
                     'old_image_path' => $oldImagePath,
@@ -615,7 +627,7 @@ class FloorPlanController extends Controller
                         'new_image' => $floorPlan->feature_image,
                     ]);
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 \Log::warning('Could not delete old feature image (non-critical): '.$e->getMessage(), [
                     'floor_plan_id' => $floorPlan->id,
                     'old_image_path' => $oldFeatureImagePath,
@@ -641,7 +653,7 @@ class FloorPlanController extends Controller
                 'canvas_width' => $floorPlan->canvas_width,
                 'canvas_height' => $floorPlan->canvas_height,
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
 
             \Log::warning('Could not update canvas settings for floor plan: '.$e->getMessage(), [
                 'floor_plan_id' => $floorPlan->id,

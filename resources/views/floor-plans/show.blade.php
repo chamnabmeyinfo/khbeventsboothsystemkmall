@@ -53,7 +53,11 @@
                                     }
                                 @endphp
                                 @if($eventTitle && $eventId)
-                                    <a href="{{ route('admin.events.show', $eventId) }}">{{ $eventTitle }}</a>
+                                    @if(\Illuminate\Support\Facades\Route::has('admin.events.show'))
+                                        <a href="{{ route('admin.events.show', $eventId) }}">{{ $eventTitle }}</a>
+                                    @else
+                                        <span>{{ $eventTitle }}</span>
+                                    @endif
                                 @elseif($floorPlan->event_id)
                                     <span class="text-muted">Event ID: {{ $floorPlan->event_id }} (Events table not available)</span>
                                 @endif
