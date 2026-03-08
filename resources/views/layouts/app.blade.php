@@ -89,6 +89,9 @@
     <script src="{{ asset('js/performance-optimizer.js') }}" defer></script>
     @endif
     
+    <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}">
+    
     @stack('styles')
 </head>
 <body>
@@ -101,74 +104,15 @@
     try { sessionStorage.setItem('viewport_width', w); } catch (e) {}
 })();
 </script>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary d-none d-md-block">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ route('dashboard') }}">
-                <i class="fas fa-calendar-alt me-2"></i>KHB Booths
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('booths.index') }}">Booths</a>
-                    </li>
-                    @auth
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('booths.my-booths') }}">My Booths</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('clients.index') }}">Clients</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('books.index') }}">Bookings</a>
-                    </li>
-                    @if(auth()->user()->isAdmin())
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('users.index') }}">Users</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('categories.index') }}">Categories</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('settings.index') }}">Settings</a>
-                    </li>
-                    @endif
-                    @endauth
-                </ul>
-                <ul class="navbar-nav">
-                    @auth
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user me-1"></i>{{ auth()->user()->username }}
-                            @if(auth()->user()->isAdmin())
-                                <span class="badge bg-danger ms-1">Admin</span>
-                            @endif
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('dashboard') }}">Dashboard</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item">Logout</button>
-                                </form>
-                            </li>
-                        </ul>
-                    </li>
-                    @else
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('login') }}">Login</a>
-                    </li>
-                    @endauth
-                </ul>
-            </div>
-        </div>
-    </nav>
+    @include('partials.modern-header')
 
-    <main class="container-fluid py-4" id="main-content" style="min-height: calc(100vh - 60px);">
-        @if(session('success'))
+    <div class="layout-wrapper">
+        @auth
+            @include('partials.modern-sidebar')
+        @endauth
+
+        <main class="main-content-pushed container-fluid py-4" id="main-content" style="min-height: calc(100vh - 70px); background: #f8fafc;">
+            @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -195,6 +139,7 @@
 
         @yield('content')
     </main>
+</div>
 
 @if($useCDN)
 {{-- CDN JavaScript --}}
@@ -486,78 +431,13 @@
     @stack('scripts')
     
     <style>
-    /* Mobile Overrides - Force Mobile App Design - COMPLETE OLD UI REMOVAL */
+    /* Mobile Adjustments for New UI */
     @media (max-width: 768px) {
-        /* COMPLETELY HIDE navbar on mobile */
-        nav.navbar,
-        .navbar,
-        .navbar-expand-lg,
-        .navbar-brand,
-        .navbar-nav,
-        .navbar-toggler,
-        .navbar-collapse {
-            display: none !important;
-            visibility: hidden !important;
-            height: 0 !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            opacity: 0 !important;
-            position: absolute !important;
-            left: -9999px !important;
-            width: 0 !important;
-        }
-        
-        /* Remove ALL main padding on mobile (except login page) */
-        main.container-fluid:not(:has(.login-container)),
-        #main-content:not(:has(.login-container)),
-        main:not(:has(.login-container)) {
-            padding: 0 !important;
-            margin: 0 !important;
-            max-width: 100% !important;
+        .main-content-pushed {
+            margin-left: 0 !important;
             width: 100% !important;
+            padding-top: 80px !important;
         }
-        
-        /* Full width content - ensure vertical scroll is never locked on mobile */
-        html {
-            overflow-x: hidden !important;
-            overflow-y: auto !important;
-            -webkit-overflow-scrolling: touch;
-        }
-        body {
-            overflow-x: hidden !important;
-            overflow-y: auto !important;
-            -webkit-overflow-scrolling: touch !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            /* Override contain from mobile-design-system/device-optimized to prevent scroll freeze */
-            contain: none !important;
-            touch-action: pan-y;
-        }
-        
-        /* Hide any desktop-specific elements */
-        .sidebar,
-        .content-wrapper,
-        .main-sidebar,
-        .content-header,
-        .breadcrumb,
-        .page-header {
-            display: none !important;
-            visibility: hidden !important;
-        }
-    }
-    
-    /* Additional mobile view detection - hide old UI when mobile view class exists */
-    html.mobile-view nav.navbar,
-    html.mobile-view .navbar,
-    body.mobile-view nav.navbar,
-    body.mobile-view .navbar,
-    .mobile-view nav.navbar,
-    .mobile-view .navbar {
-        display: none !important;
-        visibility: hidden !important;
-        height: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
     }
     
     /* Login page specific - ensure main doesn't interfere */

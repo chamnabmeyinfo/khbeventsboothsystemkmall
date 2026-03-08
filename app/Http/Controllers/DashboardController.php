@@ -96,6 +96,7 @@ class DashboardController extends Controller
                 'total_revenue' => 0,
                 'today_revenue' => 0,
                 'this_month_revenue' => 0,
+                'potential_revenue' => 0,
             ];
 
             return view('dashboard.index-adminlte', [

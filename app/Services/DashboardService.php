@@ -245,10 +245,15 @@ class DashboardService
                 ->whereYear('paid_at', now()->year)
                 ->sum('amount');
 
+            // Potential revenue (everything not recorded as paid/completed yet but reserved/confirmed)
+            $potentialRevenue = (float) Booth::whereIn('status', [Booth::STATUS_RESERVED, Booth::STATUS_CONFIRMED])
+                ->sum('price');
+
             return [
                 'total_revenue' => $totalRevenue,
                 'today_revenue' => $todayRevenue,
                 'this_month_revenue' => $thisMonthRevenue,
+                'potential_revenue' => $potentialRevenue,
             ];
         } catch (\Exception $e) {
             Log::error('Revenue calculation error: '.$e->getMessage());
@@ -257,6 +262,7 @@ class DashboardService
                 'total_revenue' => 0,
                 'today_revenue' => 0,
                 'this_month_revenue' => 0,
+                'potential_revenue' => 0,
             ];
         }
     }

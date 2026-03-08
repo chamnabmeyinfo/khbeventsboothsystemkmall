@@ -16,55 +16,12 @@
     <link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}">
     <link rel="stylesheet" href="{{ asset('css/global-ux-consistency.css') }}">
     
+    <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}">
+    
     @stack('styles')
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ route('admin.dashboard') }}">
-                <i class="fas fa-calendar-alt me-2"></i>Event Management
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('admin.dashboard') }}">Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('admin.events.index') }}">Events</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('dashboard') }}">Booth System</a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav">
-                    @auth('admin')
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-shield me-1"></i>{{ auth('admin')->user()->name ?? auth('admin')->user()->username }}
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form method="POST" action="{{ route('admin.logout') }}">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item">Logout</button>
-                                </form>
-                            </li>
-                        </ul>
-                    </li>
-                    @else
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('admin.login') }}">Admin Login</a>
-                    </li>
-                    @endauth
-                </ul>
-            </div>
-        </div>
-    </nav>
+    @include('partials.modern-header')
 
     <main class="container-fluid py-4">
         @if(session('success'))
