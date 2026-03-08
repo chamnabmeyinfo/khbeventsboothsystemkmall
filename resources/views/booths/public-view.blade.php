@@ -1907,6 +1907,9 @@
         const canvasWidth = {{ $canvasWidth }};
         const canvasHeight = {{ $canvasHeight }};
         
+        // DEBUG: log booking permission per booth (open browser console to check)
+        console.log('[DEBUG] Booths with booking data:', booths.filter(function(b){ return b.book_id; }).map(function(b){ return { booth_number: b.booth_number, book_id: b.book_id, can_manage_booking: b.can_manage_booking }; }));
+        
         // Set canvas size
         if (canvas) {
             canvas.style.width = canvasWidth + 'px';
