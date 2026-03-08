@@ -1,3 +1,4 @@
+agent --resume=ef13cded-3b5c-4207-ac91-aad74eff91d9
 # Floor Plan Designer UI Guide
 
 **Last Updated:** March 7, 2026
