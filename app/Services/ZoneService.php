@@ -241,7 +241,10 @@ class ZoneService
             foreach ($zoneBooths as $booth) {
                 $result = $this->deleteBoothIfAllowed($booth, $forceDelete);
                 if ($result['deleted']) {
-                    $deletedBooths[] = $booth->booth_number;
+                    $deletedBooths[] = [
+                        'id' => $booth->id,
+                        'booth_number' => $booth->booth_number
+                    ];
                 } elseif ($result['booked']) {
                     $bookedBooths[] = [
                         'booth_number' => $booth->booth_number,
@@ -266,7 +269,10 @@ class ZoneService
 
                     $result = $this->deleteBoothIfAllowed($booth, $forceDelete);
                     if ($result['deleted']) {
-                        $deletedBooths[] = $booth->booth_number;
+                        $deletedBooths[] = [
+                            'id' => $booth->id,
+                            'booth_number' => $booth->booth_number
+                        ];
                     } elseif ($result['booked']) {
                         $bookedBooths[] = [
                             'booth_number' => $booth->booth_number,
@@ -306,7 +312,10 @@ class ZoneService
                     if ($booth) {
                         $result = $this->deleteBoothIfAllowed($booth, $forceDelete);
                         if ($result['deleted']) {
-                            $deletedBooths[] = $boothNumber;
+                            $deletedBooths[] = [
+                                'id' => $booth->id,
+                                'booth_number' => $boothNumber
+                            ];
                         } elseif ($result['booked']) {
                             $bookedBooths[] = [
                                 'booth_number' => $boothNumber,

@@ -1447,8 +1447,13 @@ class BoothController extends Controller
                         }
                     }
 
+                    $boothId = $booth->id;
                     $booth->delete();
-                    $deletedBooths[] = ['booth_number' => $boothNumber, 'floor_plan' => $floorPlanName];
+                    $deletedBooths[] = [
+                        'id' => $boothId,
+                        'booth_number' => $boothNumber,
+                        'floor_plan' => $floorPlanName
+                    ];
                 } catch (\Exception $e) {
                     $errors[] = [
                         'booth_id' => $boothId,

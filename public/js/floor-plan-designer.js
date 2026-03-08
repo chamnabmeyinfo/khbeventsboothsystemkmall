@@ -636,9 +636,6 @@ const FloorPlanDesigner = {
         this.showZoneAppearanceModal(zoneName);
     },
     
-    clearZoneBooths: function(zoneName) {
-        this.clearZone(zoneName);
-    },
 
     // ... Original FloorPlanDesigner methods continue below
     
