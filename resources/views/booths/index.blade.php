@@ -1,14 +1,47 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+@push('body-class', 'ios-dashboard-mode')
+
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/booths-premium-glamor.css') }}?v=1.0">
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
+<style>
+    
+    
+    
+    .text-dark-gray-gray { color: #1d1d1f !important; }
+    
+    /* Designer specific fixes */
+    .designer-toolbar {
+        background: rgba(255, 255, 255, 0.5) !important;
+        backdrop-filter: blur(24px) !important;
+        border-radius: 16px !important;
+        border: 1px solid rgba(255, 255, 255, 0.5) !important;
+        color: #1d1d1f !important;
+    }
+    .designer-toolbar button { color: #1d1d1f !important; border-radius: 8px !important; }
+    .designer-toolbar button.active { background: #6366f1 !important; color: white !important; }
+    
+    .controls-panel {
+        background: rgba(255, 255, 255, 0.5) !important;
+        backdrop-filter: blur(24px) !important;
+        border-radius: 20px !important;
+        border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    }
+</style>
+@endpush
+
 
 @section('title', isset($currentFloorPlan) && $currentFloorPlan ? (e($currentFloorPlan->name) . ' — Floor Plan') : 'Floor Plan Management')
 
 @push('styles')
+<link rel="stylesheet" href="{{ asset('css/booths-premium-glamor.css') }}?v=1.0">
 <link rel="stylesheet" href="{{ asset('css/floor-plan-designer.css') }}?v={{ config('app.asset_version') ?? filemtime(public_path('css/floor-plan-designer.css')) }}">
 @endpush
 
 @section('content')
+<div class='looker-dashboard'>
 
-<div class="container-fluid mt-2 mb-2">
+<div class="container-fluid">
     @if(!isset($currentFloorPlan) || !$currentFloorPlan)
     {{-- No floor plan chosen: show message at top and list at bottom; all other UI is hidden/blocked --}}
     <div class="no-floorplan-gate" role="alert" aria-live="polite">
@@ -40,16 +73,16 @@
     @else
     <!-- Floor Plan Selector -->
     @if(isset($floorPlans) && $floorPlans->count() > 0)
-    <div class="card mb-3">
-        <div class="card-body py-2">
+    <div class="glass-card mb-3">
+        <div class="p-4 py-2">
             <div class="row align-items-center">
                 <div class="col-md-4">
                     <label class="mb-0" style="font-weight: 600; color: #2d3748;">
-                        <i class="fas fa-map mr-2 text-primary"></i>Select Floor Plan:
+                        <i class="fas fa-map mr-2 text-dark-gray-gray"></i>Select Floor Plan:
                     </label>
                 </div>
                 <div class="col-md-6">
-                    <select id="floorPlanSelector" class="form-control" onchange="switchFloorPlan(this.value)" style="border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <select id="floorPlanSelector" class="glass-input" onchange="switchFloorPlan(this.value)" style="border-radius: 8px; border: 1px solid #e2e8f0;">
                         @foreach($floorPlans as $fp)
                             <option value="{{ $fp->id }}" {{ (isset($currentFloorPlan) && $currentFloorPlan && $currentFloorPlan->id == $fp->id) || (isset($floorPlanId) && $floorPlanId == $fp->id) ? 'selected' : '' }}>
                                 {{ $fp->name }}
@@ -60,10 +93,10 @@
                     </select>
                 </div>
                 <div class="col-md-2 text-right">
-                    <a href="{{ route('booths.index', ['view' => 'table']) }}" class="btn btn-sm btn-success mr-1" title="Booth Management">
+                    <a href="{{ route('booths.index', ['view' => 'table']) }}" class="btn btn-sm btn-glass-primary mr-1" title="Booth Management">
                         <i class="fas fa-table mr-1"></i>Management
                     </a>
-                    <a href="{{ route('floor-plans.index') }}" class="btn btn-sm btn-info" title="Manage Floor Plans">
+                    <a href="{{ route('floor-plans.index') }}" class="btn btn-sm btn-glass-secondary" title="Manage Floor Plans">
                         <i class="fas fa-cog mr-1"></i>Floor Plans
                     </a>
                 </div>
@@ -120,7 +153,7 @@
         <!-- Canvas loading overlay: hidden once floor plan and booths are ready -->
         <div id="canvasLoadingOverlay" class="canvas-loading-overlay" aria-live="polite" aria-busy="true">
             <div class="canvas-loading-content">
-                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"><span class="sr-only">Loading...</span></div>
+                <div class="spinner-border text-dark-gray-gray" role="status" style="width: 3rem; height: 3rem;"><span class="sr-only">Loading...</span></div>
                 <p class="mt-3 mb-0 font-weight-bold">Loading floor plan…</p>
                 <p class="small text-muted">Setting up canvas and booths</p>
             </div>
@@ -313,7 +346,7 @@
                     <i class="fas fa-eye"></i>
                 </button>
                 @if(isset($canEditCanvas) && $canEditCanvas)
-                <button class="toolbar-btn btn-primary" id="btnSave" title="Save Floor Plan">
+                <button class="toolbar-btn btn-glass-primary" id="btnSave" title="Save Floor Plan">
                     <i class="fas fa-save"></i> Save
             </button>
                 @endif
@@ -448,19 +481,19 @@
                                 <i class="fas fa-check-circle"></i>
                                 <span>In Stock</span>
                             </button>
-                            <button class="btn btn-sm btn-link text-white" id="toggleSidebar" title="Collapse Sidebar">
+                            <button class="btn btn-sm btn-link text-dark-gray-gray" id="toggleSidebar" title="Collapse Sidebar">
                         <i class="fas fa-chevron-left"></i>
                     </button>
                         </div>
                 </div>
                 <div class="sidebar-content">
                     <div class="mb-3 d-flex align-items-center" style="gap:8px;">
-                        <button class="btn btn-sm btn-primary btn-block" id="btnAddZoneMain" style="flex:1; border-radius: 10px; padding: 10px 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                        <button class="btn btn-sm btn-glass-primary btn-block" id="btnAddZoneMain" style="flex:1; border-radius: 10px; padding: 10px 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
                             <i class="fas fa-plus"></i> Add Zone
                         </button>
                     </div>
                     <div class="sidebar-search mb-2">
-                        <input type="text" class="form-control form-control-sm" id="boothSearchSidebar" placeholder="Search booths...">
+                        <input type="text" class="glass-input glass-input-sm" id="boothSearchSidebar" placeholder="Search booths...">
                     </div>
                     
                     <!-- Zone Header Button Controls -->
@@ -715,7 +748,7 @@
         <div class="properties-panel" id="propertiesPanel">
             <div class="panel-header">
                 <h6><i class="fas fa-info-circle"></i> Properties</h6>
-                <button class="btn btn-sm btn-link text-white" id="closePropertiesPanel" title="Close">
+                <button class="btn btn-sm btn-link text-dark-gray-gray" id="closePropertiesPanel" title="Close">
                     <i class="fas fa-times"></i>
                 </button>
                     </div>
@@ -755,7 +788,7 @@
                         <label for="floorplanImage">
                             <i class="fas fa-image"></i> Select Floorplan Image
                         </label>
-                        <input type="file" class="form-control-file" id="floorplanImageInput" name="floorplan_image" accept="image/*" required>
+                        <input type="file" class="glass-input-file" id="floorplanImageInput" name="floorplan_image" accept="image/*" required>
                         <small class="form-text text-muted" id="uploadSizeLimitText">{{ \App\Helpers\UploadSettingsHelper::getHint('floor_plan') }}</small>
                     </div>
                     <div class="form-group">
@@ -769,8 +802,8 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="btnUploadFloorplanSubmit">
+                <button type="button" class="btn btn-glass-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-glass-primary" id="btnUploadFloorplanSubmit">
                     <i class="fas fa-upload"></i> Upload
                 </button>
                     </div>
@@ -796,35 +829,35 @@
                         <label for="canvasWidth">
                             <i class="fas fa-arrows-alt-h"></i> Canvas Width (px)
                         </label>
-                        <input type="number" class="form-control" id="canvasWidth" min="5" step="1" value="1200">
+                        <input type="number" class="glass-input" id="canvasWidth" min="5" step="1" value="1200">
                         <small class="form-text text-muted">Width of the canvas in pixels (minimum: 5px, no maximum limit)</small>
                     </div>
                     <div class="form-group">
                         <label for="canvasHeight">
                             <i class="fas fa-arrows-alt-v"></i> Canvas Height (px)
                         </label>
-                        <input type="number" class="form-control" id="canvasHeight" min="5" step="1" value="800">
+                        <input type="number" class="glass-input" id="canvasHeight" min="5" step="1" value="800">
                         <small class="form-text text-muted">Height of the canvas in pixels (minimum: 5px, no maximum limit)</small>
                     </div>
                     <div class="form-group">
                         <label for="canvasResolution">
                             <i class="fas fa-image"></i> Export Resolution (DPI)
                         </label>
-                        <input type="number" class="form-control" id="canvasResolution" min="72" max="600" step="1" value="300">
+                        <input type="number" class="glass-input" id="canvasResolution" min="72" max="600" step="1" value="300">
                         <small class="form-text text-muted">Resolution for PNG export (72-600 DPI). Higher DPI = better quality but larger file size.</small>
                     </div>
                     <div class="form-group">
                         <label for="gridSize">
                             <i class="fas fa-th"></i> Grid Size (px)
                         </label>
-                        <input type="number" class="form-control" id="gridSize" min="1" max="100" step="1" value="1" placeholder="1">
+                        <input type="number" class="glass-input" id="gridSize" min="1" max="100" step="1" value="1" placeholder="1">
                         <small class="form-text text-muted">Size of grid cells in pixels. Affects both visual grid and snap-to-grid behavior.</small>
                     </div>
                     <div class="form-group">
                         <label for="uploadSizeLimit">
                             <i class="fas fa-upload"></i> Upload Size Limit (MB)
                         </label>
-                        <input type="number" class="form-control" id="uploadSizeLimit" min="1" step="1" value="10">
+                        <input type="number" class="glass-input" id="uploadSizeLimit" min="1" step="1" value="10">
                         <small class="form-text text-muted">Maximum file size allowed for floorplan image uploads (in megabytes). No maximum limit if left empty or set to 0.</small>
                     </div>
                     <div class="alert alert-info">
@@ -833,8 +866,8 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="applyCanvasSettings">
+                <button type="button" class="btn btn-glass-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-glass-primary" id="applyCanvasSettings">
                     <i class="fas fa-check"></i> Apply Settings
                 </button>
             </div>
@@ -863,11 +896,11 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <label for="boothFrom" class="small">From Number</label>
-                                <input type="number" class="form-control" id="boothFrom" min="1" max="9999" value="1" required>
+                                <input type="number" class="glass-input" id="boothFrom" min="1" max="9999" value="1" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="boothTo" class="small">To Number</label>
-                                <input type="number" class="form-control" id="boothTo" min="1" max="9999" value="1" required>
+                                <input type="number" class="glass-input" id="boothTo" min="1" max="9999" value="1" required>
                             </div>
                         </div>
                         <small class="form-text text-muted">Enter the range of booth numbers to create. For example, From: 1, To: 50 will create A01, A02, A03... A50</small>
@@ -876,7 +909,7 @@
                         <label for="boothNumberFormat">
                             <i class="fas fa-tag"></i> Number Format
                         </label>
-                        <select class="form-control" id="boothNumberFormat">
+                        <select class="glass-input" id="boothNumberFormat">
                             <option value="2">2 digits (A01, A02, A03...)</option>
                             <option value="3">3 digits (A001, A002, A003...)</option>
                             <option value="4">4 digits (A0001, A0002, A0003...)</option>
@@ -897,8 +930,8 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="btnAddBoothSubmit">
+                <button type="button" class="btn btn-glass-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-glass-primary" id="btnAddBoothSubmit">
                     <i class="fas fa-plus"></i> Add Booth(s)
                 </button>
             </div>
@@ -924,14 +957,14 @@
                         <label for="zoneNameInput">
                             <i class="fas fa-vector-square"></i> Zone Name (letters only)
                         </label>
-                        <input type="text" class="form-control" id="zoneNameInput" maxlength="3" placeholder="e.g., A or B or ABC" required>
+                        <input type="text" class="glass-input" id="zoneNameInput" maxlength="3" placeholder="e.g., A or B or ABC" required>
                         <small class="form-text text-muted">Letters only, 1-3 characters. The first booth will be created as ZoneName + 01 (e.g., A01).</small>
                     </div>
                     <div class="form-group">
                         <label for="zoneAboutInput">
                             <i class="fas fa-info-circle"></i> Zone About
                         </label>
-                        <textarea class="form-control" id="zoneAboutInput" rows="3" placeholder="Enter description or information about this zone..."></textarea>
+                        <textarea class="glass-input" id="zoneAboutInput" rows="3" placeholder="Enter description or information about this zone..."></textarea>
                         <small class="form-text text-muted">Optional: Add a description or important information about this zone.</small>
                     </div>
                     <div class="alert alert-info">
@@ -940,8 +973,8 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="btnAddZoneSubmit">
+                <button type="button" class="btn btn-glass-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-glass-primary" id="btnAddZoneSubmit">
                     <i class="fas fa-plus"></i> Create Zone
                 </button>
             </div>
@@ -953,11 +986,11 @@
 <div class="modal fade" id="deleteBoothModal" tabindex="-1" role="dialog" aria-labelledby="deleteBoothModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
+            <div class="modal-header bg-danger text-dark-gray-gray">
                 <h5 class="modal-title" id="deleteBoothModalLabel">
                     <i class="fas fa-trash"></i> Delete Booths from Zone <span id="deleteBoothZoneName"></span>
                 </h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close text-dark-gray-gray" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -998,7 +1031,7 @@
                                 <label>
                                     <i class="fas fa-hashtag"></i> Total Booths in Zone
                                 </label>
-                                <input type="text" class="form-control" id="deleteAllCount" readonly style="background-color: #f8f9fa;">
+                                <input type="text" class="glass-input" id="deleteAllCount" readonly style="background-color: #f8f9fa;">
                                 <small class="form-text text-muted">All these booths will be permanently deleted.</small>
                             </div>
                             <div class="form-group">
@@ -1023,10 +1056,10 @@
                                 <small class="form-text text-muted">Check the booths you want to delete. You can select multiple booths.</small>
                             </div>
                             <div class="form-group">
-                                <button type="button" class="btn btn-sm btn-outline-secondary" id="selectAllBooths">
+                                <button type="button" class="btn btn-sm btn-glass-secondary" id="selectAllBooths">
                                     <i class="fas fa-check-square"></i> Select All
                                 </button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllBooths">
+                                <button type="button" class="btn btn-sm btn-glass-secondary" id="deselectAllBooths">
                                     <i class="fas fa-square"></i> Deselect All
                                 </button>
                             </div>
@@ -1041,11 +1074,11 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <label for="deleteFrom" class="small">From Number</label>
-                                        <input type="number" class="form-control" id="deleteFrom" min="1" max="9999" value="1">
+                                        <input type="number" class="glass-input" id="deleteFrom" min="1" max="9999" value="1">
                                     </div>
                                     <div class="col-md-6">
                                         <label for="deleteTo" class="small">To Number</label>
-                                        <input type="number" class="form-control" id="deleteTo" min="1" max="9999" value="1">
+                                        <input type="number" class="glass-input" id="deleteTo" min="1" max="9999" value="1">
                                     </div>
                                 </div>
                                 <small class="form-text text-muted">Enter the range of booth numbers to delete. For example, From: 1, To: 50 will delete A01, A02, A03... A50</small>
@@ -1072,7 +1105,7 @@
                                 <label for="deleteByBoothIdsInput">
                                     <i class="fas fa-hashtag"></i> Booth ID(s) (comma-separated)
                                 </label>
-                                <input type="text" class="form-control" id="deleteByBoothIdsInput" placeholder="e.g. 123, 456, 789" autocomplete="off">
+                                <input type="text" class="glass-input" id="deleteByBoothIdsInput" placeholder="e.g. 123, 456, 789" autocomplete="off">
                                 <small class="form-text text-muted">Enter one or more booth IDs. They will be deleted from whichever zone and floor plan they belong to.</small>
                             </div>
                             <div class="alert alert-warning">
@@ -1083,7 +1116,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-glass-secondary" data-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-danger" id="btnDeleteBoothSubmit">
                     <i class="fas fa-trash"></i> Delete
                 </button>
@@ -1096,11 +1129,11 @@
 <div class="modal fade" id="bookBoothModal" tabindex="-1" role="dialog" aria-labelledby="bookBoothModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
+            <div class="modal-header bg-primary text-dark-gray-gray">
                 <h5 class="modal-title" id="bookBoothModalLabel">
                     <i class="fas fa-calendar-check"></i> Book Booth: <span id="bookBoothNumber"></span>
                 </h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close text-dark-gray-gray" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -1118,12 +1151,12 @@
                             <i class="fas fa-search"></i> Search Existing Client
                         </label>
                         <div class="input-group">
-                            <input type="text" class="form-control" id="clientSearch" placeholder="Search by name, company, email, or phone number..." autocomplete="off">
+                            <input type="text" class="glass-input" id="clientSearch" placeholder="Search by name, company, email, or phone number..." autocomplete="off">
                             <div class="input-group-append">
-                                <button type="button" class="btn btn-primary" id="btnSearchClient">
+                                <button type="button" class="btn btn-glass-primary" id="btnSearchClient">
                                     <i class="fas fa-search"></i> Search
                                 </button>
-                                <button type="button" class="btn btn-outline-secondary" id="btnClearSearch" style="display: none;">
+                                <button type="button" class="btn btn-glass-secondary" id="btnClearSearch" style="display: none;">
                                     <i class="fas fa-times"></i> Clear
                                 </button>
                             </div>
@@ -1143,7 +1176,7 @@
                                 <label for="clientName">
                                     <i class="fas fa-user"></i> Client Name <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" class="form-control" id="clientName" name="name" required placeholder="Enter client name">
+                                <input type="text" class="glass-input" id="clientName" name="name" required placeholder="Enter client name">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -1151,7 +1184,7 @@
                                 <label for="clientSex">
                                     <i class="fas fa-venus-mars"></i> Gender
                                 </label>
-                                <select class="form-control" id="clientSex" name="sex">
+                                <select class="glass-input" id="clientSex" name="sex">
                             <option value="">Select Gender</option>
                             <option value="1">Male</option>
                             <option value="2">Female</option>
@@ -1167,7 +1200,7 @@
                                 <label for="clientCompany">
                                     <i class="fas fa-building"></i> Company <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" class="form-control" id="clientCompany" name="company" required placeholder="Enter company name">
+                                <input type="text" class="glass-input" id="clientCompany" name="company" required placeholder="Enter company name">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -1175,7 +1208,7 @@
                                 <label for="clientPosition">
                                     <i class="fas fa-briefcase"></i> Position
                                 </label>
-                                <input type="text" class="form-control" id="clientPosition" name="position" placeholder="Enter position/title">
+                                <input type="text" class="glass-input" id="clientPosition" name="position" placeholder="Enter position/title">
                             </div>
                         </div>
                     </div>
@@ -1186,7 +1219,7 @@
                                 <label for="clientPhone">
                                     <i class="fas fa-phone"></i> Phone Number <span class="text-danger">*</span>
                                 </label>
-                                <input type="tel" class="form-control" id="clientPhone" name="phone_number" required placeholder="Enter phone number">
+                                <input type="tel" class="glass-input" id="clientPhone" name="phone_number" required placeholder="Enter phone number">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -1194,7 +1227,7 @@
                                 <label for="clientEmail">
                                     <i class="fas fa-envelope"></i> Email Address <span class="text-danger">*</span>
                                 </label>
-                                <input type="email" class="form-control" id="clientEmail" name="email" required placeholder="Enter email address">
+                                <input type="email" class="glass-input" id="clientEmail" name="email" required placeholder="Enter email address">
                             </div>
                         </div>
                     </div>
@@ -1203,7 +1236,7 @@
                         <label for="clientAddress">
                             <i class="fas fa-map-marker-alt"></i> Address <span class="text-danger">*</span>
                         </label>
-                        <textarea class="form-control" id="clientAddress" name="address" rows="2" required placeholder="Enter complete address (street, city, country)"></textarea>
+                        <textarea class="glass-input" id="clientAddress" name="address" rows="2" required placeholder="Enter complete address (street, city, country)"></textarea>
                     </div>
                     
                     <div class="row">
@@ -1212,7 +1245,7 @@
                                 <label for="clientTaxId">
                                     <i class="fas fa-id-card"></i> Tax ID / Business Registration Number
                                 </label>
-                                <input type="text" class="form-control" id="clientTaxId" name="tax_id" placeholder="Enter tax ID or business registration number">
+                                <input type="text" class="glass-input" id="clientTaxId" name="tax_id" placeholder="Enter tax ID or business registration number">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -1220,7 +1253,7 @@
                                 <label for="clientWebsite">
                                     <i class="fas fa-globe"></i> Website
                                 </label>
-                                <input type="url" class="form-control" id="clientWebsite" name="website" placeholder="Enter website URL (e.g., https://example.com)">
+                                <input type="url" class="glass-input" id="clientWebsite" name="website" placeholder="Enter website URL (e.g., https://example.com)">
                             </div>
                         </div>
                     </div>
@@ -1229,14 +1262,14 @@
                         <label for="clientNotes">
                             <i class="fas fa-sticky-note"></i> Additional Notes
                         </label>
-                        <textarea class="form-control" id="clientNotes" name="notes" rows="2" placeholder="Enter any additional information or notes"></textarea>
+                        <textarea class="glass-input" id="clientNotes" name="notes" rows="2" placeholder="Enter any additional information or notes"></textarea>
                     </div>
                     
                     <div class="form-group">
                         <label for="bookingStatus">
                             <i class="fas fa-tag"></i> Booking Status
                         </label>
-                        <select class="form-control" id="bookingStatus" name="status">
+                        <select class="glass-input" id="bookingStatus" name="status">
                             @php
                                 $bookingStatuses = isset($statusSettings) ? $statusSettings->filter(function($s) {
                                     return $s->status_code != 1 && $s->status_code != 4; // Exclude Available and Hidden
@@ -1266,10 +1299,10 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
+                <button type="button" class="btn btn-glass-secondary" data-dismiss="modal">
                     <i class="fas fa-times"></i> Cancel
                 </button>
-                <button type="button" class="btn btn-primary" id="btnBookBoothSubmit">
+                <button type="button" class="btn btn-glass-primary" id="btnBookBoothSubmit">
                     <i class="fas fa-save"></i> Save Booking
                 </button>
             </div>
@@ -1285,7 +1318,7 @@
                 <h5 class="modal-title" id="boothColorPickerModalLabel">
                     <i class="fas fa-palette"></i> Set Colors for Booth: <span id="colorPickerBoothNumber"></span>
                 </h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close text-dark-gray-gray" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -1306,10 +1339,10 @@
                             <i class="fas fa-fill"></i> Background Color
                         </label>
                         <div class="input-group">
-                            <input type="color" class="form-control form-control-color" id="boothBackgroundColor" value="#ffffff" title="Choose background color">
-                            <input type="text" class="form-control" id="boothBackgroundColorText" value="#ffffff" placeholder="#ffffff" maxlength="7">
+                            <input type="color" class="glass-input glass-input-color" id="boothBackgroundColor" value="#ffffff" title="Choose background color">
+                            <input type="text" class="glass-input" id="boothBackgroundColorText" value="#ffffff" placeholder="#ffffff" maxlength="7">
                             <div class="input-group-append">
-                                <button type="button" class="btn btn-outline-secondary" id="clearBoothBackgroundColor" title="Clear (use status color)">
+                                <button type="button" class="btn btn-glass-secondary" id="clearBoothBackgroundColor" title="Clear (use status color)">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
@@ -1322,10 +1355,10 @@
                             <i class="fas fa-border-all"></i> Border Color
                         </label>
                         <div class="input-group">
-                            <input type="color" class="form-control form-control-color" id="boothBorderColor" value="#007bff" title="Choose border color">
-                            <input type="text" class="form-control" id="boothBorderColorText" value="#007bff" placeholder="#007bff" maxlength="7">
+                            <input type="color" class="glass-input glass-input-color" id="boothBorderColor" value="#007bff" title="Choose border color">
+                            <input type="text" class="glass-input" id="boothBorderColorText" value="#007bff" placeholder="#007bff" maxlength="7">
                             <div class="input-group-append">
-                                <button type="button" class="btn btn-outline-secondary" id="clearBoothBorderColor" title="Clear (use status color)">
+                                <button type="button" class="btn btn-glass-secondary" id="clearBoothBorderColor" title="Clear (use status color)">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
@@ -1338,10 +1371,10 @@
                             <i class="fas fa-font"></i> Text Color
                         </label>
                         <div class="input-group">
-                            <input type="color" class="form-control form-control-color" id="boothTextColor" value="#000000" title="Choose text color">
-                            <input type="text" class="form-control" id="boothTextColorText" value="#000000" placeholder="#000000" maxlength="7">
+                            <input type="color" class="glass-input glass-input-color" id="boothTextColor" value="#000000" title="Choose text color">
+                            <input type="text" class="glass-input" id="boothTextColorText" value="#000000" placeholder="#000000" maxlength="7">
                             <div class="input-group-append">
-                                <button type="button" class="btn btn-outline-secondary" id="clearBoothTextColor" title="Clear (use status color)">
+                                <button type="button" class="btn btn-glass-secondary" id="clearBoothTextColor" title="Clear (use status color)">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
@@ -1355,13 +1388,13 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
+                <button type="button" class="btn btn-glass-secondary" data-dismiss="modal">
                     <i class="fas fa-times"></i> Cancel
                 </button>
                 <button type="button" class="btn btn-warning" id="resetBoothColors">
                     <i class="fas fa-undo"></i> Reset to Status Colors
                 </button>
-                <button type="button" class="btn btn-primary" id="saveBoothColors">
+                <button type="button" class="btn btn-glass-primary" id="saveBoothColors">
                     <i class="fas fa-save"></i> Save Colors
                 </button>
             </div>
@@ -1390,56 +1423,56 @@
                         <label for="defaultWidth">
                             <i class="fas fa-arrows-alt-h"></i> Default Width (px)
                         </label>
-                        <input type="number" class="form-control" id="defaultWidth" min="5" step="1" value="80">
+                        <input type="number" class="glass-input" id="defaultWidth" min="5" step="1" value="80">
                         <small class="form-text text-muted">Default width for new booths (minimum: 5px)</small>
                     </div>
                     <div class="form-group">
                         <label for="defaultHeight">
                             <i class="fas fa-arrows-alt-v"></i> Default Height (px)
                         </label>
-                        <input type="number" class="form-control" id="defaultHeight" min="5" step="1" value="50">
+                        <input type="number" class="glass-input" id="defaultHeight" min="5" step="1" value="50">
                         <small class="form-text text-muted">Default height for new booths (minimum: 5px)</small>
                     </div>
                     <div class="form-group">
                         <label for="defaultRotation">
                             <i class="fas fa-redo"></i> Default Rotation (degrees)
                         </label>
-                        <input type="number" class="form-control" id="defaultRotation" min="-360" max="360" step="1" value="0">
+                        <input type="number" class="glass-input" id="defaultRotation" min="-360" max="360" step="1" value="0">
                         <small class="form-text text-muted">Default rotation angle for new booths</small>
                     </div>
                     <div class="form-group">
                         <label for="defaultZIndex">
                             <i class="fas fa-layer-group"></i> Default Z-Index
                         </label>
-                        <input type="number" class="form-control" id="defaultZIndex" min="1" max="1000" step="1" value="10">
+                        <input type="number" class="glass-input" id="defaultZIndex" min="1" max="1000" step="1" value="10">
                         <small class="form-text text-muted">Default stacking order (higher = on top)</small>
                     </div>
                     <div class="form-group">
                         <label for="defaultFontSize">
                             <i class="fas fa-font"></i> Default Font Size (px)
                         </label>
-                        <input type="number" class="form-control" id="defaultFontSize" min="8" max="48" step="1" value="14">
+                        <input type="number" class="glass-input" id="defaultFontSize" min="8" max="48" step="1" value="14">
                         <small class="form-text text-muted">Default font size for booth number text</small>
                     </div>
                     <div class="form-group">
                         <label for="defaultBorderWidth">
                             <i class="fas fa-border-style"></i> Default Border Width (px)
                         </label>
-                        <input type="number" class="form-control" id="defaultBorderWidth" min="0" max="10" step="1" value="2">
+                        <input type="number" class="glass-input" id="defaultBorderWidth" min="0" max="10" step="1" value="2">
                         <small class="form-text text-muted">Default border width for booths</small>
                     </div>
                     <div class="form-group">
                         <label for="defaultBorderRadius">
                             <i class="fas fa-circle"></i> Default Border Radius (px)
                         </label>
-                        <input type="number" class="form-control" id="defaultBorderRadius" min="0" max="50" step="1" value="6">
+                        <input type="number" class="glass-input" id="defaultBorderRadius" min="0" max="50" step="1" value="6">
                         <small class="form-text text-muted">Default corner rounding for booths</small>
                     </div>
                     <div class="form-group">
                         <label for="defaultOpacity">
                             <i class="fas fa-adjust"></i> Default Opacity
                         </label>
-                        <input type="number" class="form-control" id="defaultOpacity" min="0" max="1" step="0.1" value="1.00">
+                        <input type="number" class="glass-input" id="defaultOpacity" min="0" max="1" step="0.1" value="1.00">
                         <small class="form-text text-muted">Default transparency (0.0 = transparent, 1.0 = opaque)</small>
                     </div>
                     
@@ -1453,8 +1486,8 @@
                             <i class="fas fa-fill"></i> Default Background Color
                         </label>
                         <div class="input-group">
-                            <input type="color" class="form-control form-control-color" id="defaultBackgroundColor" value="#ffffff" title="Choose background color">
-                            <input type="text" class="form-control" id="defaultBackgroundColorText" value="#ffffff" placeholder="#ffffff">
+                            <input type="color" class="glass-input glass-input-color" id="defaultBackgroundColor" value="#ffffff" title="Choose background color">
+                            <input type="text" class="glass-input" id="defaultBackgroundColorText" value="#ffffff" placeholder="#ffffff">
                         </div>
                         <small class="form-text text-muted">Default background color for new booths</small>
                     </div>
@@ -1464,8 +1497,8 @@
                             <i class="fas fa-border-all"></i> Default Border Color
                         </label>
                         <div class="input-group">
-                            <input type="color" class="form-control form-control-color" id="defaultBorderColor" value="#007bff" title="Choose border color">
-                            <input type="text" class="form-control" id="defaultBorderColorText" value="#007bff" placeholder="#007bff">
+                            <input type="color" class="glass-input glass-input-color" id="defaultBorderColor" value="#007bff" title="Choose border color">
+                            <input type="text" class="glass-input" id="defaultBorderColorText" value="#007bff" placeholder="#007bff">
                         </div>
                         <small class="form-text text-muted">Default border color for new booths</small>
                     </div>
@@ -1475,8 +1508,8 @@
                             <i class="fas fa-font"></i> Default Text Color
                         </label>
                         <div class="input-group">
-                            <input type="color" class="form-control form-control-color" id="defaultTextColor" value="#000000" title="Choose text color">
-                            <input type="text" class="form-control" id="defaultTextColorText" value="#000000" placeholder="#000000">
+                            <input type="color" class="glass-input glass-input-color" id="defaultTextColor" value="#000000" title="Choose text color">
+                            <input type="text" class="glass-input" id="defaultTextColorText" value="#000000" placeholder="#000000">
                         </div>
                         <small class="form-text text-muted">Default text color for booth numbers</small>
                     </div>
@@ -1490,7 +1523,7 @@
                         <label for="defaultFontWeight">
                             <i class="fas fa-bold"></i> Default Font Weight
                         </label>
-                        <select class="form-control" id="defaultFontWeight">
+                        <select class="glass-input" id="defaultFontWeight">
                             <option value="300">Light (300)</option>
                             <option value="400">Normal (400)</option>
                             <option value="500">Medium (500)</option>
@@ -1506,7 +1539,7 @@
                         <label for="defaultFontFamily">
                             <i class="fas fa-font"></i> Default Font Family
                         </label>
-                        <select class="form-control" id="defaultFontFamily">
+                        <select class="glass-input" id="defaultFontFamily">
                             <option value="Arial, sans-serif">Arial</option>
                             <option value="'Helvetica Neue', Helvetica, sans-serif">Helvetica</option>
                             <option value="'Times New Roman', serif">Times New Roman</option>
@@ -1527,7 +1560,7 @@
                         <label for="defaultTextAlign">
                             <i class="fas fa-align-center"></i> Default Text Alignment
                         </label>
-                        <select class="form-control" id="defaultTextAlign">
+                        <select class="glass-input" id="defaultTextAlign">
                             <option value="center" selected>Center</option>
                             <option value="left">Left</option>
                             <option value="right">Right</option>
@@ -1545,7 +1578,7 @@
                         <label for="defaultBoxShadow">
                             <i class="fas fa-box"></i> Default Box Shadow
                         </label>
-                        <select class="form-control" id="defaultBoxShadow">
+                        <select class="glass-input" id="defaultBoxShadow">
                             <option value="none">None</option>
                             <option value="0 2px 4px rgba(0,0,0,0.1)">Small</option>
                             <option value="0 2px 8px rgba(0,0,0,0.2)" selected>Medium (Default)</option>
@@ -1560,14 +1593,15 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="applyBoothSettings">
+                <button type="button" class="btn btn-glass-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-glass-primary" id="applyBoothSettings">
                     <i class="fas fa-check"></i> Apply Settings
                 </button>
             </div>
         </div>
     </div>
     @endif
+</div>
 </div>
 @endsection
 
@@ -1603,3 +1637,12 @@ window.FPD = {
 </script>
 <script src="{{ asset('js/floor-plan-designer.js') }}"></script>
 @endpush
+
+<style>
+    .glass-card, .looker-table, .designer-toolbar, .controls-panel {
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08), 0 1px 1px rgba(255,255,255,0.3) !important;
+    }
+    .btn-glass-primary {
+        box-shadow: 0 4px 14px 0 rgba(0, 118, 255, 0.39) !important;
+    }
+</style>

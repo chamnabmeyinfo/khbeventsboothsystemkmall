@@ -18,8 +18,8 @@
 
 <header class="modern-unified-header {{ $headerClass ?? '' }}">
     <div class="header-left">
-        @if($useSidebarToggle ?? false)
-            <button class="sidebar-toggle-btn" data-widget="pushmenu" role="button" aria-label="Toggle navigation">
+        @if($useSidebarToggle ?? true)
+            <button class="sidebar-toggle-btn" role="button" aria-label="Toggle navigation">
                 <i class="fas fa-bars"></i>
             </button>
         @endif

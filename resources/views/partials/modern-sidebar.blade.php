@@ -152,17 +152,21 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Sidebar Toggling
-    const toggleBtn = document.getElementById('sidebarCollapseBtn');
+    const toggleBtns = document.querySelectorAll('#sidebarCollapseBtn, .sidebar-toggle-btn');
     const sidebar = document.getElementById('mainSidebar');
     const mainContent = document.getElementById('main-content');
     
-    if (toggleBtn && sidebar) {
-        toggleBtn.addEventListener('click', function() {
-            sidebar.classList.toggle('collapsed');
-            if (mainContent) {
-                mainContent.classList.toggle('expanded');
+    toggleBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (sidebar) sidebar.classList.toggle('collapsed');
+            if (mainContent) mainContent.classList.toggle('expanded');
+            
+            // Mobile support
+            if (window.innerWidth <= 991 && sidebar) {
+                sidebar.classList.toggle('show');
             }
         });
-    }
+    });
 });
 </script>

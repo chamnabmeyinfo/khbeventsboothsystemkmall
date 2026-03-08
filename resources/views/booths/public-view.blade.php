@@ -23,8 +23,8 @@
         }
         
         .public-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            color: #1d1d1f;
             padding: 8px 15px;
             display: flex;
             justify-content: space-between;
@@ -112,7 +112,7 @@
         }
         
         .legend-label {
-            color: white;
+            color: #1d1d1f;
             font-weight: 500;
             font-size: 0.7rem;
             display: flex;
@@ -147,7 +147,7 @@
         }
         
         .legend-text {
-            color: white;
+            color: #1d1d1f;
             font-weight: 400;
             font-size: 0.7rem;
             white-space: nowrap;
@@ -155,8 +155,8 @@
         
         @media (max-width: 768px) {
             .public-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            color: #1d1d1f;
                 padding: 6px 12px;
                 gap: 8px;
             }
@@ -200,8 +200,8 @@
         
         @media (max-width: 480px) {
             .public-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            color: #1d1d1f;
                 padding: 6px 10px;
                 min-height: 44px;
             }
@@ -235,25 +235,25 @@
             font-size: 0.85rem;
             font-weight: 600;
             text-decoration: none;
-            color: white;
+            color: #1d1d1f;
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(10px);
             transition: background 0.2s;
         }
         .header-action-link:hover {
             background: rgba(255, 255, 255, 0.35);
-            color: white;
+            color: #1d1d1f;
         }
         .header-action-link.header-action-btn {
             background: transparent;
             border: none;
             cursor: pointer;
             font: inherit;
-            color: white;
+            color: #1d1d1f;
         }
         .header-action-link.header-action-btn:hover {
             background: rgba(255, 255, 255, 0.35);
-            color: white;
+            color: #1d1d1f;
         }
         .header-action-text { white-space: nowrap; }
         @media (max-width: 575.98px) {
@@ -265,7 +265,7 @@
             gap: 8px;
             padding: 12px 24px;
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
+            color: #1d1d1f;
             border: none;
             border-radius: 10px;
             font-weight: 600;
@@ -274,7 +274,7 @@
             box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        .btn-book-booth-public:hover { color: white; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(40, 167, 69, 0.5); }
+        .btn-book-booth-public:hover { color: #1d1d1f; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(40, 167, 69, 0.5); }
         /* Right-click context menu (public view - Create Booking) */
         .public-view-context-menu {
             display: none;
@@ -325,7 +325,7 @@
         }
         
         .zoom-label {
-            color: white;
+            color: #1d1d1f;
             font-weight: 500;
             font-size: 0.7rem;
             margin-right: 2px;
@@ -334,7 +334,7 @@
         .zoom-btn-simple {
             background: rgba(255, 255, 255, 0.25);
             border: none;
-            color: white;
+            color: #1d1d1f;
             width: 24px;
             height: 24px;
             border-radius: 4px;
@@ -352,7 +352,7 @@
         }
         
         .zoom-level-display {
-            color: white;
+            color: #1d1d1f;
             font-size: 0.7rem;
             font-weight: 500;
             min-width: 35px;
@@ -363,7 +363,7 @@
         .help-btn {
             background: rgba(255, 255, 255, 0.15);
             border: none;
-            color: white;
+            color: #1d1d1f;
             width: 28px;
             height: 28px;
             border-radius: 6px;
@@ -416,8 +416,8 @@
         }
         
         .help-modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            color: #1d1d1f;
             padding: 20px 25px;
             border-radius: 16px 16px 0 0;
             display: flex;
@@ -434,7 +434,7 @@
         .help-modal-close {
             background: rgba(255,255,255,0.2);
             border: none;
-            color: white;
+            color: #1d1d1f;
             width: 36px;
             height: 36px;
             border-radius: 50%;
@@ -522,8 +522,8 @@
         
         @media (max-width: 768px) {
             .public-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            color: #1d1d1f;
                 padding: 15px 20px;
             }
             
@@ -853,7 +853,7 @@
         .booth-tooltip {
             position: absolute;
             background: rgba(0, 0, 0, 0.95);
-            color: white;
+            color: #1d1d1f;
             padding: 16px 20px;
             border-radius: 12px;
             font-size: 0.9rem;
@@ -961,8 +961,8 @@
         }
         
         .booth-modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            color: #1d1d1f;
             padding: 25px 30px;
             border-radius: 16px 16px 0 0;
             display: flex;
@@ -979,7 +979,7 @@
         .booth-modal-close {
             background: rgba(255,255,255,0.2);
             border: none;
-            color: white;
+            color: #1d1d1f;
             width: 38px;
             height: 38px;
             border-radius: 50%;
@@ -1005,11 +1005,11 @@
         .public-booking-modal.active { display: flex; }
         .public-booking-modal .modal-content-inner { background: white; border-radius: 16px; width: 100%; max-width: 640px; min-width: 280px; height: 94vh; max-height: 94vh; overflow: hidden; box-shadow: 0 12px 48px rgba(0,0,0,0.3); animation: slideUp 0.3s ease; display: flex; flex-direction: column; flex-shrink: 0; margin: auto; }
         .public-booking-modal .modal-content-inner form.public-booking-form { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
-        .public-booking-modal .modal-header-inner { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 20px; border-radius: 16px 16px 0 0; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
+        .public-booking-modal .modal-header-inner { background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.5); color: #1d1d1f; padding: 16px 20px; border-radius: 16px 16px 0 0; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
         .public-booking-modal .modal-header-inner h3 { margin: 0; font-size: 1.2rem; font-weight: 700; }
         .public-booking-modal .modal-body-inner { padding: 20px; overflow-y: auto; flex: 1 1 0; min-height: 0; -webkit-overflow-scrolling: touch; scroll-padding-bottom: 24px; }
         .public-booking-modal .bf-body-end-spacer { height: 24px; flex-shrink: 0; }
-        .public-booking-modal .btn-close-inner { background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .public-booking-modal .btn-close-inner { background: rgba(255,255,255,0.2); border: none; color: #1d1d1f; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
         .public-booking-modal .btn-close-inner:hover { background: rgba(255,255,255,0.3); }
         .public-booking-modal .bf-section { margin-bottom: 24px; }
         .public-booking-modal .bf-section:last-of-type { margin-bottom: 8px; }
@@ -1062,7 +1062,7 @@
         .public-booking-modal .bf-btn-new-client:hover { background: #dee2e6; }
         .public-booking-modal .bf-client-selected { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; margin-bottom: 10px; }
         .public-booking-modal .bf-client-selected-info { display: flex; align-items: center; gap: 12px; }
-        .public-booking-modal .bf-client-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
+        .public-booking-modal .bf-client-avatar { width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.5); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
         .public-booking-modal .bf-client-name { font-weight: 600; color: #212529; }
         .public-booking-modal .bf-client-meta { font-size: 0.8rem; color: #6c757d; }
         .public-booking-modal .bf-btn-change { padding: 6px 12px; font-size: 0.8rem; background: #fff; border: 1px solid #dee2e6; border-radius: 6px; cursor: pointer; }
@@ -1080,7 +1080,7 @@
         .public-booking-modal .bf-footer { padding: 16px 20px; border-top: 1px solid #e9ecef; background: #f8f9fa; border-radius: 0 0 16px 16px; display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0; margin-top: auto; box-shadow: 0 -4px 12px rgba(0,0,0,0.06); position: relative; z-index: 5; flex-wrap: wrap; }
         .public-booking-modal .bf-btn { padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; }
         .public-booking-modal .bf-btn-outline-secondary { background: #fff; color: #495057; border: 1px solid #dee2e6; }
-        .public-booking-modal .bf-btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .public-booking-modal .bf-btn-primary { background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.5); color: #1d1d1f; }
         .public-booking-modal .bf-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
         @media (max-width: 576px) {
             .public-booking-modal { padding: 8px; align-items: flex-start; padding-top: 24px; padding-bottom: 24px; }
@@ -1134,7 +1134,7 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             font-size: 0.9rem;
             font-weight: 600;
-            color: white;
+            color: #1d1d1f;
         }
         
         /* Status badge colors only inside modal - do not affect canvas .dropped-booth */
@@ -1169,9 +1169,27 @@
             line-height: 1.7;
             font-size: 0.95rem;
         }
+    
+        body.ios-dashboard-mode {
+            background-color: #ffb8d2 !important;
+            background-image: 
+                radial-gradient(at 0% 0%, #4facfe 0px, transparent 50%),
+                radial-gradient(at 100% 0%, #00f2fe 0px, transparent 50%),
+                radial-gradient(at 100% 100%, #f093fb 0px, transparent 50%),
+                radial-gradient(at 0% 100%, #f5576c 0px, transparent 50%),
+                radial-gradient(at 50% 50%, #5ee7df 0px, transparent 50%) !important;
+            background-attachment: fixed !important;
+            background-size: 200% 200% !important;
+            animation: gradientMove 15s ease infinite !important;
+        }
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
     </style>
 </head>
-<body>
+<body class="ios-dashboard-mode">
     <!-- Public Header - Minimal Design -->
     <div class="public-header">
         <div class="header-left">
@@ -2076,7 +2094,7 @@
                     } else if (booth.company || booth.client_name) {
                         var customerLabel = booth.company || booth.client_name || 'Customer';
                         var initial = (customerLabel || '?').toString().charAt(0).toUpperCase();
-                        tooltipHTML += '<div class="booth-tooltip-customer-placeholder" style="margin-bottom: 12px; text-align: center; padding: 12px; background: rgba(255,255,255,0.08); border-radius: 8px;"><span style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 700; font-size: 1.4rem;">' + initial + '</span><div style="margin-top: 8px; font-weight: 600; color: rgba(255,255,255,0.95);">' + (customerLabel || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div></div>';
+                        tooltipHTML += '<div class="booth-tooltip-customer-placeholder" style="margin-bottom: 12px; text-align: center; padding: 12px; background: rgba(255,255,255,0.08); border-radius: 8px;"><span style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 50%; background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.5); color: #1d1d1f; font-weight: 700; font-size: 1.4rem;">' + initial + '</span><div style="margin-top: 8px; font-weight: 600; color: rgba(255,255,255,0.95);">' + (customerLabel || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div></div>';
                     }
                     // Booth image (only when no customer logo and no booked customer)
                     if (!booth.client_logo && !(booth.company || booth.client_name) && booth.booth_image) {
@@ -2665,7 +2683,7 @@
                 var customerLabel = booth.company || booth.client_name || 'Customer';
                 var initial = (customerLabel || '?').toString().charAt(0).toUpperCase();
                 html += '<div class="booth-detail-section booth-detail-customer-placeholder" style="margin-bottom: 25px; text-align: center; padding: 24px; background: linear-gradient(135deg, rgba(102,126,234,0.08) 0%, rgba(118,75,162,0.08) 100%); border-radius: 12px; border: 1px solid rgba(102,126,234,0.2);">';
-                html += '<span style="display: inline-flex; align-items: center; justify-content: center; width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 700; font-size: 1.8rem;">' + initial + '</span>';
+                html += '<span style="display: inline-flex; align-items: center; justify-content: center; width: 72px; height: 72px; border-radius: 50%; background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.5); color: #1d1d1f; font-weight: 700; font-size: 1.8rem;">' + initial + '</span>';
                 html += '<div style="margin-top: 12px; font-weight: 700; font-size: 1.1rem; color: #212529;">' + (customerLabel || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
                 html += '</div>';
             }
@@ -2821,7 +2839,7 @@
             // Delete booking (only when user has management permission and booth is booked)
             if (booth.can_manage_booking && booth.book_id) {
                 html += '<div class="booth-detail-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e9ecef;">';
-                html += '<button type="button" class="btn-delete-booking-public" data-book-id="' + booth.book_id + '" data-booth-id="' + booth.id + '" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);"><i class="fas fa-trash"></i> Delete Booking</button>';
+                html += '<button type="button" class="btn-delete-booking-public" data-book-id="' + booth.book_id + '" data-booth-id="' + booth.id + '" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #dc3545; color: #1d1d1f; border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);"><i class="fas fa-trash"></i> Delete Booking</button>';
                 html += '<p class="text-muted small mt-2 mb-0">Delete this booking. (If payment exists, action will be blocked)</p>';
                 html += '</div>';
             }

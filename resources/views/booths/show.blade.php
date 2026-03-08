@@ -10,14 +10,14 @@
     <div class="col-md-8">
         <div class="glass-card">
             <div class="p-4 border-bottom">
-                <h3 class="h5 fw-bold mb-0 text-white">Booth Information</h3>
+                <h3 class="h5 fw-bold mb-0 text-dark-gray-gray">Booth Information</h3>
                 <div class="card-tools">
-                    <a href="{{ route('booths.index') }}" class="btn btn-sm btn-outline-secondary">
+                    <a href="{{ route('booths.index') }}" class="btn btn-sm btn-glass-secondary">
                         <i class="fas fa-arrow-left"></i> Back to Booths
                     </a>
                     @auth
                     @if(auth()->user()->isAdmin())
-                    <a href="{{ route('booths.edit', $booth) }}" class="btn btn-sm btn-primary">
+                    <a href="{{ route('booths.edit', $booth) }}" class="btn btn-sm btn-glass-primary">
                         <i class="fas fa-edit"></i> Edit
                     </a>
                     @endif
@@ -70,13 +70,13 @@
         {{-- Booth Image Gallery --}}
         <div class="glass-card">
             <div class="p-4 border-bottom">
-                <h3 class="h5 fw-bold mb-0 text-white">
+                <h3 class="h5 fw-bold mb-0 text-dark-gray-gray">
                     <i class="fas fa-images"></i> Booth Images
                 </h3>
                 @auth
                 @if(auth()->user()->isAdmin())
                 <div class="card-tools">
-                    <button type="button" class="btn btn-sm btn-primary" onclick="showUploadModal()">
+                    <button type="button" class="btn btn-sm btn-glass-primary" onclick="showUploadModal()">
                         <i class="fas fa-upload"></i> Upload Images
                     </button>
                 </div>
@@ -96,7 +96,7 @@
         @if($booth->client)
         <div class="glass-card">
             <div class="p-4 border-bottom">
-                <h3 class="h5 fw-bold mb-0 text-white">Client Information</h3>
+                <h3 class="h5 fw-bold mb-0 text-dark-gray-gray">Client Information</h3>
             </div>
             <div class="p-4">
                 <dl class="row">
@@ -116,7 +116,7 @@
                 @auth
                 @if(auth()->user()->isAdmin())
                 <div class="mt-3">
-                    <a href="{{ route('clients.show', $booth->client->id) }}" class="btn btn-sm btn-info">
+                    <a href="{{ route('clients.show', $booth->client->id) }}" class="btn btn-sm btn-glass-secondary">
                         <i class="fas fa-eye"></i> View Client Details
                     </a>
                 </div>
@@ -129,7 +129,7 @@
         @if($booth->book)
         <div class="glass-card">
             <div class="p-4 border-bottom">
-                <h3 class="h5 fw-bold mb-0 text-white">Booking Information</h3>
+                <h3 class="h5 fw-bold mb-0 text-dark-gray-gray">Booking Information</h3>
             </div>
             <div class="p-4">
                 <dl class="row">
@@ -146,7 +146,7 @@
                 @auth
                 @if(auth()->user()->isAdmin())
                 <div class="mt-3">
-                    <a href="{{ route('books.show', $booth->book->id) }}" class="btn btn-sm btn-info">
+                    <a href="{{ route('books.show', $booth->book->id) }}" class="btn btn-sm btn-glass-secondary">
                         <i class="fas fa-eye"></i> View Booking Details
                     </a>
                 </div>
@@ -160,7 +160,7 @@
         @if($booth->timeline->count() > 0)
         <div class="glass-card">
             <div class="p-4 border-bottom">
-                <h3 class="h5 fw-bold mb-0 text-white">
+                <h3 class="h5 fw-bold mb-0 text-dark-gray-gray">
                     <i class="fas fa-history"></i> Booking Timeline
                 </h3>
             </div>
@@ -216,15 +216,15 @@
     <div class="col-md-4">
         <div class="glass-card">
             <div class="p-4 border-bottom">
-                <h3 class="h5 fw-bold mb-0 text-white">Quick Actions</h3>
+                <h3 class="h5 fw-bold mb-0 text-dark-gray-gray">Quick Actions</h3>
             </div>
             <div class="p-4">
-                <a href="{{ route('booths.index') }}" class="btn btn-block btn-outline-secondary mb-2">
+                <a href="{{ route('booths.index') }}" class="btn btn-block btn-glass-secondary mb-2">
                     <i class="fas fa-list"></i> All Booths
                 </a>
                 @auth
                 @if(auth()->user()->isAdmin())
-                <a href="{{ route('booths.edit', $booth) }}" class="btn btn-block btn-primary mb-2">
+                <a href="{{ route('booths.edit', $booth) }}" class="btn btn-block btn-glass-primary mb-2">
                     <i class="fas fa-edit"></i> Edit Booth
                 </a>
                 @endif
@@ -246,13 +246,13 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Select Images (Max 10)</label>
-                        <input type="file" class="form-control" name="images[]" id="imageFiles" multiple accept="image/*" required>
+                        <input type="file" class="glass-input" name="images[]" id="imageFiles" multiple accept="image/*" required>
                         <small class="form-text text-muted">You can select multiple images. {{ \App\Helpers\UploadSettingsHelper::getHint('booth') }} per image.</small>
                     </div>
                     
                     <div class="form-group">
                         <label>Image Type</label>
-                        <select class="form-control" name="image_type">
+                        <select class="glass-input" name="image_type">
                             <option value="photo">Photo</option>
                             <option value="layout">Layout Plan</option>
                             <option value="setup">Setup</option>
@@ -264,8 +264,8 @@
                     <div id="imagePreviewContainer" class="row"></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary" id="uploadBtn">
+                    <button type="button" class="btn btn-glass-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-glass-primary" id="uploadBtn">
                         <i class="fas fa-upload"></i> Upload Images
                     </button>
                 </div>
@@ -292,25 +292,12 @@
 
 
 @push('styles')
+<link rel="stylesheet" href="{{ asset('css/booths-premium-glamor.css') }}?v=1.0">
 <link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
 <style>
-    .looker-dashboard { padding: 0 !important; }
-    .glass-card {
-        background: rgba(255, 255, 255, 0.45);
-        backdrop-filter: blur(40px) saturate(180%);
-        -webkit-backdrop-filter: blur(40px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        border-radius: 24px;
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-        margin-bottom: 24px;
-        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        overflow: hidden;
-    }
-    .glass-card:hover {
-        transform: translateY(-5px);
-        background: rgba(255, 255, 255, 0.55);
-        box-shadow: 0 15px 45px rgba(31, 38, 135, 0.2);
-    }
+    
+    
+    
     .kpi-card-looker {
         margin-bottom: 24px;
     }
@@ -377,13 +364,13 @@ function displayGallery(images) {
                 <img src="${image.image_url}" alt="${image.caption || 'Booth image'}" 
                      onclick="viewImage('${image.image_url}', '${image.caption || ''}', '${image.type_label}')">
                 <div class="gallery-item-actions">
-                    <div class="text-white small" style="flex: 1;">
+                    <div class="text-dark-gray-gray small" style="flex: 1;">
                         ${image.caption ? image.caption.substring(0, 30) : 'No caption'}
                     </div>
                     @auth
                     @if(auth()->user()->isAdmin())
                     <div class="btn-group btn-group-sm">
-                        ${!image.is_primary ? `<button class="btn btn-success btn-sm" onclick="setPrimary(${image.id})" title="Set as Primary">
+                        ${!image.is_primary ? `<button class="btn btn-glass-primary btn-sm" onclick="setPrimary(${image.id})" title="Set as Primary">
                             <i class="fas fa-star"></i>
                         </button>` : ''}
                         <button class="btn btn-danger btn-sm" onclick="deleteImage(${image.id})" title="Delete">
@@ -537,3 +524,12 @@ function showError(message) {
 </div>
 @endsection
 
+
+<style>
+    .glass-card, .looker-table, .designer-toolbar, .controls-panel {
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08), 0 1px 1px rgba(255,255,255,0.3) !important;
+    }
+    .btn-glass-primary {
+        box-shadow: 0 4px 14px 0 rgba(0, 118, 255, 0.39) !important;
+    }
+</style>

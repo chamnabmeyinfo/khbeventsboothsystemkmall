@@ -1,10 +1,42 @@
-@extends('layouts.adminlte')
+@extends('layouts.admin')
+@push('body-class', 'ios-dashboard-mode')
+
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/booths-premium-glamor.css') }}?v=1.0">
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
+<style>
+    
+    
+    
+    .text-dark-gray-gray { color: #1d1d1f !important; }
+    
+    /* Designer specific fixes */
+    .designer-toolbar {
+        background: rgba(255, 255, 255, 0.5) !important;
+        backdrop-filter: blur(24px) !important;
+        border-radius: 16px !important;
+        border: 1px solid rgba(255, 255, 255, 0.5) !important;
+        color: #1d1d1f !important;
+    }
+    .designer-toolbar button { color: #1d1d1f !important; border-radius: 8px !important; }
+    .designer-toolbar button.active { background: #6366f1 !important; color: white !important; }
+    
+    .controls-panel {
+        background: rgba(255, 255, 255, 0.5) !important;
+        backdrop-filter: blur(24px) !important;
+        border-radius: 20px !important;
+        border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    }
+</style>
+@endpush
+
 
 @section('title', 'Booth Management')
 @section('page-title', 'Booth Management')
 @section('breadcrumb', 'Booths / Management')
 
 @push('styles')
+<link rel="stylesheet" href="{{ asset('css/booths-premium-glamor.css') }}?v=1.0">
 <link rel="stylesheet" href="{{ asset('vendor/datatables/css/dataTables.bootstrap5.min.css') }}">
 <link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}">
 <style>
@@ -233,28 +265,28 @@
     }
     
     /* Table Scrollbar Styling */
-    .table-responsive {
+    .looker-table-container {
         width: 100% !important;
         overflow-x: auto !important;
         overflow-y: auto !important;
     }
     
-    .table-responsive::-webkit-scrollbar {
+    .looker-table-container::-webkit-scrollbar {
         width: 8px;
         height: 8px;
     }
     
-    .table-responsive::-webkit-scrollbar-track {
+    .looker-table-container::-webkit-scrollbar-track {
         background: #f1f5f9;
         border-radius: 4px;
     }
     
-    .table-responsive::-webkit-scrollbar-thumb {
+    .looker-table-container::-webkit-scrollbar-thumb {
         background: #cbd5e1;
         border-radius: 4px;
     }
     
-    .table-responsive::-webkit-scrollbar-thumb:hover {
+    .looker-table-container::-webkit-scrollbar-thumb:hover {
         background: #94a3b8;
     }
     
@@ -273,12 +305,12 @@
     }
     
     /* Ensure table fits container width */
-    .table-modern .card-body {
+    .table-modern .p-4 {
         width: 100% !important;
         overflow-x: hidden !important;
     }
     
-    .table-modern .table-responsive {
+    .table-modern .looker-table-container {
         width: 100% !important;
         overflow-x: hidden !important;
     }
@@ -507,12 +539,12 @@
         }
         
         /* Actions Bar - Stack on mobile */
-        .card-body .d-flex {
+        .p-4 .d-flex {
             flex-direction: column !important;
             gap: 12px !important;
         }
         
-        .card-body .btn {
+        .p-4 .btn {
             width: 100% !important;
             margin: 0 !important;
         }
@@ -667,7 +699,7 @@
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
         }
         
-        .mobile-booth-card-header {
+        .mobile-booth-p-4 border-bottom bg-transparent {
             display: flex !important;
             justify-content: space-between !important;
             align-items: flex-start !important;
@@ -783,12 +815,12 @@
             transform: scale(0.95) !important;
         }
         
-        .mobile-booth-actions .btn-info {
+        .mobile-booth-actions .btn-glass-secondary {
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
             color: #1d1d1f !important;
         }
         
-        .mobile-booth-actions .btn-primary {
+        .mobile-booth-actions .btn-glass-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
             color: #1d1d1f !important;
         }
@@ -911,7 +943,7 @@
             border-left-color: #f6c23e;
         }
         
-        .mobile-booth-card-header {
+        .mobile-booth-p-4 border-bottom bg-transparent {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -963,7 +995,7 @@
         }
         
         /* Hide desktop table on mobile */
-        .table-responsive.d-none-mobile {
+        .looker-table-container.d-none-mobile {
             display: none;
         }
         
@@ -979,14 +1011,14 @@
             display: none;
         }
         
-        .table-responsive.d-none-mobile {
+        .looker-table-container.d-none-mobile {
             display: block;
         }
     }
     
     /* Improve form inputs on mobile */
     @media (max-width: 768px) {
-        .form-control, .form-select, select.form-control {
+        .glass-input, .glass-input, select.glass-input {
             font-size: 16px; /* Prevents iOS zoom */
             padding: 12px;
             height: auto;
@@ -999,11 +1031,11 @@
         }
         
         /* Better spacing */
-        .card-body {
+        .p-4 {
             padding: 15px;
         }
         
-        .card-header {
+        .p-4 border-bottom bg-transparent {
             padding: 12px 15px;
         }
         
@@ -1036,8 +1068,8 @@
         font-size: 14px !important;
     }
     
-    .filter-bar .form-control,
-    .filter-bar .form-select {
+    .filter-bar .glass-input,
+    .filter-bar .glass-input {
         border-radius: 12px !important;
         border: 2px solid #e5e7eb !important;
         padding: 12px 16px !important;
@@ -1045,13 +1077,13 @@
         transition: all 0.2s ease !important;
     }
     
-    .filter-bar .form-control:focus,
-    .filter-bar .form-select:focus {
+    .filter-bar .glass-input:focus,
+    .filter-bar .glass-input:focus {
         border-color: #6366f1 !important;
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
     }
     
-    .filter-bar .btn-primary {
+    .filter-bar .btn-glass-primary {
         background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
         border: none !important;
         border-radius: 12px !important;
@@ -1060,7 +1092,7 @@
         transition: all 0.3s ease !important;
     }
     
-    .filter-bar .btn-primary:hover {
+    .filter-bar .btn-glass-primary:hover {
         transform: translateY(-2px) !important;
         box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
     }
@@ -1081,7 +1113,7 @@
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
     }
     
-    .table-modern .card-body { }
+    .table-modern .p-4 { }
     
     /* Modern Table Header */
     .table-modern thead {
@@ -1252,12 +1284,12 @@
         transform: translateY(0) scale(0.98) !important;
     }
     
-    .btn-action.btn-info {
+    .btn-action.btn-glass-secondary {
         background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
         color: #1d1d1f !important;
     }
     
-    .btn-action.btn-primary {
+    .btn-action.btn-glass-primary {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
         color: #1d1d1f !important;
     }
@@ -1322,7 +1354,7 @@
         border-bottom: 3px solid #667eea;
     }
     
-    #boothModal .form-control:focus {
+    #boothModal .glass-input:focus {
         border-color: #667eea;
         box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
     }
@@ -1579,9 +1611,9 @@
     }
     
     /* Settings Panel Card Body Styling */
-    #settingsPanel .card-body { }
+    #settingsPanel .p-4 { }
     
-    #settingsPanel .card-body h5 {
+    #settingsPanel .p-4 h5 {
         font-size: 16px !important;
         font-weight: 700 !important;
         color: #1e293b !important;
@@ -1592,13 +1624,13 @@
         align-items: center !important;
     }
     
-    #settingsPanel .card-body h5 i {
+    #settingsPanel .p-4 h5 i {
         color: #667eea !important;
         margin-right: 10px !important;
         font-size: 18px !important;
     }
     
-    #settingsPanel .card-body .form-label {
+    #settingsPanel .p-4 .form-label {
         font-size: 13px !important;
         font-weight: 700 !important;
         color: #475569 !important;
@@ -1607,21 +1639,21 @@
         letter-spacing: 0.5px !important;
     }
     
-    #settingsPanel .card-body .row {
+    #settingsPanel .p-4 .row {
         margin-left: -8px !important;
         margin-right: -8px !important;
     }
     
-    #settingsPanel .card-body .row > div {
+    #settingsPanel .p-4 .row > div {
         padding-left: 8px !important;
         padding-right: 8px !important;
     }
     
-    #settingsPanel .card-body #columnVisibilityControls {
+    #settingsPanel .p-4 #columnVisibilityControls {
         gap: 8px !important;
     }
     
-    #settingsPanel .card-body .form-check {
+    #settingsPanel .p-4 .form-check {
         background: transparent !important;
         padding: 8px 12px !important;
         border-radius: 8px !important;
@@ -1630,13 +1662,13 @@
         margin: 0 !important;
     }
     
-    #settingsPanel .card-body .form-check:hover {
+    #settingsPanel .p-4 .form-check:hover {
         border-color: #667eea !important;
         box-shadow: 0 2px 4px rgba(102, 126, 234, 0.1) !important;
         transform: translateY(-1px) !important;
     }
     
-    #settingsPanel .card-body .form-check-input {
+    #settingsPanel .p-4 .form-check-input {
         width: 18px !important;
         height: 18px !important;
         margin-right: 8px !important;
@@ -1644,7 +1676,7 @@
         accent-color: #667eea !important;
     }
     
-    #settingsPanel .card-body .form-check-label {
+    #settingsPanel .p-4 .form-check-label {
         font-size: 13px !important;
         font-weight: 600 !important;
         color: #475569 !important;
@@ -1654,11 +1686,11 @@
         letter-spacing: 0 !important;
     }
     
-    #settingsPanel .card-body .form-check-input:checked ~ .form-check-label {
+    #settingsPanel .p-4 .form-check-input:checked ~ .form-check-label {
         color: #667eea !important;
     }
     
-    #settingsPanel .card-body .form-check-input:checked ~ .form-check-label::before {
+    #settingsPanel .p-4 .form-check-input:checked ~ .form-check-label::before {
         content: '✓' !important;
         color: #667eea !important;
         font-weight: 700 !important;
@@ -1801,13 +1833,13 @@
         font-weight: 600 !important;
     }
     
-    #boothModal .modal-footer .btn-primary {
+    #boothModal .modal-footer .btn-glass-primary {
         background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
         border: none !important;
         box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
     }
     
-    #boothModal .modal-footer .btn-primary:hover {
+    #boothModal .modal-footer .btn-glass-primary:hover {
         transform: translateY(-2px) !important;
         box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4) !important;
     }
@@ -1823,14 +1855,14 @@
         display: block;
     }
     
-    #boothModal .form-control {
+    #boothModal .glass-input {
         border-radius: 8px;
         border: 1px solid #ced4da;
         padding: 0.625rem 0.75rem;
         transition: all 0.2s;
     }
     
-    #boothModal .form-control:focus {
+    #boothModal .glass-input:focus {
         border-color: #667eea;
         box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
     }
@@ -1898,7 +1930,7 @@
         max-width: 95%;
     }
     
-    #statusSettingsModal .form-control-color {
+    #statusSettingsModal .glass-input-color {
         height: 38px;
         width: 60px;
         border: 2px solid #dee2e6;
@@ -1907,7 +1939,7 @@
         padding: 2px;
     }
     
-    #statusSettingsModal .form-control-color:hover {
+    #statusSettingsModal .glass-input-color:hover {
         border-color: #667eea;
         box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
     }
@@ -2099,7 +2131,7 @@
         padding: 0 !important;
     }
     
-    #tableContainerInControlBar .table-responsive {
+    #tableContainerInControlBar .looker-table-container {
         width: 100% !important;
         margin: 0 !important;
         max-height: calc(100vh - 400px) !important;
@@ -2118,8 +2150,8 @@
         display: block !important;
     }
     
-    #tableContainerInControlBar .table-responsive,
-    .table-modern .table-responsive {
+    #tableContainerInControlBar .looker-table-container,
+    .table-modern .looker-table-container {
         overflow-y: auto !important;
         overflow-x: auto !important;
         -webkit-overflow-scrolling: touch;
@@ -2128,8 +2160,8 @@
     }
     
     /* Sticky thead: stick at BOTTOM of tableContainerInControlBar when scrolling table rows */
-    #tableContainerInControlBar .table-responsive thead.sticky-table-header,
-    #tableContainerInControlBar .table-responsive thead,
+    #tableContainerInControlBar .looker-table-container thead.sticky-table-header,
+    #tableContainerInControlBar .looker-table-container thead,
     #tableContainerInControlBar #boothsTable thead.sticky-table-header,
     #tableContainerInControlBar #boothsTable thead {
         position: sticky !important;
@@ -2140,8 +2172,8 @@
         box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.12) !important;
     }
     
-    #tableContainerInControlBar .table-responsive thead th,
-    #tableContainerInControlBar .table-responsive thead.sticky-table-header th,
+    #tableContainerInControlBar .looker-table-container thead th,
+    #tableContainerInControlBar .looker-table-container thead.sticky-table-header th,
     #tableContainerInControlBar #boothsTable thead th {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     }
@@ -2245,8 +2277,8 @@
 <div class="container-fluid" id="boothManagementContainer" data-space-mode="default">
     <!-- Top Control Bar - Desktop -->
     <div class="d-none d-md-block mb-3">
-        <div class="card" style="border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;">
-            <div class="card-body" style="padding: 16px 20px;">
+        <div class="glass-card" style="border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;">
+            <div class="p-4" style="padding: 16px 20px;">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                     <!-- Left: Title and Space Mode Toggle -->
                     <div class="d-flex align-items-center gap-3">
@@ -2276,7 +2308,7 @@
                         <button type="button" class="btn btn-sm btn-outline-primary" onclick="openStatusSettingsModal()" style="border-radius: 10px; padding: 8px 16px;">
                             <i class="fas fa-tags mr-1"></i>Status Settings
                         </button>
-                        <a href="{{ url('/booths?view=canvas') }}" class="btn btn-sm btn-primary" style="border-radius: 10px; padding: 8px 16px;">
+                        <a href="{{ url('/booths?view=canvas') }}" class="btn btn-sm btn-glass-primary" style="border-radius: 10px; padding: 8px 16px;">
                             <i class="fas fa-map mr-1"></i>Canvas View
                         </a>
                     </div>
@@ -2324,8 +2356,8 @@
 
     <!-- Mini Dashboard - Desktop -->
     <div class="d-none d-md-block mb-4" id="miniDashboard">
-        <div class="card" style="border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e5e7eb; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">
-            <div class="card-body" style="padding: 20px;">
+        <div class="glass-card" style="border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e5e7eb; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">
+            <div class="p-4" style="padding: 20px;">
                 <div class="row g-3">
                     <!-- Total Booths -->
                     <div class="col-md-2 col-lg-2">
@@ -2525,7 +2557,7 @@
             <button type="button" class="btn btn-outline-warning quick-filter-btn" onclick="applyQuickFilter('paid')">
                 <i class="fas fa-dollar-sign"></i> Paid
             </button>
-            <button type="button" class="btn btn-outline-secondary quick-filter-btn" onclick="applyQuickFilter('today')">
+            <button type="button" class="btn btn-glass-secondary quick-filter-btn" onclick="applyQuickFilter('today')">
                 <i class="fas fa-calendar-day"></i> Today
             </button>
             <button type="button" class="btn btn-outline-danger quick-filter-btn" onclick="applyQuickFilter('overdue')">
@@ -2539,8 +2571,8 @@
 
     <!-- Advanced Filter Bar - Desktop -->
     <div class="d-none d-md-block mb-3">
-        <div class="card" style="border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;">
-            <div class="card-body" style="padding: 20px;">
+        <div class="glass-card" style="border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;">
+            <div class="p-4" style="padding: 20px;">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="mb-0" style="font-weight: 600; color: #1e293b;">
                         <i class="fas fa-filter mr-2"></i>Advanced Filters
@@ -2558,7 +2590,7 @@
                                     <i class="fas fa-search mr-2" style="color: #667eea;"></i>Search
                                 </label>
                                 <div class="input-group" style="position: relative;">
-                                    <input type="text" name="search" class="form-control modern-filter-input" placeholder="Booth number, company, category..." value="{{ request('search') }}" style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 12px 16px 12px 44px; font-size: 14px; transition: all 0.3s ease; background: white;">
+                                    <input type="text" name="search" class="glass-input modern-filter-input" placeholder="Booth number, company, category..." value="{{ request('search') }}" style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 12px 16px 12px 44px; font-size: 14px; transition: all 0.3s ease; background: white;">
                                     <i class="fas fa-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; z-index: 5;"></i>
                                 </div>
                             </div>
@@ -2570,7 +2602,7 @@
                                 <label class="form-label" style="font-weight: 600; color: #475569; margin-bottom: 8px; display: flex; align-items: center;">
                                     <i class="fas fa-map mr-2" style="color: #667eea;"></i>Floor Plan
                                 </label>
-                                <select name="floor_plan_id" class="form-control modern-filter-select" style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 8px 40px 8px 16px; font-size: 14px; transition: all 0.3s ease; background: white; width: 100%; display: block; cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'></polyline></svg>'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; height: 40px; line-height: 1.5; box-sizing: border-box;">
+                                <select name="floor_plan_id" class="glass-input modern-filter-select" style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 8px 40px 8px 16px; font-size: 14px; transition: all 0.3s ease; background: white; width: 100%; display: block; cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'></polyline></svg>'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; height: 40px; line-height: 1.5; box-sizing: border-box;">
                                     <option value="">All Floor Plans</option>
                                     @foreach($floorPlans as $fp)
                                         <option value="{{ $fp->id }}" {{ request('floor_plan_id') == $fp->id ? 'selected' : '' }}>
@@ -2587,7 +2619,7 @@
                                 <label class="form-label" style="font-weight: 600; color: #475569; margin-bottom: 8px; display: flex; align-items: center;">
                                     <i class="fas fa-info-circle mr-2" style="color: #667eea;"></i>Status
                                 </label>
-                                <select name="status" class="form-control modern-filter-select" style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 8px 40px 8px 16px; font-size: 14px; transition: all 0.3s ease; background: white; width: 100%; display: block; cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'></polyline></svg>'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; height: 40px; line-height: 1.5; box-sizing: border-box;">
+                                <select name="status" class="glass-input modern-filter-select" style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 8px 40px 8px 16px; font-size: 14px; transition: all 0.3s ease; background: white; width: 100%; display: block; cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'></polyline></svg>'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; height: 40px; line-height: 1.5; box-sizing: border-box;">
                                     <option value="">All Status</option>
                                     @if(isset($statusSettings) && $statusSettings->count() > 0)
                                         @foreach($statusSettings as $status)
@@ -2611,7 +2643,7 @@
                                 <label class="form-label" style="font-weight: 600; color: #475569; margin-bottom: 8px; display: flex; align-items: center;">
                                     <i class="fas fa-building mr-2" style="color: #667eea;"></i>Booth Type
                                 </label>
-                                <select name="booth_type_id" class="form-control modern-filter-select" style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 8px 40px 8px 16px; font-size: 14px; transition: all 0.3s ease; background: white; width: 100%; display: block; cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'></polyline></svg>'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; height: 40px; line-height: 1.5; box-sizing: border-box;">
+                                <select name="booth_type_id" class="glass-input modern-filter-select" style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 8px 40px 8px 16px; font-size: 14px; transition: all 0.3s ease; background: white; width: 100%; display: block; cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'></polyline></svg>'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; height: 40px; line-height: 1.5; box-sizing: border-box;">
                                     <option value="">All Types</option>
                                     @foreach($boothTypes as $type)
                                         <option value="{{ $type->id }}" {{ request('booth_type_id') == $type->id ? 'selected' : '' }}>
@@ -2628,7 +2660,7 @@
                                 <label class="form-label" style="font-weight: 600; color: #475569; margin-bottom: 8px; display: flex; align-items: center;">
                                     <i class="fas fa-folder mr-2" style="color: #667eea;"></i>Category
                                 </label>
-                                <select name="category_id" class="form-control modern-filter-select" style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 8px 40px 8px 16px; font-size: 14px; transition: all 0.3s ease; background: white; width: 100%; display: block; cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'></polyline></svg>'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; height: 40px; line-height: 1.5; box-sizing: border-box;">
+                                <select name="category_id" class="glass-input modern-filter-select" style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 8px 40px 8px 16px; font-size: 14px; transition: all 0.3s ease; background: white; width: 100%; display: block; cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'></polyline></svg>'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; height: 40px; line-height: 1.5; box-sizing: border-box;">
                                     <option value="">All Categories</option>
                                     @foreach($categories as $cat)
                                         <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>
@@ -2642,7 +2674,7 @@
                         <!-- Filter Button -->
                         <div class="col-12 col-md-1">
                             <label class="form-label" style="font-weight: 600; color: #475569; margin-bottom: 8px; visibility: hidden;">&nbsp;</label>
-                            <button type="submit" class="btn btn-primary w-100 modern-filter-btn" style="border-radius: 12px; font-weight: 600; padding: 12px 20px; border: none; background: rgba(255, 255, 255, 0.4); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); transition: all 0.3s ease; height: 48px; display: flex; align-items: center; justify-content: center;">
+                            <button type="submit" class="btn btn-glass-primary w-100 modern-filter-btn" style="border-radius: 12px; font-weight: 600; padding: 12px 20px; border: none; background: rgba(255, 255, 255, 0.4); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); transition: all 0.3s ease; height: 48px; display: flex; align-items: center; justify-content: center;">
                                 <i class="fas fa-filter mr-2"></i>Filter
                             </button>
                         </div>
@@ -2653,11 +2685,11 @@
     </div>
 
     <!-- Modern Actions Bar -->
-    <div class="card mb-3" style="background: white; border-radius: 24px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); border: 1px solid #e5e7eb;">
-        <div class="card-body" style="padding: 20px;">
+    <div class="glass-card mb-3" style="background: white; border-radius: 24px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); border: 1px solid #e5e7eb;">
+        <div class="p-4" style="padding: 20px;">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div class="d-flex gap-2 flex-wrap">
-                    <button type="button" class="btn btn-success" onclick="openCreateModal()" style="border-radius: 12px; padding: 10px 20px; font-weight: 600;">
+                    <button type="button" class="btn btn-glass-primary" onclick="openCreateModal()" style="border-radius: 12px; padding: 10px 20px; font-weight: 600;">
                         <i class="fas fa-plus mr-1"></i>Create New Booth
                     </button>
                     <button type="button" class="btn btn-warning" onclick="bulkUpdateStatus()" style="border-radius: 12px; padding: 10px 20px; font-weight: 600;">
@@ -2682,7 +2714,7 @@
                         <label for="boothsPerPage" class="mb-0" style="font-weight: 600; color: #495057; font-size: 0.9rem; white-space: nowrap;">
                             <i class="fas fa-list-ol mr-1"></i>Rows:
                         </label>
-                        <select id="boothsPerPage" class="form-control form-control-sm" onchange="changePerPage(this.value)" style="border-radius: 8px; border: 1px solid #dee2e6; padding: 6px 10px; font-weight: 600; min-width: 70px; cursor: pointer;">
+                        <select id="boothsPerPage" class="glass-input glass-input-sm" onchange="changePerPage(this.value)" style="border-radius: 8px; border: 1px solid #dee2e6; padding: 6px 10px; font-weight: 600; min-width: 70px; cursor: pointer;">
                             <option value="10" {{ (request('per_page', $perPage ?? 50) == 10) ? 'selected' : '' }}>10</option>
                             <option value="25" {{ (request('per_page', $perPage ?? 50) == 25) ? 'selected' : '' }}>25</option>
                             <option value="50" {{ (request('per_page', $perPage ?? 50) == 50) ? 'selected' : '' }}>50</option>
@@ -2690,7 +2722,7 @@
                             <option value="200" {{ (request('per_page', $perPage ?? 50) == 200) ? 'selected' : '' }}>200</option>
                         </select>
                     </div>
-                    <a href="{{ route('booths.index', ['view' => 'table', 'export' => 'csv']) }}" class="btn btn-info" style="border-radius: 12px; padding: 10px 20px; font-weight: 600;">
+                    <a href="{{ route('booths.index', ['view' => 'table', 'export' => 'csv']) }}" class="btn btn-glass-secondary" style="border-radius: 12px; padding: 10px 20px; font-weight: 600;">
                         <i class="fas fa-download mr-1"></i>Export CSV
                     </a>
                 </div>
@@ -2699,7 +2731,7 @@
     </div>
 
     <!-- Booths Table - Desktop View -->
-    <div class="card table-modern d-none d-md-block mb-3">
+    <div class="glass-card table-modern d-none d-md-block mb-3">
         <!-- Table Control Bar - Redesigned -->
         <div id="tableControlBar" class="d-none d-md-block" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
             <!-- Top Controls Row -->
@@ -2725,7 +2757,7 @@
             
             <!-- Expandable Settings Panel - Under Table Settings button, above table -->
             <div class="d-none d-md-block" id="settingsPanel" style="display: none; border-bottom: 1px solid #e5e7eb;">
-                <div class="card-body" style="padding: 20px; background: #f8f9fa;">
+                <div class="p-4" style="padding: 20px; background: #f8f9fa;">
                     <h5 class="mb-3" style="font-weight: 600; color: #1e293b;">
                         <i class="fas fa-sliders-h mr-2"></i>Display Settings
                     </h5>
@@ -2735,17 +2767,17 @@
                             <div class="d-flex flex-wrap gap-2" id="columnVisibilityControls">
                                 <!-- Will be populated by JavaScript -->
                             </div>
-                            <button type="button" class="btn btn-sm btn-primary mt-2" onclick="window.saveColumnVisibility()" style="border-radius: 8px;" title="Save which columns are shown or hidden">
+                            <button type="button" class="btn btn-sm btn-glass-primary mt-2" onclick="window.saveColumnVisibility()" style="border-radius: 8px;" title="Save which columns are shown or hidden">
                                 <i class="fas fa-save mr-1"></i>Save columns
                             </button>
                         </div>
                         <div class="col-sm-12 col-md-6">
                             <label class="form-label font-weight-600">Table Options</label>
                             <div class="d-flex flex-wrap gap-2">
-                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.fitColumnsToContent()" style="border-radius: 8px;">
+                                <button type="button" class="btn btn-sm btn-glass-secondary" onclick="window.fitColumnsToContent()" style="border-radius: 8px;">
                                     <i class="fas fa-arrows-alt-h mr-1"></i>Fit Columns
                                 </button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.resetColumnWidths()" style="border-radius: 8px;">
+                                <button type="button" class="btn btn-sm btn-glass-secondary" onclick="window.resetColumnWidths()" style="border-radius: 8px;">
                                     <i class="fas fa-redo mr-1"></i>Reset Widths
                                 </button>
                             </div>
@@ -2759,9 +2791,9 @@
                 <!-- Table will be moved here by JavaScript -->
             </div>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive" style="max-height: calc(100vh - 400px); overflow-y: auto; width: 100%;">
-                <table class="table table-hover mb-0" id="boothsTable" style="margin-bottom: 0; width: 100%; table-layout: fixed;">
+        <div class="p-4 p-0">
+            <div class="looker-table-container" style="max-height: calc(100vh - 400px); overflow-y: auto; width: 100%;">
+                <table class="looker-table table-hover mb-0" id="boothsTable" style="margin-bottom: 0; width: 100%; table-layout: fixed;">
                     <thead class="sticky-table-header" style="position: sticky; bottom: 0; z-index: 300;">
                         <tr>
                             <th style="min-width: 50px; width: 4%;" data-column="checkbox" data-column-index="0">
@@ -2830,7 +2862,7 @@
         <!-- Lazy Loading Spinner -->
         <div id="boothsLazyLoadSpinner" class="text-center py-4" style="display: none; background: #f8fafc; border-top: 1px solid #e2e8f0;">
             <div class="d-flex align-items-center justify-content-center gap-2">
-                <div class="spinner-border spinner-border-sm text-primary" role="status" style="width: 20px; height: 20px;">
+                <div class="spinner-border spinner-border-sm text-dark-gray-gray" role="status" style="width: 20px; height: 20px;">
                     <span class="sr-only">Loading...</span>
                 </div>
                 <span style="color: #64748b; font-size: 14px; font-weight: 500;">Loading more booths...</span>
@@ -2963,7 +2995,7 @@
     <div class="d-md-none" style="padding-bottom: 20px;">
         @forelse($booths as $booth)
         <div class="mobile-booth-card" onclick="viewBooth({{ $booth->id }})" style="cursor: pointer;">
-            <div class="mobile-booth-card-header">
+            <div class="mobile-booth-p-4 border-bottom bg-transparent">
                 <div class="mobile-booth-number-section">
                     <div class="mobile-booth-number">#{{ $booth->booth_number }}</div>
                     <div class="mobile-booth-type">{{ $booth->boothType ? $booth->boothType->name : ($booth->type == 1 ? 'Booth' : 'Space Only') }}</div>
@@ -3029,10 +3061,10 @@
             </div>
             
             <div class="mobile-booth-actions" onclick="event.stopPropagation();">
-                <button type="button" class="btn btn-info" onclick="viewBooth({{ $booth->id }})">
+                <button type="button" class="btn btn-glass-secondary" onclick="viewBooth({{ $booth->id }})">
                     <i class="fas fa-eye"></i>
                 </button>
-                <button type="button" class="btn btn-primary" onclick="editBooth({{ $booth->id }})">
+                <button type="button" class="btn btn-glass-primary" onclick="editBooth({{ $booth->id }})">
                     <i class="fas fa-edit"></i>
                 </button>
                 <button type="button" class="btn btn-danger" onclick="deleteBooth({{ $booth->id }})">
@@ -3052,7 +3084,7 @@
         <!-- Mobile lazy loading will be handled by JavaScript -->
         <div id="boothsMobileLazyLoadTrigger" style="height: 20px; margin: 10px 0;"></div>
         <div id="boothsMobileLazyLoadSpinner" class="text-center py-3" style="display: none;">
-            <div class="spinner-border spinner-border-sm text-primary" role="status">
+            <div class="spinner-border spinner-border-sm text-dark-gray-gray" role="status">
                 <span class="sr-only">Loading...</span>
             </div>
             <span class="ml-2 text-muted">Loading more booths...</span>
@@ -3069,10 +3101,10 @@
     <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
         <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
             <div class="modal-header" style="background: rgba(255, 255, 255, 0.4); border-radius: 12px 12px 0 0; padding: 20px 30px; border-bottom: none;">
-                <h5 class="modal-title text-white" id="modalTitle" style="font-size: 1.5rem; font-weight: 700;">
+                <h5 class="modal-title text-dark-gray-gray" id="modalTitle" style="font-size: 1.5rem; font-weight: 700;">
                     <i class="fas fa-store mr-2"></i><span id="modalTitleText">Create New Booth</span>
                 </h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.9; font-size: 1.5rem;">
+                <button type="button" class="close text-dark-gray-gray" data-dismiss="modal" aria-label="Close" style="opacity: 0.9; font-size: 1.5rem;">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -3112,9 +3144,9 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="booth_number" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
-                                            <i class="fas fa-hashtag text-primary mr-2"></i>Booth Number <span class="text-danger">*</span>
+                                            <i class="fas fa-hashtag text-dark-gray-gray mr-2"></i>Booth Number <span class="text-danger">*</span>
                                         </label>
-                                        <input type="text" name="booth_number" id="booth_number" class="form-control" required 
+                                        <input type="text" name="booth_number" id="booth_number" class="glass-input" required 
                                                style="border-radius: 8px; border: 1px solid #dee2e6; padding: 10px 15px; transition: all 0.3s;"
                                                onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)'"
                                                onblur="this.style.borderColor='#dee2e6'; this.style.boxShadow='none'">
@@ -3123,9 +3155,9 @@
                                     
                                     <div class="form-group">
                                         <label for="floor_plan_id" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
-                                            <i class="fas fa-map text-primary mr-2"></i>Floor Plan <span class="text-danger">*</span>
+                                            <i class="fas fa-map text-dark-gray-gray mr-2"></i>Floor Plan <span class="text-danger">*</span>
                                         </label>
-                                        <select name="floor_plan_id" id="floor_plan_id" class="form-control" required
+                                        <select name="floor_plan_id" id="floor_plan_id" class="glass-input" required
                                                 style="border-radius: 8px; border: 1px solid #dee2e6; padding: 10px 15px; transition: all 0.3s;"
                                                 onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)'"
                                                 onblur="this.style.borderColor='#dee2e6'; this.style.boxShadow='none'">
@@ -3138,9 +3170,9 @@
                                     
                                     <div class="form-group">
                                         <label for="booth_type_id" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
-                                            <i class="fas fa-tags text-primary mr-2"></i>Booth Type
+                                            <i class="fas fa-tags text-dark-gray-gray mr-2"></i>Booth Type
                                         </label>
-                                        <select name="booth_type_id" id="booth_type_id" class="form-control"
+                                        <select name="booth_type_id" id="booth_type_id" class="glass-input"
                                                 style="border-radius: 8px; border: 1px solid #dee2e6; padding: 10px 15px;">
                                             <option value="">Select Type</option>
                                             @foreach($boothTypes as $type)
@@ -3151,9 +3183,9 @@
                                     
                                     <div class="form-group">
                                         <label for="type" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
-                                            <i class="fas fa-cube text-primary mr-2"></i>Type <span class="text-danger">*</span>
+                                            <i class="fas fa-cube text-dark-gray-gray mr-2"></i>Type <span class="text-danger">*</span>
                                         </label>
-                                        <select name="type" id="type" class="form-control" required
+                                        <select name="type" id="type" class="glass-input" required
                                                 style="border-radius: 8px; border: 1px solid #dee2e6; padding: 10px 15px;">
                                             <option value="1">Booth</option>
                                             <option value="2">Space Only</option>
@@ -3170,7 +3202,7 @@
                                             <div class="input-group-prepend">
                                                 <span class="input-group-text" style="border-radius: 8px 0 0 8px; background: #f8f9fa; border: 1px solid #dee2e6;">$</span>
                                             </div>
-                                            <input type="number" name="price" id="price" class="form-control" step="0.01" min="0" required
+                                            <input type="number" name="price" id="price" class="glass-input" step="0.01" min="0" required
                                                    style="border-radius: 0 8px 8px 0; border: 1px solid #dee2e6; padding: 10px 15px;"
                                                    onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)'"
                                                    onblur="this.style.borderColor='#dee2e6'; this.style.boxShadow='none'">
@@ -3179,9 +3211,9 @@
                                     
                                     <div class="form-group">
                                         <label for="status" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
-                                            <i class="fas fa-toggle-on text-primary mr-2"></i>Status <span class="text-danger">*</span>
+                                            <i class="fas fa-toggle-on text-dark-gray-gray mr-2"></i>Status <span class="text-danger">*</span>
                                         </label>
-                                        <select name="status" id="status" class="form-control" required
+                                        <select name="status" id="status" class="glass-input" required
                                                 style="border-radius: 8px; border: 1px solid #dee2e6; padding: 10px 15px;">
                                             <option value="1">Available</option>
                                             <option value="2">Confirmed</option>
@@ -3193,9 +3225,9 @@
                                     
                                     <div class="form-group">
                                         <label for="client_id" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
-                                            <i class="fas fa-user-tie text-primary mr-2"></i>Client
+                                            <i class="fas fa-user-tie text-dark-gray-gray mr-2"></i>Client
                                         </label>
-                                        <select name="client_id" id="client_id" class="form-control"
+                                        <select name="client_id" id="client_id" class="glass-input"
                                                 style="border-radius: 8px; border: 1px solid #dee2e6; padding: 10px 15px;">
                                             <option value="">Select Client</option>
                                             @foreach($clients as $client)
@@ -3206,9 +3238,9 @@
                                     
                                     <div class="form-group">
                                         <label for="category_id" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
-                                            <i class="fas fa-folder text-primary mr-2"></i>Category
+                                            <i class="fas fa-folder text-dark-gray-gray mr-2"></i>Category
                                         </label>
-                                        <select name="category_id" id="category_id" class="form-control"
+                                        <select name="category_id" id="category_id" class="glass-input"
                                                 style="border-radius: 8px; border: 1px solid #dee2e6; padding: 10px 15px;">
                                             <option value="">Select Category</option>
                                             @foreach($categories as $cat)
@@ -3226,10 +3258,10 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="area_sqm" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
-                                            <i class="fas fa-ruler-combined text-primary mr-2"></i>Area (m²)
+                                            <i class="fas fa-ruler-combined text-dark-gray-gray mr-2"></i>Area (m²)
                                         </label>
                                         <div class="input-group">
-                                            <input type="number" name="area_sqm" id="area_sqm" class="form-control" step="0.01" min="0"
+                                            <input type="number" name="area_sqm" id="area_sqm" class="glass-input" step="0.01" min="0"
                                                    style="border-radius: 8px; border: 1px solid #dee2e6; padding: 10px 15px;">
                                             <div class="input-group-append">
                                                 <span class="input-group-text" style="border-radius: 0 8px 8px 0; background: #f8f9fa; border: 1px solid #dee2e6;">m²</span>
@@ -3239,10 +3271,10 @@
                                     
                                     <div class="form-group">
                                         <label for="capacity" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
-                                            <i class="fas fa-users text-primary mr-2"></i>Capacity (people)
+                                            <i class="fas fa-users text-dark-gray-gray mr-2"></i>Capacity (people)
                                         </label>
                                         <div class="input-group">
-                                            <input type="number" name="capacity" id="capacity" class="form-control" min="0"
+                                            <input type="number" name="capacity" id="capacity" class="glass-input" min="0"
                                                    style="border-radius: 8px; border: 1px solid #dee2e6; padding: 10px 15px;">
                                             <div class="input-group-append">
                                                 <span class="input-group-text" style="border-radius: 0 8px 8px 0; background: #f8f9fa; border: 1px solid #dee2e6;">
@@ -3258,7 +3290,7 @@
                                         <label for="electricity_power" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
                                             <i class="fas fa-bolt text-warning mr-2"></i>Electricity Power
                                         </label>
-                                        <input type="text" name="electricity_power" id="electricity_power" class="form-control" 
+                                        <input type="text" name="electricity_power" id="electricity_power" class="glass-input" 
                                                placeholder="e.g., 10A, 20A, 30A"
                                                style="border-radius: 8px; border: 1px solid #dee2e6; padding: 10px 15px;">
                                         <small class="form-text text-muted">Specify the electrical power requirements</small>
@@ -3271,18 +3303,18 @@
                         <div class="tab-pane fade" id="content-info" role="tabpanel" aria-labelledby="content-tab">
                             <div class="form-group">
                                 <label for="description" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
-                                    <i class="fas fa-align-left text-primary mr-2"></i>Description
+                                    <i class="fas fa-align-left text-dark-gray-gray mr-2"></i>Description
                                 </label>
-                                <textarea name="description" id="description" class="form-control" rows="5" 
+                                <textarea name="description" id="description" class="glass-input" rows="5" 
                                           placeholder="Enter a detailed description of the booth..."
                                           style="border-radius: 8px; border: 1px solid #dee2e6; padding: 12px 15px; resize: vertical;"></textarea>
                             </div>
                             
                             <div class="form-group">
                                 <label for="features" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
-                                    <i class="fas fa-list-check text-primary mr-2"></i>Features
+                                    <i class="fas fa-list-check text-dark-gray-gray mr-2"></i>Features
                                 </label>
-                                <textarea name="features" id="features" class="form-control" rows="5" 
+                                <textarea name="features" id="features" class="glass-input" rows="5" 
                                           placeholder="List booth features (one per line)..."
                                           style="border-radius: 8px; border: 1px solid #dee2e6; padding: 12px 15px; resize: vertical;"></textarea>
                                 <small class="form-text text-muted">Enter each feature on a new line</small>
@@ -3290,9 +3322,9 @@
                             
                             <div class="form-group">
                                 <label for="notes" class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 8px;">
-                                    <i class="fas fa-sticky-note text-primary mr-2"></i>Additional Notes
+                                    <i class="fas fa-sticky-note text-dark-gray-gray mr-2"></i>Additional Notes
                                 </label>
-                                <textarea name="notes" id="notes" class="form-control" rows="4" 
+                                <textarea name="notes" id="notes" class="glass-input" rows="4" 
                                           placeholder="Enter any additional notes or special instructions..."
                                           style="border-radius: 8px; border: 1px solid #dee2e6; padding: 12px 15px; resize: vertical;"></textarea>
                             </div>
@@ -3302,7 +3334,7 @@
                         <div class="tab-pane fade" id="media-info" role="tabpanel" aria-labelledby="media-tab">
                             <div class="form-group">
                                 <label class="form-label" style="font-weight: 600; color: #495057; margin-bottom: 15px;">
-                                    <i class="fas fa-image text-primary mr-2"></i>Booth Image
+                                    <i class="fas fa-image text-dark-gray-gray mr-2"></i>Booth Image
                                 </label>
                                 <div class="image-upload-wrapper" style="position: relative;">
                                     <div class="image-upload-area" id="imageUploadArea" 
@@ -3333,11 +3365,11 @@
                     </div>
                 </div>
                 <div class="modal-footer" style="border-top: 1px solid #e9ecef; padding: 20px 30px; background: #f8f9fa; border-radius: 0 0 12px 12px;">
-                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal" 
+                    <button type="button" class="btn btn-glass-secondary" data-dismiss="modal" 
                             style="border-radius: 8px; padding: 10px 25px; font-weight: 600;">
                         <i class="fas fa-times mr-2"></i>Cancel
                     </button>
-                    <button type="submit" class="btn btn-primary"
+                    <button type="submit" class="btn btn-glass-primary"
                             style="background: rgba(255, 255, 255, 0.4); border: none; border-radius: 8px; padding: 10px 30px; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
                         <i class="fas fa-save mr-2"></i>Save Booth
                     </button>
@@ -3353,7 +3385,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Booth Image</h5>
-                <button type="button" class="close text-white" data-dismiss="modal">
+                <button type="button" class="close text-dark-gray-gray" data-dismiss="modal">
                     <span>&times;</span>
                 </button>
             </div>
@@ -3372,7 +3404,7 @@
                 <h5 class="modal-title" id="statusSettingsModalLabel">
                     <i class="fas fa-tags me-2"></i>Booth Status Settings
                 </h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close text-dark-gray-gray" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -3388,14 +3420,14 @@
                         <h6 class="mb-0"><i class="fas fa-list me-2"></i>Status Configuration</h6>
                         <small class="text-muted">Drag rows to reorder, or use the Order field</small>
                     </div>
-                    <button type="button" class="btn btn-primary" id="btnAddStatus">
+                    <button type="button" class="btn btn-glass-primary" id="btnAddStatus">
                         <i class="fas fa-plus me-2"></i>Add New Status
                     </button>
                 </div>
 
                 <div id="statusSettingsContainer">
                     <div class="text-center py-5">
-                        <div class="spinner-border text-primary" role="status">
+                        <div class="spinner-border text-dark-gray-gray" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
                         <p class="mt-3 text-muted">Loading status settings...</p>
@@ -3403,10 +3435,10 @@
                 </div>
 
                 <div class="mt-4 pt-3 border-top">
-                    <button type="button" class="btn btn-success" id="btnSaveStatusSettings">
+                    <button type="button" class="btn btn-glass-primary" id="btnSaveStatusSettings">
                         <i class="fas fa-save me-2"></i>Save All Status Settings
                     </button>
-                    <button type="button" class="btn btn-outline-secondary ms-2" id="btnResetStatusSettings">
+                    <button type="button" class="btn btn-glass-secondary ms-2" id="btnResetStatusSettings">
                         <i class="fas fa-undo me-2"></i>Reset to Defaults
                     </button>
                 </div>
@@ -3437,7 +3469,7 @@ let currentBoothId = null;
         try {
             sessionStorage.setItem(scrollStorageKey, String(window.scrollY || window.pageYOffset || 0));
             var table = document.getElementById('boothsTable');
-            var scrollContainer = table ? table.closest('.table-responsive') : null;
+            var scrollContainer = table ? table.closest('.looker-table-container') : null;
             if (scrollContainer) {
                 sessionStorage.setItem(tableScrollStorageKey, String(scrollContainer.scrollTop || 0));
             }
@@ -3457,7 +3489,7 @@ let currentBoothId = null;
             var tableY = sessionStorage.getItem(tableScrollStorageKey);
             if (tableY !== null) {
                 var table = document.getElementById('boothsTable');
-                var scrollContainer = table ? table.closest('.table-responsive') : null;
+                var scrollContainer = table ? table.closest('.looker-table-container') : null;
                 if (scrollContainer) {
                     var ty = parseInt(tableY, 10);
                     if (!isNaN(ty) && ty >= 0) {
@@ -3481,7 +3513,7 @@ let currentBoothId = null;
     // Save table container scroll
     document.addEventListener('scroll', function(e) {
         var el = e.target;
-        if (el && el.classList && el.classList.contains('table-responsive')) {
+        if (el && el.classList && el.classList.contains('looker-table-container')) {
             clearTimeout(scrollSaveTimeout);
             scrollSaveTimeout = setTimeout(saveScrollPosition, 150);
         }
@@ -3538,7 +3570,7 @@ $(document).ready(function() {
     // Ensure table always fits container width
     function ensureTableFitsWidth() {
         const table = $('#boothsTable');
-        const container = table.closest('.table-responsive');
+        const container = table.closest('.looker-table-container');
         if (table.length && container.length) {
             table.css('width', '100%');
             table.css('max-width', '100%');
@@ -3622,12 +3654,12 @@ $(document).ready(function() {
     // Move table into the control bar area
     function moveTableToControlBar() {
         const table = $('#boothsTable');
-        const tableResponsive = table.closest('.table-responsive');
+        const tableResponsive = table.closest('.looker-table-container');
         const tableContainer = $('#tableContainerInControlBar');
         const controlBar = $('#tableControlBar');
         
         if (table.length && tableContainer.length && controlBar.length) {
-            // Move the entire table-responsive div (which contains the table) into the control bar
+            // Move the entire looker-table-container div (which contains the table) into the control bar
             if (tableResponsive.length) {
                 tableResponsive.appendTo(tableContainer);
                 // Ensure it maintains full width
@@ -3637,13 +3669,13 @@ $(document).ready(function() {
                     'margin-bottom': '0'
                 });
             } else {
-                // If table-responsive doesn't exist, move just the table
+                // If looker-table-container doesn't exist, move just the table
                 table.appendTo(tableContainer);
                 // Wrap it in a responsive container
-                table.wrap('<div class="table-responsive" style="max-height: calc(100vh - 400px); overflow-y: auto; width: 100%;"></div>');
+                table.wrap('<div class="looker-table-container" style="max-height: calc(100vh - 400px); overflow-y: auto; width: 100%;"></div>');
             }
             
-            // Move lazy load trigger, spinner, and end message into table container (after table-responsive)
+            // Move lazy load trigger, spinner, and end message into table container (after looker-table-container)
             // so they appear below the table and lazy load works when scrolling
             const lazyTrigger = $('#boothsLazyLoadTrigger');
             const lazySpinner = $('#boothsLazyLoadSpinner');
@@ -3943,7 +3975,7 @@ function editBooth(id) {
     // Show loading overlay on modal body
     const modalBody = $('#boothModal .modal-body');
     const originalContent = modalBody.html();
-    modalBody.prepend('<div id="boothEditLoading" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.9); z-index: 1000; display: flex; align-items: center; justify-content: center; border-radius: 12px;"><div class="text-center"><div class="spinner-border text-primary mb-2" role="status"><span class="sr-only">Loading...</span></div><p class="text-muted">Loading booth data...</p></div></div>');
+    modalBody.prepend('<div id="boothEditLoading" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.9); z-index: 1000; display: flex; align-items: center; justify-content: center; border-radius: 12px;"><div class="text-center"><div class="spinner-border text-dark-gray-gray mb-2" role="status"><span class="sr-only">Loading...</span></div><p class="text-muted">Loading booth data...</p></div></div>');
     
     // Use the proper route helper or construct URL correctly
     const url = `{{ url('/booths') }}/${id}?json=1`;
@@ -4340,7 +4372,7 @@ function renderStatusSettings(statuses) {
         return;
     }
 
-    let html = '<div class="table-responsive"><table class="table table-bordered table-hover" id="statusSettingsTable">';
+    let html = '<div class="looker-table-container"><table class="looker-table table-bordered table-hover" id="statusSettingsTable">';
     html += '<thead class="table-light"><tr>';
     html += '<th style="width: 60px;">Order</th>';
     html += '<th style="width: 80px;">Code</th>';
@@ -4378,25 +4410,25 @@ function renderStatusRow(status, index) {
     let html = '<tr id="' + rowId + '" data-status-id="' + (status.id || '') + '" data-status-code="' + status.status_code + '">';
     
     // Sort Order
-    html += '<td><input type="number" class="form-control form-control-sm status-sort-order" value="' + (status.sort_order || 0) + '" min="0" style="width: 60px;"></td>';
+    html += '<td><input type="number" class="glass-input glass-input-sm status-sort-order" value="' + (status.sort_order || 0) + '" min="0" style="width: 60px;"></td>';
     
     // Status Code
-    html += '<td><input type="number" class="form-control form-control-sm status-code" value="' + status.status_code + '" min="1" required style="width: 70px;"></td>';
+    html += '<td><input type="number" class="glass-input glass-input-sm status-code" value="' + status.status_code + '" min="1" required style="width: 70px;"></td>';
     
     // Status Name
-    html += '<td><input type="text" class="form-control form-control-sm status-name" value="' + (status.status_name || '') + '" required maxlength="100"></td>';
+    html += '<td><input type="text" class="glass-input glass-input-sm status-name" value="' + (status.status_name || '') + '" required maxlength="100"></td>';
     
     // Background Color with visual picker
-    html += '<td><div class="input-group input-group-sm"><input type="color" class="form-control form-control-color status-bg-color" value="' + (status.status_color || '#28a745') + '" style="width: 60px; height: 38px;"><input type="text" class="form-control form-control-sm status-bg-color-text" value="' + (status.status_color || '#28a745') + '" maxlength="7" style="width: 80px;"></div></td>';
+    html += '<td><div class="input-group input-group-sm"><input type="color" class="glass-input glass-input-color status-bg-color" value="' + (status.status_color || '#28a745') + '" style="width: 60px; height: 38px;"><input type="text" class="glass-input glass-input-sm status-bg-color-text" value="' + (status.status_color || '#28a745') + '" maxlength="7" style="width: 80px;"></div></td>';
     
     // Border Color with visual picker
-    html += '<td><div class="input-group input-group-sm"><input type="color" class="form-control form-control-color status-border-color" value="' + (status.border_color || status.status_color || '#28a745') + '" style="width: 60px; height: 38px;"><input type="text" class="form-control form-control-sm status-border-color-text" value="' + (status.border_color || status.status_color || '#28a745') + '" maxlength="7" style="width: 80px;"></div></td>';
+    html += '<td><div class="input-group input-group-sm"><input type="color" class="glass-input glass-input-color status-border-color" value="' + (status.border_color || status.status_color || '#28a745') + '" style="width: 60px; height: 38px;"><input type="text" class="glass-input glass-input-sm status-border-color-text" value="' + (status.border_color || status.status_color || '#28a745') + '" maxlength="7" style="width: 80px;"></div></td>';
     
     // Border Width
-    html += '<td><input type="number" class="form-control form-control-sm status-border-width" value="' + (status.border_width || 2) + '" min="0" max="10" style="width: 80px;" title="Border width (0-10px)"></td>';
+    html += '<td><input type="number" class="glass-input glass-input-sm status-border-width" value="' + (status.border_width || 2) + '" min="0" max="10" style="width: 80px;" title="Border width (0-10px)"></td>';
     
     // Border Style
-    html += '<td><select class="form-control form-control-sm status-border-style" style="width: 100px;">';
+    html += '<td><select class="glass-input glass-input-sm status-border-style" style="width: 100px;">';
     const borderStyles = ['solid', 'dashed', 'dotted', 'double', 'groove', 'ridge', 'inset', 'outset', 'none'];
     borderStyles.forEach(function(style) {
         html += '<option value="' + style + '"' + ((status.border_style || 'solid') === style ? ' selected' : '') + '>' + style.charAt(0).toUpperCase() + style.slice(1) + '</option>';
@@ -4404,13 +4436,13 @@ function renderStatusRow(status, index) {
     html += '</select></td>';
     
     // Border Radius
-    html += '<td><input type="number" class="form-control form-control-sm status-border-radius" value="' + (status.border_radius || 4) + '" min="0" max="50" style="width: 80px;" title="Border radius (0-50px)"></td>';
+    html += '<td><input type="number" class="glass-input glass-input-sm status-border-radius" value="' + (status.border_radius || 4) + '" min="0" max="50" style="width: 80px;" title="Border radius (0-50px)"></td>';
     
     // Text Color with visual picker
-    html += '<td><div class="input-group input-group-sm"><input type="color" class="form-control form-control-color status-text-color" value="' + (status.text_color || '#ffffff') + '" style="width: 60px; height: 38px;"><input type="text" class="form-control form-control-sm status-text-color-text" value="' + (status.text_color || '#ffffff') + '" maxlength="7" style="width: 80px;"></div></td>';
+    html += '<td><div class="input-group input-group-sm"><input type="color" class="glass-input glass-input-color status-text-color" value="' + (status.text_color || '#ffffff') + '" style="width: 60px; height: 38px;"><input type="text" class="glass-input glass-input-sm status-text-color-text" value="' + (status.text_color || '#ffffff') + '" maxlength="7" style="width: 80px;"></div></td>';
     
     // Badge Color
-    html += '<td><select class="form-control form-control-sm status-badge-color">';
+    html += '<td><select class="glass-input glass-input-sm status-badge-color">';
     const badgeColors = ['success', 'info', 'warning', 'danger', 'primary', 'secondary', 'dark', 'light'];
     badgeColors.forEach(function(color) {
         html += '<option value="' + color + '"' + (status.badge_color === color ? ' selected' : '') + '>' + color.charAt(0).toUpperCase() + color.slice(1) + '</option>';
@@ -4418,10 +4450,10 @@ function renderStatusRow(status, index) {
     html += '</select></td>';
     
     // Description
-    html += '<td><input type="text" class="form-control form-control-sm status-description" value="' + (status.description || '') + '" placeholder="Status description"></td>';
+    html += '<td><input type="text" class="glass-input glass-input-sm status-description" value="' + (status.description || '') + '" placeholder="Status description"></td>';
     
     // Floor Plan Assignment
-    html += '<td><select class="form-control form-control-sm status-floor-plan">';
+    html += '<td><select class="glass-input glass-input-sm status-floor-plan">';
     html += '<option value="">Global (All Floor Plans)</option>';
     @foreach($floorPlans as $fp)
     html += '<option value="{{ $fp->id }}"' + (status.floor_plan_id == {{ $fp->id }} ? ' selected' : '') + '>{{ $fp->name }}</option>';
@@ -4912,12 +4944,12 @@ document.addEventListener('DOMContentLoaded', function() {
         $(window).off('scroll.lazyLoadCheck');
         $(document).off('scroll.lazyLoadTable');
         
-        // The table scrolls inside .table-responsive, not the window. We must listen to that container.
+        // The table scrolls inside .looker-table-container, not the window. We must listen to that container.
         function attachScrollToTableContainer() {
             const table = document.getElementById('boothsTable');
             if (!table) return;
             
-            const scrollContainer = table.closest('.table-responsive');
+            const scrollContainer = table.closest('.looker-table-container');
             if (!scrollContainer) return;
             
             let scrollCheckTimeout;
@@ -5176,7 +5208,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         // Apply to cards
-        document.querySelectorAll('.card-body').forEach(card => {
+        document.querySelectorAll('.p-4').forEach(card => {
             card.style.padding = cardPadding;
         });
     }
@@ -5382,3 +5414,12 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endpush
+
+<style>
+    .glass-card, .looker-table, .designer-toolbar, .controls-panel {
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08), 0 1px 1px rgba(255,255,255,0.3) !important;
+    }
+    .btn-glass-primary {
+        box-shadow: 0 4px 14px 0 rgba(0, 118, 255, 0.39) !important;
+    }
+</style>

@@ -1,0 +1,153 @@
+/* ============================================================
+   ULTIMATE PREMIUM GLASS COMPONENT SYSTEM (iOS 17+ Style)
+   Specifically tuned for Booths Management and Forms
+   ============================================================ */
+
+:root {
+    --glass-bg: rgba(255, 255, 255, 0.45);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.12);
+    --glass-text: #1d1d1f;
+    --apple-blue: #0076FF;
+    --apple-green: #34C759;
+}
+
+/* 1. ULTIMATE GLASS CARD */
+.glass-card {
+    background: rgba(255, 255, 255, 0.42) !important;
+    backdrop-filter: blur(40px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.6) !important;
+    border-radius: 32px !important;
+    box-shadow: 
+        0 20px 50px rgba(0, 0, 0, 0.1),
+        0 10px 20px rgba(0, 0, 0, 0.05),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.4) !important;
+    padding: 2.5rem;
+    transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2.5rem !important;
+    z-index: 1;
+}
+
+.glass-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.5;
+}
+
+.glass-card:hover {
+    transform: translateY(-15px) scale(1.02) !important;
+    background: rgba(255, 255, 255, 0.6) !important;
+    box-shadow: 0 50px 100px rgba(0, 0, 0, 0.15) !important;
+    border-color: rgba(255, 255, 255, 1) !important;
+}
+
+/* 2. ULTIMATE BUTTONS */
+.btn-glass-primary {
+    background: var(--apple-blue) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 14px !important;
+    padding: 10px 24px !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    box-shadow: 0 4px 15px rgba(0, 118, 255, 0.3) !important;
+}
+
+.btn-glass-primary:hover {
+    transform: scale(1.05) translateY(-2px) !important;
+    box-shadow: 0 10px 25px rgba(0, 118, 255, 0.4) !important;
+}
+
+.btn-glass-primary:active {
+    transform: scale(0.95) !important;
+}
+
+.btn-glass-secondary {
+    background: rgba(255, 255, 255, 0.3) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    border-radius: 14px !important;
+    color: #1d1d1f !important;
+    padding: 10px 24px !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+}
+
+.btn-glass-secondary:hover {
+    background: rgba(255, 255, 255, 0.5) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* 3. ULTIMATE FORM CONTROLS */
+.glass-input {
+    background: rgba(255, 255, 255, 0.25) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    color: #1d1d1f !important;
+    transition: all 0.3s ease !important;
+    font-weight: 500 !important;
+}
+
+.glass-input:focus {
+    background: rgba(255, 255, 255, 0.5) !important;
+    border-color: var(--apple-blue) !important;
+    box-shadow: 0 0 0 4px rgba(0, 118, 255, 0.1) !important;
+    outline: none !important;
+}
+
+/* 4. DESIGNER ADJUSTMENTS */
+.designer-toolbar {
+    background: rgba(255, 255, 255, 0.5) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    border-radius: 20px !important;
+    padding: 12px !important;
+    margin-bottom: 24px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+}
+
+.toolbar-btn {
+    border-radius: 10px !important;
+    padding: 8px 12px !important;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    color: #1d1d1f !important;
+}
+
+.toolbar-btn:hover {
+    background: rgba(255, 255, 255, 0.6) !important;
+    transform: scale(1.1) !important;
+}
+
+.toolbar-btn.active {
+    background: var(--apple-blue) !important;
+    color: white !important;
+}
+
+/* Fix sidebar overlap on Booths index */
+.looker-dashboard {
+    position: relative;
+    z-index: 1;
+    overflow: visible !important;
+}
+
+@media (min-width: 992px) {
+    .main-content-pushed {
+        margin-left: 260px !important;
+        width: calc(100% - 260px) !important;
+    }
+}
