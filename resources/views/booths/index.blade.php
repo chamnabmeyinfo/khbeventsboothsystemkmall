@@ -655,61 +655,61 @@
                                         <button class="btn-add-all-zone" 
                                                 data-zone="{{ $zoneName }}" 
                                                 title="Add All Booths in Zone {{ $zoneName }} to Canvas"
-                                                onclick="event.stopPropagation(); FloorPlanDesigner.addAllZoneToCanvas({{ e(json_encode($zoneName)) }});">
+                                                onclick="event.stopPropagation(); FloorPlanDesigner.addAllZoneToCanvas({{ json_encode($zoneName) }});">
                                             <i class="fas fa-plus-circle"></i> Add All
                                         </button>
                                         <button class="btn-add-selected-zone" 
                                                 data-zone="{{ $zoneName }}" 
                                                 title="Add Selected Booths in Zone {{ $zoneName }} to Canvas (Stick Together)"
-                                                onclick="event.stopPropagation(); FloorPlanDesigner.addSelectedZoneBoothsToCanvas({{ e(json_encode($zoneName)) }});">
+                                                onclick="event.stopPropagation(); FloorPlanDesigner.addSelectedZoneBoothsToCanvas({{ json_encode($zoneName) }});">
                                             <i class="fas fa-layer-group"></i> Add Selected
                                         </button>
                                         <button class="btn-add-all-zone-click" 
                                                 data-zone="{{ $zoneName }}" 
                                                 title="Add All Booths in Zone {{ $zoneName }} - Click on Canvas to Place"
-                                                onclick="event.stopPropagation(); FloorPlanDesigner.enableClickToPlaceMode({{ e(json_encode($zoneName)) }});">
+                                                onclick="event.stopPropagation(); FloorPlanDesigner.enableClickToPlaceMode({{ json_encode($zoneName) }});">
                                             <i class="fas fa-crosshairs"></i>
                                         </button>
                                         <button class="btn-zone-settings" 
                                                 data-zone="{{ $zoneName }}" 
                                                 title="Zone Settings - Adjust Size, Rotation & Dimensions for All Booths in Zone {{ $zoneName }}"
-                                                onclick="event.stopPropagation(); FloorPlanDesigner.openZoneSettings({{ e(json_encode($zoneName)) }});">
+                                                onclick="event.stopPropagation(); FloorPlanDesigner.openZoneSettings({{ json_encode($zoneName) }});">
                                             <i class="fas fa-cog"></i>
                                         </button>
                                         <button class="btn-zone-appearance" 
                                                 data-zone="{{ $zoneName }}" 
                                                 title="Zone Appearance - Customize Colors & Appearance Only for Zone {{ $zoneName }}"
-                                                onclick="event.stopPropagation(); FloorPlanDesigner.openZoneAppearanceSettings({{ e(json_encode($zoneName)) }});">
+                                                onclick="event.stopPropagation(); FloorPlanDesigner.openZoneAppearanceSettings({{ json_encode($zoneName) }});">
                                             <i class="fas fa-palette"></i>
                                         </button>
                                         <button class="btn-zone-clear" 
                                                 data-zone="{{ $zoneName }}" 
                                                 title="Clear Zone {{ $zoneName }} - Return All Booths to Booth Number Area"
-                                                onclick="event.stopPropagation(); FloorPlanDesigner.clearZoneBooths({{ e(json_encode($zoneName)) }});">
+                                                onclick="event.stopPropagation(); FloorPlanDesigner.clearZoneBooths({{ json_encode($zoneName) }});">
                                             <i class="fas fa-undo"></i>
                                         </button>
                                         <button class="btn-zone-zoom" 
                                                 data-zone="{{ $zoneName }}" 
                                                 title="Zoom to Zone {{ $zoneName }} - Fit All Booths in View"
-                                                onclick="event.stopPropagation(); FloorPlanDesigner.zoomToZone({{ e(json_encode($zoneName)) }});">
+                                                onclick="event.stopPropagation(); FloorPlanDesigner.zoomToZone({{ json_encode($zoneName) }});">
                                             <i class="fas fa-search-plus"></i>
                                         </button>
                                         <button class="btn-zone-select-all" 
                                                 data-zone="{{ $zoneName }}" 
                                                 title="Select All Booths from Zone {{ $zoneName }} on Canvas"
-                                                onclick="event.stopPropagation(); FloorPlanDesigner.selectAllBoothsByZone({{ e(json_encode($zoneName)) }});">
+                                                onclick="event.stopPropagation(); FloorPlanDesigner.selectAllBoothsByZone({{ json_encode($zoneName) }});">
                                             <i class="fas fa-mouse-pointer"></i>
                                         </button>
                                         <button class="btn-zone-add-new" 
                                                 data-zone="{{ $zoneName }}" 
                                                 title="Add New Booth ID to Zone {{ $zoneName }}"
-                                                onclick="event.stopPropagation(); FloorPlanDesigner.showAddBoothModal({{ e(json_encode($zoneName)) }});">
+                                                onclick="event.stopPropagation(); FloorPlanDesigner.showAddBoothModal({{ json_encode($zoneName) }});">
                                             <i class="fas fa-plus"></i>
                                         </button>
                                         <button class="btn-zone-delete" 
                                                 data-zone="{{ $zoneName }}" 
                                                 title="Delete Booths from Zone {{ $zoneName }}"
-                                                onclick="event.stopPropagation(); FloorPlanDesigner.showDeleteBoothModal({{ e(json_encode($zoneName)) }});">
+                                                onclick="event.stopPropagation(); FloorPlanDesigner.showDeleteBoothModal({{ json_encode($zoneName) }});">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                         </div>
