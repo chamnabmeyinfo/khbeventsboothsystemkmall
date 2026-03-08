@@ -1,6 +1,6 @@
 # 📁 Documentation Structure
 
-**Last Updated:** February 10, 2026
+**Last Updated:** March 7, 2026
 
 ---
 
@@ -39,7 +39,8 @@ docs/
 │
 └── 05-guides/                             # 📘 Feature-Specific Guides
     ├── HR_MODULE_GUIDE.md                 # HR & user management
-    └── CANVAS_PERMISSIONS_GUIDE.md        # Floor plan permissions
+    ├── CANVAS_PERMISSIONS_GUIDE.md        # Floor plan permissions
+    └── FLOOR_PLAN_DESIGNER_UI.md          # Designer layout, styling, deploy (March 2026)
 ```
 
 ---
@@ -97,7 +98,7 @@ docs/
 
 ---
 
-### 05-guides/ (2 documents)
+### 05-guides/ (3 documents)
 **Purpose:** Feature-specific implementation guides  
 **Audience:** Developers working on specific features
 
@@ -105,6 +106,7 @@ docs/
 |----------|------|---------|----------|
 | HR_MODULE_GUIDE.md | 8 KB | HR & user management | ⭐ |
 | CANVAS_PERMISSIONS_GUIDE.md | 5 KB | Floor plan permissions | ⭐ |
+| FLOOR_PLAN_DESIGNER_UI.md | 4 KB | Designer layout, styling, deploy | ⭐ |
 
 ---
 

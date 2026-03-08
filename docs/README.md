@@ -75,6 +75,7 @@ docs/
 └── 05-guides/                # Feature-specific guides
     ├── HR_MODULE_GUIDE.md
     ├── CANVAS_PERMISSIONS_GUIDE.md
+    ├── FLOOR_PLAN_DESIGNER_UI.md   # Designer layout, styling (March 2026)
     └── WEBSITE_DOCUMENTATION.md
 ```
 
