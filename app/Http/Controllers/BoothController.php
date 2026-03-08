@@ -1802,6 +1802,7 @@ class BoothController extends Controller
                 'text_align' => $booth->text_align,
                 'box_shadow' => $booth->box_shadow,
                 'book_id' => $booth->bookid,
+                'book_userid' => $booth->book ? $booth->book->userid : null,
                 'can_manage_booking' => ($booth->book && auth()->check()) ? $booth->book->canBeManagedBy(auth()->user()) : false,
             ];
         })->values();

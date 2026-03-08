@@ -1908,7 +1908,8 @@
         const canvasHeight = {{ $canvasHeight }};
         
         // DEBUG: log booking permission per booth (open browser console to check)
-        console.log('[DEBUG] Booths with booking data:', booths.filter(function(b){ return b.book_id; }).map(function(b){ return { booth_number: b.booth_number, book_id: b.book_id, can_manage_booking: b.can_manage_booking }; }));
+        console.log('[DEBUG] Auth user id: {{ auth()->id() }}');
+        console.log('[DEBUG] Booths with booking data:', booths.filter(function(b){ return b.book_id; }).map(function(b){ return { booth_number: b.booth_number, book_id: b.book_id, book_userid: b.book_userid, can_manage_booking: b.can_manage_booking }; }));
         
         // Set canvas size
         if (canvas) {
