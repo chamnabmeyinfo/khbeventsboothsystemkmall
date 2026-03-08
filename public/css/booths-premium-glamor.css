@@ -1,33 +1,43 @@
 /* ============================================================
-   ULTIMATE PREMIUM GLASS COMPONENT SYSTEM (iOS 17+ Style)
-   Specifically tuned for Booths Management and Forms
+   iOS 18 STYLE – Booths Management
+   Refined glass, SF typography, system colors
    ============================================================ */
 
 :root {
-    --glass-bg: rgba(255, 255, 255, 0.45);
-    --glass-border: rgba(255, 255, 255, 0.5);
-    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.12);
+    --glass-bg: rgba(255, 255, 255, 0.72);
+    --glass-bg-subtle: rgba(255, 255, 255, 0.55);
+    --glass-border: rgba(255, 255, 255, 0.65);
+    --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    --glass-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.12);
     --glass-text: #1d1d1f;
-    --apple-blue: #0076FF;
+    --glass-text-secondary: #6e6e73;
+    --apple-blue: #007AFF;
+    --apple-blue-soft: rgba(0, 122, 255, 0.12);
     --apple-green: #34C759;
+    --apple-orange: #FF9500;
+    --apple-red: #FF3B30;
+    --ios-radius-sm: 10px;
+    --ios-radius-md: 14px;
+    --ios-radius-lg: 20px;
+    --ios-radius-xl: 28px;
+    --ios-radius-pill: 9999px;
+    --ios-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --ios-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", sans-serif;
 }
 
-/* 1. ULTIMATE GLASS CARD */
+/* 1. iOS 18 Glass Cards */
 .glass-card {
-    background: rgba(255, 255, 255, 0.42) !important;
-    backdrop-filter: blur(40px) saturate(200%) !important;
-    -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.6) !important;
-    border-radius: 32px !important;
-    box-shadow: 
-        0 20px 50px rgba(0, 0, 0, 0.1),
-        0 10px 20px rgba(0, 0, 0, 0.05),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.4) !important;
-    padding: 2.5rem;
-    transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(60px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(60px) saturate(180%) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: var(--ios-radius-lg) !important;
+    box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+    padding: 1.5rem 1.75rem;
+    transition: all var(--ios-transition) !important;
     position: relative;
     overflow: hidden;
-    margin-bottom: 2.5rem !important;
+    margin-bottom: 1.5rem !important;
     z-index: 1;
 }
 
@@ -38,99 +48,111 @@
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
     pointer-events: none;
     z-index: -1;
-    opacity: 0.5;
+    opacity: 0.4;
 }
 
 .glass-card:hover {
-    transform: translateY(-15px) scale(1.02) !important;
-    background: rgba(255, 255, 255, 0.6) !important;
-    box-shadow: 0 50px 100px rgba(0, 0, 0, 0.15) !important;
-    border-color: rgba(255, 255, 255, 1) !important;
+    transform: translateY(-4px) !important;
+    background: rgba(255, 255, 255, 0.82) !important;
+    box-shadow: var(--glass-shadow-hover), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 
-/* 2. ULTIMATE BUTTONS */
+/* 2. iOS 18 Buttons */
 .btn-glass-primary {
     background: var(--apple-blue) !important;
     color: white !important;
     border: none !important;
-    border-radius: 14px !important;
-    padding: 10px 24px !important;
+    border-radius: var(--ios-radius-md) !important;
+    padding: 10px 20px !important;
     font-weight: 600 !important;
-    font-size: 0.95rem !important;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-    box-shadow: 0 4px 15px rgba(0, 118, 255, 0.3) !important;
+    font-size: 0.9375rem !important;
+    font-family: var(--ios-font) !important;
+    transition: all var(--ios-transition) !important;
+    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.25) !important;
 }
 
 .btn-glass-primary:hover {
-    transform: scale(1.05) translateY(-2px) !important;
-    box-shadow: 0 10px 25px rgba(0, 118, 255, 0.4) !important;
+    transform: scale(1.02) !important;
+    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.35) !important;
 }
 
 .btn-glass-primary:active {
-    transform: scale(0.95) !important;
+    transform: scale(0.98) !important;
 }
 
 .btn-glass-secondary {
-    background: rgba(255, 255, 255, 0.3) !important;
-    backdrop-filter: blur(10px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.5) !important;
-    border-radius: 14px !important;
-    color: #1d1d1f !important;
-    padding: 10px 24px !important;
+    background: var(--glass-bg-subtle) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: var(--ios-radius-md) !important;
+    color: var(--glass-text) !important;
+    padding: 10px 20px !important;
     font-weight: 600 !important;
-    transition: all 0.2s ease !important;
+    font-family: var(--ios-font) !important;
+    transition: all var(--ios-transition) !important;
 }
 
 .btn-glass-secondary:hover {
-    background: rgba(255, 255, 255, 0.5) !important;
-    transform: translateY(-1px) !important;
+    background: rgba(255, 255, 255, 0.7) !important;
 }
 
-/* 3. ULTIMATE FORM CONTROLS */
+.btn-glass-secondary:active {
+    transform: scale(0.98) !important;
+}
+
+/* 3. iOS 18 Form Controls */
 .glass-input {
-    background: rgba(255, 255, 255, 0.25) !important;
-    backdrop-filter: blur(10px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.4) !important;
-    border-radius: 12px !important;
+    background: rgba(255, 255, 255, 0.5) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: var(--ios-radius-md) !important;
     padding: 12px 16px !important;
-    color: #1d1d1f !important;
-    transition: all 0.3s ease !important;
-    font-weight: 500 !important;
+    color: var(--glass-text) !important;
+    font-family: var(--ios-font) !important;
+    font-size: 0.9375rem !important;
+    transition: all var(--ios-transition) !important;
 }
 
 .glass-input:focus {
-    background: rgba(255, 255, 255, 0.5) !important;
+    background: rgba(255, 255, 255, 0.7) !important;
     border-color: var(--apple-blue) !important;
-    box-shadow: 0 0 0 4px rgba(0, 118, 255, 0.1) !important;
+    box-shadow: 0 0 0 3px var(--apple-blue-soft) !important;
     outline: none !important;
 }
 
-/* 4. DESIGNER ADJUSTMENTS */
+.glass-input::placeholder {
+    color: var(--glass-text-secondary) !important;
+}
+
+/* 4. Designer Toolbar */
 .designer-toolbar {
-    background: rgba(255, 255, 255, 0.5) !important;
-    backdrop-filter: blur(24px) saturate(180%) !important;
-    border-radius: 20px !important;
-    padding: 12px !important;
-    margin-bottom: 24px !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(40px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+    border-radius: var(--ios-radius-lg) !important;
+    padding: 12px 16px !important;
+    margin-bottom: 1.5rem !important;
+    box-shadow: var(--glass-shadow) !important;
     display: flex !important;
     align-items: center !important;
     gap: 12px !important;
 }
 
 .toolbar-btn {
-    border-radius: 10px !important;
-    padding: 8px 12px !important;
-    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-    color: #1d1d1f !important;
+    border-radius: var(--ios-radius-sm) !important;
+    padding: 8px 14px !important;
+    transition: all var(--ios-transition) !important;
+    color: var(--glass-text) !important;
+    font-family: var(--ios-font) !important;
 }
 
 .toolbar-btn:hover {
     background: rgba(255, 255, 255, 0.6) !important;
-    transform: scale(1.1) !important;
 }
 
 .toolbar-btn.active {
@@ -147,33 +169,33 @@
 
 @media (min-width: 992px) {
     .main-content-pushed {
-        margin-left: 260px !important;
-        width: calc(100% - 260px) !important;
+        margin-left: var(--sidebar-width, 280px) !important;
+        width: calc(100% - var(--sidebar-width, 280px)) !important;
+        transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        padding: 2.5rem !important;
+    }
+
+    .modern-sidebar.collapsed ~ .main-content-pushed,
+    .main-content-pushed.expanded {
+        margin-left: var(--sidebar-collapsed-width, 80px) !important;
+        width: calc(100% - var(--sidebar-collapsed-width, 80px)) !important;
     }
 }
 
-
-/* Unified Pushing Intelligence */
-body {
-    padding-top: 70px !important;
-}
-
-.main-content-pushed {
-    margin-left: 280px !important;
-    width: calc(100% - 280px) !important;
-    transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1) !important;
-    padding: 2.5rem !important;
-}
-
-.modern-sidebar.collapsed ~ .main-content-pushed,
-.main-content-pushed.expanded {
-    margin-left: 80px !important;
-    width: calc(100% - 80px) !important;
+/* On mobile, reset main content margin */
+@media (max-width: 991.98px) {
+    .main-content-pushed {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 1rem !important;
+    }
 }
 
 .looker-dashboard {
     max-width: 100% !important;
+    width: 100% !important;
     padding: 0 !important;
+    margin: 0 !important;
 }
 
 /* Sidebar List Fix */
@@ -190,10 +212,74 @@ main.main-content-pushed {
 }
 
 body.ios-dashboard-mode {
-    background: linear-gradient(135deg, #a7d0e3 0%, #d4eaf7 35%, #f0f7fb 100%) !important;
+    background: linear-gradient(165deg, 
+        #e8f4fc 0%, 
+        #f0e8f8 30%, 
+        #fdf4f0 60%, 
+        #e8f8f4 85%, 
+        #f5f0fc 100%) !important;
     background-attachment: fixed !important;
 }
 
-.looker-dashboard {
-    padding: 0 20px 40px 10px !important;
+/* Booth Management / Booths page: full fit-width content */
+.looker-dashboard,
+main#main-content .looker-dashboard {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+}
+
+#boothManagementContainer,
+#boothManagementContainer .glass-card,
+#boothManagementContainer .looker-table-wrapper,
+#boothManagementContainer .looker-table,
+#boothManagementContainer .table-modern,
+#boothManagementContainer #tableControlBar,
+#boothManagementContainer #tableContainerInControlBar {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/* ── iOS 18 No-Floorplan Gate (booths index) ───────────────────── */
+body.ios-dashboard-mode .no-floorplan-gate {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(40px) !important;
+    -webkit-backdrop-filter: blur(40px) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: var(--ios-radius-lg) !important;
+    box-shadow: var(--glass-shadow) !important;
+}
+
+body.ios-dashboard-mode .no-floorplan-message {
+    background: var(--apple-blue) !important;
+    border-radius: var(--ios-radius-lg) var(--ios-radius-lg) 0 0 !important;
+    font-family: var(--ios-font) !important;
+}
+
+body.ios-dashboard-mode .no-floorplan-item {
+    background: rgba(255, 255, 255, 0.8) !important;
+    border-radius: var(--ios-radius-md) !important;
+    border: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+body.ios-dashboard-mode .no-floorplan-item:hover {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-color: var(--apple-blue) !important;
+}
+
+/* ── iOS 18 Space Mode Toggle (management) ──────────────────────── */
+body.ios-dashboard-mode .space-mode-btn {
+    font-family: var(--ios-font) !important;
+    transition: all var(--ios-transition) !important;
+}
+
+body.ios-dashboard-mode .space-mode-btn.active {
+    background: var(--apple-blue) !important;
+    color: white !important;
+}
+
+/* ── iOS 18 KPI / Stat Cards (management mini dashboard) ───────── */
+body.ios-dashboard-mode .kpi-card-looker,
+body.ios-dashboard-mode [class*="kpi-"] {
+    font-family: var(--ios-font) !important;
 }

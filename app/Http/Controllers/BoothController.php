@@ -56,11 +56,16 @@ class BoothController extends Controller
         DebugLogger::log(['request_method' => $request->method(), 'user_authenticated' => auth()->check()], 'BoothController.php:22', 'BoothController::index() called');
         // #endregion
 
-        // Check if user wants canvas view instead of table (default is now table)
-        $view = $request->input('view', 'table'); // 'table' (default) or 'canvas'
+        // Check view: 'table' (list), 'management' (full), or 'canvas'
+        $view = $request->input('view', 'table');
 
-        // If view is 'table', show management table interface
+        // If view is 'table', show design-system list
         if ($view === 'table') {
+            return $this->boothsList($request);
+        }
+
+        // If view is 'management', show full management interface
+        if ($view === 'management') {
             return $this->managementTable($request);
         }
 
@@ -362,7 +367,7 @@ class BoothController extends Controller
             $canvasTextItems = ($canvasSetting && $canvasSetting->canvas_text_items) ? $canvasSetting->canvas_text_items : [];
         }
 
-        return view('booths.index', compact(
+        return view('booths.canvas', compact(
             'booths',
             'boothsForJS',
             'categories',
@@ -560,9 +565,8 @@ class BoothController extends Controller
      */
     public function edit(Booth $booth, Request $request)
     {
-        // Redirect to management table with edit parameter
-        // The JavaScript in management.blade.php will auto-open the edit modal
-        $queryParams = ['view' => 'table', 'edit' => $booth->id];
+        // Redirect to management view with edit parameter (modal opens there)
+        $queryParams = ['view' => 'management', 'edit' => $booth->id];
 
         if ($booth->floor_plan_id) {
             $queryParams['floor_plan_id'] = $booth->floor_plan_id;
@@ -1907,6 +1911,37 @@ class BoothController extends Controller
     }
 
     /**
+     * Booths List View (design-system, Apple-style)
+     */
+    public function boothsList(Request $request)
+    {
+        $query = Booth::with(['client', 'boothType', 'floorPlan', 'book']);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('booth_number', 'like', "%{$search}%")
+                    ->orWhereHas('client', function ($clientQuery) use ($search) {
+                        $clientQuery->where('company', 'like', "%{$search}%")
+                            ->orWhere('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('category', function ($catQuery) use ($search) {
+                        $catQuery->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $query->orderBy('booth_number', 'asc');
+        $booths = $query->paginate(25)->withQueryString();
+
+        return view('booths.index', compact('booths'));
+    }
+
+    /**
      * Booth Management Table View
      */
     public function managementTable(Request $request)
@@ -1916,7 +1951,7 @@ class BoothController extends Controller
             return $this->lazyLoadBooths($request);
         }
 
-        $query = Booth::with(['client', 'category', 'subCategory', 'boothType', 'floorPlan', 'user']);
+        $query = Booth::with(['client', 'category', 'subCategory', 'boothType', 'floorPlan', 'user', 'book']);
 
         // Search
         if ($request->filled('search')) {
@@ -2013,7 +2048,7 @@ class BoothController extends Controller
     public function lazyLoadBooths(Request $request)
     {
         // Use exact same query structure as managementTable method
-        $query = Booth::with(['client', 'category', 'subCategory', 'boothType', 'floorPlan', 'user']);
+        $query = Booth::with(['client', 'category', 'subCategory', 'boothType', 'floorPlan', 'user', 'book']);
 
         // Search
         if ($request->filled('search')) {

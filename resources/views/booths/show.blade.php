@@ -8,12 +8,16 @@
 <div class='looker-dashboard'>
 <div class="row">
     <div class="col-md-8">
-        <div class="glass-card">
-            <div class="p-4 border-bottom">
-                <h3 class="h5 fw-bold mb-0 text-dark-gray-gray">Booth Information</h3>
-                <div class="card-tools">
+        {{-- iOS-style header with status pill --}}
+        <div class="ios-detail-header glass-card">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                <div>
+                    <h1 class="ios-detail-title">{{ $booth->booth_number }}</h1>
+                    <span class="ios-detail-status-pill badge badge-{{ $booth->getStatusColor() }}">{{ $booth->getStatusLabel() }}</span>
+                </div>
+                <div class="d-flex gap-2">
                     <a href="{{ route('booths.index') }}" class="btn btn-sm btn-glass-secondary">
-                        <i class="fas fa-arrow-left"></i> Back to Booths
+                        <i class="fas fa-arrow-left"></i> Back
                     </a>
                     @auth
                     @if(auth()->user()->isAdmin())
@@ -24,66 +28,69 @@
                     @endauth
                 </div>
             </div>
-            <div class="p-4">
-                <dl class="row">
-                    <dt class="col-sm-4">Booth Number:</dt>
-                    <dd class="col-sm-8"><strong>{{ $booth->booth_number }}</strong></dd>
+        </div>
 
-                    <dt class="col-sm-4">Status:</dt>
-                    <dd class="col-sm-8">
-                        <span class="badge badge-{{ $booth->getStatusColor() }}">
-                            {{ $booth->getStatusLabel() }}
-                        </span>
-                    </dd>
-
-                    <dt class="col-sm-4">Price:</dt>
-                    <dd class="col-sm-8">${{ number_format($booth->price, 2) }}</dd>
-
-                    @if($booth->category)
-                    <dt class="col-sm-4">Category:</dt>
-                    <dd class="col-sm-8">{{ $booth->category->name }}</dd>
-                    @endif
-
-                    @if($booth->subCategory)
-                    <dt class="col-sm-4">Sub Category:</dt>
-                    <dd class="col-sm-8">{{ $booth->subCategory->name }}</dd>
-                    @endif
-
-                    @if($booth->asset)
-                    <dt class="col-sm-4">Asset:</dt>
-                    <dd class="col-sm-8">{{ $booth->asset->name }}</dd>
-                    @endif
-
-                    @if($booth->boothType)
-                    <dt class="col-sm-4">Booth Type:</dt>
-                    <dd class="col-sm-8">{{ $booth->boothType->name }}</dd>
-                    @endif
-
-                    @if($booth->user)
-                    <dt class="col-sm-4">Booked By:</dt>
-                    <dd class="col-sm-8">{{ $booth->user->username }}</dd>
-                    @endif
-                </dl>
+        {{-- Basic Info – iOS grouped section --}}
+        <div class="ios-group glass-card">
+            <div class="ios-group-title">Basic Info</div>
+            <div class="ios-group-rows">
+                <div class="ios-group-row">
+                    <span class="ios-row-label">Event / Location</span>
+                    <span class="ios-row-value">{{ $booth->floorPlan ? $booth->floorPlan->name : 'N/A' }}</span>
+                </div>
+                <div class="ios-group-row">
+                    <span class="ios-row-label">Size</span>
+                    <span class="ios-row-value">{{ $booth->area_sqm ? number_format($booth->area_sqm, 2) . ' m²' : 'N/A' }}</span>
+                </div>
+                <div class="ios-group-row">
+                    <span class="ios-row-label">Booth Type</span>
+                    <span class="ios-row-value">{{ $booth->boothType ? $booth->boothType->name : ($booth->type == 1 ? 'Booth' : 'Space Only') }}</span>
+                </div>
+                @if($booth->category)
+                <div class="ios-group-row">
+                    <span class="ios-row-label">Category</span>
+                    <span class="ios-row-value">{{ $booth->category->name }}</span>
+                </div>
+                @endif
+                @if($booth->subCategory)
+                <div class="ios-group-row">
+                    <span class="ios-row-label">Sub Category</span>
+                    <span class="ios-row-value">{{ $booth->subCategory->name }}</span>
+                </div>
+                @endif
             </div>
         </div>
 
-        {{-- Booth Image Gallery --}}
-        <div class="glass-card">
-            <div class="p-4 border-bottom">
-                <h3 class="h5 fw-bold mb-0 text-dark-gray-gray">
-                    <i class="fas fa-images"></i> Booth Images
-                </h3>
+        {{-- Pricing – iOS grouped section --}}
+        <div class="ios-group glass-card">
+            <div class="ios-group-title">Pricing</div>
+            <div class="ios-group-rows">
+                <div class="ios-group-row">
+                    <span class="ios-row-label">Rate</span>
+                    <span class="ios-row-value">${{ number_format($booth->price, 2) }}</span>
+                </div>
+                @if($booth->user)
+                <div class="ios-group-row">
+                    <span class="ios-row-label">Booked By</span>
+                    <span class="ios-row-value">{{ $booth->user->username }}</span>
+                </div>
+                @endif
+            </div>
+        </div>
+
+        {{-- Assets – iOS grouped section --}}
+        <div class="ios-group glass-card">
+            <div class="ios-group-title d-flex justify-content-between align-items-center" style="background: transparent; padding: 12px 16px;">
+                <span><i class="fas fa-images mr-2"></i>Assets</span>
                 @auth
                 @if(auth()->user()->isAdmin())
-                <div class="card-tools">
-                    <button type="button" class="btn btn-sm btn-glass-primary" onclick="showUploadModal()">
-                        <i class="fas fa-upload"></i> Upload Images
-                    </button>
-                </div>
+                <button type="button" class="btn btn-sm btn-glass-primary" onclick="showUploadModal()">
+                    <i class="fas fa-upload"></i> Upload
+                </button>
                 @endif
                 @endauth
             </div>
-            <div class="p-4">
+            <div class="ios-group-rows p-4">
                 <div id="boothGalleryContainer">
                     <div class="text-center text-muted py-4">
                         <i class="fas fa-spinner fa-spin fa-2x"></i>
@@ -94,31 +101,31 @@
         </div>
 
         @if($booth->client)
-        <div class="glass-card">
-            <div class="p-4 border-bottom">
-                <h3 class="h5 fw-bold mb-0 text-dark-gray-gray">Client Information</h3>
-            </div>
-            <div class="p-4">
-                <dl class="row">
-                    <dt class="col-sm-4">Name:</dt>
-                    <dd class="col-sm-8">{{ $booth->client->name }}</dd>
-
-                    <dt class="col-sm-4">Company:</dt>
-                    <dd class="col-sm-8">{{ $booth->client->company }}</dd>
-
-                    <dt class="col-sm-4">Position:</dt>
-                    <dd class="col-sm-8">{{ $booth->client->position }}</dd>
-
-                    <dt class="col-sm-4">Phone:</dt>
-                    <dd class="col-sm-8">{{ $booth->client->phone_number }}</dd>
-                </dl>
+        <div class="ios-group glass-card">
+            <div class="ios-group-title">Client Information</div>
+            <div class="ios-group-rows">
+                <div class="ios-group-row">
+                    <span class="ios-row-label">Name</span>
+                    <span class="ios-row-value">{{ $booth->client->name }}</span>
+                </div>
+                <div class="ios-group-row">
+                    <span class="ios-row-label">Company</span>
+                    <span class="ios-row-value">{{ $booth->client->company }}</span>
+                </div>
+                <div class="ios-group-row">
+                    <span class="ios-row-label">Position</span>
+                    <span class="ios-row-value">{{ $booth->client->position }}</span>
+                </div>
+                <div class="ios-group-row">
+                    <span class="ios-row-label">Phone</span>
+                    <span class="ios-row-value">{{ $booth->client->phone_number }}</span>
+                </div>
 
                 @auth
                 @if(auth()->user()->isAdmin())
-                <div class="mt-3">
-                    <a href="{{ route('clients.show', $booth->client->id) }}" class="btn btn-sm btn-glass-secondary">
-                        <i class="fas fa-eye"></i> View Client Details
-                    </a>
+                <div class="ios-group-row">
+                    <span class="ios-row-label"></span>
+                    <a href="{{ route('clients.show', $booth->client->id) }}" class="ios-row-value" style="color: var(--ios-accent);">View Client Details</a>
                 </div>
                 @endif
                 @endauth
@@ -127,28 +134,27 @@
         @endif
 
         @if($booth->book)
-        <div class="glass-card">
-            <div class="p-4 border-bottom">
-                <h3 class="h5 fw-bold mb-0 text-dark-gray-gray">Booking Information</h3>
-            </div>
-            <div class="p-4">
-                <dl class="row">
-                    <dt class="col-sm-4">Booking ID:</dt>
-                    <dd class="col-sm-8">#{{ $booth->book->id }}</dd>
-
-                    <dt class="col-sm-4">Booking Date:</dt>
-                    <dd class="col-sm-8">{{ $booth->book->date_book ? $booth->book->date_book->format('Y-m-d H:i:s') : 'N/A' }}</dd>
-
-                    <dt class="col-sm-4">Booking Type:</dt>
-                    <dd class="col-sm-8">{{ $booth->book->type }}</dd>
-                </dl>
+        <div class="ios-group glass-card">
+            <div class="ios-group-title">Schedule</div>
+            <div class="ios-group-rows">
+                <div class="ios-group-row">
+                    <span class="ios-row-label">Booking ID</span>
+                    <span class="ios-row-value">#{{ $booth->book->id }}</span>
+                </div>
+                <div class="ios-group-row">
+                    <span class="ios-row-label">Booking Date</span>
+                    <span class="ios-row-value">{{ $booth->book->date_book ? $booth->book->date_book->format('M d, Y H:i') : 'N/A' }}</span>
+                </div>
+                <div class="ios-group-row">
+                    <span class="ios-row-label">Type</span>
+                    <span class="ios-row-value">{{ $booth->book->type }}</span>
+                </div>
 
                 @auth
                 @if(auth()->user()->isAdmin())
-                <div class="mt-3">
-                    <a href="{{ route('books.show', $booth->book->id) }}" class="btn btn-sm btn-glass-secondary">
-                        <i class="fas fa-eye"></i> View Booking Details
-                    </a>
+                <div class="ios-group-row">
+                    <span class="ios-row-label"></span>
+                    <a href="{{ route('books.show', $booth->book->id) }}" class="ios-row-value" style="color: var(--ios-accent);">View Booking Details</a>
                 </div>
                 @endif
                 @endauth
@@ -294,17 +300,13 @@
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/booths-premium-glamor.css') }}?v=1.0">
 <link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
+<link rel="stylesheet" href="{{ asset('css/booths-ios-style.css') }}?v=1.0">
 <style>
-    
-    
-    
-    .kpi-card-looker {
-        margin-bottom: 24px;
-    }
+    .kpi-card-looker { margin-bottom: 24px; }
 </style>
 @endpush
 
-@push('body-class', 'ios-dashboard-mode')
+@push('body-class', 'ios-dashboard-mode booths-ios-mode')
 
 
 @push('scripts')

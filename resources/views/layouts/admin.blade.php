@@ -16,8 +16,8 @@
     <link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}?v=2.6">
     <link rel="stylesheet" href="{{ asset('css/global-ux-consistency.css') }}?v=2.6">
     
-    <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}?v=2.6">
-    <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=2.6">
+    <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}?v=2.7">
+    <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=2.7">
     
     @stack('styles')
 </head>

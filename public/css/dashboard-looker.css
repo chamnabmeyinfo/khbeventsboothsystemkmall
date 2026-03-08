@@ -31,25 +31,23 @@
     --transition-all: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 body.ios-dashboard-mode {
-    background-color: #ffb8d2 !important;
-    background-image: 
-        radial-gradient(at 0% 0%, #4facfe 0px, transparent 50%),
-        radial-gradient(at 100% 0%, #00f2fe 0px, transparent 50%),
-        radial-gradient(at 100% 100%, #f093fb 0px, transparent 50%),
-        radial-gradient(at 0% 100%, #f5576c 0px, transparent 50%),
-        radial-gradient(at 50% 50%, #5ee7df 0px, transparent 50%) !important;
+    background: linear-gradient(165deg, 
+        #e8f4fc 0%, 
+        #f0e8f8 25%, 
+        #fdf4f0 50%, 
+        #e8f8f4 75%, 
+        #f5f0fc 100%) !important;
     background-attachment: fixed !important;
-    background-size: 200% 200% !important;
-    animation: gradientMove 15s ease infinite !important;
-    font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", sans-serif !important;
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
+/* Subtle animated gradient for iOS 18 feel */
 @keyframes gradientMove {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.95; }
 }
 
 /* Dashboard Container */
@@ -423,13 +421,13 @@ body.ios-dashboard-mode {
 .delay-5 { animation-delay: 0.5s; }
 
 
-/* iOS Frosted Glass UI for Sidebar & Header on Dashboard */
+/* iOS 18 Frosted Glass – Sidebar & Header */
 body.ios-dashboard-mode .modern-unified-header,
 body.ios-dashboard-mode .modern-sidebar {
-    background: rgba(255, 255, 255, 0.45) !important;
-    backdrop-filter: blur(40px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
-    border-color: rgba(255, 255, 255, 0.5) !important;
+    background: rgba(255, 255, 255, 0.72) !important;
+    backdrop-filter: blur(60px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(60px) saturate(180%) !important;
+    border-color: rgba(255, 255, 255, 0.65) !important;
 }
 
 body.ios-dashboard-mode .sidebar-nav-link:hover {
@@ -437,50 +435,59 @@ body.ios-dashboard-mode .sidebar-nav-link:hover {
 }
 
 body.ios-dashboard-mode .looker-table th {
-    background: rgba(255, 255, 255, 0.25) !important;
-    backdrop-filter: blur(10px) !important;
+    background: rgba(255, 255, 255, 0.5) !important;
+    backdrop-filter: blur(20px) !important;
+    font-weight: 600 !important;
 }
 
 body.ios-dashboard-mode .looker-table tr:hover td {
-    background-color: rgba(255, 255, 255, 0.5) !important;
+    background-color: rgba(0, 122, 255, 0.06) !important;
 }
 
 body.ios-dashboard-mode .main-content-pushed {
     background: transparent !important;
 }
 
-/* Enhance readability on glass */
-.kpi-title, .panel-title, .avatar-chip-title, h1, h2 {
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.4);
+/* iOS 18 typography */
+body.ios-dashboard-mode .kpi-title,
+body.ios-dashboard-mode .panel-title,
+body.ios-dashboard-mode .avatar-chip-title,
+body.ios-dashboard-mode h1,
+body.ios-dashboard-mode h2,
+body.ios-dashboard-mode h3 {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", sans-serif !important;
 }
 
-.kpi-value-looker {
-    letter-spacing: -0.015em;
+body.ios-dashboard-mode .kpi-value-looker {
+    letter-spacing: -0.02em;
     color: #1d1d1f !important;
+    font-weight: 700 !important;
 }
 
-.kpi-card-looker, .canvas-panel, .glass-card {
-    transition: var(--transition-all);
-    position: relative;
+/* iOS 18 card refinements */
+body.ios-dashboard-mode .kpi-card-looker,
+body.ios-dashboard-mode .canvas-panel {
+    border-radius: 20px !important;
+    transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-.kpi-card-looker:hover, .canvas-panel:hover {
-    transform: translateY(-10px) scale(1.02);
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-    background: rgba(255, 255, 255, 0.55) !important;
+body.ios-dashboard-mode .kpi-card-looker:hover,
+body.ios-dashboard-mode .canvas-panel:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+    background: rgba(255, 255, 255, 0.75) !important;
 }
 
-/* Button pulse/press effect */
-.action-btn:active {
-    transform: scale(0.95);
+/* Button press */
+body.ios-dashboard-mode .action-btn:active {
+    transform: scale(0.98);
 }
 
-/* Table row lift */
-.looker-table tr {
-    transition: var(--transition-all);
+/* Table row – subtle highlight */
+body.ios-dashboard-mode .looker-table tr {
+    transition: 0.2s ease;
 }
 
-.looker-table tr:hover td {
-    background-color: rgba(255, 255, 255, 0.6) !important;
-    transform: scale(1.005);
+body.ios-dashboard-mode .looker-table tr:hover td {
+    background-color: rgba(0, 122, 255, 0.06) !important;
 }

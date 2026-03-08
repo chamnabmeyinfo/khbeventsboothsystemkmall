@@ -1,0 +1,863 @@
+/* ============================================================
+   BOOTHS MANAGEMENT – Apple Human Interface Guidelines
+   Clarity, Deference, Depth. Content-first, minimal chrome.
+   ============================================================ */
+
+.booths-management-mode {
+    /* Apple HIG design tokens */
+    --hig-bg: #f5f5f7;
+    --hig-surface: #ffffff;
+    --hig-surface-elevated: #ffffff;
+    --hig-border: rgba(0, 0, 0, 0.08);
+    --hig-border-strong: rgba(0, 0, 0, 0.12);
+    --hig-text: #1d1d1f;
+    --hig-text-secondary: #6e6e73;
+    --hig-text-tertiary: #86868b;
+    --hig-accent: #007AFF;
+    --hig-accent-hover: #0051d5;
+    --hig-accent-muted: rgba(0, 122, 255, 0.12);
+    --hig-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", sans-serif;
+    /* Standard spacing (8px base, Apple-style) */
+    --space-xs: 0.25rem;   /* 4px */
+    --space-sm: 0.5rem;   /* 8px */
+    --space-md: 1rem;     /* 16px */
+    --space-lg: 1.5rem;   /* 24px */
+    --space-xl: 2rem;     /* 32px */
+    --space-2xl: 2.5rem;  /* 40px */
+    /* Depth: soft shadows */
+    --hig-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+    --hig-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+    --hig-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+    /* Legacy aliases for compatibility */
+    --pbi-bg: var(--hig-bg);
+    --pbi-surface: var(--hig-surface);
+    --pbi-border: var(--hig-border);
+    --pbi-text: var(--hig-text);
+    --pbi-text-secondary: var(--hig-text-secondary);
+    --pbi-accent: var(--hig-accent);
+    --pbi-accent-hover: var(--hig-accent-hover);
+    --pbi-font: var(--hig-font);
+    --glass-bg: rgba(255, 255, 255, 0.72);
+    --glass-border: var(--hig-border);
+    --glass-shadow: var(--hig-shadow-md);
+    --btn-subtle-bg: rgba(0, 0, 0, 0.03);
+    --btn-subtle-hover: rgba(0, 0, 0, 0.06);
+    --btn-subtle-active: rgba(0, 0, 0, 0.1);
+    --btn-outline-hover: rgba(0, 122, 255, 0.08);
+    --btn-outline-active: rgba(0, 122, 255, 0.14);
+}
+
+body.booths-management-mode {
+    background: var(--hig-bg) !important;
+    font-family: var(--hig-font) !important;
+    color: var(--hig-text) !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Apple HIG – Depth: clean surfaces, subtle elevation (Deference) */
+.booths-management-mode .kpi-card-looker,
+.booths-management-mode .mobile-stat-card {
+    background: var(--hig-surface) !important;
+    border: 1px solid var(--hig-border) !important;
+    box-shadow: var(--hig-shadow-sm) !important;
+}
+
+.booths-management-mode .quick-filters-bar,
+.booths-management-mode #tableControlBar {
+    background: var(--hig-surface) !important;
+    border: none !important;
+    border-bottom: 1px solid var(--hig-border) !important;
+    box-shadow: none !important;
+}
+
+.booths-management-mode .looker-header {
+    background: var(--hig-surface) !important;
+    border-bottom: 1px solid var(--hig-border) !important;
+}
+
+.booths-management-mode #settingsPanel,
+.booths-management-mode .settings-panel-body {
+    background: var(--hig-surface) !important;
+    border-color: var(--hig-border) !important;
+}
+
+/* Full width content wrapper */
+.booths-management-mode .main-content-pushed {
+    max-width: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+.booths-management-mode .main-content-pushed.container-fluid {
+    max-width: none !important;
+}
+
+.booths-management-mode .looker-dashboard {
+    padding: var(--space-lg) var(--space-xl) var(--space-xl) !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    background: transparent !important;
+}
+
+.booths-management-mode #boothManagementContainer {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 var(--space-md) !important;
+}
+
+@media (max-width: 768px) {
+    .booths-management-mode .looker-dashboard {
+        padding: var(--space-md) var(--space-lg) var(--space-lg) !important;
+    }
+}
+
+/* ========== DATA CARDS – Full width, equal columns ========== */
+/* Desktop only – respect d-none on mobile to avoid duplicate with mobile-stats */
+@media (min-width: 768px) {
+    .booths-management-mode .kpi-wrapper {
+        display: grid !important;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: var(--space-md);
+        margin-bottom: var(--space-lg);
+        width: 100%;
+    }
+}
+
+@media (max-width: 767px) {
+    .booths-management-mode .kpi-wrapper {
+        display: none !important;
+    }
+}
+
+/* Apple HIG – Clarity: legible, minimal decoration */
+.booths-management-mode .kpi-card-looker {
+    background: var(--hig-surface) !important;
+    border: 1px solid var(--hig-border) !important;
+    border-radius: 12px !important;
+    padding: var(--space-md) var(--space-lg) !important;
+    min-width: 0;
+    min-height: 72px;
+    width: 100%;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: var(--space-sm);
+    box-shadow: var(--hig-shadow-sm) !important;
+}
+
+@media (max-width: 991px) {
+    .booths-management-mode .kpi-wrapper {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 575px) {
+    .booths-management-mode .kpi-wrapper {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Card layout: icon + title row, value, then bottom/progress */
+.booths-management-mode .kpi-card-looker .kpi-top {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    width: 100%;
+}
+
+.booths-management-mode .kpi-card-looker .kpi-title {
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
+    color: var(--hig-text-secondary) !important;
+    line-height: 1.3;
+}
+
+.booths-management-mode .kpi-value-looker {
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    color: var(--hig-text) !important;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+.booths-management-mode .kpi-card-looker .kpi-icon-wrapper {
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.625rem !important;
+}
+
+.booths-management-mode .kpi-card-looker .kpi-icon-wrapper.primary-icon {
+    background: var(--hig-accent-muted) !important;
+    color: var(--hig-accent) !important;
+}
+
+.booths-management-mode .kpi-card-looker.success .kpi-icon-wrapper {
+    background: rgba(52, 199, 89, 0.15) !important;
+    color: #34c759 !important;
+}
+
+.booths-management-mode .kpi-card-looker.warning .kpi-icon-wrapper {
+    background: rgba(255, 149, 0, 0.15) !important;
+    color: #ff9500 !important;
+}
+
+.booths-management-mode .kpi-card-looker.purple .kpi-icon-wrapper {
+    background: rgba(175, 82, 222, 0.12) !important;
+    color: #af52de !important;
+}
+
+.booths-management-mode .kpi-card-looker .kpi-bottom {
+    font-size: 0.6875rem !important;
+    color: var(--hig-text-secondary) !important;
+    line-height: 1.2;
+}
+
+.booths-management-mode .kpi-card-looker .progress-bar-container {
+    width: 100%;
+    height: 4px;
+    margin-top: var(--space-sm) !important;
+    background: rgba(0, 0, 0, 0.08) !important;
+    border-radius: 2px;
+}
+
+.booths-management-mode .kpi-card-looker .progress-bar-fill {
+    border-radius: 2px !important;
+}
+
+.booths-management-mode .kpi-card-looker::after {
+    display: none !important;
+}
+
+/* Mobile stats – full width. Desktop: hidden (use KPI cards) */
+@media (max-width: 767px) {
+    .booths-management-mode .mobile-stats-container {
+        display: grid !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: var(--space-md);
+        margin-bottom: var(--space-lg);
+        width: 100%;
+    }
+}
+
+.booths-management-mode .mobile-stat-card {
+    background: var(--hig-surface) !important;
+    border: 1px solid var(--hig-border) !important;
+    border-radius: 6px !important;
+    padding: var(--space-lg) !important;
+    min-width: 0;
+    width: 100%;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: var(--space-sm);
+}
+
+.booths-management-mode .mobile-stat-label {
+    font-size: 0.625rem !important;
+    line-height: 1.2;
+}
+
+.booths-management-mode .mobile-stat-value {
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+@media (max-width: 575px) {
+    .booths-management-mode .mobile-stats-container {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Hide mobile stats on desktop – show only KPI cards */
+@media (min-width: 768px) {
+    .booths-management-mode .mobile-stats-container {
+        display: none !important;
+    }
+}
+
+.booths-management-mode .mobile-stat-label {
+    color: var(--hig-text-secondary) !important;
+    text-transform: uppercase;
+}
+
+.booths-management-mode .mobile-stat-value {
+    color: var(--hig-text) !important;
+}
+
+/* ========== Apple HIG – Header: Deference, content-first ========== */
+.booths-management-mode .looker-header {
+    margin: 0 0 var(--space-lg) 0 !important;
+    padding: var(--space-lg) var(--space-xl) !important;
+    border-bottom: 1px solid var(--hig-border) !important;
+    background: var(--hig-surface) !important;
+}
+
+.booths-management-mode .looker-header-title h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--hig-text);
+    letter-spacing: -0.02em;
+}
+
+.booths-management-mode .looker-header-title h1 i {
+    color: var(--hig-accent) !important;
+}
+
+.booths-management-mode .looker-header-title p {
+    display: none;
+}
+
+/* All buttons – Apple HIG: Clarity, precise touch targets */
+.booths-management-mode .btn,
+.booths-management-mode .action-btn,
+.booths-management-mode button,
+.booths-management-mode a.btn,
+.booths-management-mode .action-btn-primary,
+.booths-management-mode .action-btn.action-btn-primary,
+.booths-management-mode .action-btn-secondary,
+.booths-management-mode .action-btn.action-btn-secondary,
+.booths-management-mode .quick-filter-btn,
+.booths-management-mode .load-mode-btn,
+.booths-management-mode .btn-warning,
+.booths-management-mode .btn-danger,
+.booths-management-mode .btn-outline-primary,
+.booths-management-mode .btn-outline-success,
+.booths-management-mode .btn-outline-info,
+.booths-management-mode .btn-outline-warning,
+.booths-management-mode .btn-outline-danger,
+.booths-management-mode .btn-group .btn,
+.booths-management-mode .space-mode-btn {
+    border-radius: 10px !important;
+    transition: background-color 0.2s ease, transform 0.15s ease !important;
+}
+
+/* Primary – Apple system blue */
+.booths-management-mode .action-btn-primary,
+.booths-management-mode .action-btn.action-btn-primary {
+    background: var(--hig-accent) !important;
+    color: white !important;
+    border: none !important;
+    padding: var(--space-sm) var(--space-lg) !important;
+    font-weight: 500 !important;
+    font-size: 0.875rem !important;
+}
+
+.booths-management-mode .action-btn-primary:hover,
+.booths-management-mode .action-btn.action-btn-primary:hover {
+    background: var(--hig-accent-hover) !important;
+}
+
+.booths-management-mode .action-btn-primary:active,
+.booths-management-mode .action-btn.action-btn-primary:active {
+    transform: scale(0.98);
+}
+
+/* Secondary – Apple tertiary fill */
+.booths-management-mode .action-btn-secondary,
+.booths-management-mode .action-btn.action-btn-secondary {
+    background: var(--btn-subtle-bg) !important;
+    color: var(--hig-text) !important;
+    border: 1px solid var(--hig-border) !important;
+    padding: var(--space-sm) var(--space-lg) !important;
+    font-weight: 500 !important;
+    font-size: 0.875rem !important;
+}
+
+.booths-management-mode .action-btn-secondary:hover,
+.booths-management-mode .action-btn.action-btn-secondary:hover {
+    background: var(--btn-subtle-hover) !important;
+    border-color: var(--hig-border-strong) !important;
+}
+
+.booths-management-mode .action-btn-secondary:active,
+.booths-management-mode .action-btn.action-btn-secondary:active {
+    background: var(--btn-subtle-active) !important;
+}
+
+.booths-management-mode .space-mode-btn {
+    background: var(--btn-subtle-bg) !important;
+    border: 1px solid var(--hig-border) !important;
+}
+
+.booths-management-mode .space-mode-btn:hover {
+    background: var(--btn-subtle-hover) !important;
+}
+
+.booths-management-mode .space-mode-btn.active {
+    background: var(--hig-accent) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+/* Button spacing – more space between buttons */
+.booths-management-mode .looker-actions,
+.booths-management-mode .looker-actions.d-flex,
+.booths-management-mode .looker-actions.gap-2 {
+    gap: var(--space-md) !important;
+}
+
+.booths-management-mode .btn-group {
+    gap: var(--space-sm) !important;
+}
+
+.booths-management-mode .btn-group .btn {
+    margin: 0 !important;
+}
+
+.booths-management-mode .quick-filters-bar .btn-group,
+.booths-management-mode .quick-filters-bar [role="group"] {
+    gap: var(--space-md) !important;
+}
+
+.booths-management-mode .canvas-panel .looker-actions,
+.booths-management-mode .canvas-panel .d-flex.gap-2 {
+    gap: var(--space-md) !important;
+}
+
+.booths-management-mode .d-flex.gap-2 {
+    gap: var(--space-md) !important;
+}
+
+.booths-management-mode #tableControlBar .d-flex.gap-2,
+.booths-management-mode #settingsPanel .d-flex.gap-2,
+.booths-management-mode #settingsPanel .d-flex.flex-wrap.gap-2 {
+    gap: var(--space-md) !important;
+}
+
+/* ========== Apple HIG – Toolbar: Deference, minimal chrome ========== */
+.booths-management-mode .quick-filters-bar {
+    background: var(--hig-surface);
+    border: none;
+    border-bottom: 1px solid var(--hig-border);
+    border-radius: 0;
+    padding: var(--space-md) var(--space-lg) !important;
+    margin-bottom: var(--space-md) !important;
+}
+
+.booths-management-mode .canvas-panel {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: var(--space-md) var(--space-lg) !important;
+    margin-bottom: var(--space-md) !important;
+}
+
+.booths-management-mode .panel-header {
+    border: none !important;
+    padding: 0 0 var(--space-sm) !important;
+    margin-bottom: var(--space-sm) !important;
+}
+
+.booths-management-mode .panel-title {
+    font-size: 0.8125rem !important;
+    font-weight: 600 !important;
+    color: var(--hig-text-secondary) !important;
+}
+
+/* Advanced filters – inline, flat */
+.booths-management-mode .canvas-panel .row.g-3 {
+    --bs-gutter-x: var(--space-md);
+    --bs-gutter-y: var(--space-md);
+}
+
+.booths-management-mode .form-control,
+.booths-management-mode .form-select {
+    background: var(--hig-surface) !important;
+    border: 1px solid var(--hig-border) !important;
+    border-radius: 10px !important;
+    padding: var(--space-sm) var(--space-md) !important;
+    font-size: 0.875rem !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.booths-management-mode .form-control:hover,
+.booths-management-mode .form-select:hover {
+    border-color: var(--hig-border-strong) !important;
+}
+
+.booths-management-mode .form-control:focus,
+.booths-management-mode .form-select:focus {
+    background: var(--hig-surface) !important;
+    border-color: var(--hig-accent) !important;
+    box-shadow: 0 0 0 3px var(--hig-accent-muted) !important;
+    outline: none !important;
+}
+
+.booths-management-mode .form-label {
+    font-size: 0.8125rem !important;
+    color: var(--hig-text-secondary) !important;
+    margin-bottom: var(--space-sm) !important;
+    font-weight: 500 !important;
+}
+
+/* ========== TABLE – Apple HIG data table ========== */
+.booths-management-mode .table-modern,
+.booths-management-mode .sheet-panel,
+.booths-management-mode .canvas-panel.table-modern {
+    background: var(--hig-surface) !important;
+    border: none !important;
+    border-top: 1px solid var(--hig-border) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Table control bar */
+.booths-management-mode #tableControlBar {
+    background: var(--hig-surface) !important;
+    padding: var(--space-sm) var(--space-md) !important;
+    border-bottom: 1px solid var(--hig-border) !important;
+}
+
+/* Table control bar top row – semantic, token-based, responsive */
+.table-control-bar-row {
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    gap: 1rem;
+    min-height: 2.5rem;
+}
+
+.booths-management-mode .table-control-bar-row {
+    padding: var(--space-sm) var(--space-md);
+    border-bottom: 1px solid var(--hig-border);
+    gap: var(--space-md);
+}
+
+.booths-management-mode #tableControlBar > .table-control-bar-row {
+    border-bottom: none;
+}
+
+.booths-management-mode #tableControlBar > div:first-child {
+    border: none !important;
+}
+
+/* Control bar row children – flex layout */
+.table-control-bar-row #searchFilterContainer {
+    flex: 1;
+    min-width: 0;
+    max-width: 400px;
+}
+
+.table-control-bar-row #paginationInfoContainer {
+    flex: 1;
+    justify-content: center;
+}
+
+@media (max-width: 991.98px) {
+    .table-control-bar-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .table-control-bar-row #searchFilterContainer {
+        max-width: none;
+    }
+
+    .table-control-bar-row #paginationInfoContainer {
+        justify-content: flex-start;
+    }
+}
+
+.booths-management-mode #settingsPanel {
+    background: var(--hig-surface) !important;
+    padding: 0 !important;
+    border-bottom: 1px solid var(--hig-border) !important;
+}
+
+/* Settings panel body – token-based, compact */
+.settings-panel-body {
+    padding: var(--space-md);
+    background: var(--hig-surface);
+}
+
+.booths-management-mode .settings-panel-body {
+    padding: var(--space-md) var(--space-lg);
+    background: var(--hig-surface);
+}
+
+.settings-panel-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: var(--space-sm, 0.5rem);
+}
+
+.booths-management-mode .settings-panel-title {
+    color: var(--pbi-text) !important;
+    font-size: 0.75rem !important;
+    margin-bottom: var(--space-sm) !important;
+}
+
+/* Table grid */
+.booths-management-mode #boothsTable,
+.booths-management-mode .dataTables_wrapper .table {
+    border: 1px solid var(--hig-border) !important;
+    border-collapse: collapse !important;
+    background: var(--hig-surface) !important;
+}
+
+/* Table header – Apple HIG: Clarity, legible */
+.booths-management-mode #boothsTable thead th,
+.booths-management-mode .dataTables_wrapper thead th,
+.booths-management-mode #boothsTable thead.sticky-table-header th,
+.booths-management-mode #tableContainerInControlBar #boothsTable thead th,
+.booths-management-mode #tableContainerInControlBar .looker-table-container thead th {
+    background: var(--hig-bg) !important;
+    color: var(--hig-text-secondary) !important;
+    font-weight: 600 !important;
+    font-size: 0.8125rem !important;
+    padding: var(--space-sm) var(--space-md) !important;
+    border: 1px solid var(--hig-border) !important;
+    text-transform: none !important;
+    line-height: 1.3 !important;
+}
+
+/* Table body – Apple HIG: readable, alternating for depth */
+.booths-management-mode #boothsTable tbody td,
+.booths-management-mode .dataTables_wrapper tbody td {
+    padding: var(--space-sm) var(--space-md) !important;
+    font-size: 0.8125rem !important;
+    border: 1px solid var(--hig-border) !important;
+    line-height: 1.3 !important;
+}
+
+.booths-management-mode #boothsTable tbody tr:nth-child(even) td,
+.booths-management-mode .dataTables_wrapper tbody tr:nth-child(even) td {
+    background: rgba(0, 0, 0, 0.02) !important;
+}
+
+.booths-management-mode #boothsTable tbody tr:nth-child(odd) td,
+.booths-management-mode .dataTables_wrapper tbody tr:nth-child(odd) td {
+    background: var(--hig-surface) !important;
+}
+
+.booths-management-mode #boothsTable tbody tr:hover td,
+.booths-management-mode .dataTables_wrapper tbody tr:hover td {
+    background: var(--hig-accent-muted) !important;
+}
+
+.booths-management-mode .looker-table-container,
+.booths-management-mode #tableContainerInControlBar .looker-table-container {
+    border: 1px solid var(--hig-border) !important;
+    border-radius: 12px !important;
+    overflow: hidden;
+}
+
+.booths-management-mode .sheet-panel #tableContainerInControlBar {
+    padding: 0 var(--space-md) var(--space-md) !important;
+}
+
+/* Quick filter buttons – Fluent style */
+.booths-management-mode .quick-filter-btn {
+    padding: var(--space-sm) var(--space-md) !important;
+    font-size: 0.8125rem !important;
+    background: var(--btn-subtle-bg) !important;
+    border: 1px solid var(--hig-border) !important;
+}
+
+.booths-management-mode .quick-filter-btn:hover {
+    background: var(--btn-subtle-hover) !important;
+}
+
+.booths-management-mode .btn-outline-primary.quick-filter-btn {
+    border-color: var(--hig-accent) !important;
+    color: var(--hig-accent) !important;
+}
+
+.booths-management-mode .btn-outline-primary.quick-filter-btn:hover {
+    background: var(--btn-outline-hover) !important;
+}
+
+.booths-management-mode .quick-filter-btn.active {
+    background: var(--hig-accent) !important;
+    color: white !important;
+    border-color: var(--hig-accent) !important;
+    border-radius: 10px !important;
+}
+
+.booths-management-mode .quick-filter-btn.active:hover {
+    background: var(--hig-accent-hover) !important;
+}
+
+/* Load mode buttons */
+.booths-management-mode .load-mode-btn {
+    background: var(--btn-subtle-bg) !important;
+    border: 1px solid var(--pbi-border) !important;
+}
+
+.booths-management-mode .load-mode-btn:hover {
+    background: var(--btn-subtle-hover) !important;
+}
+
+.booths-management-mode .load-mode-btn.active {
+    background: var(--hig-accent) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.booths-management-mode .load-mode-btn.active:hover {
+    background: var(--hig-accent-hover) !important;
+}
+
+/* Mobile – Apple HIG header */
+.booths-management-mode .mobile-app-header {
+    background: var(--hig-accent) !important;
+    padding: var(--space-lg) var(--space-xl) !important;
+}
+
+/* Warning / Danger – Apple system colors */
+.booths-management-mode .btn-warning {
+    background: rgba(255, 149, 0, 0.15) !important;
+    color: #c93400 !important;
+    border: 1px solid rgba(255, 149, 0, 0.4) !important;
+    padding: var(--space-sm) var(--space-lg) !important;
+    font-size: 0.875rem !important;
+}
+
+.booths-management-mode .btn-warning:hover {
+    background: rgba(255, 149, 0, 0.22) !important;
+    border-color: rgba(255, 149, 0, 0.5) !important;
+}
+
+.booths-management-mode .btn-danger {
+    background: rgba(255, 59, 48, 0.12) !important;
+    color: #d70015 !important;
+    border: 1px solid rgba(255, 59, 48, 0.35) !important;
+    padding: var(--space-sm) var(--space-lg) !important;
+    font-size: 0.875rem !important;
+}
+
+.booths-management-mode .btn-danger:hover {
+    background: rgba(255, 59, 48, 0.2) !important;
+    border-color: rgba(255, 59, 48, 0.5) !important;
+}
+
+/* Outline buttons – Apple HIG */
+.booths-management-mode .btn-outline-primary {
+    background: var(--btn-subtle-bg) !important;
+    border-color: var(--hig-accent) !important;
+    color: var(--hig-accent) !important;
+}
+
+.booths-management-mode .btn-outline-primary:hover {
+    background: var(--btn-outline-hover) !important;
+}
+
+.booths-management-mode .btn-outline-success,
+.booths-management-mode .btn-outline-info,
+.booths-management-mode .btn-outline-warning,
+.booths-management-mode .btn-outline-danger {
+    background: var(--btn-subtle-bg) !important;
+}
+
+.booths-management-mode .btn-outline-success:hover,
+.booths-management-mode .btn-outline-info:hover,
+.booths-management-mode .btn-outline-warning:hover,
+.booths-management-mode .btn-outline-danger:hover {
+    background: var(--btn-subtle-hover) !important;
+}
+
+/* Bootstrap .btn-primary */
+.booths-management-mode .btn-primary {
+    background: var(--hig-accent) !important;
+    border-color: var(--hig-accent) !important;
+    color: white !important;
+}
+
+.booths-management-mode .btn-primary:hover {
+    background: var(--hig-accent-hover) !important;
+    border-color: var(--hig-accent-hover) !important;
+}
+
+.booths-management-mode .btn-secondary {
+    background: var(--btn-subtle-bg) !important;
+    border: 1px solid var(--hig-border) !important;
+    color: var(--hig-text) !important;
+}
+
+.booths-management-mode .btn-secondary:hover {
+    background: var(--btn-subtle-hover) !important;
+}
+
+/* DataTables pagination – compact */
+.booths-management-mode .dataTables_wrapper .dataTables_info,
+.booths-management-mode .dataTables_wrapper .dataTables_length {
+    font-size: 0.75rem !important;
+    padding: var(--space-xs) 0 !important;
+}
+
+.booths-management-mode .dataTables_wrapper .dataTables_length select {
+    padding: 0.2rem 1.5rem !important;
+    font-size: 0.75rem !important;
+}
+
+/* Pagination – Fluent style */
+.booths-management-mode .dataTables_wrapper .paginate_button {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.8125rem !important;
+    border-radius: 10px !important;
+    background: var(--btn-subtle-bg) !important;
+    border: 1px solid transparent !important;
+    transition: background-color 0.15s ease !important;
+}
+
+.booths-management-mode .dataTables_wrapper .paginate_button:hover {
+    background: var(--btn-subtle-hover) !important;
+}
+
+.booths-management-mode .dataTables_wrapper .paginate_button.current {
+    background: var(--hig-accent) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.booths-management-mode .paginate_button,
+.booths-management-mode .dataTables_wrapper .paginate_button,
+.booths-management-mode .modal .btn,
+.booths-management-mode .modal-footer .btn {
+    border-radius: 10px !important;
+}
+
+/* Modal buttons – Apple HIG */
+.booths-management-mode .modal .btn-secondary,
+.booths-management-mode .modal-footer .btn-secondary {
+    background: var(--btn-subtle-bg) !important;
+    border: 1px solid var(--hig-border) !important;
+}
+
+.booths-management-mode .modal .btn-secondary:hover,
+.booths-management-mode .modal-footer .btn-secondary:hover {
+    background: var(--btn-subtle-hover) !important;
+}
+
+.booths-management-mode .modal .btn-primary,
+.booths-management-mode .modal-footer .btn-primary {
+    background: var(--hig-accent) !important;
+    border-color: var(--hig-accent) !important;
+}
+
+.booths-management-mode .modal .btn-primary:hover,
+.booths-management-mode .modal-footer .btn-primary:hover {
+    background: var(--hig-accent-hover) !important;
+}
+
+/* Sheet panel – Apple HIG: clean surface, subtle depth */
+.booths-management-mode .sheet-panel.canvas-panel.table-modern {
+    background: var(--hig-surface) !important;
+    border: 1px solid var(--hig-border) !important;
+    border-radius: 12px !important;
+    box-shadow: var(--hig-shadow-sm) !important;
+}

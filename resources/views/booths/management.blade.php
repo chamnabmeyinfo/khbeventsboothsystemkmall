@@ -1,25 +1,29 @@
 @extends('layouts.admin')
-@push('body-class', 'ios-dashboard-mode')
+@push('body-class', 'booths-management-mode booths-ios-mode')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/booths-premium-glamor.css') }}?v=1.0">
-<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
+<link rel="stylesheet" href="{{ asset('css/booths-premium-glamor.css') }}?v=1.3">
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.8">
 <style>
     
     
     
-    /* Full Width Fix */
-    #boothManagementContainer, .looker-dashboard {
+    /* Full width – content wrapper uses full available width */
+    
+    .container-fluid:not(.main-content-pushed) {
+        padding-left: 24px !important;
+        padding-right: 24px !important;
         max-width: 100% !important;
         width: 100% !important;
-        margin: 0 !important;
-        padding-left: 10px !important;
-        padding-right: 20px !important;
     }
     
-    .container-fluid {
-        padding-left: 0 !important;
-        padding-right: 0 !important;
+    @media (max-width: 768px) {
+        .container-fluid:not(.main-content-pushed) {
+            padding-left: 16px !important;
+            padding-right: 16px !important;
+            max-width: 100% !important;
+            width: 100% !important;
+        }
     }
 
     .text-dark-gray { color: #1d1d1f !important; }
@@ -32,13 +36,20 @@
 @section('breadcrumb', 'Booths / Management')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/booths-premium-glamor.css') }}?v=1.0">
+<link rel="stylesheet" href="{{ asset('css/booths-premium-glamor.css') }}?v=1.3">
 <link rel="stylesheet" href="{{ asset('vendor/datatables/css/dataTables.bootstrap5.min.css') }}">
-<link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}">
+<link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}?v=2.7">
 <style>
     /* Modern Booth Management Design - All Devices */
     body {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
+    }
+    
+    /* Space Mode Toggle – active = primary */
+    .space-mode-btn.active {
+        background-color: var(--accent-blue) !important;
+        color: white !important;
+        border-color: transparent !important;
     }
     
     /* Hide Content Header */
@@ -98,29 +109,46 @@
         
         
         .content .container-fluid {
-            padding-left: 0 !important;
-            padding-right: 0 !important;
+            padding-left: 16px !important;
+            padding-right: 16px !important;
         }
     }
     
     @media (min-width: 769px) {
         body { }
         
-        .container-fluid {
+        .container-fluid:not(.main-content-pushed) {
             max-width: 100% !important;
             width: 100% !important;
             margin: 0 !important;
             padding: 24px !important;
+        }
+        
+        .main-content-pushed > .container-fluid,
+        #boothManagementContainer {
+            padding-left: 24px !important;
+            padding-right: 24px !important;
+            max-width: 100% !important;
+            width: 100% !important;
         }
     }
     
     @media (max-width: 768px) {
         body { }
         
-        .container-fluid {
-            padding: 0 !important;
+        .container-fluid:not(.main-content-pushed) {
+            padding: 0 16px !important;
             margin: 0 !important;
             max-width: 100% !important;
+            width: 100% !important;
+        }
+        
+        .main-content-pushed > .container-fluid,
+        #boothManagementContainer {
+            padding-left: 16px !important;
+            padding-right: 16px !important;
+            max-width: 100% !important;
+            width: 100% !important;
         }
         
         /* Mobile App Header */
@@ -190,10 +218,17 @@
     @media (min-width: 769px) and (max-width: 1024px) {
         body { }
         
-        .container-fluid {
+        .container-fluid:not(.main-content-pushed) {
             max-width: 100% !important;
             width: 100% !important;
-            padding: 20px !important;
+            padding: 0 !important;
+        }
+        .main-content-pushed > .container-fluid,
+        #boothManagementContainer {
+            padding-left: 24px !important;
+            padding-right: 24px !important;
+            max-width: 100% !important;
+            width: 100% !important;
         }
     }
     
@@ -2266,52 +2301,39 @@
         }
     }
 </style>
+<link rel="stylesheet" href="{{ asset('css/booths-management.css') }}?v=5.0">
+<link rel="stylesheet" href="{{ asset('css/booths-ios-style.css') }}?v=1.0">
 @endpush
 
 @section('content')
-<div class='looker-dashboard'>
+<div class="looker-dashboard">
 <div class="container-fluid" id="boothManagementContainer" data-space-mode="default">
-    <!-- Top Control Bar - Desktop -->
-    <div class="d-none d-md-block mb-3">
-        <div class="glass-card" style="border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;">
-            <div class="p-4" style="padding: 16px 20px;">
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                    <!-- Left: Title and Space Mode Toggle -->
-                    <div class="d-flex align-items-center gap-3">
-                        <div>
-                            <h3 class="mb-0" style="font-size: 24px; font-weight: 700; color: #1e293b;">
-                                <i class="fas fa-store mr-2" style="color: #667eea;"></i>Booth Management
-                            </h3>
-                            <small class="text-muted">Manage and organize all your booth listings</small>
-                        </div>
-                        
-                        <!-- Space Mode Toggle -->
-                        <div class="btn-group" role="group" style="border-radius: 10px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                            <button type="button" class="btn btn-sm space-mode-btn active" data-mode="default" onclick="setSpaceMode('default')" style="padding: 8px 16px; font-weight: 600; border: none; background: #667eea; color: #1d1d1f;">
-                                <i class="fas fa-th"></i> Default
-                            </button>
-                            <button type="button" class="btn btn-sm space-mode-btn" data-mode="minimal" onclick="setSpaceMode('minimal')" style="padding: 8px 16px; font-weight: 600; border: none; background: #f8f9fa; color: #495057;">
-                                <i class="fas fa-compress"></i> Minimal
-                            </button>
-                            <button type="button" class="btn btn-sm space-mode-btn" data-mode="expand" onclick="setSpaceMode('expand')" style="padding: 8px 16px; font-weight: 600; border: none; background: #f8f9fa; color: #495057;">
-                                <i class="fas fa-expand"></i> Expand
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Right: Actions -->
-                    <div class="d-flex gap-2 align-items-center">
-                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="openStatusSettingsModal()" style="border-radius: 10px; padding: 8px 16px;">
-                            <i class="fas fa-tags mr-1"></i>Status Settings
-                        </button>
-                        <a href="{{ url('/booths?view=canvas') }}" class="btn btn-sm btn-glass-primary" style="border-radius: 10px; padding: 8px 16px;">
-                            <i class="fas fa-map mr-1"></i>Canvas View
-                        </a>
-                    </div>
-                </div>
-            </div>
+    <!-- Page Header - Dashboard Design -->
+    <header class="looker-header d-none d-md-block">
+        <div class="looker-header-title">
+            <h1><i class="fas fa-store me-2" style="color: var(--accent-blue);"></i>Booth Management</h1>
+            <p>Manage and organize all your booth listings</p>
         </div>
-    </div>
+        <div class="looker-actions d-flex align-items-center gap-2 flex-wrap">
+            <div class="btn-group" role="group">
+                <button type="button" class="action-btn action-btn-secondary space-mode-btn active" data-mode="default" onclick="setSpaceMode('default')" style="padding: 0.5rem 1rem; font-size: 0.8rem;">
+                    <i class="fas fa-th"></i> Default
+                </button>
+                <button type="button" class="action-btn action-btn-secondary space-mode-btn" data-mode="minimal" onclick="setSpaceMode('minimal')" style="padding: 0.5rem 1rem; font-size: 0.8rem;">
+                    <i class="fas fa-compress"></i> Minimal
+                </button>
+                <button type="button" class="action-btn action-btn-secondary space-mode-btn" data-mode="expand" onclick="setSpaceMode('expand')" style="padding: 0.5rem 1rem; font-size: 0.8rem;">
+                    <i class="fas fa-expand"></i> Expand
+                </button>
+            </div>
+            <button type="button" class="action-btn action-btn-secondary" onclick="openStatusSettingsModal()">
+                <i class="fas fa-tags"></i> Status Settings
+            </button>
+            <a href="{{ url('/booths?view=canvas') }}" class="action-btn action-btn-primary">
+                <i class="fas fa-map"></i> Canvas View
+            </a>
+        </div>
+    </header>
     
     
     <!-- Modern Page Header (Legacy - Hidden) -->
@@ -2350,99 +2372,61 @@
         </div>
     </div>
 
-    <!-- Mini Dashboard - Desktop -->
-    <div class="d-none d-md-block mb-4" id="miniDashboard">
-        <div class="glass-card" style="border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e5e7eb; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">
-            <div class="p-4" style="padding: 20px;">
-                <div class="row g-3">
-                    <!-- Total Booths -->
-                    <div class="col-md-2 col-lg-2">
-                        <div class="dashboard-metric-card" style="background: white; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e5e7eb; transition: all 0.2s ease;">
-                            <div class="metric-icon" style="font-size: 24px; color: #667eea; margin-bottom: 8px;">
-                                <i class="fas fa-store"></i>
-                            </div>
-                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: #1e293b; line-height: 1.2;">
-                                {{ number_format($stats['total']) }}
-                            </div>
-                            <div class="metric-label" style="font-size: 12px; color: #64748b; font-weight: 600; margin-top: 4px;">
-                                Total Booths
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Available -->
-                    <div class="col-md-2 col-lg-2">
-                        <div class="dashboard-metric-card success" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 4px rgba(16,185,129,0.2); border: 1px solid #10b981; transition: all 0.2s ease;">
-                            <div class="metric-icon" style="font-size: 24px; color: #1d1d1f; margin-bottom: 8px;">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: #1d1d1f; line-height: 1.2;">
-                                {{ number_format($stats['available']) }}
-                            </div>
-                            <div class="metric-label" style="font-size: 12px; color: rgba(255,255,255,0.9); font-weight: 600; margin-top: 4px;">
-                                Available
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Reserved -->
-                    <div class="col-md-2 col-lg-2">
-                        <div class="dashboard-metric-card warning" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 4px rgba(245,158,11,0.2); border: 1px solid #f59e0b; transition: all 0.2s ease;">
-                            <div class="metric-icon" style="font-size: 24px; color: #1d1d1f; margin-bottom: 8px;">
-                                <i class="fas fa-bookmark"></i>
-                            </div>
-                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: #1d1d1f; line-height: 1.2;">
-                                {{ number_format($stats['reserved']) }}
-                            </div>
-                            <div class="metric-label" style="font-size: 12px; color: rgba(255,255,255,0.9); font-weight: 600; margin-top: 4px;">
-                                Reserved
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Confirmed -->
-                    <div class="col-md-2 col-lg-2">
-                        <div class="dashboard-metric-card info" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 4px rgba(6,182,212,0.2); border: 1px solid #06b6d4; transition: all 0.2s ease;">
-                            <div class="metric-icon" style="font-size: 24px; color: #1d1d1f; margin-bottom: 8px;">
-                                <i class="fas fa-check-double"></i>
-                            </div>
-                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: #1d1d1f; line-height: 1.2;">
-                                {{ number_format($stats['confirmed']) }}
-                            </div>
-                            <div class="metric-label" style="font-size: 12px; color: rgba(255,255,255,0.9); font-weight: 600; margin-top: 4px;">
-                                Confirmed
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Paid -->
-                    <div class="col-md-2 col-lg-2">
-                        <div class="dashboard-metric-card danger" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 4px rgba(239,68,68,0.2); border: 1px solid #ef4444; transition: all 0.2s ease;">
-                            <div class="metric-icon" style="font-size: 24px; color: #1d1d1f; margin-bottom: 8px;">
-                                <i class="fas fa-dollar-sign"></i>
-                            </div>
-                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: #1d1d1f; line-height: 1.2;">
-                                {{ number_format($stats['paid']) }}
-                            </div>
-                            <div class="metric-label" style="font-size: 12px; color: rgba(255,255,255,0.9); font-weight: 600; margin-top: 4px;">
-                                Paid
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Occupancy Rate -->
-                    <div class="col-md-2 col-lg-2">
-                        @php
-                            $occupancyRate = $stats['total'] > 0 ? round((($stats['total'] - $stats['available']) / $stats['total']) * 100, 1) : 0;
-                        @endphp
-                        <div class="dashboard-metric-card" style="background: rgba(255, 255, 255, 0.4); border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 4px rgba(102,126,234,0.2); border: 1px solid #667eea; transition: all 0.2s ease;">
-                            <div class="metric-icon" style="font-size: 24px; color: #1d1d1f; margin-bottom: 8px;">
-                                <i class="fas fa-chart-pie"></i>
-                            </div>
-                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: #1d1d1f; line-height: 1.2;">
-                                {{ $occupancyRate }}%
-                            </div>
-                            <div class="metric-label" style="font-size: 12px; color: rgba(255,255,255,0.9); font-weight: 600; margin-top: 4px;">
-                                Occupancy
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <!-- KPI Cards - Dashboard Design -->
+    @php
+        $occupancyRate = $stats['total'] > 0 ? round((($stats['total'] - $stats['available']) / $stats['total']) * 100, 1) : 0;
+    @endphp
+    <div class="kpi-wrapper d-none d-md-block" id="miniDashboard">
+        <div class="kpi-card-looker">
+            <div class="kpi-top">
+                <div class="kpi-title">Total Booths</div>
+                <div class="kpi-icon-wrapper primary-icon"><i class="fas fa-store"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format($stats['total']) }}</div>
+            <div class="kpi-bottom trend-neutral">Grid Capacity</div>
+        </div>
+        <div class="kpi-card-looker success">
+            <div class="kpi-top">
+                <div class="kpi-title">Available</div>
+                <div class="kpi-icon-wrapper success-icon"><i class="fas fa-check-circle"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format($stats['available']) }}</div>
+            <div class="progress-bar-container mt-2">
+                <div class="progress-bar-fill" style="width: {{ $stats['total'] > 0 ? ($stats['available'] / $stats['total']) * 100 : 0 }}%; background: var(--accent-green);"></div>
+            </div>
+        </div>
+        <div class="kpi-card-looker warning">
+            <div class="kpi-top">
+                <div class="kpi-title">Reserved</div>
+                <div class="kpi-icon-wrapper warning-icon"><i class="fas fa-bookmark"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format($stats['reserved']) }}</div>
+            <div class="kpi-bottom trend-warning">Pending</div>
+        </div>
+        <div class="kpi-card-looker">
+            <div class="kpi-top">
+                <div class="kpi-title">Confirmed</div>
+                <div class="kpi-icon-wrapper primary-icon"><i class="fas fa-check-double"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format($stats['confirmed']) }}</div>
+            <div class="kpi-bottom trend-neutral">Validated</div>
+        </div>
+        <div class="kpi-card-looker purple">
+            <div class="kpi-top">
+                <div class="kpi-title">Paid</div>
+                <div class="kpi-icon-wrapper purple-icon"><i class="fas fa-dollar-sign"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format($stats['paid']) }}</div>
+            <div class="kpi-bottom trend-positive">Completed</div>
+        </div>
+        <div class="kpi-card-looker">
+            <div class="kpi-top">
+                <div class="kpi-title">Occupancy</div>
+                <div class="kpi-icon-wrapper primary-icon"><i class="fas fa-chart-pie"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ $occupancyRate }}%</div>
+            <div class="progress-bar-container mt-2">
+                <div class="progress-bar-fill" style="width: {{ $occupancyRate }}%; background: var(--accent-blue);"></div>
             </div>
         </div>
     </div>
@@ -2517,29 +2501,63 @@
         </form>
     </div>
 
-    <!-- Mobile Quick Filters -->
+    <!-- Mobile Quick Filters – iOS filter chips -->
+    @php
+        $mobileFilterActive = 'all';
+        if (request('status') == '1') $mobileFilterActive = 'available';
+        elseif (request('status') == '3') $mobileFilterActive = 'reserved';
+        elseif (in_array(request('status'), ['2', '4'])) $mobileFilterActive = 'booked';
+        elseif (request('status') == '5') $mobileFilterActive = 'paid';
+    @endphp
     <div class="mobile-filters-container d-md-none">
-        <div class="mobile-filters-scroll">
-            <button type="button" class="mobile-filter-chip active" onclick="applyQuickFilter('all')">
+        <div class="mobile-filters-scroll ios-filter-chips">
+            <button type="button" class="mobile-filter-chip ios-filter-chip {{ $mobileFilterActive === 'all' ? 'active' : '' }}" onclick="applyQuickFilter('all')">
                 All
             </button>
-            <button type="button" class="mobile-filter-chip" onclick="applyQuickFilter('available')">
+            <button type="button" class="mobile-filter-chip ios-filter-chip {{ $mobileFilterActive === 'available' ? 'active' : '' }}" onclick="applyQuickFilter('available')">
                 Available
             </button>
-            <button type="button" class="mobile-filter-chip" onclick="applyQuickFilter('reserved')">
+            <button type="button" class="mobile-filter-chip ios-filter-chip {{ $mobileFilterActive === 'reserved' ? 'active' : '' }}" onclick="applyQuickFilter('reserved')">
                 Reserved
             </button>
-            <button type="button" class="mobile-filter-chip" onclick="applyQuickFilter('paid')">
-                Paid
+            <button type="button" class="mobile-filter-chip ios-filter-chip {{ $mobileFilterActive === 'booked' ? 'active' : '' }}" onclick="applyQuickFilter('booked')">
+                Booked
             </button>
-            <button type="button" class="mobile-filter-chip" onclick="applyQuickFilter('confirmed')">
-                Confirmed
+            <button type="button" class="mobile-filter-chip ios-filter-chip {{ $mobileFilterActive === 'paid' ? 'active' : '' }}" onclick="applyQuickFilter('paid')">
+                Paid
             </button>
         </div>
     </div>
 
-    <!-- Modern Quick Filters - Desktop -->
-    <div class="mb-4 d-none d-md-block" style="padding: 0 16px;">
+    <!-- iOS-style Mobile Booth List (cards on small screens) -->
+    <div class="d-md-none" id="iosBoothListMobile" style="margin-bottom: 1rem;">
+        @forelse($booths ?? collect() as $booth)
+        <a href="{{ route('booths.show', $booth) }}" class="ios-booth-row text-decoration-none d-block" style="color: inherit;">
+            <div class="ios-booth-main">
+                <div class="ios-booth-title">{{ $booth->booth_number }}</div>
+                <div class="ios-booth-meta">
+                    {{ $booth->floorPlan ? $booth->floorPlan->name : 'N/A' }}
+                    @if($booth->client)
+                        · {{ $booth->client->company }}
+                    @endif
+                    @if($booth->book && $booth->book->date_book)
+                        · {{ $booth->book->date_book->format('M d, Y') }}
+                    @endif
+                </div>
+            </div>
+            <span class="ios-booth-status badge badge-{{ $booth->getStatusColor() }}">{{ $booth->getStatusLabel() }}</span>
+            <span class="ios-booth-meta">${{ number_format($booth->price, 2) }}</span>
+        </a>
+        @empty
+        <div class="text-center py-5">
+            <i class="fas fa-inbox" style="font-size: 48px; color: var(--ios-text-tertiary, #cbd5e1);"></i>
+            <p class="mt-2 mb-0" style="color: var(--ios-text-secondary, #64748b);">No booths found</p>
+        </div>
+        @endforelse
+    </div>
+
+    <!-- Quick Filters - Desktop (compact, before filters) -->
+    <div class="quick-filters-bar d-none d-md-block">
         <div class="btn-group" role="group" aria-label="Quick Filters" style="display: flex; gap: 8px; flex-wrap: wrap;">
             <button type="button" class="btn btn-outline-primary quick-filter-btn" onclick="applyQuickFilter('all')">
                 <i class="fas fa-list"></i> All Booths
@@ -2553,7 +2571,7 @@
             <button type="button" class="btn btn-outline-warning quick-filter-btn" onclick="applyQuickFilter('paid')">
                 <i class="fas fa-dollar-sign"></i> Paid
             </button>
-            <button type="button" class="btn btn-glass-secondary quick-filter-btn" onclick="applyQuickFilter('today')">
+            <button type="button" class="action-btn action-btn-secondary quick-filter-btn" onclick="applyQuickFilter('today')">
                 <i class="fas fa-calendar-day"></i> Today
             </button>
             <button type="button" class="btn btn-outline-danger quick-filter-btn" onclick="applyQuickFilter('overdue')">
@@ -2565,186 +2583,143 @@
         </div>
     </div>
 
-    <!-- Advanced Filter Bar - Desktop -->
-    <div class="d-none d-md-block mb-3">
-        <div class="glass-card" style="border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;">
-            <div class="p-4" style="padding: 20px;">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="mb-0" style="font-weight: 600; color: #1e293b;">
-                        <i class="fas fa-filter mr-2"></i>Advanced Filters
-                    </h5>
-                    <button type="button" class="btn btn-sm btn-link text-danger" onclick="clearAllFilters()" style="text-decoration: none; padding: 0;">
-                        <i class="fas fa-times-circle mr-1"></i>Clear All
+    <!-- Advanced Filters - Desktop (compact) -->
+    <div class="canvas-panel d-none d-md-block">
+        <div class="panel-header">
+            <h2 class="panel-title"><i class="fas fa-filter"></i> Advanced Filters</h2>
+            <button type="button" class="action-btn action-btn-secondary" onclick="clearAllFilters()" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+                <i class="fas fa-times-circle"></i> Clear All
+            </button>
+        </div>
+        <form method="GET" action="{{ route('booths.index', ['view' => 'table']) }}" id="filterForm">
+            <div class="row g-3">
+                <div class="col-12 col-md-3">
+                    <label class="form-label fw-semibold" style="color: var(--text-secondary); margin-bottom: 8px;">
+                        <i class="fas fa-search me-2" style="color: var(--accent-blue);"></i>Search
+                    </label>
+                    <input type="text" name="search" class="form-control" placeholder="Booth number, company, category..." value="{{ request('search') }}" style="border-radius: var(--radius-md); border: 1px solid var(--border-light); padding: 10px 16px;">
+                </div>
+                <div class="col-12 col-md-2">
+                    <label class="form-label fw-semibold" style="color: var(--text-secondary); margin-bottom: 8px;">
+                        <i class="fas fa-map me-2" style="color: var(--accent-blue);"></i>Floor Plan
+                    </label>
+                    <select name="floor_plan_id" class="form-select" style="border-radius: var(--radius-md); border: 1px solid var(--border-light); padding: 8px 12px;">
+                        <option value="">All Floor Plans</option>
+                        @foreach($floorPlans as $fp)
+                            <option value="{{ $fp->id }}" {{ request('floor_plan_id') == $fp->id ? 'selected' : '' }}>{{ $fp->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-12 col-md-2">
+                    <label class="form-label fw-semibold" style="color: var(--text-secondary); margin-bottom: 8px;">
+                        <i class="fas fa-info-circle me-2" style="color: var(--accent-blue);"></i>Status
+                    </label>
+                    <select name="status" class="form-select" style="border-radius: var(--radius-md); border: 1px solid var(--border-light); padding: 8px 12px;">
+                        <option value="">All Status</option>
+                        @if(isset($statusSettings) && $statusSettings->count() > 0)
+                            @foreach($statusSettings as $status)
+                                <option value="{{ $status->status_code }}" {{ request('status') == $status->status_code ? 'selected' : '' }}>{{ $status->status_name }}</option>
+                            @endforeach
+                        @endif
+                        <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Available</option>
+                        <option value="2" {{ request('status') == '2' ? 'selected' : '' }}>Confirmed</option>
+                        <option value="3" {{ request('status') == '3' ? 'selected' : '' }}>Reserved</option>
+                        <option value="4" {{ request('status') == '4' ? 'selected' : '' }}>Hidden</option>
+                        <option value="5" {{ request('status') == '5' ? 'selected' : '' }}>Paid</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-2">
+                    <label class="form-label fw-semibold" style="color: var(--text-secondary); margin-bottom: 8px;">
+                        <i class="fas fa-building me-2" style="color: var(--accent-blue);"></i>Booth Type
+                    </label>
+                    <select name="booth_type_id" class="form-select" style="border-radius: var(--radius-md); border: 1px solid var(--border-light); padding: 8px 12px;">
+                        <option value="">All Types</option>
+                        @foreach($boothTypes as $type)
+                            <option value="{{ $type->id }}" {{ request('booth_type_id') == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-12 col-md-2">
+                    <label class="form-label fw-semibold" style="color: var(--text-secondary); margin-bottom: 8px;">
+                        <i class="fas fa-folder me-2" style="color: var(--accent-blue);"></i>Category
+                    </label>
+                    <select name="category_id" class="form-select" style="border-radius: var(--radius-md); border: 1px solid var(--border-light); padding: 8px 12px;">
+                        <option value="">All Categories</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-12 col-md-1">
+                    <label class="form-label d-block" style="margin-bottom: 8px; visibility: hidden;">&nbsp;</label>
+                    <button type="submit" class="action-btn action-btn-primary w-100">
+                        <i class="fas fa-filter"></i> Filter
                     </button>
                 </div>
-                <form method="GET" action="{{ route('booths.index', ['view' => 'table']) }}" id="filterForm">
-                    <div class="row g-3">
-                        <!-- Search Field - Full Width on Mobile, 3 columns on Desktop -->
-                        <div class="col-12 col-md-3">
-                            <div class="filter-field-wrapper" style="position: relative;">
-                                <label class="form-label" style="font-weight: 600; color: #475569; margin-bottom: 8px; display: flex; align-items: center;">
-                                    <i class="fas fa-search mr-2" style="color: #667eea;"></i>Search
-                                </label>
-                                <div class="input-group" style="position: relative;">
-                                    <input type="text" name="search" class="glass-input modern-filter-input" placeholder="Booth number, company, category..." value="{{ request('search') }}" style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 12px 16px 12px 44px; font-size: 14px; transition: all 0.3s ease; background: white;">
-                                    <i class="fas fa-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; z-index: 5;"></i>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Floor Plan Filter -->
-                        <div class="col-12 col-md-2">
-                            <div class="filter-field-wrapper">
-                                <label class="form-label" style="font-weight: 600; color: #475569; margin-bottom: 8px; display: flex; align-items: center;">
-                                    <i class="fas fa-map mr-2" style="color: #667eea;"></i>Floor Plan
-                                </label>
-                                <select name="floor_plan_id" class="glass-input modern-filter-select" style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 8px 40px 8px 16px; font-size: 14px; transition: all 0.3s ease; background: white; width: 100%; display: block; cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'></polyline></svg>'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; height: 40px; line-height: 1.5; box-sizing: border-box;">
-                                    <option value="">All Floor Plans</option>
-                                    @foreach($floorPlans as $fp)
-                                        <option value="{{ $fp->id }}" {{ request('floor_plan_id') == $fp->id ? 'selected' : '' }}>
-                                            {{ $fp->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <!-- Status Filter -->
-                        <div class="col-12 col-md-2">
-                            <div class="filter-field-wrapper">
-                                <label class="form-label" style="font-weight: 600; color: #475569; margin-bottom: 8px; display: flex; align-items: center;">
-                                    <i class="fas fa-info-circle mr-2" style="color: #667eea;"></i>Status
-                                </label>
-                                <select name="status" class="glass-input modern-filter-select" style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 8px 40px 8px 16px; font-size: 14px; transition: all 0.3s ease; background: white; width: 100%; display: block; cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'></polyline></svg>'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; height: 40px; line-height: 1.5; box-sizing: border-box;">
-                                    <option value="">All Status</option>
-                                    @if(isset($statusSettings) && $statusSettings->count() > 0)
-                                        @foreach($statusSettings as $status)
-                                            <option value="{{ $status->status_code }}" {{ request('status') == $status->status_code ? 'selected' : '' }}>
-                                                {{ $status->status_name }}
-                                            </option>
-                                        @endforeach
-                                    @endif
-                                    <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Available</option>
-                                    <option value="2" {{ request('status') == '2' ? 'selected' : '' }}>Confirmed</option>
-                                    <option value="3" {{ request('status') == '3' ? 'selected' : '' }}>Reserved</option>
-                                    <option value="4" {{ request('status') == '4' ? 'selected' : '' }}>Hidden</option>
-                                    <option value="5" {{ request('status') == '5' ? 'selected' : '' }}>Paid</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <!-- Booth Type Filter -->
-                        <div class="col-12 col-md-2">
-                            <div class="filter-field-wrapper">
-                                <label class="form-label" style="font-weight: 600; color: #475569; margin-bottom: 8px; display: flex; align-items: center;">
-                                    <i class="fas fa-building mr-2" style="color: #667eea;"></i>Booth Type
-                                </label>
-                                <select name="booth_type_id" class="glass-input modern-filter-select" style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 8px 40px 8px 16px; font-size: 14px; transition: all 0.3s ease; background: white; width: 100%; display: block; cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'></polyline></svg>'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; height: 40px; line-height: 1.5; box-sizing: border-box;">
-                                    <option value="">All Types</option>
-                                    @foreach($boothTypes as $type)
-                                        <option value="{{ $type->id }}" {{ request('booth_type_id') == $type->id ? 'selected' : '' }}>
-                                            {{ $type->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <!-- Category Filter -->
-                        <div class="col-12 col-md-2">
-                            <div class="filter-field-wrapper">
-                                <label class="form-label" style="font-weight: 600; color: #475569; margin-bottom: 8px; display: flex; align-items: center;">
-                                    <i class="fas fa-folder mr-2" style="color: #667eea;"></i>Category
-                                </label>
-                                <select name="category_id" class="glass-input modern-filter-select" style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 8px 40px 8px 16px; font-size: 14px; transition: all 0.3s ease; background: white; width: 100%; display: block; cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'></polyline></svg>'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; height: 40px; line-height: 1.5; box-sizing: border-box;">
-                                    <option value="">All Categories</option>
-                                    @foreach($categories as $cat)
-                                        <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>
-                                            {{ $cat->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <!-- Filter Button -->
-                        <div class="col-12 col-md-1">
-                            <label class="form-label" style="font-weight: 600; color: #475569; margin-bottom: 8px; visibility: hidden;">&nbsp;</label>
-                            <button type="submit" class="btn btn-glass-primary w-100 modern-filter-btn" style="border-radius: 12px; font-weight: 600; padding: 12px 20px; border: none; background: rgba(255, 255, 255, 0.4); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); transition: all 0.3s ease; height: 48px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-filter mr-2"></i>Filter
-                            </button>
-                        </div>
-                    </div>
-                </form>
+            </div>
+        </form>
+    </div>
+
+    <!-- Actions Bar (compact) -->
+    <div class="canvas-panel">
+        <div class="panel-header" style="margin-bottom: 0;">
+            <h2 class="panel-title mb-0">Actions</h2>
+            <div class="looker-actions flex-wrap gap-2">
+                <button type="button" class="action-btn action-btn-primary" onclick="openCreateModal()">
+                    <i class="fas fa-plus"></i>Create New Booth
+                </button>
+                <button type="button" class="btn btn-warning action-btn" onclick="bulkUpdateStatus()" style="padding: 0.625rem 1.25rem; border-radius: var(--radius-md); font-weight: 600;">
+                    <i class="fas fa-edit"></i>Bulk Update
+                </button>
+                <button type="button" class="btn btn-danger action-btn" onclick="bulkDelete()" style="padding: 0.625rem 1.25rem; border-radius: var(--radius-md); font-weight: 600;">
+                    <i class="fas fa-trash"></i>Bulk Delete
+                </button>
+                <div class="btn-group" role="group" style="border-radius: var(--radius-md); overflow: hidden;">
+                    <button type="button" id="lazyLoadModeBtn" class="btn btn-sm load-mode-btn active" onclick="switchLoadMode('lazy')" style="border-radius: 0; padding: 10px 16px; font-weight: 600; border: none;">
+                        <i class="fas fa-sync-alt mr-1"></i>Lazy Load
+                    </button>
+                    <button type="button" id="paginationModeBtn" class="btn btn-sm load-mode-btn" onclick="switchLoadMode('pagination')" style="border-radius: 0; padding: 10px 16px; font-weight: 600; border: none;">
+                        <i class="fas fa-list mr-1"></i>Pagination
+                    </button>
+                </div>
+                <div class="d-flex align-items-center gap-2" style="background: var(--bg-card); padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+                    <label for="boothsPerPage" class="mb-0" style="font-weight: 600; color: var(--text-secondary); font-size: 0.9rem; white-space: nowrap;">
+                        <i class="fas fa-list-ol mr-1"></i>Rows:
+                    </label>
+                    <select id="boothsPerPage" class="form-select form-select-sm" onchange="changePerPage(this.value)" style="border-radius: 8px; border: 1px solid var(--border-light); padding: 6px 10px; font-weight: 600; min-width: 70px; cursor: pointer;">
+                        <option value="10" {{ (request('per_page', $perPage ?? 50) == 10) ? 'selected' : '' }}>10</option>
+                        <option value="25" {{ (request('per_page', $perPage ?? 50) == 25) ? 'selected' : '' }}>25</option>
+                        <option value="50" {{ (request('per_page', $perPage ?? 50) == 50) ? 'selected' : '' }}>50</option>
+                        <option value="100" {{ (request('per_page', $perPage ?? 50) == 100) ? 'selected' : '' }}>100</option>
+                        <option value="200" {{ (request('per_page', $perPage ?? 50) == 200) ? 'selected' : '' }}>200</option>
+                    </select>
+                </div>
+                <a href="{{ route('booths.index', ['view' => 'table', 'export' => 'csv']) }}" class="action-btn action-btn-secondary">
+                    <i class="fas fa-download"></i>Export CSV
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Modern Actions Bar -->
-    <div class="glass-card mb-3" style="background: white; border-radius: 24px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); border: 1px solid #e5e7eb;">
-        <div class="p-4" style="padding: 20px;">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <div class="d-flex gap-2 flex-wrap">
-                    <button type="button" class="btn btn-glass-primary" onclick="openCreateModal()" style="border-radius: 12px; padding: 10px 20px; font-weight: 600;">
-                        <i class="fas fa-plus mr-1"></i>Create New Booth
-                    </button>
-                    <button type="button" class="btn btn-warning" onclick="bulkUpdateStatus()" style="border-radius: 12px; padding: 10px 20px; font-weight: 600;">
-                        <i class="fas fa-edit mr-1"></i>Bulk Update
-                    </button>
-                    <button type="button" class="btn btn-danger" onclick="bulkDelete()" style="border-radius: 12px; padding: 10px 20px; font-weight: 600;">
-                        <i class="fas fa-trash mr-1"></i>Bulk Delete
-                    </button>
-                </div>
-                <div class="d-flex gap-2 flex-wrap align-items-center">
-                    <!-- Load Mode Toggle -->
-                    <div class="btn-group" role="group" style="border-radius: 12px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <button type="button" id="lazyLoadModeBtn" class="btn btn-sm load-mode-btn active" onclick="switchLoadMode('lazy')" style="border-radius: 0; padding: 10px 16px; font-weight: 600; border: none;">
-                            <i class="fas fa-sync-alt mr-1"></i>Lazy Load
-                        </button>
-                        <button type="button" id="paginationModeBtn" class="btn btn-sm load-mode-btn" onclick="switchLoadMode('pagination')" style="border-radius: 0; padding: 10px 16px; font-weight: 600; border: none;">
-                            <i class="fas fa-list mr-1"></i>Pagination
-                        </button>
-                    </div>
-                    <!-- Rows Per Page Selector -->
-                    <div class="d-flex align-items-center gap-2" style="background: #f8f9fa; padding: 8px 12px; border-radius: 12px; border: 1px solid #e5e7eb;">
-                        <label for="boothsPerPage" class="mb-0" style="font-weight: 600; color: #495057; font-size: 0.9rem; white-space: nowrap;">
-                            <i class="fas fa-list-ol mr-1"></i>Rows:
-                        </label>
-                        <select id="boothsPerPage" class="glass-input glass-input-sm" onchange="changePerPage(this.value)" style="border-radius: 8px; border: 1px solid #dee2e6; padding: 6px 10px; font-weight: 600; min-width: 70px; cursor: pointer;">
-                            <option value="10" {{ (request('per_page', $perPage ?? 50) == 10) ? 'selected' : '' }}>10</option>
-                            <option value="25" {{ (request('per_page', $perPage ?? 50) == 25) ? 'selected' : '' }}>25</option>
-                            <option value="50" {{ (request('per_page', $perPage ?? 50) == 50) ? 'selected' : '' }}>50</option>
-                            <option value="100" {{ (request('per_page', $perPage ?? 50) == 100) ? 'selected' : '' }}>100</option>
-                            <option value="200" {{ (request('per_page', $perPage ?? 50) == 200) ? 'selected' : '' }}>200</option>
-                        </select>
-                    </div>
-                    <a href="{{ route('booths.index', ['view' => 'table', 'export' => 'csv']) }}" class="btn btn-glass-secondary" style="border-radius: 12px; padding: 10px 20px; font-weight: 600;">
-                        <i class="fas fa-download mr-1"></i>Export CSV
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Booths Table - Desktop View -->
-    <div class="glass-card table-modern d-none d-md-block mb-3">
+    <!-- Booths Table - Sheet style -->
+    <div class="canvas-panel table-modern sheet-panel d-none d-md-block">
         <!-- Table Control Bar - Redesigned -->
-        <div id="tableControlBar" class="d-none d-md-block" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+        <div id="tableControlBar" class="d-none d-md-block">
             <!-- Top Controls Row -->
-            <div class="d-flex justify-content-between align-items-center px-4 py-3" style="border-bottom: 2px solid #e5e7eb;">
+            <div class="table-control-bar-row d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <!-- Left: Search Filter -->
-                <div class="d-flex align-items-center" id="searchFilterContainer" style="flex: 1; max-width: 400px;">
+                <div class="d-flex align-items-center" id="searchFilterContainer">
                     <!-- DataTables filter will be moved here by JavaScript -->
                 </div>
                 
                 <!-- Center: Pagination Info -->
-                <div class="d-flex align-items-center" id="paginationInfoContainer" style="flex: 1; justify-content: center;">
+                <div class="d-flex align-items-center" id="paginationInfoContainer">
                     <!-- Pagination info will be moved here by JavaScript -->
                 </div>
                 
                 <!-- Right: Actions -->
                 <div class="d-flex align-items-center gap-2">
-                    <button type="button" class="btn btn-sm" onclick="window.toggleSettingsPanel()" id="settingsToggleBtn" style="border-radius: 10px; padding: 8px 16px; background: rgba(255, 255, 255, 0.4); color: #1d1d1f; border: none; font-weight: 600; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3); transition: all 0.3s ease;">
+                    <button type="button" class="action-btn action-btn-secondary btn-sm" onclick="window.toggleSettingsPanel()" id="settingsToggleBtn">
                         <i class="fas fa-cog mr-2"></i>Table Settings
                         <i class="fas fa-chevron-down ml-2" id="settingsChevron" style="transition: transform 0.3s ease;"></i>
                     </button>
@@ -2753,8 +2728,8 @@
             
             <!-- Expandable Settings Panel - Under Table Settings button, above table -->
             <div class="d-none d-md-block" id="settingsPanel" style="display: none; border-bottom: 1px solid #e5e7eb;">
-                <div class="p-4" style="padding: 20px; background: #f8f9fa;">
-                    <h5 class="mb-3" style="font-weight: 600; color: #1e293b;">
+                <div class="settings-panel-body">
+                    <h5 class="settings-panel-title">
                         <i class="fas fa-sliders-h mr-2"></i>Display Settings
                     </h5>
                     <div class="row">
@@ -2763,17 +2738,17 @@
                             <div class="d-flex flex-wrap gap-2" id="columnVisibilityControls">
                                 <!-- Will be populated by JavaScript -->
                             </div>
-                            <button type="button" class="btn btn-sm btn-glass-primary mt-2" onclick="window.saveColumnVisibility()" style="border-radius: 8px;" title="Save which columns are shown or hidden">
+                            <button type="button" class="action-btn action-btn-primary btn-sm mt-2" onclick="window.saveColumnVisibility()" title="Save which columns are shown or hidden">
                                 <i class="fas fa-save mr-1"></i>Save columns
                             </button>
                         </div>
                         <div class="col-sm-12 col-md-6">
                             <label class="form-label font-weight-600">Table Options</label>
                             <div class="d-flex flex-wrap gap-2">
-                                <button type="button" class="btn btn-sm btn-glass-secondary" onclick="window.fitColumnsToContent()" style="border-radius: 8px;">
+                                <button type="button" class="action-btn action-btn-secondary btn-sm" onclick="window.fitColumnsToContent()">
                                     <i class="fas fa-arrows-alt-h mr-1"></i>Fit Columns
                                 </button>
-                                <button type="button" class="btn btn-sm btn-glass-secondary" onclick="window.resetColumnWidths()" style="border-radius: 8px;">
+                                <button type="button" class="action-btn action-btn-secondary btn-sm" onclick="window.resetColumnWidths()">
                                     <i class="fas fa-redo mr-1"></i>Reset Widths
                                 </button>
                             </div>
@@ -2789,7 +2764,7 @@
         </div>
         <div class="p-4 p-0">
             <div class="looker-table-container" style="max-height: calc(100vh - 400px); overflow-y: auto; width: 100%;">
-                <table class="looker-table table-hover mb-0" id="boothsTable" style="margin-bottom: 0; width: 100%; table-layout: fixed;">
+                <table class="looker-table table-hover sheet-table mb-0" id="boothsTable" style="margin-bottom: 0; width: 100%; table-layout: fixed;">
                     <thead class="sticky-table-header" style="position: sticky; bottom: 0; z-index: 300;">
                         <tr>
                             <th style="min-width: 50px; width: 4%;" data-column="checkbox" data-column-index="0">
@@ -3057,10 +3032,10 @@
             </div>
             
             <div class="mobile-booth-actions" onclick="event.stopPropagation();">
-                <button type="button" class="btn btn-glass-secondary" onclick="viewBooth({{ $booth->id }})">
+                <button type="button" class="action-btn action-btn-secondary" onclick="viewBooth({{ $booth->id }})">
                     <i class="fas fa-eye"></i>
                 </button>
-                <button type="button" class="btn btn-glass-primary" onclick="editBooth({{ $booth->id }})">
+                <button type="button" class="action-btn action-btn-primary" onclick="editBooth({{ $booth->id }})">
                     <i class="fas fa-edit"></i>
                 </button>
                 <button type="button" class="btn btn-danger" onclick="deleteBooth({{ $booth->id }})">
@@ -3361,12 +3336,10 @@
                     </div>
                 </div>
                 <div class="modal-footer" style="border-top: 1px solid #e9ecef; padding: 20px 30px; background: #f8f9fa; border-radius: 0 0 12px 12px;">
-                    <button type="button" class="btn btn-glass-secondary" data-dismiss="modal" 
-                            style="border-radius: 8px; padding: 10px 25px; font-weight: 600;">
+                    <button type="button" class="action-btn action-btn-secondary" data-dismiss="modal">
                         <i class="fas fa-times mr-2"></i>Cancel
                     </button>
-                    <button type="submit" class="btn btn-glass-primary"
-                            style="background: rgba(255, 255, 255, 0.4); border: none; border-radius: 8px; padding: 10px 30px; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
+                    <button type="submit" class="action-btn action-btn-primary">
                         <i class="fas fa-save mr-2"></i>Save Booth
                     </button>
                 </div>
@@ -3416,7 +3389,7 @@
                         <h6 class="mb-0"><i class="fas fa-list me-2"></i>Status Configuration</h6>
                         <small class="text-muted">Drag rows to reorder, or use the Order field</small>
                     </div>
-                    <button type="button" class="btn btn-glass-primary" id="btnAddStatus">
+                    <button type="button" class="action-btn action-btn-primary" id="btnAddStatus">
                         <i class="fas fa-plus me-2"></i>Add New Status
                     </button>
                 </div>
@@ -3431,10 +3404,10 @@
                 </div>
 
                 <div class="mt-4 pt-3 border-top">
-                    <button type="button" class="btn btn-glass-primary" id="btnSaveStatusSettings">
+                    <button type="button" class="action-btn action-btn-primary" id="btnSaveStatusSettings">
                         <i class="fas fa-save me-2"></i>Save All Status Settings
                     </button>
-                    <button type="button" class="btn btn-glass-secondary ms-2" id="btnResetStatusSettings">
+                    <button type="button" class="action-btn action-btn-secondary ms-2" id="btnResetStatusSettings">
                         <i class="fas fa-undo me-2"></i>Reset to Defaults
                     </button>
                 </div>
@@ -4651,11 +4624,12 @@ function applyQuickFilter(filterType) {
     statusSelect.value = '';
     categorySelect.value = '';
     
-    // Highlight active button
-    document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+    // Highlight active button (desktop quick-filter-btn or mobile ios-filter-chip)
+    document.querySelectorAll('.quick-filter-btn, .mobile-filter-chip.ios-filter-chip').forEach(btn => {
         btn.classList.remove('active');
     });
-    event.target.closest('.quick-filter-btn').classList.add('active');
+    const activeBtn = event.target.closest('.quick-filter-btn') || event.target.closest('.mobile-filter-chip.ios-filter-chip');
+    if (activeBtn) activeBtn.classList.add('active');
     
     // Apply filter based on type
     switch(filterType) {
@@ -4665,6 +4639,10 @@ function applyQuickFilter(filterType) {
             
         case 'available':
             statusSelect.value = '1'; // Available status
+            break;
+
+        case 'reserved':
+            statusSelect.value = '3'; // Reserved status
             break;
             
         case 'booked':
