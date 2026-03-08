@@ -1938,7 +1938,15 @@ class BoothController extends Controller
         $query->orderBy('booth_number', 'asc');
         $booths = $query->paginate(25)->withQueryString();
 
-        return view('booths.index', compact('booths'));
+        // Global stats (across all booths, not just current page/filter)
+        $stats = [
+            'total'     => Booth::count(),
+            'available' => Booth::where('status', Booth::STATUS_AVAILABLE)->count(),
+            'reserved'  => Booth::where('status', Booth::STATUS_RESERVED)->count(),
+            'booked'    => Booth::whereIn('status', [Booth::STATUS_CONFIRMED, Booth::STATUS_PAID])->count(),
+        ];
+
+        return view('booths.index', compact('booths', 'stats'));
     }
 
     /**
