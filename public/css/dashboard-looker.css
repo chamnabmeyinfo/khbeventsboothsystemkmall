@@ -30,7 +30,7 @@
     
     --transition-all: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
-body {
+body.ios-dashboard-mode {
     background-color: #ffb8d2;
     background-image: 
         radial-gradient(at 0% 0%, #4facfe 0px, transparent 50%),
@@ -419,27 +419,27 @@ body {
 
 
 /* iOS Frosted Glass UI for Sidebar & Header on Dashboard */
-body:has(.looker-dashboard) .modern-unified-header,
-body:has(.looker-dashboard) .modern-sidebar {
+body.ios-dashboard-mode .modern-unified-header,
+body.ios-dashboard-mode .modern-sidebar {
     background: rgba(255, 255, 255, 0.45) !important;
     backdrop-filter: blur(40px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
     border-color: rgba(255, 255, 255, 0.5) !important;
 }
 
-body:has(.looker-dashboard) .sidebar-nav-link:hover {
+body.ios-dashboard-mode .sidebar-nav-link:hover {
     background: rgba(255, 255, 255, 0.6) !important;
 }
 
-body:has(.looker-dashboard) .looker-table th {
+body.ios-dashboard-mode .looker-table th {
     background: rgba(255, 255, 255, 0.25) !important;
     backdrop-filter: blur(10px) !important;
 }
 
-body:has(.looker-dashboard) .looker-table tr:hover td {
+body.ios-dashboard-mode .looker-table tr:hover td {
     background-color: rgba(255, 255, 255, 0.5) !important;
 }
 
-body:has(.looker-dashboard) .main-content-pushed {
+body.ios-dashboard-mode .main-content-pushed {
     background: transparent !important;
 }

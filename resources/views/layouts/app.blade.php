@@ -94,7 +94,7 @@
     
     @stack('styles')
 </head>
-<body>
+<body class="@stack('body-class')">
 <script>
 // Viewport-based responsiveness: no redirects or URL params. Layout is driven by CSS
 // media queries and, where server chooses a template, by User-Agent only.

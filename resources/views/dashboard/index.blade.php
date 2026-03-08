@@ -16,8 +16,11 @@
 @else
 <link rel="stylesheet" href="{{ asset('vendor/chartjs/chart.min.css') }}">
 @endif
-<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}">
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.1">
 @endpush
+
+@push('body-class', 'ios-dashboard-mode')
 
 @section('content')
 <div class="looker-dashboard">
