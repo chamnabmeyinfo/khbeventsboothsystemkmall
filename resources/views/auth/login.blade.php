@@ -1,455 +1,452 @@
-@extends('layouts.app')
-
-@section('title', 'Login')
-
-@push('styles')
-<style>
-    /* Modern Login Page Design - All Devices */
-    body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #ec4899 100%) !important;
-        min-height: 100vh !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        padding: 20px !important;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
-    }
-    
-    /* Login Container */
-    .login-container {
-        width: 100% !important;
-        max-width: 450px !important;
-        margin: 0 auto !important;
-        position: relative !important;
-        z-index: 1 !important;
-    }
-    
-    /* Modern Login Card */
-    .modern-login-card {
-        background: rgba(255, 255, 255, 0.98) !important;
-        backdrop-filter: blur(20px) !important;
-        -webkit-backdrop-filter: blur(20px) !important;
-        border-radius: 32px !important;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
-        padding: 0 !important;
-        overflow: hidden !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        animation: fadeInUp 0.6s ease-out !important;
-    }
-    
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - KHB Events Booking System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --brand-primary: #2563eb;
+            --brand-secondary: #3b82f6;
+            --brand-accent: #10b981;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --bg-surface: #ffffff;
+            --bg-body: #f1f5f9;
+            --border-color: #e2e8f0;
+            --focus-ring: rgba(37, 99, 235, 0.2);
         }
-        to {
-            opacity: 1;
-            transform: translateY(0);
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
         }
-    }
-    
-    /* Login Header */
-    .login-header {
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%) !important;
-        padding: 40px 32px !important;
-        text-align: center !important;
-        position: relative !important;
-        overflow: hidden !important;
-    }
-    
-    .login-header::before {
-        content: '' !important;
-        position: absolute !important;
-        top: -50% !important;
-        right: -20% !important;
-        width: 300px !important;
-        height: 300px !important;
-        background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%) !important;
-        border-radius: 50% !important;
-    }
-    
-    .login-header h1 {
-        font-size: 32px !important;
-        font-weight: 800 !important;
-        color: white !important;
-        margin: 0 0 8px 0 !important;
-        position: relative !important;
-        z-index: 1 !important;
-    }
-    
-    .login-header p {
-        font-size: 16px !important;
-        color: rgba(255, 255, 255, 0.9) !important;
-        margin: 0 !important;
-        position: relative !important;
-        z-index: 1 !important;
-    }
-    
-    .login-header .login-icon {
-        width: 80px !important;
-        height: 80px !important;
-        background: rgba(255, 255, 255, 0.2) !important;
-        border-radius: 50% !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        margin: 0 auto 20px !important;
-        font-size: 36px !important;
-        color: white !important;
-        position: relative !important;
-        z-index: 1 !important;
-        border: 3px solid rgba(255, 255, 255, 0.3) !important;
-    }
-    
-    /* Login Body */
-    .login-body {
-        padding: 40px 32px !important;
-    }
-    
-    /* Form Styles */
-    .modern-form-group {
-        margin-bottom: 24px !important;
-    }
-    
-    .modern-form-label {
-        font-size: 14px !important;
-        font-weight: 600 !important;
-        color: #374151 !important;
-        margin-bottom: 8px !important;
-        display: block !important;
-    }
-    
-    .modern-form-input {
-        width: 100% !important;
-        padding: 14px 18px !important;
-        font-size: 16px !important;
-        border: 2px solid #e5e7eb !important;
-        border-radius: 12px !important;
-        background: white !important;
-        transition: all 0.3s ease !important;
-        box-sizing: border-box !important;
-    }
-    
-    .modern-form-input:focus {
-        outline: none !important;
-        border-color: #6366f1 !important;
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1) !important;
-        transform: translateY(-2px) !important;
-    }
-    
-    .modern-form-input.is-invalid {
-        border-color: #ef4444 !important;
-    }
-    
-    .modern-form-input.is-invalid:focus {
-        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1) !important;
-    }
-    
-    .invalid-feedback {
-        display: block !important;
-        margin-top: 6px !important;
-        font-size: 13px !important;
-        color: #ef4444 !important;
-        font-weight: 500 !important;
-    }
-    
-    /* Remember Me */
-    .remember-me-group {
-        display: flex !important;
-        align-items: center !important;
-        margin-bottom: 24px !important;
-    }
-    
-    .remember-me-checkbox {
-        width: 20px !important;
-        height: 20px !important;
-        margin-right: 10px !important;
-        cursor: pointer !important;
-        accent-color: #6366f1 !important;
-    }
-    
-    .remember-me-label {
-        font-size: 14px !important;
-        color: #6b7280 !important;
-        cursor: pointer !important;
-        user-select: none !important;
-    }
-    
-    /* Submit Button */
-    .modern-login-btn {
-        width: 100% !important;
-        padding: 16px !important;
-        font-size: 16px !important;
-        font-weight: 700 !important;
-        color: white !important;
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
-        border: none !important;
-        border-radius: 12px !important;
-        cursor: pointer !important;
-        transition: all 0.3s ease !important;
-        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4) !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 10px !important;
-    }
-    
-    .modern-login-btn:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5) !important;
-    }
-    
-    .modern-login-btn:active {
-        transform: translateY(0) !important;
-    }
-    
-    .modern-login-btn:disabled {
-        opacity: 0.6 !important;
-        cursor: not-allowed !important;
-        transform: none !important;
-    }
-    
-    /* Error Alert */
-    .login-error-alert {
-        background: #fef2f2 !important;
-        border: 2px solid #fecaca !important;
-        border-radius: 12px !important;
-        padding: 16px !important;
-        margin-bottom: 24px !important;
-        color: #991b1b !important;
-        font-size: 14px !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 10px !important;
-    }
-    
-    /* Mobile Optimizations */
-    @media (max-width: 768px) {
+
         body {
-            padding: 16px !important;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image: radial-gradient(circle at 0% 0%, rgba(37, 99, 235, 0.1) 0%, transparent 50%),
+                              radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+            -webkit-font-smoothing: antialiased;
         }
-        
-        .login-container {
-            max-width: 100% !important;
-        }
-        
-        .modern-login-card {
-            border-radius: 24px !important;
-        }
-        
-        .login-header {
-            padding: 32px 24px !important;
-        }
-        
-        .login-header h1 {
-            font-size: 28px !important;
-        }
-        
-        .login-header .login-icon {
-            width: 64px !important;
-            height: 64px !important;
-            font-size: 28px !important;
-        }
-        
-        .login-body {
-            padding: 32px 24px !important;
-        }
-        
-        .modern-form-input {
-            font-size: 16px !important; /* Prevents iOS zoom */
-            padding: 14px 16px !important;
-        }
-        
-        .modern-login-btn {
-            padding: 14px !important;
-            min-height: 50px !important; /* Touch-friendly */
-        }
-    }
-    
-    /* Tablet Optimizations */
-    @media (min-width: 769px) and (max-width: 1024px) {
-        .login-container {
-            max-width: 400px !important;
-        }
-        
-        .login-header {
-            padding: 36px 28px !important;
-        }
-        
-        .login-body {
-            padding: 36px 28px !important;
-        }
-    }
-    
-    /* Desktop Optimizations */
-    @media (min-width: 1025px) {
-        .modern-login-card {
-            transition: transform 0.3s ease !important;
-        }
-        
-        .modern-login-card:hover {
-            transform: translateY(-4px) !important;
-        }
-    }
-    
-    /* Loading State */
-    .login-loading {
-        display: inline-block;
-        width: 18px;
-        height: 18px;
-        border: 3px solid rgba(255, 255, 255, 0.3);
-        border-radius: 50%;
-        border-top-color: white;
-        animation: spin 0.8s linear infinite;
-    }
-    
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-    
-    /* Hide navbar on login page */
-    nav.navbar {
-        display: none !important;
-    }
-</style>
-@endpush
 
-@section('content')
-<div class="login-container">
-    <div class="modern-login-card">
-        <!-- Login Header -->
-        <div class="login-header">
-            <div class="login-icon">
-                <i class="fas fa-sign-in-alt"></i>
-            </div>
-            <h1>Welcome Back</h1>
-            <p>Sign in to your account</p>
-        </div>
+        .login-wrapper {
+            width: 100%;
+            max-width: 1100px;
+            min-height: 600px;
+            background: var(--bg-surface);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0,0,0,0.02);
+            overflow: hidden;
+            display: flex;
+            margin: 2rem;
+            position: relative;
+        }
+
+        /* Left Side: Branding / Visual */
+        .login-visual {
+            flex: 1;
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            padding: 4rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            color: white;
+            overflow: hidden;
+        }
+
+        .login-visual::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            left: -10%;
+            width: 70%;
+            height: 70%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            border-radius: 50%;
+        }
+
+        .login-visual::after {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            right: -10%;
+            width: 80%;
+            height: 80%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%);
+            border-radius: 50%;
+        }
+
+        .brand-logo {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-logo-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .visual-content {
+            position: relative;
+            z-index: 10;
+        }
+
+        .visual-content h2 {
+            font-size: 2.75rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.03em;
+        }
+
+        .visual-content p {
+            font-size: 1.125rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            max-width: 400px;
+        }
+
+        .visual-footer {
+            position: relative;
+            z-index: 10;
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.6);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .system-badge {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Right Side: Form */
+        .login-form-container {
+            flex: 0 0 480px;
+            padding: 4rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: var(--bg-surface);
+        }
+
+        .form-header {
+            margin-bottom: 2.5rem;
+        }
+
+        .form-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .form-header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 3rem;
+            font-size: 1rem;
+            color: var(--text-main);
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .form-input:hover {
+            border-color: #cbd5e1;
+        }
+
+        .form-input:focus {
+            background: #ffffff;
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 4px var(--focus-ring);
+        }
+
+        .form-input:focus + .input-icon {
+            color: var(--brand-primary);
+        }
+
+        .form-input.is-invalid {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
         
-        <!-- Login Body -->
-        <div class="login-body">
+        .form-input.is-invalid:focus {
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+        }
+
+        .input-error {
+            color: #ef4444;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .form-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .remember-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .remember-checkbox input {
+            width: 1.2rem;
+            height: 1.2rem;
+            border-radius: 4px;
+            accent-color: var(--brand-primary);
+            cursor: pointer;
+        }
+
+        .remember-checkbox span {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1rem;
+            background: var(--brand-primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 6px -1px var(--focus-ring);
+        }
+
+        .btn-submit:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px var(--focus-ring);
+        }
+
+        .btn-submit:active {
+            transform: translateY(1px);
+        }
+
+        .global-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 900px) {
+            .login-wrapper {
+                flex-direction: column;
+                max-width: 480px;
+                min-height: auto;
+            }
+            .login-visual {
+                padding: 3rem 2rem;
+            }
+            .visual-content h2 {
+                font-size: 2rem;
+            }
+            .login-form-container {
+                flex: auto;
+                padding: 3rem 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-wrapper">
+        
+        <!-- Left Visual Side -->
+        <div class="login-visual">
+            <div class="brand-logo">
+                <div class="brand-logo-icon">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <span>KHB Events</span>
+            </div>
+
+            <div class="visual-content">
+                <h2>Intelligent Floorplan Management.</h2>
+                <p>Access the core engine to manage events, interactive booking canvases, and live data telemetry all in one unified workspace.</p>
+            </div>
+
+            <div class="visual-footer">
+                <span class="system-badge">Secure Analytics Hub</span>
+                <span>© {{ date('Y') }} Data Studio v2.0</span>
+            </div>
+        </div>
+
+        <!-- Right Form Side -->
+        <div class="login-form-container">
+            <div class="form-header">
+                <h1>Welcome Back</h1>
+                <p>Please enter your credentials to continue.</p>
+            </div>
+
             @if ($errors->any())
-                <div class="login-error-alert">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <div>
+                <div class="global-error">
+                    <i class="fas fa-exclamation-circle" style="margin-top: 2px;"></i>
+                    <div style="flex: 1;">
                         @foreach ($errors->all() as $error)
                             <div>{{ $error }}</div>
                         @endforeach
                     </div>
                 </div>
             @endif
-            
+
             <form method="POST" action="{{ route('login') }}" id="loginForm">
                 @csrf
-                
-                <!-- Username Field -->
-                <div class="modern-form-group">
-                    <label for="username" class="modern-form-label">
-                        <i class="fas fa-user me-2"></i>Username
-                    </label>
-                    <input 
-                        type="text" 
-                        class="modern-form-input @error('username') is-invalid @enderror" 
-                        id="username" 
-                        name="username" 
-                        value="{{ old('username') }}" 
-                        required 
-                        autofocus
-                        placeholder="Enter your username"
-                        autocomplete="username"
-                    >
+
+                <div class="form-group">
+                    <label for="username" class="form-label">Username</label>
+                    <div class="input-group">
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="username" 
+                            class="form-input @error('username') is-invalid @enderror" 
+                            value="{{ old('username') }}" 
+                            placeholder="e.g. admin"
+                            required 
+                            autofocus
+                        >
+                        <i class="fas fa-user input-icon"></i>
+                    </div>
                     @error('username')
-                        <div class="invalid-feedback">
-                            <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
-                        </div>
+                        <div class="input-error"><i class="fas fa-exclamation-triangle"></i> {{ $message }}</div>
                     @enderror
                 </div>
-                
-                <!-- Password Field -->
-                <div class="modern-form-group">
-                    <label for="password" class="modern-form-label">
-                        <i class="fas fa-lock me-2"></i>Password
-                    </label>
-                    <input 
-                        type="password" 
-                        class="modern-form-input @error('password') is-invalid @enderror" 
-                        id="password" 
-                        name="password" 
-                        required
-                        placeholder="Enter your password"
-                        autocomplete="current-password"
-                    >
+
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-group">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            class="form-input @error('password') is-invalid @enderror" 
+                            placeholder="Enter your password"
+                            required
+                        >
+                        <i class="fas fa-lock input-icon"></i>
+                    </div>
                     @error('password')
-                        <div class="invalid-feedback">
-                            <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
-                        </div>
+                        <div class="input-error"><i class="fas fa-exclamation-triangle"></i> {{ $message }}</div>
                     @enderror
                 </div>
-                
-                <!-- Remember Me -->
-                <div class="remember-me-group">
-                    <input 
-                        type="checkbox" 
-                        class="remember-me-checkbox" 
-                        id="remember" 
-                        name="remember"
-                    >
-                    <label class="remember-me-label" for="remember">
-                        Remember me
+
+                <div class="form-actions">
+                    <label class="remember-checkbox" for="remember">
+                        <input type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
+                        <span>Remember securely</span>
                     </label>
                 </div>
-                
-                <!-- Submit Button -->
-                <button type="submit" class="modern-login-btn" id="loginBtn">
-                    <span class="btn-text">
-                        <i class="fas fa-sign-in-alt"></i>
-                        Sign In
-                    </span>
-                    <span class="btn-loading" style="display: none;">
-                        <span class="login-loading"></span>
-                        Signing in...
-                    </span>
+
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <span>Access Dashboard</span>
+                    <i class="fas fa-arrow-right"></i>
                 </button>
             </form>
         </div>
-    </div>
-</div>
 
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const loginForm = document.getElementById('loginForm');
-    const loginBtn = document.getElementById('loginBtn');
-    const btnText = loginBtn.querySelector('.btn-text');
-    const btnLoading = loginBtn.querySelector('.btn-loading');
-    
-    // Handle form submission
-    loginForm.addEventListener('submit', function(e) {
-        // Show loading state
-        loginBtn.disabled = true;
-        btnText.style.display = 'none';
-        btnLoading.style.display = 'flex';
-        loginBtn.style.opacity = '0.8';
-    });
-    
-    // Auto-focus username field on load
-    const usernameField = document.getElementById('username');
-    if (usernameField && !usernameField.value) {
-        setTimeout(function() {
-            usernameField.focus();
-        }, 100);
-    }
-    
-    // Add enter key support
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') {
-            const form = e.target.closest('form');
-            if (form && form.id === 'loginForm') {
-                form.requestSubmit();
-            }
-        }
-    });
-});
-</script>
-@endpush
-@endsection
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function() {
+            var btn = document.getElementById('submitBtn');
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Authenticating...';
+            btn.style.opacity = '0.8';
+            btn.style.pointerEvents = 'none';
+        });
+    </script>
+</body>
+</html>
