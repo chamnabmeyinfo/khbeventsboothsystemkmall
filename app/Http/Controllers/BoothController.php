@@ -56,18 +56,19 @@ class BoothController extends Controller
         DebugLogger::log(['request_method' => $request->method(), 'user_authenticated' => auth()->check()], 'BoothController.php:22', 'BoothController::index() called');
         // #endregion
 
-        // Check view: 'table' (list), 'management' (full), or 'canvas'
-        $view = $request->input('view', 'table');
+        $view = $request->input('view', 'management');
 
-        // If view is 'table', show design-system list
-        if ($view === 'table') {
-            return $this->boothsList($request);
-        }
-
-        // If view is 'management', show full management interface
-        if ($view === 'management') {
+        // Canvas / floor-plan designer — its own dedicated view
+        if ($view === 'canvas') {
+            // falls through to canvas block below
+        } elseif ($view === 'list' || $view === 'table') {
+            // Legacy ?view=table / ?view=list → redirect to management (new default)
+            return redirect()->route('booths.index', ['view' => 'management'] + $request->except('view'));
+        } else {
+            // /booths, ?view=management (and any unknown values) → management table
             return $this->managementTable($request);
         }
+
 
         // If view is 'canvas' (or anything else), render the canvas/floor plan designer view
         // This is the original floor plan designer where users can design and edit booths visually

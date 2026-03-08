@@ -4,26 +4,53 @@
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/booths-premium-glamor.css') }}?v=1.3">
 <link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.8">
+{{-- SweetAlert2 CSS – must be in <head> --}}
+<link rel="stylesheet" href="{{ asset('vendor/sweetalert2/css/sweetalert2.min.css') }}">
 <style>
-    
-    
-    
-    /* Full Width Fix */
+    /* ── Full-width canvas: kill every wrapper gap ────────────── */
+
+    /* The header is fixed at 70px height, so we must pad the top by exactly 70px */
+    #main-content {
+        padding-top:    70px !important;
+        padding-bottom: 0 !important;
+        padding-left:   0 !important;
+        padding-right:  0 !important;
+    }
+
+    /* Zero out inner padding, but DO NOT touch margin/width which are needed by the sidebar */
+    #main-content.container-fluid,
+    .container-fluid.main-content-pushed {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        max-width: 100% !important;
+    }
+
+    /* The outer dashboard wrapper */
     .looker-dashboard {
         max-width: 100% !important;
-        width: 100% !important;
-        margin: 0 !important;
-        padding-left: 10px !important;
-        padding-right: 20px !important;
+        width:     100% !important;
+        margin:    0 !important;
+        padding:   0 !important;
     }
-    
-    /* Do not override margin for container-fluid so sidebar space is preserved */
-    .container-fluid:not(.main-content-pushed) {
+
+    /* Inner container-fluid inside the blade */
+    .looker-dashboard > .container-fluid {
+        padding:   0 6px 0 6px !important;
         max-width: 100% !important;
-        width: 100% !important;
-        margin: 0 !important;
-        padding-left: 10px !important;
-        padding-right: 20px !important;
+        width:     100% !important;
+    }
+
+    /* Floor-plan selector panel: compact, no card rounding on left/right edges */
+    .looker-dashboard .canvas-panel {
+        margin:        0 0 0 0 !important;
+        border-radius: 0 !important;
+        border-left:   none !important;
+        border-right:  none !important;
+    }
+
+    /* Designer fills remaining height exactly under the 70px header */
+    .floorplan-designer {
+        height: calc(100vh - 70px) !important;
     }
 
     .text-dark-gray { color: #1d1d1f !important; }
@@ -1605,6 +1632,65 @@
 
 @push('scripts')
 <script src="{{ asset('vendor/html2canvas/html2canvas.min.js') }}"></script>
+
+{{-- Panzoom – required for canvas zoom/pan (floor-plan-designer.js) --}}
+<script src="{{ asset('vendor/panzoom/panzoom.min.js') }}"></script>
+
+{{-- SweetAlert2 – required by floor-plan-designer.js (Swal + customAlert) --}}
+<script src="{{ asset('vendor/sweetalert2/js/sweetalert2.min.js') }}"></script>
+<script>
+/* ── Global helpers that floor-plan-designer.js expects ─────────── */
+
+/** showToast – small non-blocking notification */
+window.showToast = function(message, type) {
+    if (typeof Swal === 'undefined') { console.warn('[Toast]', message); return; }
+    var Toast = Swal.mixin({
+        toast: true, position: 'top-end', showConfirmButton: false,
+        timer: 3000, timerProgressBar: true,
+        didOpen: function(toast) {
+            toast.addEventListener('mouseenter', Swal.stopTimer);
+            toast.addEventListener('mouseleave', Swal.resumeTimer);
+        }
+    });
+    Toast.fire({ icon: type || 'info', title: message });
+};
+
+/** customAlert – modal-style alert (type: 'success'|'error'|'warning'|'info') */
+window.customAlert = function(message, type, title) {
+    type  = type  || 'info';
+    title = title || (type.charAt(0).toUpperCase() + type.slice(1));
+    if (typeof Swal === 'undefined') { alert(title + ': ' + message); return Promise.resolve(); }
+    return Swal.fire({
+        icon:              type,
+        title:             title,
+        text:              message,
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#007AFF',
+        borderRadius:      '14px',
+    });
+};
+
+/** customConfirm – returns a Promise<boolean> */
+window.customConfirm = function(message, title, confirmText, cancelText, type) {
+    title       = title       || 'Confirm';
+    confirmText = confirmText || 'Confirm';
+    cancelText  = cancelText  || 'Cancel';
+    type        = type        || 'warning';
+    if (typeof Swal === 'undefined') { return Promise.resolve(window.confirm(message)); }
+    return Swal.fire({
+        icon:                  type,
+        title:                 title,
+        text:                  message,
+        showCancelButton:      true,
+        confirmButtonText:     confirmText,
+        cancelButtonText:      cancelText,
+        confirmButtonColor:    '#007AFF',
+        cancelButtonColor:     '#e5e5ea',
+        reverseButtons:        true,
+    }).then(function(result) { return result.isConfirmed; });
+};
+</script>
+
 @php
     $fpdCurrentFloorPlan = (isset($currentFloorPlan) && $currentFloorPlan)
         ? ['id' => $currentFloorPlan->id, 'name' => $currentFloorPlan->name, 'floor_image' => $currentFloorPlan->floor_image]

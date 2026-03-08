@@ -485,6 +485,72 @@
     color: var(--ap-text-2);
 }
 
+/* ---- Compact Apple-style pagination ---------------------------------
+   Bootstrap's default pagination embeds hard-coded SVG arrows that
+   ignore CSS font-size. We override EVERYTHING here to keep it tight.
+   --------------------------------------------------------------------- */
+.booths-page .table-foot nav { line-height: 1; }
+.booths-page .table-foot .pagination {
+    display: flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+    margin: 0 !important;
+    flex-wrap: wrap !important;
+    list-style: none !important;
+    padding: 0 !important;
+}
+
+/* Every page link: fixed compact size */
+.booths-page .table-foot .page-item .page-link {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    padding: 0 8px !important;
+    font-size: 0.8rem !important;
+    line-height: 1 !important;
+    border-radius: 7px !important;
+    border: 1px solid var(--ap-border) !important;
+    background: var(--ap-surface) !important;
+    color: var(--ap-text-2) !important;
+    text-decoration: none !important;
+    transition: background var(--ap-transition), color var(--ap-transition), border-color var(--ap-transition) !important;
+    white-space: nowrap !important;
+    cursor: pointer !important;
+}
+.booths-page .table-foot .page-item .page-link:hover {
+    background: rgba(0,0,0,0.04) !important;
+    color: var(--ap-text) !important;
+}
+.booths-page .table-foot .page-item.active .page-link {
+    background: var(--ap-accent-muted) !important;
+    color: var(--ap-accent) !important;
+    border-color: rgba(0,122,255,0.25) !important;
+    font-weight: 700 !important;
+}
+.booths-page .table-foot .page-item.disabled .page-link {
+    opacity: 0.35 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+}
+
+/* Force all SVGs inside page-link to be 10×10 — kills Bootstrap's big arrows */
+.booths-page .table-foot .page-item .page-link svg {
+    width: 10px !important;
+    height: 10px !important;
+    max-width: 10px !important;
+    max-height: 10px !important;
+    display: block !important;
+    flex-shrink: 0 !important;
+}
+/* Font Awesome icons used in our custom pagination */
+.booths-page .table-foot .page-item .page-link i,
+.booths-page .table-foot .page-item .page-link .fa {
+    font-size: 0.625rem !important;
+    line-height: 1 !important;
+}
+
 /* ---------- Mobile card list ---------- */
 .booths-page .mobile-card-list { padding: 1rem 1.25rem; }
 .booths-page .mobile-booth-card {
@@ -553,19 +619,15 @@
         ? $booths->getCollection()
         : collect($booths ?? []);
 
-    $totalOnPage   = $allBooths->count();
-    $boothsTotal   = isset($booths) && method_exists($booths, 'total') ? $booths->total() : $totalOnPage;
-
-    /* Use controller-provided totals when available, otherwise fall back */
+    $boothsTotal    = isset($booths) && method_exists($booths, 'total') ? $booths->total() : $allBooths->count();
     $availableCount = $stats['available'] ?? $allBooths->filter(fn($b) => $b->status == 1)->count();
     $reservedCount  = $stats['reserved']  ?? $allBooths->filter(fn($b) => $b->status == 3)->count();
-    $bookedCount    = $stats['booked']    ?? $allBooths->filter(fn($b) => in_array($b->status, [2,4]))->count();
+    $bookedCount    = $stats['booked']    ?? $allBooths->filter(fn($b) => in_array($b->status, [2,4,5]))->count();
 
-    /* Active filter chip */
     $activeFilter = request('status', 'all');
     if ($activeFilter === '1') $activeFilter = 'available';
     elseif ($activeFilter === '3') $activeFilter = 'reserved';
-    elseif (in_array($activeFilter, ['2','4'])) $activeFilter = 'booked';
+    elseif (in_array($activeFilter, ['2','4','5'])) $activeFilter = 'booked';
 @endphp
 
 <div class="booths-container">
@@ -577,10 +639,10 @@
             <p class="bp-subtitle">Manage your booth inventory, availability, and assignments.</p>
         </div>
         <div class="bp-header-actions">
-            <a href="{{ route('booths.index', ['view' => 'management']) }}" class="btn-outline-soft">
+            <a href="{{ route('booths.index', ['view' => 'canvas']) }}" class="btn-outline-soft">
                 <i class="fas fa-th-large"></i> Floor Plan
             </a>
-            <a href="{{ route('booths.index', ['view' => 'management', 'create' => 1]) }}" class="btn-new-booth">
+            <a href="{{ route('booths.index', ['view' => 'canvas', 'create' => 1]) }}" class="btn-new-booth">
                 <i class="fas fa-plus"></i> New Booth
             </a>
         </div>
@@ -619,8 +681,7 @@
     </div>
 
     {{-- ========= FILTER BAR ========= --}}
-    <form method="GET" action="{{ route('booths.index', ['view' => 'table']) }}" class="filter-bar-wrap" id="boothFilterForm">
-        <input type="hidden" name="view" value="table">
+    <form method="GET" action="{{ route('booths.index') }}" class="filter-bar-wrap" id="boothFilterForm">
 
         {{-- Search --}}
         <div class="bp-search-wrap">
@@ -638,7 +699,7 @@
 
         {{-- Status chips --}}
         <div class="chip-group">
-            <a href="{{ route('booths.index', ['view' => 'table', 'search' => request('search')]) }}"
+            <a href="{{ route('booths.index', ['search' => request('search')]) }}"
                class="filter-chip {{ $activeFilter === 'all' ? 'active' : '' }}">All</a>
             <button type="submit" name="status" value="1"
                     class="filter-chip border-0 {{ $activeFilter === 'available' ? 'active' : '' }}">
@@ -654,17 +715,17 @@
             </button>
         </div>
 
-        {{-- Right-side extras --}}
+        {{-- Clear filters --}}
         <div class="filter-bar-right">
             @if(request('search') || request('status'))
-            <a href="{{ route('booths.index', ['view' => 'table']) }}" class="btn-outline-soft" style="font-size: 0.8125rem;">
+            <a href="{{ route('booths.index') }}" class="btn-outline-soft" style="font-size: 0.8125rem;">
                 <i class="fas fa-times-circle"></i> Clear
             </a>
             @endif
         </div>
     </form>
 
-    {{-- ========= MAIN TABLE (Desktop) ========= --}}
+    {{-- ========= SECTION EYEBROW ========= --}}
     <div class="section-eyebrow">
         @if(isset($booths) && method_exists($booths, 'total'))
             {{ $booths->total() }} booth{{ $booths->total() !== 1 ? 's' : '' }}
@@ -672,7 +733,9 @@
         @endif
     </div>
 
+    {{-- ========= TABLE CARD (glass) ========= --}}
     <div class="table-glass">
+
         {{-- Desktop table --}}
         <div class="d-none d-md-block">
             <div class="table-responsive">
@@ -796,11 +859,9 @@
                                 <div class="empty-state">
                                     <i class="fas fa-store-slash"></i>
                                     <p>No booths found
-                                        @if(request('search'))
-                                            for "<strong>{{ request('search') }}</strong>"
-                                        @endif
+                                        @if(request('search'))for "<strong>{{ request('search') }}</strong>"@endif
                                     </p>
-                                    <a href="{{ route('booths.index', ['view' => 'management', 'create' => 1]) }}"
+                                    <a href="{{ route('booths.index', ['view' => 'canvas', 'create' => 1]) }}"
                                        class="btn-new-booth">
                                         <i class="fas fa-plus"></i> Add your first booth
                                     </a>
@@ -813,7 +874,7 @@
             </div>
         </div>
 
-        {{-- Mobile card list --}}
+        {{-- Mobile: card list --}}
         <div class="d-md-none mobile-card-list">
             @forelse($booths as $booth)
             <div class="mobile-booth-card">
@@ -846,7 +907,7 @@
             <div class="empty-state" style="padding: 2.5rem 1rem;">
                 <i class="fas fa-store-slash"></i>
                 <p>No booths found</p>
-                <a href="{{ route('booths.index', ['view' => 'management', 'create' => 1]) }}" class="btn-new-booth">
+                <a href="{{ route('booths.index', ['view' => 'canvas', 'create' => 1]) }}" class="btn-new-booth">
                     <i class="fas fa-plus"></i> New Booth
                 </a>
             </div>
@@ -860,12 +921,91 @@
                 Showing {{ $booths->firstItem() ?? 0 }}–{{ $booths->lastItem() ?? 0 }}
                 of {{ $booths->total() }} booths
             </small>
-            <div>{{ $booths->appends(request()->query())->links() }}</div>
+
+            {{-- Custom compact Apple-style pagination (Font Awesome, no Bootstrap SVG arrows) --}}
+            <nav aria-label="Booths pagination">
+                <ul class="pagination">
+
+                    {{-- « First --}}
+                    <li class="page-item {{ $booths->onFirstPage() ? 'disabled' : '' }}">
+                        <a class="page-link"
+                           href="{{ $booths->onFirstPage() ? '#' : $booths->appends(request()->query())->url(1) }}"
+                           title="First page" aria-label="First">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+
+                    {{-- ‹ Prev --}}
+                    <li class="page-item {{ $booths->onFirstPage() ? 'disabled' : '' }}">
+                        <a class="page-link"
+                           href="{{ $booths->onFirstPage() ? '#' : $booths->appends(request()->query())->previousPageUrl() }}"
+                           title="Previous page" aria-label="Previous">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+
+                    {{-- Page numbers (show a window of ±2 around current page) --}}
+                    @php
+                        $currentPage = $booths->currentPage();
+                        $lastPage    = $booths->lastPage();
+                        $winStart    = max(1, $currentPage - 2);
+                        $winEnd      = min($lastPage, $currentPage + 2);
+                    @endphp
+
+                    @if($winStart > 1)
+                        <li class="page-item">
+                            <a class="page-link" href="{{ $booths->appends(request()->query())->url(1) }}">1</a>
+                        </li>
+                        @if($winStart > 2)
+                            <li class="page-item disabled">
+                                <span class="page-link" style="border:none;background:transparent;padding:0 4px;">…</span>
+                            </li>
+                        @endif
+                    @endif
+
+                    @for($p = $winStart; $p <= $winEnd; $p++)
+                        <li class="page-item {{ $p === $currentPage ? 'active' : '' }}">
+                            <a class="page-link" href="{{ $booths->appends(request()->query())->url($p) }}">{{ $p }}</a>
+                        </li>
+                    @endfor
+
+                    @if($winEnd < $lastPage)
+                        @if($winEnd < $lastPage - 1)
+                            <li class="page-item disabled">
+                                <span class="page-link" style="border:none;background:transparent;padding:0 4px;">…</span>
+                            </li>
+                        @endif
+                        <li class="page-item">
+                            <a class="page-link" href="{{ $booths->appends(request()->query())->url($lastPage) }}">{{ $lastPage }}</a>
+                        </li>
+                    @endif
+
+                    {{-- › Next --}}
+                    <li class="page-item {{ $booths->hasMorePages() ? '' : 'disabled' }}">
+                        <a class="page-link"
+                           href="{{ $booths->hasMorePages() ? $booths->appends(request()->query())->nextPageUrl() : '#' }}"
+                           title="Next page" aria-label="Next">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+
+                    {{-- » Last --}}
+                    <li class="page-item {{ $booths->hasMorePages() ? '' : 'disabled' }}">
+                        <a class="page-link"
+                           href="{{ $booths->hasMorePages() ? $booths->appends(request()->query())->url($lastPage) : '#' }}"
+                           title="Last page" aria-label="Last">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
         </div>
         @endif
-    </div>
 
-</div>
+    </div>{{-- /.table-glass --}}
+
+</div>{{-- /.booths-container --}}
 @endsection
 
 @push('scripts')

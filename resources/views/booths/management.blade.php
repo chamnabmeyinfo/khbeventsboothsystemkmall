@@ -6,8 +6,8 @@
 <link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.8">
 <style>
     
-    
-    
+
+
     /* Full width – content wrapper uses full available width */
     
     .container-fluid:not(.main-content-pushed) {
@@ -27,6 +27,284 @@
     }
 
     .text-dark-gray { color: #1d1d1f !important; }
+</style>
+@endpush
+
+{{-- ============================================================
+     APPLE iOS/macOS OVERRIDE
+     Replaces all heavy gradients with the same clean white/gray/
+     blue tokens used in booths/index.blade.php.
+     ALL JS, modals, DataTable logic remain completely untouched.
+     ============================================================ --}}
+@push('styles')
+<style>
+/* ── Apple iOS token layer ─────────────────────────────────── */
+.booths-management-mode, .booths-ios-mode {
+    --ap-bg:           #f5f5f7;
+    --ap-surface:      #ffffff;
+    --ap-glass:        rgba(255,255,255,0.72);
+    --ap-border:       rgba(0,0,0,0.07);
+    --ap-text:         #1d1d1f;
+    --ap-text-2:       rgba(29,29,31,0.60);
+    --ap-text-3:       rgba(29,29,31,0.36);
+    --ap-accent:       #007AFF;
+    --ap-green:        #34C759;
+    --ap-orange:       #FF9500;
+    --ap-red:          #FF3B30;
+    --ap-indigo:       #5856D6;
+    --ap-radius:       14px;
+    --ap-radius-sm:    8px;
+    --ap-shadow-sm:    0 2px 8px rgba(0,0,0,0.06);
+    --ap-shadow-md:    0 4px 20px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04);
+    --ap-transition:   0.22s cubic-bezier(0.4,0,0.2,1);
+
+    background: var(--ap-bg) !important;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", sans-serif !important;
+    -webkit-font-smoothing: antialiased !important;
+}
+
+/* ── Desktop Page Header ───────────────────────────────────── */
+.booths-management-mode .looker-header,
+.booths-ios-mode .looker-header {
+    background: var(--ap-surface) !important;
+    border-radius: var(--ap-radius) !important;
+    padding: 1.25rem 1.5rem !important;
+    margin-bottom: 1.25rem !important;
+    box-shadow: var(--ap-shadow-sm) !important;
+    border: 1px solid var(--ap-border) !important;
+}
+.booths-management-mode .looker-header h1,
+.booths-ios-mode .looker-header h1 {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: var(--ap-text) !important;
+    letter-spacing: -0.03em !important;
+}
+.booths-management-mode .looker-header p,
+.booths-ios-mode .looker-header p {
+    color: var(--ap-text-2) !important;
+    font-size: 0.875rem !important;
+}
+
+/* ── Neutralise the heavy gradient header (modern-page-header) */
+.booths-management-mode .modern-page-header,
+.booths-ios-mode .modern-page-header {
+    background: var(--ap-surface) !important;
+    box-shadow: var(--ap-shadow-sm) !important;
+    border-radius: var(--ap-radius) !important;
+}
+.booths-management-mode .modern-page-header h2,
+.booths-ios-mode .modern-page-header h2 {
+    color: var(--ap-text) !important;
+    font-weight: 700 !important;
+}
+.booths-management-mode .modern-page-header .btn,
+.booths-ios-mode .modern-page-header .btn {
+    background: rgba(0,0,0,0.04) !important;
+    border: 1px solid var(--ap-border) !important;
+    color: var(--ap-text) !important;
+}
+
+/* ── Mobile App Header – remove purple gradient ─────────────── */
+.booths-management-mode .mobile-app-header,
+.booths-ios-mode .mobile-app-header {
+    background: var(--ap-surface) !important;
+    border-bottom: 1px solid var(--ap-border) !important;
+    box-shadow: var(--ap-shadow-sm) !important;
+}
+.booths-management-mode .mobile-app-title,
+.booths-ios-mode .mobile-app-title {
+    color: var(--ap-text) !important;
+    font-size: 1.25rem !important;
+}
+.booths-management-mode .mobile-app-subtitle,
+.booths-ios-mode .mobile-app-subtitle {
+    color: var(--ap-text-2) !important;
+}
+.booths-management-mode .mobile-header-btn,
+.booths-ios-mode .mobile-header-btn {
+    background: rgba(0,0,0,0.04) !important;
+    color: var(--ap-accent) !important;
+    border: 1px solid var(--ap-border) !important;
+}
+
+/* ── Mobile Stats Cards – remove colorful gradients ─────────── */
+.booths-management-mode .mobile-stats-container,
+.booths-ios-mode .mobile-stats-container {
+    background: transparent !important;
+    padding: 0.75rem 1rem !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
+}
+.booths-management-mode .mobile-stat-card,
+.booths-ios-mode .mobile-stat-card {
+    background: var(--ap-surface) !important;
+    border: 1px solid var(--ap-border) !important;
+    border-radius: 12px !important;
+    box-shadow: var(--ap-shadow-sm) !important;
+    padding: 1rem !important;
+}
+.booths-management-mode .mobile-stat-card:nth-child(1),
+.booths-management-mode .mobile-stat-card:nth-child(2),
+.booths-management-mode .mobile-stat-card:nth-child(3),
+.booths-management-mode .mobile-stat-card:nth-child(4),
+.booths-ios-mode .mobile-stat-card:nth-child(n) {
+    background: var(--ap-surface) !important;
+    box-shadow: var(--ap-shadow-sm) !important;
+}
+.booths-management-mode .mobile-stat-label,
+.booths-ios-mode .mobile-stat-label {
+    color: var(--ap-text-2) !important;
+    font-size: 0.6875rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+}
+.booths-management-mode .mobile-stat-value,
+.booths-ios-mode .mobile-stat-value {
+    color: var(--ap-text) !important;
+    font-size: 1.75rem !important;
+    font-weight: 700 !important;
+}
+
+/* ── Mobile Filter Chips ─────────────────────────────────────── */
+.booths-management-mode .mobile-filter-chip,
+.booths-ios-mode .mobile-filter-chip {
+    background: rgba(0,0,0,0.04) !important;
+    color: var(--ap-text-2) !important;
+    border: 1px solid var(--ap-border) !important;
+    border-radius: 9999px !important;
+    font-size: 0.8125rem !important;
+    font-weight: 500 !important;
+    padding: 0.4rem 1rem !important;
+    min-height: unset !important;
+}
+.booths-management-mode .mobile-filter-chip.active,
+.booths-ios-mode .mobile-filter-chip.active {
+    background: rgba(0,122,255,0.10) !important;
+    color: var(--ap-accent) !important;
+    border-color: rgba(0,122,255,0.25) !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+}
+
+/* ── Quick Filter Buttons – desktop ─────────────────────────── */
+.booths-management-mode .quick-filter-btn,
+.booths-ios-mode .quick-filter-btn {
+    background: rgba(0,0,0,0.03) !important;
+    border: 1px solid var(--ap-border) !important;
+    color: var(--ap-text-2) !important;
+    border-radius: 9999px !important;
+    padding: 0.35rem 0.9rem !important;
+    font-weight: 500 !important;
+    font-size: 0.8125rem !important;
+    transition: all var(--ap-transition) !important;
+}
+.booths-management-mode .quick-filter-btn:hover,
+.booths-ios-mode .quick-filter-btn:hover {
+    background: rgba(0,0,0,0.06) !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: rgba(0,0,0,0.12) !important;
+    color: var(--ap-text) !important;
+}
+.booths-management-mode .quick-filter-btn.active,
+.booths-ios-mode .quick-filter-btn.active {
+    background: rgba(0,122,255,0.10) !important;
+    color: var(--ap-accent) !important;
+    border-color: rgba(0,122,255,0.25) !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+}
+
+/* ── Action buttons in header ─────────────────────────────────── */
+.booths-management-mode .looker-actions .action-btn-primary,
+.booths-ios-mode .looker-actions .action-btn-primary {
+    background: var(--ap-accent) !important;
+    border-color: var(--ap-accent) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(0,122,255,0.25) !important;
+}
+.booths-management-mode .looker-actions .action-btn-secondary,
+.booths-ios-mode .looker-actions .action-btn-secondary {
+    background: rgba(0,0,0,0.04) !important;
+    border: 1px solid var(--ap-border) !important;
+    color: var(--ap-text-2) !important;
+}
+.booths-management-mode .looker-actions .space-mode-btn.active,
+.booths-ios-mode .looker-actions .space-mode-btn.active {
+    background: rgba(0,122,255,0.10) !important;
+    color: var(--ap-accent) !important;
+    border-color: rgba(0,122,255,0.25) !important;
+}
+
+/* ── Mobile Search ───────────────────────────────────────────── */
+.booths-management-mode .mobile-search-input,
+.booths-ios-mode .mobile-search-input {
+    background: var(--ap-surface) !important;
+    border: 1px solid var(--ap-border) !important;
+    border-radius: 12px !important;
+    font-size: 0.9375rem !important;
+    color: var(--ap-text) !important;
+}
+.booths-management-mode .mobile-search-input:focus,
+.booths-ios-mode .mobile-search-input:focus {
+    border-color: var(--ap-accent) !important;
+    box-shadow: 0 0 0 3px rgba(0,122,255,0.15) !important;
+}
+.booths-management-mode .mobile-search-icon,
+.booths-ios-mode .mobile-search-icon {
+    color: var(--ap-text-3) !important;
+}
+
+/* ── iOS Booth Rows (mobile list) ───────────────────────────── */
+.booths-management-mode .ios-booth-row,
+.booths-ios-mode .ios-booth-row {
+    background: var(--ap-surface) !important;
+    border-bottom: 1px solid var(--ap-border) !important;
+}
+.booths-management-mode .ios-booth-title,
+.booths-ios-mode .ios-booth-title {
+    color: var(--ap-text) !important;
+    font-weight: 600 !important;
+}
+.booths-management-mode .ios-booth-meta,
+.booths-ios-mode .ios-booth-meta {
+    color: var(--ap-text-2) !important;
+}
+
+/* ── Stat Cards (legacy, if visible) ────────────────────────── */
+.booths-management-mode .stat-card,
+.booths-ios-mode .stat-card,
+.booths-management-mode .modern-stat-card,
+.booths-ios-mode .modern-stat-card {
+    background: var(--ap-surface) !important;
+    border: 1px solid var(--ap-border) !important;
+    box-shadow: var(--ap-shadow-sm) !important;
+    color: var(--ap-text) !important;
+}
+.booths-management-mode .stat-card::before,
+.booths-ios-mode .stat-card::before,
+.booths-management-mode .modern-stat-card::before,
+.booths-ios-mode .modern-stat-card::before {
+    display: none !important;
+}
+.booths-management-mode .stat-card:hover,
+.booths-ios-mode .stat-card:hover,
+.booths-management-mode .modern-stat-card:hover,
+.booths-ios-mode .modern-stat-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--ap-shadow-md) !important;
+}
+.booths-management-mode .modern-stat-value,
+.booths-ios-mode .modern-stat-value {
+    color: var(--ap-text) !important;
+}
+.booths-management-mode .modern-stat-label,
+.booths-ios-mode .modern-stat-label {
+    color: var(--ap-text-2) !important;
+}
 </style>
 @endpush
 
