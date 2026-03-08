@@ -637,6 +637,133 @@ const FloorPlanDesigner = {
     },
     
 
+    // ============================================
+    // DYNAMIC DOM UPDATES (INSTANT UPDATES)
+    // ============================================
+    
+    addBoothToSidebar: function(booth, zoneName) {
+        const self = this;
+        let zoneContent = document.getElementById('zoneContent' + zoneName);
+        
+        if (!zoneContent) {
+            // Zone doesn't exist, create it
+            self.addZoneToSidebar(zoneName);
+            zoneContent = document.getElementById('zoneContent' + zoneName);
+            if (!zoneContent) return;
+        }
+        
+        // Remove "No booths" message if exists
+        const noBooths = zoneContent.querySelector('.no-booths-message');
+        if (noBooths) noBooths.remove();
+        
+        const isBooked = (booth.client_id || (booth.status != 1 && booth.status != '1'));
+        const div = document.createElement('div');
+        div.className = 'booth-number-item' + (isBooked ? ' booked' : '');
+        div.setAttribute('draggable', 'true');
+        div.setAttribute('data-booth-id', booth.id);
+        div.setAttribute('data-booth-number', booth.booth_number);
+        div.setAttribute('data-booth-status', booth.status || '1');
+        div.setAttribute('data-booth-zone', zoneName);
+        div.setAttribute('data-client-id', booth.client_id || '');
+        div.setAttribute('data-user-id', booth.userid || '');
+        div.setAttribute('data-category-id', booth.category_id || '');
+        div.setAttribute('data-sub-category-id', booth.sub_category_id || '');
+        div.setAttribute('data-asset-id', booth.asset_id || '');
+        div.setAttribute('data-booth-type-id', booth.booth_type_id || '');
+        div.textContent = booth.booth_number;
+        
+        // Find correct insertion point (keep sort)
+        const items = Array.from(zoneContent.querySelectorAll('.booth-number-item'));
+        let inserted = false;
+        for (let item of items) {
+            if (item.getAttribute('data-booth-number').localeCompare(booth.booth_number, undefined, {numeric: true}) > 0) {
+                zoneContent.insertBefore(div, item);
+                inserted = true;
+                break;
+            }
+        }
+        if (!inserted) {
+            zoneContent.appendChild(div);
+        }
+        
+        // Re-bind drag events
+        self.makeBoothItemDraggable(div);
+    },
+    
+    addZoneToSidebar: function(zoneName) {
+        const self = this;
+        const container = document.querySelector('.sidebar-content');
+        if (!container) return;
+        
+        const section = document.createElement('div');
+        section.className = 'sidebar-zone-section';
+        section.setAttribute('data-zone', zoneName);
+        
+        // Simplified HTML for the zone section (matches index.blade.php patterns)
+        section.innerHTML = `
+            <div class="zone-header" id="heading${zoneName}">
+                <div class="zone-info" onclick="event.stopPropagation(); this.closest('.sidebar-zone-section').classList.toggle('collapsed');">
+                    <i class="fas fa-chevron-down zone-chevron" aria-hidden="true"></i>
+                    <span class="zone-name">Zone ${zoneName}</span>
+                    <span class="zone-count">(0)</span>
+                </div>
+                <div class="zone-header-actions">
+                    <button class="btn-add-all-zone" data-zone="${zoneName}" title="Add All" onclick="event.stopPropagation(); FloorPlanDesigner.addAllZoneToCanvas('${zoneName}');">
+                        <i class="fas fa-plus-circle"></i>
+                    </button>
+                    <button class="btn-zone-add-new" data-zone="${zoneName}" title="Add New" onclick="event.stopPropagation(); FloorPlanDesigner.showAddBoothModal('${zoneName}');">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="btn-zone-delete" data-zone="${zoneName}" title="Delete" onclick="event.stopPropagation(); FloorPlanDesigner.showDeleteBoothModal('${zoneName}');">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="zone-content" id="zoneContent${zoneName}">
+                <p class="no-booths-message text-muted text-center p-2"><small>No booths yet</small></p>
+            </div>
+        `;
+        
+        // Insert in alphabetical order
+        const zones = Array.from(container.querySelectorAll('.sidebar-zone-section'));
+        let inserted = false;
+        for (let z of zones) {
+            if (z.getAttribute('data-zone').localeCompare(zoneName) > 0) {
+                container.insertBefore(section, z);
+                inserted = true;
+                break;
+            }
+        }
+        if (!inserted) {
+            container.appendChild(section);
+        }
+        
+        // Update click handlers etc if needed
+    },
+    
+    removeBoothDynamically: function(boothId) {
+        const self = this;
+        // Remove from canvas
+        const canvasBooth = document.querySelector('.dropped-booth[data-booth-id="' + boothId + '"]');
+        if (canvasBooth) canvasBooth.remove();
+        
+        // Remove from sidebar
+        const sidebarBooth = document.querySelector('.booth-number-item[data-booth-id="' + boothId + '"]');
+        if (sidebarBooth) {
+            const zoneName = sidebarBooth.getAttribute('data-booth-zone');
+            sidebarBooth.remove();
+            self.updateSidebarZoneCount(zoneName);
+        }
+    },
+    
+    updateSidebarZoneCount: function(zoneName) {
+        const section = document.querySelector('.sidebar-zone-section[data-zone="' + zoneName + '"]');
+        if (!section) return;
+        const count = section.querySelectorAll('.booth-number-item').length;
+        const badge = section.querySelector('.zone-count');
+        if (badge) badge.textContent = '(' + count + ')';
+    },
+
     // ... Original FloorPlanDesigner methods continue below
     
     // Helper: Get booth data from element (optimized)
@@ -2282,13 +2409,14 @@ const FloorPlanDesigner = {
                     // Show success message with details
                     let message = data.message;
                     if (data.created && data.created.length > 0) {
+                        const boothNumbers = data.created.map(b => b.booth_number || (typeof b === 'string' ? b : ''));
                         if (data.created.length <= 10) {
                             // Show all if 10 or fewer
-                            message += '<br><strong>Created:</strong> ' + data.created.map(b => b.booth_number).join(', ');
+                            message += '<br><strong>Created:</strong> ' + boothNumbers.join(', ');
                         } else {
                             // Show first 5 and last 5 if more than 10
-                            const first = data.created.slice(0, 5).map(b => b.booth_number).join(', ');
-                            const last = data.created.slice(-5).map(b => b.booth_number).join(', ');
+                            const first = boothNumbers.slice(0, 5).join(', ');
+                            const last = boothNumbers.slice(-5).join(', ');
                             message += '<br><strong>Created:</strong> ' + first + ' ... ' + last + ' (' + data.created.length + ' total)';
                         }
                     }
@@ -2301,10 +2429,16 @@ const FloorPlanDesigner = {
                     }
                     customAlert(message, 'success');
                     
-                    // Reload the page to show new booths
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 2000);
+                    // Instant update instead of reload
+                    if (data.created && data.created.length > 0) {
+                        data.created.forEach(function(booth) {
+                            self.addBoothToSidebar(booth, zoneName);
+                        });
+                        self.updateSidebarZoneCount(zoneName);
+                    }
+                    
+                    // Sync sidebar with canvas (just in case)
+                    self.syncSidebarWithCanvas();
                 } else {
                     customAlert(data.message || 'Error creating booths', 'error');
                     btn.prop('disabled', false);
@@ -2403,15 +2537,19 @@ const FloorPlanDesigner = {
                     
                     customAlert(message, 'success');
                     
-                    // Reload to show new zone immediately with current floor plan
-                    setTimeout(function() {
-                        const currentFloorPlanId = FPD.floorPlanId;
-                        if (currentFloorPlanId) {
-                            window.location.href = FPD.routes.boothsIndex + '?view=canvas&floor_plan_id=' + currentFloorPlanId;
-                        } else {
-                            window.location.reload();
-                        }
-                    }, 1200);
+                    // Instant update instead of reload
+                    if (data.created && data.created.length > 0) {
+                        data.created.forEach(function(booth) {
+                            self.addBoothToSidebar(booth, zoneName);
+                        });
+                        self.updateSidebarZoneCount(zoneName);
+                    }
+                    
+                    // Show the new zone in the sidebar (expand it)
+                    const zoneSection = document.querySelector('.sidebar-zone-section[data-zone="' + zoneName + '"]');
+                    if (zoneSection && zoneSection.classList.contains('collapsed')) {
+                        zoneSection.classList.remove('collapsed');
+                    }
                 } else {
                     // Error status (409, 422, 500, etc.)
                     let errorMessage = data.message || 'Error creating zone';
@@ -2713,11 +2851,12 @@ const FloorPlanDesigner = {
                     // Show success message with details
                     let message = data.message;
                     if (data.deleted && data.deleted.length > 0) {
+                        const boothNumbers = data.deleted.map(b => b.booth_number || (typeof b === 'string' ? b : ''));
                         if (data.deleted.length <= 10) {
-                            message += '<br><strong>Deleted:</strong> ' + data.deleted.join(', ');
+                            message += '<br><strong>Deleted:</strong> ' + boothNumbers.join(', ');
                         } else {
-                            const first = data.deleted.slice(0, 5).join(', ');
-                            const last = data.deleted.slice(-5).join(', ');
+                            const first = boothNumbers.slice(0, 5).join(', ');
+                            const last = boothNumbers.slice(-5).join(', ');
                             message += '<br><strong>Deleted:</strong> ' + first + ' ... ' + last + ' (' + data.deleted.length + ' total)';
                         }
                     }
@@ -2726,10 +2865,24 @@ const FloorPlanDesigner = {
                     }
                     customAlert(message, data.status === 206 ? 'warning' : 'success');
                     
-                    // Reload the page to reflect changes
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 2000);
+                    // Instant update instead of reload
+                    if (data.deleted && data.deleted.length > 0) {
+                        data.deleted.forEach(function(booth) {
+                            // booth might be an object {id, booth_number} or a string (depending on loop)
+                            const boothId = booth.id || booth;
+                            if (boothId) {
+                                self.removeBoothDynamically(boothId);
+                            }
+                        });
+                    }
+                    
+                    // Special case for delete range (if it returned numbers only)
+                    if (data.deleted_ids) {
+                        data.deleted_ids.forEach(id => self.removeBoothDynamically(id));
+                    }
+                    
+                    // Update global count
+                    if (self.updateBoothCount) self.updateBoothCount();
                 } else {
                     customAlert(data.message || 'Error deleting booths', 'error');
                     btn.prop('disabled', false);
@@ -3032,6 +3185,7 @@ const FloorPlanDesigner = {
                     $('#bookBoothModal').modal('hide');
                     
                     // Show success message
+                    // Show success message
                     customAlert('Booth ' + boothNumber + ' has been booked successfully!', 'success');
                     
                     // Update booth element on canvas
@@ -3045,17 +3199,31 @@ const FloorPlanDesigner = {
                         }
                         
                         // Update visual appearance based on status
-                        // Status colors are already defined in CSS, but we can add a visual indicator
                         boothElement.style.borderWidth = '3px';
                         setTimeout(function() {
                             boothElement.style.borderWidth = '';
                         }, 1000);
                     }
                     
-                    // Reload page after a short delay to reflect all changes
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 1500);
+                    // Update sidebar status too
+                    const sidebarBooth = document.querySelector('.booth-number-item[data-booth-id="' + boothData.booth_id + '"]');
+                    if (sidebarBooth) {
+                        const isBooked = (data.client_id && data.client_id !== null) || (formData.status != 1);
+                        if (isBooked) {
+                            sidebarBooth.classList.add('booked');
+                        } else {
+                            sidebarBooth.classList.remove('booked');
+                        }
+                        sidebarBooth.setAttribute('data-booth-status', formData.status);
+                        if (data.client_id) {
+                            sidebarBooth.setAttribute('data-client-id', data.client_id);
+                        }
+                    }
+                    
+                    // Sync with canvas properties panel if open
+                    if (self.selectedBooths.length === 1 && self.selectedBooths[0] === boothElement) {
+                        self.updatePropertiesPanel(boothElement);
+                    }
                 } else {
                     // Show error
                     const errorDiv = document.getElementById('bookBoothError');
@@ -13382,6 +13550,23 @@ const FloorPlanDesigner = {
                                 b.status = document.getElementById('canvas_status').value;
                             }
                         }
+                        
+                        // Update sidebar too
+                        var sidebarItem = document.querySelector('.booth-number-item[data-booth-id="' + boothId + '"]');
+                        if (sidebarItem) {
+                            if (newNumber) {
+                                sidebarItem.textContent = newNumber;
+                                sidebarItem.setAttribute('data-booth-number', newNumber);
+                            }
+                            const newStatus = document.getElementById('canvas_status').value;
+                            const newClientId = document.getElementById('canvas_client_id').value;
+                            sidebarItem.setAttribute('data-booth-status', newStatus);
+                            if (newStatus != '1' || newClientId) {
+                                sidebarItem.classList.add('booked');
+                            } else {
+                                sidebarItem.classList.remove('booked');
+                            }
+                        }
                     } else {
                         var msg = data.message || 'Update failed';
                         if (data.errors) msg = Object.values(data.errors).flat().join(' ');
@@ -15120,18 +15305,24 @@ $(document).ready(function() {
         
         FloorPlanDesigner.saveBoothColors(boothId, null, null, null)
             .then(function() {
+                // Reset inline styles
+                boothElement.style.backgroundColor = '';
+                boothElement.style.borderColor = '';
+                boothElement.style.color = '';
+                
                 // Remove custom colors class and let status colors apply
                 boothElement.classList.remove('has-custom-colors');
                 boothElement.removeAttribute('data-background-color');
                 boothElement.removeAttribute('data-border-color');
                 boothElement.removeAttribute('data-text-color');
                 
-                // Reload the page or refresh booth to apply status colors
+                // Sync properties panel if open
+                if (FloorPlanDesigner.selectedBooths.length === 1 && FloorPlanDesigner.selectedBooths[0] === boothElement) {
+                    FloorPlanDesigner.updatePropertiesPanel(boothElement);
+                }
+                
                 showNotification('Booth colors reset to status colors!', 'success');
                 $('#boothColorPickerModal').modal('hide');
-                
-                // Reload booth from database to get status colors
-                location.reload();
             })
             .catch(function(error) {
                 console.error('Error resetting booth colors:', error);
