@@ -8,25 +8,21 @@
     
     
     
-    .text-dark-gray-gray { color: #1d1d1f !important; }
-    
-    /* Designer specific fixes */
-    .designer-toolbar {
-        background: rgba(255, 255, 255, 0.5) !important;
-        backdrop-filter: blur(24px) !important;
-        border-radius: 16px !important;
-        border: 1px solid rgba(255, 255, 255, 0.5) !important;
-        color: #1d1d1f !important;
+    /* Full Width Fix */
+    #boothManagementContainer, .looker-dashboard {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding-left: 10px !important;
+        padding-right: 20px !important;
     }
-    .designer-toolbar button { color: #1d1d1f !important; border-radius: 8px !important; }
-    .designer-toolbar button.active { background: #6366f1 !important; color: white !important; }
     
-    .controls-panel {
-        background: rgba(255, 255, 255, 0.5) !important;
-        backdrop-filter: blur(24px) !important;
-        border-radius: 20px !important;
-        border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    .container-fluid {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
     }
+
+    .text-dark-gray { color: #1d1d1f !important; }
 </style>
 @endpush
 

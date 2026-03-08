@@ -4,7 +4,7 @@
    ============================================ */
 
 :root {
-    --sidebar-width: 260px;
+    --sidebar-width: 280px;
     --sidebar-collapsed-width: 80px;
     --sidebar-bg: rgba(255, 255, 255, 0.45);
     --sidebar-text: #1d1d1f;
@@ -39,17 +39,10 @@
 }
 
 /* Header must also push if sticky */
-.modern-unified-header {
-    margin-left: var(--sidebar-width);
-    width: calc(100% - var(--sidebar-width));
-    transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-}
+
 
 .modern-sidebar.collapsed + .layout-wrapper .modern-unified-header,
-body:has(.modern-sidebar.collapsed) .modern-unified-header {
-    margin-left: var(--sidebar-collapsed-width);
-    width: calc(100% - var(--sidebar-collapsed-width));
-}
+body:has(.modern-sidebar.collapsed) 
 
 /* Collapsed State */
 .modern-sidebar.collapsed {
@@ -72,7 +65,7 @@ body:has(.modern-sidebar.collapsed) .modern-unified-header {
 
 /* Nav Link Transitions */
 .sidebar-content {
-    padding: 1.5rem 0.75rem;
+    padding: 1.5rem 0;
     flex: 1;
 }
 
@@ -170,4 +163,43 @@ body:has(.modern-sidebar.collapsed) .modern-unified-header {
         margin-left: 0 !important;
         width: 100% !important;
     }
+}
+
+.sidebar-nav-list {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+.sidebar-nav-item {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+.modern-sidebar {
+    width: var(--sidebar-width) !important;
+    position: fixed !important;
+    top: 70px !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    z-index: 1045 !important;
+}
+
+/* Aggressive Reset for Sidebar */
+.modern-sidebar ul, 
+.modern-sidebar li,
+.sidebar-nav-list,
+.sidebar-nav-item {
+    list-style: none !important;
+    list-style-type: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.modern-sidebar .sidebar-nav-link {
+    margin: 0 1rem 0.5rem 1rem !important;
+}
+
+.sidebar-section-label {
+    margin-left: 1.5rem !important;
+    margin-bottom: 0.5rem !important;
 }

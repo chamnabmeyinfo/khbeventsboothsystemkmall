@@ -3,6 +3,14 @@
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/booths-premium-glamor.css') }}?v=1.0">
 <link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
+<style>
+    .looker-dashboard {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 2rem !important;
+    }
+</style>
 @endpush
 
 @section('title', 'My Booths')

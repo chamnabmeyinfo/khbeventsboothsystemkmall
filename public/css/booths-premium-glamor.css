@@ -151,3 +151,49 @@
         width: calc(100% - 260px) !important;
     }
 }
+
+
+/* Unified Pushing Intelligence */
+body {
+    padding-top: 70px !important;
+}
+
+.main-content-pushed {
+    margin-left: 280px !important;
+    width: calc(100% - 280px) !important;
+    transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    padding: 2.5rem !important;
+}
+
+.modern-sidebar.collapsed ~ .main-content-pushed,
+.main-content-pushed.expanded {
+    margin-left: 80px !important;
+    width: calc(100% - 80px) !important;
+}
+
+.looker-dashboard {
+    max-width: 100% !important;
+    padding: 0 !important;
+}
+
+/* Sidebar List Fix */
+.sidebar-nav-list {
+    padding-left: 0 !important;
+}
+.sidebar-nav-item {
+    list-style: none !important;
+}
+
+/* Force full height and width for the main area */
+main.main-content-pushed {
+    background: transparent !important;
+}
+
+body.ios-dashboard-mode {
+    background: linear-gradient(135deg, #a7d0e3 0%, #d4eaf7 35%, #f0f7fb 100%) !important;
+    background-attachment: fixed !important;
+}
+
+.looker-dashboard {
+    padding: 0 20px 40px 10px !important;
+}
