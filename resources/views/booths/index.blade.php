@@ -736,7 +736,8 @@
                             @endforeach
                 </div>
                     </div>
-                    
+            </div>
+            
             <!-- Main Canvas Container (75% width) -->
             <div id="printContainer" class="canvas-container">
                 <!-- Canvas Area -->
