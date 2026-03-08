@@ -17,40 +17,47 @@
     <link rel="stylesheet" href="{{ asset('css/global-ux-consistency.css') }}">
     
     <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}">
     
     @stack('styles')
 </head>
-<body>
+<body style="background: #f1f5f9;">
     @include('partials.modern-header')
 
-    <main class="container-fluid py-4">
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
+    <div class="layout-wrapper">
+        @auth
+            @include('partials.modern-sidebar')
+        @endauth
 
-        @if(session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
+        <main class="main-content-pushed container-fluid py-4" id="main-content" style="min-height: calc(100vh - 70px);">
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
 
-        @if ($errors->any())
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
 
-        @yield('content')
-    </main>
+            @if ($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
+
+            @yield('content')
+        </main>
+    </div>
 
     <!-- Bootstrap 5 JS - Local -->
     <script src="{{ asset('vendor/bootstrap5/js/bootstrap.bundle.min.js') }}"></script>

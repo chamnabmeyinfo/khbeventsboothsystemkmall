@@ -317,13 +317,12 @@
 .floorplan-designer {
     display: flex;
     flex-direction: column;
-    width: 100vw;
-    max-width: 100vw;
-    margin-left: calc(50% - 50vw);
+    width: 100%;
+    margin-left: 0;
     height: calc(100vh - 120px);
     min-height: 600px;
     background: var(--fpd-bg);
-    border-radius: 0;
+    border-radius: 8px;
     overflow: hidden;
     box-shadow: none;
     border: none;
