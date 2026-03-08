@@ -1,167 +1,93 @@
-@extends('layouts.adminlte')
+@extends('layouts.admin')
 
 @section('title', 'Users Management')
 @section('page-title', 'Users Management')
 @section('breadcrumb', 'Staff Management / Users')
 
+
 @push('styles')
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
 <style>
-    /* Modern Glassmorphism KPI Cards */
-    .kpi-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
+    .looker-dashboard { padding: 0 !important; }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(40px) saturate(180%);
+        -webkit-backdrop-filter: blur(40px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        margin-bottom: 24px;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         overflow: hidden;
-        height: 100%;
     }
-
-    .kpi-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        opacity: 0;
-        transition: opacity 0.3s;
+    .glass-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.55);
+        box-shadow: 0 15px 45px rgba(31, 38, 135, 0.2);
     }
-
-    .kpi-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 40px rgba(31, 38, 135, 0.5);
-    }
-
-    .kpi-card:hover::before {
-        opacity: 1;
-    }
-
-    .kpi-card.primary::before { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-    .kpi-card.success::before { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
-    .kpi-card.danger::before { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); }
-    .kpi-card.info::before { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
-
-    .kpi-icon {
-        width: 64px;
-        height: 64px;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-        color: white;
-        margin-bottom: 16px;
-    }
-
-    .kpi-card.primary .kpi-icon { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-    .kpi-card.success .kpi-icon { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
-    .kpi-card.danger .kpi-icon { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); }
-    .kpi-card.info .kpi-icon { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
-
-    .kpi-value {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #2d3748;
-        margin: 8px 0;
-        line-height: 1;
-    }
-
-    .kpi-label {
-        font-size: 0.875rem;
-        color: #718096;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .user-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-        transition: all 0.3s;
-        border-left: 4px solid;
-        cursor: pointer;
-    }
-    .user-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 40px rgba(31, 38, 135, 0.5);
-    }
-    .user-card.admin { border-left-color: #dc3545; }
-    .user-card.sale { border-left-color: #6c757d; }
-    
-    .table-row-hover {
-        transition: all 0.2s;
-    }
-    .table-row-hover:hover {
-        background-color: #f8f9fc;
-        transform: translateX(4px);
-    }
-    
-    .status-toggle {
-        cursor: pointer;
+    .kpi-card-looker {
+        margin-bottom: 24px;
     }
 </style>
 @endpush
 
+@push('body-class', 'ios-dashboard-mode')
+
+
 @section('content')
+<div class='looker-dashboard'>
 <div class="container-fluid">
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card kpi-card primary">
-                <div class="card-body" style="padding: 24px;">
+            <div class="kpi-card-looker">
+                <div class="p-4" style="padding: 24px;">
                     <div class="kpi-icon">
                         <i class="fas fa-users"></i>
                     </div>
-                    <div class="kpi-label">Total Users</div>
-                    <div class="kpi-value">{{ number_format(\App\Models\User::count()) }}</div>
+                    <div class="kpi-title">Total Users</div>
+                    <div class="kpi-value-looker">{{ number_format(\App\Models\User::count()) }}</div>
                 </div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card kpi-card success">
-                <div class="card-body" style="padding: 24px;">
+            <div class="kpi-card-looker">
+                <div class="p-4" style="padding: 24px;">
                     <div class="kpi-icon">
                         <i class="fas fa-user-check"></i>
                     </div>
-                    <div class="kpi-label">Active Users</div>
-                    <div class="kpi-value">{{ number_format(\App\Models\User::where('status', 1)->count()) }}</div>
+                    <div class="kpi-title">Active Users</div>
+                    <div class="kpi-value-looker">{{ number_format(\App\Models\User::where('status', 1)->count()) }}</div>
                 </div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6 mb-3">
             <div class="card kpi-card danger">
-                <div class="card-body" style="padding: 24px;">
+                <div class="p-4" style="padding: 24px;">
                     <div class="kpi-icon">
                         <i class="fas fa-user-shield"></i>
                     </div>
-                    <div class="kpi-label">Admins</div>
-                    <div class="kpi-value">{{ number_format(\App\Models\User::where('type', 1)->count()) }}</div>
+                    <div class="kpi-title">Admins</div>
+                    <div class="kpi-value-looker">{{ number_format(\App\Models\User::where('type', 1)->count()) }}</div>
                 </div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card kpi-card info">
-                <div class="card-body" style="padding: 24px;">
+            <div class="kpi-card-looker">
+                <div class="p-4" style="padding: 24px;">
                     <div class="kpi-icon">
                         <i class="fas fa-user-tie"></i>
                     </div>
-                    <div class="kpi-label">Sales Staff</div>
-                    <div class="kpi-value">{{ number_format(\App\Models\User::where('type', 2)->count()) }}</div>
+                    <div class="kpi-title">Sales Staff</div>
+                    <div class="kpi-value-looker">{{ number_format(\App\Models\User::where('type', 2)->count()) }}</div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Action Bar -->
-    <div class="card mb-4">
-        <div class="card-body">
+    <div class="glass-card mb-4">
+        <div class="p-4">
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <div class="btn-group" role="group">
@@ -264,9 +190,9 @@
 
     <!-- Table View -->
     <div id="tableView" class="view-content">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-list mr-2"></i>All Users</h3>
+        <div class="glass-card">
+            <div class="p-4 border-bottom">
+                <h3 class="h5 fw-bold mb-0 text-dark"><i class="fas fa-list mr-2"></i>All Users</h3>
                 <div class="card-tools">
                     <span class="badge badge-primary">{{ $total ?? count($users) }} Total</span>
                 </div>
@@ -333,7 +259,7 @@
             @endphp
             <div class="col-md-6 col-lg-4 mb-4">
                 <div class="card user-card {{ $typeClass }}" onclick="window.location='{{ route('users.show', $user) }}'">
-                    <div class="card-header">
+                    <div class="p-4 border-bottom">
                         <div class="d-flex justify-content-between align-items-center">
                             <h6 class="mb-0">
                                 <x-avatar 
@@ -352,7 +278,7 @@
                             @endif
                         </div>
                     </div>
-                    <div class="card-body">
+                    <div class="p-4">
                         <div class="mb-3">
                             <div class="d-flex align-items-center mb-2">
                                 <i class="fas fa-hashtag text-muted mr-2"></i>
@@ -417,7 +343,7 @@
             </div>
             @empty
             <div class="col-12">
-                <div class="card">
+                <div class="glass-card">
                     <div class="card-body text-center py-5">
                         <i class="fas fa-user-slash fa-3x text-muted mb-3"></i>
                         <p class="text-muted mb-3">No users found</p>
@@ -432,7 +358,7 @@
         @if(method_exists($users, 'hasPages') && $users->hasPages())
         <div class="row mt-3">
             <div class="col-12">
-                <div class="card">
+                <div class="glass-card">
                     <div class="card-footer">
                         <div class="row align-items-center">
                             <div class="col-md-6">
@@ -552,6 +478,7 @@
     </div>
 </div>
 
+</div>
 @endsection
 
 @push('scripts')

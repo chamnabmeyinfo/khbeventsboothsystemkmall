@@ -5,7 +5,7 @@
     --bg-card: rgba(255, 255, 255, 0.45);
     --bg-card-hover: rgba(255, 255, 255, 0.6);
     --text-primary: #1d1d1f;
-    --text-secondary: #434353;
+    --text-secondary: #424245;
     --text-tertiary: #86868b;
     --border-light: rgba(255, 255, 255, 0.5);
     --border-hover: rgba(255, 255, 255, 0.8);
@@ -19,8 +19,8 @@
     --accent-purple-light: rgba(175, 82, 222, 0.15);
     
     --shadow-sm: 0 4px 10px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
-    --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+    --shadow-md: 0 8px 32px 0 rgba(31, 38, 135, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+    --shadow-lg: 0 12px 48px 0 rgba(31, 38, 135, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
     --shadow-hover: 0 30px 60px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.9);
     
     --radius-md: 16px;
@@ -28,19 +28,19 @@
     --radius-xl: 36px;
     --radius-pill: 9999px;
     
-    --transition-all: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    --transition-all: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 body.ios-dashboard-mode {
-    background-color: #ffb8d2;
+    background-color: #ffb8d2 !important;
     background-image: 
         radial-gradient(at 0% 0%, #4facfe 0px, transparent 50%),
         radial-gradient(at 100% 0%, #00f2fe 0px, transparent 50%),
         radial-gradient(at 100% 100%, #f093fb 0px, transparent 50%),
         radial-gradient(at 0% 100%, #f5576c 0px, transparent 50%),
-        radial-gradient(at 50% 50%, #5ee7df 0px, transparent 50%);
-    background-attachment: fixed;
-    background-size: 200% 200%;
-    animation: gradientMove 15s ease infinite;
+        radial-gradient(at 50% 50%, #5ee7df 0px, transparent 50%) !important;
+    background-attachment: fixed !important;
+    background-size: 200% 200% !important;
+    animation: gradientMove 15s ease infinite !important;
     font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
@@ -150,6 +150,8 @@ body.ios-dashboard-mode {
 
 .kpi-card-looker {
     background: var(--bg-card);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
     backdrop-filter: blur(40px) saturate(180%);
     -webkit-backdrop-filter: blur(40px) saturate(180%);
     border-radius: var(--radius-lg);
@@ -164,7 +166,8 @@ body.ios-dashboard-mode {
 }
 
 .kpi-card-looker:hover {
-    transform: translateY(-4px) scale(1.01);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
     box-shadow: var(--shadow-hover);
     background: var(--bg-card-hover);
 }
@@ -249,6 +252,8 @@ body.ios-dashboard-mode {
 
 .canvas-panel {
     background: var(--bg-card);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
     border-radius: var(--radius-lg);
     padding: 1.75rem;
     box-shadow: var(--shadow-md);
@@ -442,4 +447,40 @@ body.ios-dashboard-mode .looker-table tr:hover td {
 
 body.ios-dashboard-mode .main-content-pushed {
     background: transparent !important;
+}
+
+/* Enhance readability on glass */
+.kpi-title, .panel-title, .avatar-chip-title, h1, h2 {
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.4);
+}
+
+.kpi-value-looker {
+    letter-spacing: -0.015em;
+    color: #1d1d1f !important;
+}
+
+.kpi-card-looker, .canvas-panel, .glass-card {
+    transition: var(--transition-all);
+    position: relative;
+}
+
+.kpi-card-looker:hover, .canvas-panel:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.55) !important;
+}
+
+/* Button pulse/press effect */
+.action-btn:active {
+    transform: scale(0.95);
+}
+
+/* Table row lift */
+.looker-table tr {
+    transition: var(--transition-all);
+}
+
+.looker-table tr:hover td {
+    background-color: rgba(255, 255, 255, 0.6) !important;
+    transform: scale(1.005);
 }

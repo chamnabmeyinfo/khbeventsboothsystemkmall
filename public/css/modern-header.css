@@ -5,10 +5,10 @@
 
 .modern-unified-header {
     height: 70px;
-    background: rgba(255, 255, 255, 0.8) !important;
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+    background: rgba(255, 255, 255, 0.45) !important;
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5) !important;
     padding: 0 1.5rem !important;
     display: flex !important;
     align-items: center !important;

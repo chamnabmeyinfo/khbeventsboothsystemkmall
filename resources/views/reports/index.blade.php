@@ -1,102 +1,46 @@
-@extends('layouts.adminlte')
+@extends('layouts.admin')
 
 @section('title', 'Reports & Analytics')
 @section('page-title', 'Reports & Analytics')
 @section('breadcrumb', 'Insights / Reports')
 
+
 @push('styles')
-@php
-    try {
-        $cdnSettings = \App\Models\Setting::getCDNSettings();
-        $useCDN = $cdnSettings['use_cdn'] ?? true; // Default to true (CDN enabled)
-    } catch (\Exception $e) {
-        // If settings table doesn't exist or error occurs, default to CDN enabled
-        $useCDN = true;
-    }
-@endphp
-@if($useCDN)
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">
-@else
-<link rel="stylesheet" href="{{ asset('vendor/chartjs/chart.min.css') }}">
-@endif
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
 <style>
-    /* Modern Glassmorphism Report Cards */
-    .report-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
+    .looker-dashboard { padding: 0 !important; }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(40px) saturate(180%);
+        -webkit-backdrop-filter: blur(40px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        margin-bottom: 24px;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         overflow: hidden;
-        height: 100%;
-        cursor: pointer;
     }
-
-    .report-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        opacity: 0;
-        transition: opacity 0.3s;
+    .glass-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.55);
+        box-shadow: 0 15px 45px rgba(31, 38, 135, 0.2);
     }
-
-    .report-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 40px rgba(31, 38, 135, 0.5);
-    }
-
-    .report-card:hover::before {
-        opacity: 1;
-    }
-
-    .report-card.primary::before { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-    .report-card.success::before { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
-    .report-card.info::before { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
-    .report-card.warning::before { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
-
-    .report-icon {
-        width: 80px;
-        height: 80px;
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 36px;
-        color: white;
-        margin-bottom: 20px;
-    }
-
-    .report-card.primary .report-icon { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-    .report-card.success .report-icon { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
-    .report-card.info .report-icon { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
-    .report-card.warning .report-icon { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
-
-    .stat-box {
-        background: rgba(255, 255, 255, 0.7);
-        border-radius: 12px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        transition: all 0.2s;
-    }
-
-    .stat-box:hover {
-        background: rgba(255, 255, 255, 0.9);
-        transform: translateX(4px);
+    .kpi-card-looker {
+        margin-bottom: 24px;
     }
 </style>
 @endpush
 
+@push('body-class', 'ios-dashboard-mode')
+
+
 @section('content')
+<div class='looker-dashboard'>
 <div class="container-fluid">
     <!-- Welcome Header -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; padding: 24px;">
+            <div class="glass-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; padding: 24px;">
                 <div class="d-flex justify-content-between align-items-center flex-wrap">
                     <div>
                         <h2 class="text-white mb-2" style="font-weight: 700;">
@@ -280,11 +224,11 @@
     <!-- Quick Actions -->
     <div class="row mt-4">
         <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title"><i class="fas fa-bolt mr-2"></i>Quick Actions</h3>
+            <div class="glass-card">
+                <div class="p-4 border-bottom">
+                    <h3 class="h5 fw-bold mb-0 text-dark"><i class="fas fa-bolt mr-2"></i>Quick Actions</h3>
                 </div>
-                <div class="card-body">
+                <div class="p-4">
                     <div class="row">
                         <div class="col-md-3 mb-3">
                             <a href="{{ route('reports.sales', ['date_from' => now()->subDays(7)->format('Y-m-d'), 'date_to' => now()->format('Y-m-d')]) }}" class="btn btn-outline-primary btn-block">
@@ -311,6 +255,7 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 @endsection
 

@@ -3,7 +3,7 @@
     if (!$user) return; // Safeguard if accessed without auth
 @endphp
 
-<aside class="modern-sidebar sidebar-dark {{ $sidebarClass ?? '' }}" id="mainSidebar">
+<aside class="modern-sidebar {{ $sidebarClass ?? '' }}" id="mainSidebar">
     <div class="sidebar-content">
         <!-- Overview Section -->
         <h6 class="sidebar-section-label">Overview</h6>
@@ -121,16 +121,16 @@
     </div>
     
     <!-- Sidebar Footer -->
-    <div class="sidebar-footer p-3 border-top mt-auto" style="border-color: rgba(255, 255, 255, 0.05) !important;">
+    <div class="sidebar-footer p-3 border-top mt-auto" style="border-color: rgba(0, 0, 0, 0.05) !important;">
         <div class="d-flex align-items-center gap-2">
             <div class="user-avatar-modern-small" style="width: 32px; height: 32px; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.8rem;">
                 {{ strtoupper(substr($user->username ?? $user->name ?? 'U', 0, 1)) }}
             </div>
             <div class="user-info-mini overflow-hidden flex-grow-1">
-                <div class="text-white small fw-bold text-truncate" style="font-size: 0.85rem;">{{ $user->username ?? $user->name }}</div>
-                <div class="text-white-50 x-small text-truncate" style="font-size: 0.7rem; opacity: 0.6;">{{ $user->isAdmin() ? 'Administrator' : 'Sales Rep' }}</div>
+                <div class="text-dark small fw-bold text-truncate" style="font-size: 0.85rem;">{{ $user->username ?? $user->name }}</div>
+                <div class="text-muted x-small text-truncate" style="font-size: 0.7rem;">{{ $user->isAdmin() ? 'Administrator' : 'Sales Rep' }}</div>
             </div>
-            <a href="javascript:void(0)" class="text-white-50 hover-white" id="sidebarCollapseBtn">
+            <a href="javascript:void(0)" class="text-muted hover-dark" id="sidebarCollapseBtn">
                 <i class="fas fa-indent"></i>
             </a>
         </div>

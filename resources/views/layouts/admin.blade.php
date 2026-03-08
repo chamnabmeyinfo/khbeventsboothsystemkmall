@@ -13,11 +13,11 @@
     <!-- Font Awesome - Local -->
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
     <!-- Global UX Consistency CSS -->
-    <link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/global-ux-consistency.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}?v=2.6">
+    <link rel="stylesheet" href="{{ asset('css/global-ux-consistency.css') }}?v=2.6">
     
-    <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}?v=2.6">
+    <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=2.6">
     
     @stack('styles')
 </head>

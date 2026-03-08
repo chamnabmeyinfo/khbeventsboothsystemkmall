@@ -2,414 +2,38 @@
 
 @section('title', 'Bookings Management')
 
+
 @push('styles')
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
 <style>
-/* ============================================
-   BOOKINGS INDEX — SINGLE RESPONSIVE VIEW (Laravel)
-   One template for all viewports: CSS breakpoints only.
-   No separate desktop/tablet/mobile views or stylesheets.
-   ============================================ */
-
-/* Base styles */
-* {
-    box-sizing: border-box;
-}
-
-/* Statistics Cards - Following system pattern */
-.kpi-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-    height: 100%;
-}
-
-.kpi-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.kpi-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 40px rgba(31, 38, 135, 0.5);
-}
-
-.kpi-card:hover::before {
-    opacity: 1;
-}
-
-.kpi-card.primary::before { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-.kpi-card.success::before { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
-.kpi-card.warning::before { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
-.kpi-card.info::before { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
-
-.kpi-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    color: white;
-    margin-bottom: 16px;
-}
-
-.kpi-card.primary .kpi-icon { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-.kpi-card.success .kpi-icon { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
-.kpi-card.warning .kpi-icon { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
-.kpi-card.info .kpi-icon { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
-
-.kpi-value {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #2d3748;
-    margin: 8px 0;
-    line-height: 1;
-}
-
-.kpi-label {
-    font-size: 0.875rem;
-    color: #718096;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* Action Bar */
-.action-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-    gap: 16px;
-}
-
-/* View Toggle */
-.view-toggle {
-    display: inline-flex;
-    background: #f7fafc;
-    border-radius: 12px;
-    padding: 4px;
-    border: 2px solid #e2e8f0;
-    gap: 4px;
-}
-
-.view-toggle button {
-    border: none;
-    background: transparent;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: all 0.3s;
-    color: #718096;
-    white-space: nowrap;
-}
-
-.view-toggle button.active {
-    background: white;
-    color: #667eea;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-/* Booking Cards */
-.booking-card {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border-left: 4px solid #667eea;
-    transition: all 0.3s;
-    cursor: pointer;
-}
-
-.booking-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-}
-
-.booking-card.special { border-left-color: #ed8936; }
-.booking-card.temporary { border-left-color: #f56565; }
-
-/* Table Styles */
-.table-modern {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.table-modern thead {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-
-.table-modern thead th {
-    border: none;
-    padding: 16px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-size: 0.75rem;
-}
-
-.table-modern tbody tr {
-    border-bottom: 1px solid #e2e8f0;
-    transition: all 0.3s;
-}
-
-.table-modern tbody tr:hover {
-    background: #f7fafc;
-}
-
-.table-modern tbody td {
-    padding: 16px;
-    vertical-align: middle;
-    border: none;
-}
-
-/* Badge Styles */
-.badge-modern {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-weight: 600;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.badge-modern-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-
-.badge-modern-warning {
-    background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
-    color: white;
-}
-
-.badge-modern-danger {
-    background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
-    color: white;
-}
-
-/* Button Styles */
-.btn-modern {
-    border-radius: 12px;
-    padding: 12px 24px;
-    font-weight: 600;
-    transition: all 0.3s;
-    border: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.btn-modern:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-}
-
-.btn-modern-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-
-.btn-modern-success {
-    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-    color: white;
-}
-
-.btn-modern-info {
-    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
-    color: white;
-}
-
-/* Form Controls */
-.form-control-modern {
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 12px 16px;
-    font-size: 0.9375rem;
-    transition: all 0.3s;
-    background: white;
-    color: #1a202c;
-}
-
-.form-control-modern:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-    outline: none;
-}
-
-/* Empty State */
-.empty-state {
-    text-align: center;
-    padding: 80px 20px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.empty-state-icon {
-    font-size: 5rem;
-    color: #cbd5e0;
-    margin-bottom: 24px;
-}
-
-/* Lazy Loading */
-.lazy-load-spinner {
-    display: none;
-    text-align: center;
-    padding: 40px 20px;
-}
-
-.lazy-load-spinner.active {
-    display: block;
-}
-
-.lazy-load-spinner i {
-    font-size: 2.5rem;
-    color: #667eea;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-.lazy-load-end {
-    text-align: center;
-    padding: 32px 20px;
-    color: #718096;
-    font-weight: 600;
-    font-size: 0.9375rem;
-}
-
-.lazy-load-trigger {
-    height: 1px;
-    width: 100%;
-    visibility: hidden;
-}
-
-/* Responsive breakpoints */
-@media (max-width: 768px) {
-    .container-fluid {
-        padding: 16px !important;
+    .looker-dashboard { padding: 0 !important; }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(40px) saturate(180%);
+        -webkit-backdrop-filter: blur(40px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        margin-bottom: 24px;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        overflow: hidden;
     }
-    
-    .kpi-value {
-        font-size: 2rem;
+    .glass-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.55);
+        box-shadow: 0 15px 45px rgba(31, 38, 135, 0.2);
     }
-    
-    .kpi-icon {
-        width: 48px;
-        height: 48px;
-        font-size: 20px;
+    .kpi-card-looker {
+        margin-bottom: 24px;
     }
-    
-    .action-bar {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .view-toggle {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .table-modern {
-        font-size: 0.875rem;
-    }
-    
-    .table-modern thead th,
-    .table-modern tbody td {
-        padding: 12px 8px;
-    }
-    
-    /* Hide table on mobile, show cards */
-    .table-view {
-        display: none;
-    }
-    
-    .card-view {
-        display: block;
-    }
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
-    .container-fluid {
-        padding: 24px !important;
-    }
-    
-    .kpi-value {
-        font-size: 2.25rem;
-    }
-}
-
-@media (min-width: 1025px) {
-    .container-fluid {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 32px;
-    }
-    
-    /* Show both views on desktop */
-    .table-view,
-    .card-view {
-        display: block;
-    }
-}
-
-/* Group Section Styles */
-.group-section {
-    margin-bottom: 32px;
-}
-
-.group-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 16px 24px;
-    border-radius: 12px 12px 0 0;
-    margin-bottom: 0;
-}
-
-.group-header h5 {
-    margin: 0;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.group-header .badge {
-    font-size: 0.875rem;
-    padding: 6px 12px;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-}
-
-/* Khmer Font Support */
-html, body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Khmer OS Battambang", "KhmerOSBattambang", "Hanuman", "Hanuman-Regular", "Noto Sans Khmer", "Khmer OS", "Khmer", sans-serif;
-}
 </style>
 @endpush
 
+@push('body-class', 'ios-dashboard-mode')
+
+
 @section('content')
+<div class='looker-dashboard'>
 <div class="container-fluid">
     @if(!empty($restrictToOwnBookings))
         <div class="alert alert-info mb-3" role="alert">
@@ -420,48 +44,48 @@ html, body {
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card kpi-card primary">
-                <div class="card-body" style="padding: 24px;">
+            <div class="kpi-card-looker">
+                <div class="p-4" style="padding: 24px;">
                     <div class="kpi-icon">
                         <i class="fas fa-calendar-check"></i>
                     </div>
-                    <div class="kpi-label">Total Bookings</div>
-                    <div class="kpi-value">{{ number_format(\App\Models\Book::count()) }}</div>
+                    <div class="kpi-title">Total Bookings</div>
+                    <div class="kpi-value-looker">{{ number_format(\App\Models\Book::count()) }}</div>
                 </div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card kpi-card success">
-                <div class="card-body" style="padding: 24px;">
+            <div class="kpi-card-looker">
+                <div class="p-4" style="padding: 24px;">
                     <div class="kpi-icon">
                         <i class="fas fa-calendar-day"></i>
                     </div>
-                    <div class="kpi-label">Today's Bookings</div>
-                    <div class="kpi-value">{{ number_format(\App\Models\Book::whereDate('date_book', today())->count()) }}</div>
+                    <div class="kpi-title">Today's Bookings</div>
+                    <div class="kpi-value-looker">{{ number_format(\App\Models\Book::whereDate('date_book', today())->count()) }}</div>
                 </div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card kpi-card warning">
-                <div class="card-body" style="padding: 24px;">
+            <div class="kpi-card-looker">
+                <div class="p-4" style="padding: 24px;">
                     <div class="kpi-icon">
                         <i class="fas fa-calendar-alt"></i>
                     </div>
-                    <div class="kpi-label">This Month</div>
-                    <div class="kpi-value">
+                    <div class="kpi-title">This Month</div>
+                    <div class="kpi-value-looker">
                         {{ number_format(\App\Models\Book::whereMonth('date_book', now()->month)->whereYear('date_book', now()->year)->count()) }}
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card kpi-card info">
-                <div class="card-body" style="padding: 24px;">
+            <div class="kpi-card-looker">
+                <div class="p-4" style="padding: 24px;">
                     <div class="kpi-icon">
                         <i class="fas fa-cube"></i>
                     </div>
-                    <div class="kpi-label">Total Booths</div>
-                    <div class="kpi-value">
+                    <div class="kpi-title">Total Booths</div>
+                    <div class="kpi-value-looker">
                         @php
                             try {
                                 $totalBooths = \App\Models\Book::get()->sum(function($book) {
@@ -656,7 +280,7 @@ html, body {
                             <span class="badge">{{ count($groupBooks) }} bookings</span>
                         </h5>
                     </div>
-                    <div class="card">
+                    <div class="glass-card">
                         <div class="card-body p-0">
                             <!-- Table View -->
                             <div class="table-view">
@@ -695,7 +319,7 @@ html, body {
             @endforeach
         @else
             <!-- Regular View -->
-            <div class="card">
+            <div class="glass-card">
                 <div class="card-body p-0">
                     <!-- Table View -->
                     <div class="table-view">
@@ -1043,4 +667,5 @@ html, body {
 })();
 </script>
 @endpush
+</div>
 @endsection

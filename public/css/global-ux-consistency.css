@@ -466,3 +466,23 @@ a:hover {
     border: 1px solid #e5e7eb !important;
   }
 }
+
+/* Global iOS Mesh Gradient Background */
+body.admin-body, body.ios-dashboard-mode {
+    background-color: #ffb8d2 !important;
+    background-image: 
+        radial-gradient(at 0% 0%, #4facfe 0px, transparent 50%),
+        radial-gradient(at 100% 0%, #00f2fe 0px, transparent 50%),
+        radial-gradient(at 100% 100%, #f093fb 0px, transparent 50%),
+        radial-gradient(at 0% 100%, #f5576c 0px, transparent 50%),
+        radial-gradient(at 50% 50%, #5ee7df 0px, transparent 50%) !important;
+    background-attachment: fixed !important;
+    background-size: 200% 200% !important;
+    animation: gradientMoveBG 15s ease infinite !important;
+}
+
+@keyframes gradientMoveBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}

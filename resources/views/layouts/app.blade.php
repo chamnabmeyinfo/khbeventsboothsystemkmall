@@ -55,8 +55,8 @@
     <link rel="stylesheet" href="{{ asset('css/device-optimized.css') }}">
     <link rel="stylesheet" href="{{ asset('css/tablet-optimized.css') }}">
     <link rel="stylesheet" href="{{ asset('css/desktop-optimized.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/global-ux-consistency.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}?v=2.6">
+    <link rel="stylesheet" href="{{ asset('css/global-ux-consistency.css') }}?v=2.6">
     @endif
     
     {{-- Conditional CSS Loading: Mobile vs Desktop --}}
@@ -89,8 +89,8 @@
     <script src="{{ asset('js/performance-optimizer.js') }}" defer></script>
     @endif
     
-    <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}?v=2.6">
+    <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=2.6">
     
     @stack('styles')
 </head>

@@ -3,96 +3,38 @@
 @section('title', isset($currentFloorPlan) && $currentFloorPlan ? (e($currentFloorPlan->name) . ' — Floor Plan') : 'Floor Plan Management')
 
 
+
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/floor-plan-designer.css') }}?v={{ config('app.asset_version') ?? filemtime(public_path('css/floor-plan-designer.css')) }}">
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
 <style>
-
-@if($showBookedTick ?? true)
-@php
-    $sizeMode = $bookedTickSizeMode ?? 'fixed';
-    $tickSize = $bookedTickSize ?? 'medium';
-    $tickSizePx = $tickSize === 'small' ? 10 : ($tickSize === 'large' ? 16 : 12);
-    $tickBox = $tickSizePx + 4;
-    $relativePercent = (string) ($bookedTickRelativePercent ?? '12');
-    $tickRadius = ($bookedTickShape ?? 'round') === 'round' ? '50%' : '2px';
-    $pos = $bookedTickPosition ?? 'top-right';
-    $ins = $pos === 'inside';
-    $tickTop = $ins ? '2px' : (in_array($pos, ['top-right', 'top-left'], true) ? '-8px' : 'auto');
-    $tickRight = $ins ? '2px' : (in_array($pos, ['top-right', 'bottom-right'], true) ? '-8px' : 'auto');
-    $tickBottom = $ins ? 'auto' : (in_array($pos, ['bottom-right', 'bottom-left'], true) ? '-8px' : 'auto');
-    $tickLeft = $ins ? 'auto' : (in_array($pos, ['top-left', 'bottom-left'], true) ? '-8px' : 'auto');
-    $tickColor = e($bookedTickColor ?? '#28a745');
-    $tickAnim = ($bookedTickAnimation ?? 'pulse') === 'pulse' ? 'bookedIconPulse 2s ease-in-out infinite' : 'none';
-    $tickBg = ($bookedTickBgColor ?? '') === '' || ($bookedTickBgColor ?? '') === 'transparent' ? 'transparent' : e($bookedTickBgColor);
-    $tickFontSize = $bookedTickFontSize ?? 'medium';
-    $tickFontSizePx = $tickFontSize === 'small' ? 10 : ($tickFontSize === 'large' ? 16 : 12);
-    $tickBorderW = $bookedTickBorderWidth ?? '0';
-    $tickBorderC = $tickBorderW !== '0' ? e($bookedTickBorderColor ?? '#ffffff') : 'transparent';
-@endphp
-/* Booked tick: customizable color, font size, box size (fixed or relative to booth), shape, position, background, border (canvas + sidebar). */
-.booth-number-item.booked::after,
-.dropped-booth.booked::after {
-    content: '✓';
-    font-family: inherit;
-    font-weight: bold;
-    position: absolute;
-    top: {{ $tickTop }};
-    right: {{ $tickRight }};
-    bottom: {{ $tickBottom }};
-    left: {{ $tickLeft }};
-    @if($sizeMode === 'relative')
-    width: {{ $relativePercent }}%;
-    height: {{ $relativePercent }}%;
-    min-width: 12px;
-    min-height: 12px;
-    font-size: 0.55em;
-    @else
-    width: {{ $tickBox }}px;
-    height: {{ $tickBox }}px;
-    font-size: {{ $tickFontSizePx }}px;
-    @endif
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-    border-radius: {{ $tickRadius }};
-    color: {{ $tickColor }};
-    background-color: {{ $tickBg }};
-    border-width: {{ $tickBorderW }}px;
-    border-style: solid;
-    border-color: {{ $tickBorderC }};
-    z-index: 99999;
-    animation: {{ $tickAnim }};
-}
-@endif
-
-/* Dynamic status colors from database */
-@if(isset($statusSettings) && $statusSettings->count() > 0)
-                @foreach($statusSettings as $status)
-                    /* Status colors - only apply if booth doesn't have custom colors */
-                    .dropped-booth.status-{{ $status->status_code }}:not(.has-custom-colors) { 
-                        background: {{ $status->status_color }} !important; 
-                        border-color: {{ $status->border_color ?? $status->status_color }} !important; 
-                        border-width: {{ $status->border_width ?? 2 }}px !important;
-                        border-style: {{ $status->border_style ?? 'solid' }} !important;
-                        border-radius: {{ $status->border_radius ?? 4 }}px !important;
-                        color: {{ $status->text_color }} !important; 
-                    }
-                @endforeach
-@else
-    {{-- Fallback to defaults if no custom statuses --}}
-/* Status 1 (Available) - custom colors can override */
-.dropped-booth.status-1:not(.has-custom-colors) { background: #28a745 !important; border-color: #28a745 !important; color: #ffffff !important; }
-.dropped-booth.status-2:not(.has-custom-colors) { background: #0dcaf0 !important; border-color: #0dcaf0 !important; color: #ffffff !important; }
-.dropped-booth.status-3:not(.has-custom-colors) { background: #ffc107 !important; border-color: #ffc107 !important; color: #333333 !important; }
-.dropped-booth.status-4:not(.has-custom-colors) { background: #6c757d !important; border-color: #6c757d !important; color: #ffffff !important; }
-.dropped-booth.status-5:not(.has-custom-colors) { background: #212529 !important; border-color: #212529 !important; color: #ffffff !important; }
-@endif
-
+    .looker-dashboard { padding: 0 !important; }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(40px) saturate(180%);
+        -webkit-backdrop-filter: blur(40px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        margin-bottom: 24px;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        overflow: hidden;
+    }
+    .glass-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.55);
+        box-shadow: 0 15px 45px rgba(31, 38, 135, 0.2);
+    }
+    .kpi-card-looker {
+        margin-bottom: 24px;
+    }
 </style>
 @endpush
 
+@push('body-class', 'ios-dashboard-mode')
+
+
 @section('content')
+<div class='looker-dashboard'>
 <div class="container-fluid mt-2 mb-2">
     @if(!isset($currentFloorPlan) || !$currentFloorPlan)
     {{-- No floor plan chosen: show message at top and list at bottom; all other UI is hidden/blocked --}}
@@ -1653,6 +1595,7 @@
         </div>
     </div>
     @endif
+</div>
 </div>
 @endsection
 

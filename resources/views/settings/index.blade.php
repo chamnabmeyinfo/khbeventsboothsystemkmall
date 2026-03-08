@@ -3,6 +3,7 @@
 @section('title', 'Settings')
 
 @section('content')
+<div class='looker-dashboard'>
 <div class="row mb-4">
     <div class="col">
         <h2><i class="fas fa-cog me-2"></i>Settings</h2>
@@ -11,18 +12,18 @@
 
 <div class="row">
     <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
+        <div class="glass-card">
+            <div class="p-4 border-bottom">
                 <h5 class="mb-0"><i class="fas fa-broom me-2"></i>Cache Management</h5>
             </div>
-            <div class="card-body">
+            <div class="p-4">
                 <p class="text-muted">Clear various caches to ensure the application is using the latest data and configurations.</p>
                 
                 <div class="row g-3">
                     <div class="col-md-6">
                         <div class="card border">
-                            <div class="card-body">
-                                <h6 class="card-title">
+                            <div class="p-4">
+                                <h6 class="h5 fw-bold mb-0 text-dark">
                                     <i class="fas fa-database me-2 text-primary"></i>Application Cache
                                 </h6>
                                 <p class="card-text text-muted small">Clear the application cache (stored data, queries, etc.)</p>
@@ -38,8 +39,8 @@
                     
                     <div class="col-md-6">
                         <div class="card border">
-                            <div class="card-body">
-                                <h6 class="card-title">
+                            <div class="p-4">
+                                <h6 class="h5 fw-bold mb-0 text-dark">
                                     <i class="fas fa-file-code me-2 text-info"></i>Configuration Cache
                                 </h6>
                                 <p class="card-text text-muted small">Clear the configuration cache (config files)</p>
@@ -55,8 +56,8 @@
                     
                     <div class="col-md-6">
                         <div class="card border">
-                            <div class="card-body">
-                                <h6 class="card-title">
+                            <div class="p-4">
+                                <h6 class="h5 fw-bold mb-0 text-dark">
                                     <i class="fas fa-route me-2 text-success"></i>Route Cache
                                 </h6>
                                 <p class="card-text text-muted small">Clear the route cache (route definitions)</p>
@@ -72,8 +73,8 @@
                     
                     <div class="col-md-6">
                         <div class="card border">
-                            <div class="card-body">
-                                <h6 class="card-title">
+                            <div class="p-4">
+                                <h6 class="h5 fw-bold mb-0 text-dark">
                                     <i class="fas fa-eye me-2 text-warning"></i>View Cache
                                 </h6>
                                 <p class="card-text text-muted small">Clear the compiled view cache (Blade templates)</p>
@@ -93,7 +94,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="card border-danger">
-                            <div class="card-body">
+                            <div class="p-4">
                                 <h6 class="card-title text-danger">
                                     <i class="fas fa-broom me-2"></i>Clear All Caches
                                 </h6>
@@ -110,7 +111,7 @@
                     
                     <div class="col-md-6">
                         <div class="card border-primary">
-                            <div class="card-body">
+                            <div class="p-4">
                                 <h6 class="card-title text-primary">
                                     <i class="fas fa-rocket me-2"></i>Optimize Application
                                 </h6>
@@ -133,11 +134,11 @@
 <!-- Upload Control -->
 <div class="row mt-4">
     <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
+        <div class="glass-card">
+            <div class="p-4 border-bottom">
                 <h5 class="mb-0"><i class="fas fa-upload me-2"></i>Upload Control</h5>
             </div>
-            <div class="card-body">
+            <div class="p-4">
                 <p class="text-muted">Control file uploads across the system. Set global defaults or per-context limits (floor plan, booth, avatar, etc.).</p>
                 <form action="{{ route('settings.upload-control.save') }}" method="POST">
                     @csrf
@@ -202,11 +203,11 @@
 <!-- Public view actions (logged-in users on public floor plan) -->
 <div class="row mt-4">
     <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
+        <div class="glass-card">
+            <div class="p-4 border-bottom">
                 <h5 class="mb-0"><i class="fas fa-eye me-2"></i>Public View Actions</h5>
             </div>
-            <div class="card-body">
+            <div class="p-4">
                 <p class="text-muted">Control what logged-in users can do on the public floor plan view (<code>/floor-plans/{id}/public</code>).</p>
                 <form id="publicViewSettingsForm" action="{{ url('settings/public-view') }}" method="POST">
                     @csrf
@@ -359,11 +360,11 @@
 <!-- Push Notifications -->
 <div class="row mt-4">
     <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
+        <div class="glass-card">
+            <div class="p-4 border-bottom">
                 <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Push Notifications</h5>
             </div>
-            <div class="card-body">
+            <div class="p-4">
                 <p class="text-muted">Enable browser push notifications so users receive alerts (e.g. new bookings, booth updates) even when the tab is in the background. Uses Web Push (VAPID).</p>
                 <form id="pushNotificationSettingsForm" action="{{ route('settings.push-notifications.save') }}" method="POST">
                     @csrf
@@ -392,11 +393,11 @@
 
 <div class="row mt-4">
     <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
+        <div class="glass-card">
+            <div class="p-4 border-bottom">
                 <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>System Information</h5>
             </div>
-            <div class="card-body">
+            <div class="p-4">
                 <div class="row">
                     <div class="col-md-6">
                         <table class="table table-borderless">
@@ -484,7 +485,7 @@
             <!-- Company Information Tab -->
             <div class="tab-pane fade show active" id="company" role="tabpanel">
                 <div class="card border-top-0 rounded-top-0">
-                    <div class="card-body">
+                    <div class="p-4">
                         <h5 class="mb-4"><i class="fas fa-building me-2"></i>Company Information</h5>
                         <form id="companySettingsForm">
                             @csrf
@@ -554,7 +555,7 @@
             <!-- Appearance/Colors Tab -->
             <div class="tab-pane fade" id="appearance" role="tabpanel">
                 <div class="card border-top-0 rounded-top-0">
-                    <div class="card-body">
+                    <div class="p-4">
                         <h5 class="mb-4"><i class="fas fa-palette me-2"></i>System Color Scheme</h5>
                         <p class="text-muted mb-4">Customize the color scheme for your entire system. Changes will be applied across all pages.</p>
                         
@@ -660,7 +661,7 @@
             <!-- CDN Settings Tab -->
             <div class="tab-pane fade" id="cdn" role="tabpanel">
                 <div class="card border-top-0 rounded-top-0">
-                    <div class="card-body">
+                    <div class="p-4">
                         <h5 class="mb-4"><i class="fas fa-cloud me-2"></i>CDN Settings</h5>
                         <p class="text-muted mb-4">Choose whether to load CSS and JavaScript libraries from CDN (Content Delivery Network) or from your local server.</p>
 
@@ -678,7 +679,7 @@
                             <div class="row g-3">
                                 <div class="col-md-12">
                                     <div class="card border">
-                                        <div class="card-body">
+                                        <div class="p-4">
                                             <div class="form-check form-switch">
                                                 <input class="form-check-input" type="checkbox" id="use_cdn" name="use_cdn" style="width: 3rem; height: 1.5rem;">
                                                 <label class="form-check-label ms-3" for="use_cdn">
@@ -714,7 +715,7 @@
             <!-- Module Display Customize Tab -->
             <div class="tab-pane fade" id="module-display" role="tabpanel">
                 <div class="card border-top-0 rounded-top-0">
-                    <div class="card-body">
+                    <div class="p-4">
                         <h5 class="mb-4"><i class="fas fa-mobile-alt me-2"></i>Module Display Customize</h5>
                         <p class="text-muted mb-4">Control which modules and features are visible on Mobile and Tablet devices. This allows you to customize the user experience for different screen sizes.</p>
 
@@ -757,23 +758,35 @@
     </div>
 </div>
 
+
 @push('styles')
-<link rel="stylesheet" href="{{ asset('vendor/toastr/css/toastr.min.css') }}">
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
 <style>
-    #statusSettingsTable tbody tr {
-        cursor: move;
+    .looker-dashboard { padding: 0 !important; }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(40px) saturate(180%);
+        -webkit-backdrop-filter: blur(40px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        margin-bottom: 24px;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        overflow: hidden;
     }
-    #statusSettingsTable tbody tr:hover {
-        background-color: #f8f9fa;
+    .glass-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.55);
+        box-shadow: 0 15px 45px rgba(31, 38, 135, 0.2);
     }
-    .status-bg-color, .status-border-color, .status-text-color {
-        cursor: pointer;
-    }
-    .form-control-color {
-        height: 31px;
+    .kpi-card-looker {
+        margin-bottom: 24px;
     }
 </style>
 @endpush
+
+@push('body-class', 'ios-dashboard-mode')
+
 
 @push('scripts')
 <script src="{{ asset('vendor/bootstrap5/js/bootstrap.bundle.min.js') }}"></script>
@@ -1186,7 +1199,7 @@
             html += `
                 <div class="col-md-6 col-lg-4">
                     <div class="card border h-100">
-                        <div class="card-body">
+                        <div class="p-4">
                             <div class="d-flex align-items-center mb-3">
                                 <div class="flex-shrink-0">
                                     <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
@@ -1302,5 +1315,6 @@
     });
 </script>
 @endpush
+</div>
 @endsection
 
