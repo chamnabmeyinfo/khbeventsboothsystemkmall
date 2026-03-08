@@ -609,6 +609,39 @@ const FloorPlanDesigner = {
         self._debounceTimers[key] = setTimeout(func, delay || 300);
     },
     
+    // ============================================
+    // ZONE MANAGEMENT ALIASES (Used in Blade template)
+    // ============================================
+    
+    enableClickToPlaceMode: function(zoneName) {
+        this.addAllZoneToCanvas(zoneName, true);
+    },
+    
+    openZoneSettings: function(zoneName) {
+        const self = this;
+        const canvas = document.getElementById('print');
+        const zoneSection = document.querySelector('[data-zone="' + zoneName + '"]');
+        const zoneContent = zoneSection ? zoneSection.querySelector('.zone-content') : null;
+        
+        const sidebarCount = zoneContent ? zoneContent.querySelectorAll('.booth-number-item').length : 0;
+        const canvasCount = canvas ? canvas.querySelectorAll('.dropped-booth[data-booth-zone="' + zoneName + '"]').length : 0;
+        const totalCount = sidebarCount + canvasCount;
+        
+        self.getZoneSettings(zoneName, function(settings) {
+            self.showZoneSettingsModal(zoneName, totalCount, settings);
+        });
+    },
+    
+    openZoneAppearanceSettings: function(zoneName) {
+        this.showZoneAppearanceModal(zoneName);
+    },
+    
+    clearZoneBooths: function(zoneName) {
+        this.clearZone(zoneName);
+    },
+
+    // ... Original FloorPlanDesigner methods continue below
+    
     // Helper: Get booth data from element (optimized)
     getBoothData: function(element) {
         if (!element) return null;
@@ -1305,7 +1338,7 @@ const FloorPlanDesigner = {
     },
     
     // Add all booths from a zone to canvas
-    addAllZoneToCanvas: function(zoneName) {
+    addAllZoneToCanvas: function(zoneName, useClick, customX, customY) {
         const self = this;
         const canvas = self._cachedElements.canvas;
         if (!canvas) {
@@ -1315,7 +1348,21 @@ const FloorPlanDesigner = {
         
         // Ensure zoneName is a string and trimmed
         zoneName = String(zoneName).trim();
-        console.log('Adding all booths from Zone:', zoneName);
+        
+        // If useClick is true, enter "Place Zone" mode
+        if (useClick) {
+            console.log('Entering "Click to Paste" mode for Zone:', zoneName);
+            self.clickToPasteZone = zoneName;
+            
+            // Change cursor
+            canvas.style.cursor = 'crosshair';
+            
+            // Show notification
+            showNotification('Click on the canvas to place all booths from Zone ' + zoneName, 'info');
+            return;
+        }
+
+        console.log('Adding all booths from Zone:', zoneName, (customX !== undefined ? 'at ' + customX + ',' + customY : 'at center'));
         
         // Find the zone section - try multiple selectors to be safe
         let zoneSection = document.querySelector('[data-zone="' + zoneName + '"]');
@@ -1383,7 +1430,10 @@ const FloorPlanDesigner = {
             let startX = 500; // Default starting X
             let startY = 300; // Default starting Y
             
-            if (containerRect) {
+            if (customX !== undefined && customY !== undefined) {
+                startX = customX;
+                startY = customY;
+            } else if (containerRect) {
                 // Center of visible container area, converted to canvas coordinates
                 const containerCenterX = containerRect.width / 2;
                 const containerCenterY = containerRect.height / 2;
@@ -2409,7 +2459,7 @@ const FloorPlanDesigner = {
         document.getElementById('deleteTo').value = 1;
         document.getElementById('deleteRangePreviewGroup').style.display = 'none';
         
-        // Get all booths in this zone
+        // Get all booths in this zone (unplaced in sidebar + placed on canvas)
         const zoneSection = document.querySelector('[data-zone="' + zoneName + '"]');
         if (!zoneSection) {
             customAlert('Zone ' + zoneName + ' not found', 'error');
@@ -2417,7 +2467,14 @@ const FloorPlanDesigner = {
         }
         
         const zoneContent = zoneSection.querySelector('.zone-content');
-        const boothItems = zoneContent ? zoneContent.querySelectorAll('.booth-number-item') : [];
+        const sidebarBooths = Array.from(zoneContent ? zoneContent.querySelectorAll('.booth-number-item') : []);
+        
+        // Also find booths already on the canvas for this zone
+        const canvas = document.getElementById('print');
+        const canvasBooths = Array.from(canvas ? canvas.querySelectorAll('.dropped-booth[data-booth-zone="' + zoneName + '"]') : []);
+        
+        // Combine them
+        const boothItems = [...sidebarBooths, ...canvasBooths];
         
         // Set total count for "Delete All"
         document.getElementById('deleteAllCount').value = boothItems.length + ' booth(s)';
@@ -2429,19 +2486,36 @@ const FloorPlanDesigner = {
         if (boothItems.length === 0) {
             deleteSpecificList.innerHTML = '<p class="text-muted text-center">No booths in this zone.</p>';
         } else {
-            boothItems.forEach(function(boothItem) {
-                const boothId = boothItem.getAttribute('data-booth-id');
-                const boothNumber = boothItem.getAttribute('data-booth-number');
-                const status = boothItem.getAttribute('data-booth-status');
+            boothItems.forEach(function(item) {
+                let boothId, boothNumber, status, isCanvas;
+                
+                if (item.classList.contains('dropped-booth')) {
+                    // Canvas booth
+                    boothId = item.getAttribute('data-booth-id');
+                    boothNumber = item.getAttribute('data-booth-number');
+                    status = item.getAttribute('data-booth-status');
+                    isCanvas = true;
+                } else {
+                    // Sidebar booth
+                    boothId = item.getAttribute('data-booth-id');
+                    boothNumber = item.getAttribute('data-booth-number');
+                    status = item.getAttribute('data-booth-status');
+                    isCanvas = false;
+                }
                 
                 const checkboxDiv = document.createElement('div');
-                checkboxDiv.className = 'form-check mb-2';
+                checkboxDiv.className = 'form-check mb-2 d-flex align-items-center justify-content-between';
                 checkboxDiv.innerHTML = `
-                    <input class="form-check-input delete-booth-checkbox" type="checkbox" value="${boothId}" id="deleteBooth${boothId}">
-                    <label class="form-check-label" for="deleteBooth${boothId}">
-                        <strong>${boothNumber}</strong>
-                        <span class="badge badge-${status == 1 ? 'success' : status == 2 ? 'info' : status == 3 ? 'warning' : 'secondary'} ml-2">${status == 1 ? 'Available' : status == 2 ? 'Confirmed' : status == 3 ? 'Reserved' : 'Hidden'}</span>
-                    </label>
+                    <div class="d-flex align-items-center">
+                        <input class="form-check-input delete-booth-checkbox" type="checkbox" value="${boothId}" id="deleteBooth${boothId}">
+                        <label class="form-check-label ml-2" for="deleteBooth${boothId}">
+                            <strong>${boothNumber}</strong>
+                            <span class="badge badge-${status == 1 ? 'success' : status == 2 ? 'info' : status == 3 ? 'warning' : 'secondary'} ml-2">${status == 1 ? 'Available' : status == 2 ? 'Confirmed' : status == 3 ? 'Reserved' : 'Hidden'}</span>
+                        </label>
+                    </div>
+                    <span class="badge badge-light border text-muted px-2 py-1" style="font-size: 0.75rem;">
+                        ${isCanvas ? '<i class="fas fa-th mr-1"></i> Canvas' : '<i class="fas fa-list mr-1"></i> Unplaced'}
+                    </span>
                 `;
                 deleteSpecificList.appendChild(checkboxDiv);
             });
@@ -14086,8 +14160,39 @@ const FloorPlanDesigner = {
         // BUT we need to make sure we don't interfere with booth mousedown
         // Reuse containerForMouseTracking variable (already defined above)
         canvas.addEventListener('mousedown', function(e) {
-            // CRITICAL: Check for booth elements FIRST, before any other logic
             const target = e.target;
+
+            // Handle Click-to-Paste mode (Add All by Clicking)
+            if (self.clickToPasteZone && !target.closest('.dropped-booth') && !target.closest('.toolbar') && !target.closest('.sidebar') && !target.closest('.modal')) {
+                const zoneName = self.clickToPasteZone;
+                self.clickToPasteZone = null;
+                canvas.style.cursor = '';
+                
+                // Get click position in canvas coordinates
+                const containerRect = containerForMouseTracking ? containerForMouseTracking.getBoundingClientRect() : canvas.getBoundingClientRect();
+                let scale = 1;
+                let panX = 0;
+                let panY = 0;
+                
+                if (self.panzoomInstance) {
+                    scale = self.panzoomInstance.getScale() || 1;
+                    const transform = self.panzoomInstance.getTransform();
+                    panX = transform.x || 0;
+                    panY = transform.y || 0;
+                }
+                
+                const canvasX = (e.clientX - (containerRect.left || 0) - panX) / scale;
+                const canvasY = (e.clientY - (containerRect.top || 0) - panY) / scale;
+                
+                console.log('Placing Zone', zoneName, 'at clicked position:', canvasX, canvasY);
+                self.addAllZoneToCanvas(zoneName, false, canvasX, canvasY);
+                
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
+
+            // CRITICAL: Check for booth elements FIRST, before any other logic
             
             // If clicking on UI elements (buttons, toolbar, etc.), do NOTHING - let their handlers work
             if (target.closest('.toolbar') ||
