@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 return [
     'name' => env('APP_NAME', 'KHB Booths Booking System'),
     'version' => env('APP_VERSION', '1.0.0'),
+    'asset_version' => env('ASSET_VERSION', null), /* Set ASSET_VERSION in .env to bust cache (e.g. 2) */
     'env' => env('APP_ENV', 'production'),
     'debug' => (bool) env('APP_DEBUG', false),
     'url' => env('APP_URL', 'http://localhost'),

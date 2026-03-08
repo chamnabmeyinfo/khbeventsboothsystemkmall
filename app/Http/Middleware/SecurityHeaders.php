@@ -34,12 +34,13 @@ class SecurityHeaders
         // connect-src: allow CDNs for source-map requests (.map) and other fetch/XHR to same CDNs as script/style.
         // In local env only: allow debug ingest (e.g. 127.0.0.1:7244/7245) so CSP does not block it and clutter the console.
         // Tighten later with nonces/hashes if you remove 'unsafe-inline' / 'unsafe-eval'.
-        $connectSrc = "'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com";
+        $connectSrc = "'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.google-analytics.com https://www.googletagmanager.com";
         if (app()->environment('local')) {
             $connectSrc .= ' http://127.0.0.1:7244 http://127.0.0.1:7245 http://localhost:7244 http://localhost:7245';
         }
         $csp = "default-src 'self'; "
-            ."script-src 'self' 'unsafe-inline' 'unsafe-eval' https://code.jquery.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net; "
+            ."script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://code.jquery.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net; "
+            ."script-src-elem 'self' 'unsafe-inline' blob: https://code.jquery.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net; "
             ."style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://code.ionicframework.com https://cdn.datatables.net https://fonts.googleapis.com; "
             ."img-src 'self' data: blob: https:; "
             ."font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com https://cdnjs.cloudflare.com https://code.ionicframework.com; "

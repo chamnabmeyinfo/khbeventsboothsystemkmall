@@ -103,6 +103,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Booths
     Route::resource('booths', BoothController::class);
+    Route::get('/booths/canvas/data', [BoothController::class, 'canvasData'])->name('booths.canvas-data');
     // Specific route for JSON booth data (for AJAX requests)
     Route::get('/booths/{booth}/json', [BoothController::class, 'show'])->name('booths.show.json');
     Route::get('/my-booths', [BoothController::class, 'myBooths'])->name('booths.my-booths');
@@ -113,7 +114,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/booths/update-external-view', [BoothController::class, 'updateExternalView'])->name('booths.update-external-view');
     Route::post('/booths/{id}/save-position', [BoothController::class, 'savePosition'])->name('booths.save-position');
     Route::post('/booths/save-all-positions', [BoothController::class, 'saveAllPositions'])->name('booths.save-all-positions');
-    Route::post('/booths/canvas-text', [BoothController::class, 'saveCanvasText'])->name('booths.canvas-text');
     Route::post('/booths/upload-floorplan', [BoothController::class, 'uploadFloorplan'])->name('booths.upload-floorplan');
     Route::post('/booths/remove-floorplan', [BoothController::class, 'removeFloorplan'])->name('booths.remove-floorplan');
     Route::get('/booths/check-duplicate/{boothNumber}', [BoothController::class, 'checkDuplicate'])->name('booths.check-duplicate');
@@ -122,8 +122,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/booths/create-in-zone/{zoneName}', [BoothController::class, 'createBoothInZone'])->name('booths.create-in-zone');
     Route::post('/booths/delete-in-zone/{zoneName}', [BoothController::class, 'deleteBoothsInZone'])->name('booths.delete-in-zone');
     Route::post('/booths/delete-by-ids', [BoothController::class, 'deleteBoothsByIds'])->name('booths.delete-by-ids');
+    Route::post('/booths/restore', [BoothController::class, 'restoreBooths'])->name('booths.restore');
     Route::post('/booths/check-bookings', [BoothController::class, 'checkBoothsBookings'])->name('booths.check-bookings');
     Route::post('/booths/book-booth', [BoothController::class, 'bookBooth'])->name('booths.book-booth');
+    Route::post('/booths/canvas-text', [BoothController::class, 'saveCanvasText'])->name('booths.save-canvas-text');
     Route::post('/booths/{id}/upload-image', [BoothController::class, 'uploadBoothImage'])->name('booths.upload-image');
 
     // Booth Gallery Images (Multiple Images)
@@ -151,6 +153,8 @@ Route::middleware(['auth'])->group(function () {
     // Books
     Route::resource('books', BookController::class);
     Route::delete('/books/{book}', [BookController::class, 'destroy'])->name('books.destroy');
+    Route::get('/books/{book}/for-restore', [BookController::class, 'forRestore'])->name('books.for-restore');
+    Route::post('/books/restore', [BookController::class, 'restore'])->name('books.restore');
     Route::post('/books/delete-all', [BookController::class, 'deleteAll'])->name('books.delete-all');
     Route::get('/books/get-booths', [BookController::class, 'getBooths'])->name('books.get-booths');
     Route::post('/books/booking', [BookController::class, 'booking'])->name('books.booking');

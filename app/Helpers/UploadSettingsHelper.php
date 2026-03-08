@@ -35,6 +35,12 @@ class UploadSettingsHelper
 
         $rule = ($required ? 'required|' : 'nullable|')."{$type}|{$mimes}|max:{$maxKb}";
 
+        // The "image|mimes" validators depend on php_fileinfo at runtime.
+        // Fall back to extension-based validation when fileinfo is unavailable.
+        if (! extension_loaded('fileinfo')) {
+            $rule = self::convertMimeRuleToExtensionsRule($rule);
+        }
+
         return [$fieldName => $rule];
     }
 
@@ -128,5 +134,27 @@ class UploadSettingsHelper
         }
 
         return '.'.implode(',.', $exts);
+    }
+
+    /**
+     * Convert image/mimes rules to file/extensions rules.
+     */
+    protected static function convertMimeRuleToExtensionsRule(string $rule): string
+    {
+        $parts = explode('|', $rule);
+
+        foreach ($parts as &$part) {
+            if ($part === 'image') {
+                $part = 'file';
+                continue;
+            }
+
+            if (str_starts_with($part, 'mimes:')) {
+                $part = 'extensions:'.substr($part, strlen('mimes:'));
+            }
+        }
+        unset($part);
+
+        return implode('|', $parts);
     }
 }

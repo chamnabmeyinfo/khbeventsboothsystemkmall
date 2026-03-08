@@ -124,6 +124,68 @@ class BookingService
     }
 
     /**
+     * Restore a deleted booking from a snapshot (for Undo).
+     * Creates a new Book and re-links the same booths; skips availability check.
+     */
+    public function restoreBooking(array $snapshot): Book
+    {
+        DB::beginTransaction();
+
+        try {
+            $boothIds = $snapshot['booth_ids'] ?? [];
+            if (empty($boothIds)) {
+                throw ValidationException::withMessages(['booth_ids' => ['At least one booth is required to restore.']]);
+            }
+
+            $booths = Booth::whereIn('id', $boothIds)->get();
+            if ($booths->count() !== count($boothIds)) {
+                throw ValidationException::withMessages(['booth_ids' => ['One or more booths no longer exist.']]);
+            }
+
+            $totalAmount = $snapshot['total_amount'] ?? $this->repository->calculateTotalAmount($boothIds);
+            $userId = $snapshot['userid'] ?? (auth()->user() ? auth()->user()->getKey() : null);
+
+            $bookingData = [
+                'clientid' => $snapshot['clientid'],
+                'boothid' => json_encode(array_values($boothIds)),
+                'date_book' => $snapshot['date_book'] ?? now(),
+                'userid' => $userId,
+                'type' => $snapshot['type'] ?? 1,
+                'floor_plan_id' => $snapshot['floor_plan_id'] ?? $booths->first()->floor_plan_id,
+                'event_id' => $snapshot['event_id'] ?? null,
+                'affiliate_user_id' => $snapshot['affiliate_user_id'] ?? null,
+                'status' => $snapshot['status'] ?? Book::STATUS_PENDING,
+                'total_amount' => $totalAmount,
+                'paid_amount' => $snapshot['paid_amount'] ?? 0,
+                'balance_amount' => $totalAmount - ($snapshot['paid_amount'] ?? 0),
+                'notes' => $snapshot['notes'] ?? null,
+                'payment_due_date' => isset($snapshot['payment_due_date']) ? $snapshot['payment_due_date'] : null,
+            ];
+
+            $booking = $this->repository->create($bookingData);
+
+            $boothStatus = ($snapshot['type'] ?? 1) == 2 ? Booth::STATUS_CONFIRMED : Booth::STATUS_RESERVED;
+            foreach ($booths as $booth) {
+                $booth->update([
+                    'status' => $boothStatus,
+                    'client_id' => $snapshot['clientid'],
+                    'userid' => $userId,
+                    'bookid' => $booking->id,
+                ]);
+            }
+
+            $this->createTimelineEntry($booking, 'restored', 'Booking restored (Undo)');
+
+            DB::commit();
+
+            return $booking;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    /**
      * Update a booking
      */
     public function updateBooking(Book $booking, array $data): Book

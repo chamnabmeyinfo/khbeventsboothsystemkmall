@@ -207,8 +207,8 @@
 <link rel="preload" href="{{ asset('vendor/jquery/jquery-3.7.0.min.js') }}" as="script" fetchpriority="high">
 <link rel="preload" href="{{ asset('vendor/bootstrap5/js/bootstrap.bundle.min.js') }}" as="script" fetchpriority="high">
     
-{{-- Critical JavaScript: Load with defer (non-blocking) --}}
-<script src="{{ asset('vendor/jquery/jquery-3.7.0.min.js') }}" defer></script>
+{{-- jQuery MUST load synchronously so @stack('scripts') (e.g. booths canvas) has $ available --}}
+<script src="{{ asset('vendor/jquery/jquery-3.7.0.min.js') }}"></script>
 <script src="{{ asset('vendor/bootstrap5/js/bootstrap.bundle.min.js') }}" defer></script>
 
 {{-- Performance Optimizer - Load early --}}

@@ -659,6 +659,77 @@ class BookController extends Controller
     }
 
     /**
+     * Return a snapshot of the booking for Undo (restore) after delete.
+     * Only allowed if the user can manage this booking.
+     */
+    public function forRestore(Book $book)
+    {
+        if (! $this->canManageBooking($book)) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $boothIds = json_decode($book->boothid, true) ?? [];
+
+        return response()->json([
+            'success' => true,
+            'snapshot' => [
+                'clientid' => $book->clientid,
+                'booth_ids' => array_values($boothIds),
+                'floor_plan_id' => $book->floor_plan_id,
+                'event_id' => $book->event_id,
+                'userid' => $book->userid,
+                'date_book' => $book->date_book ? $book->date_book->toIso8601String() : null,
+                'type' => $book->type,
+                'notes' => $book->notes,
+                'status' => $book->status,
+                'total_amount' => $book->total_amount ? (float) $book->total_amount : null,
+                'paid_amount' => $book->paid_amount ? (float) $book->paid_amount : 0,
+                'payment_due_date' => $book->payment_due_date ? $book->payment_due_date->format('Y-m-d') : null,
+                'affiliate_user_id' => $book->affiliate_user_id,
+            ],
+        ]);
+    }
+
+    /**
+     * Restore a deleted booking from a snapshot (Undo).
+     */
+    public function restore(Request $request)
+    {
+        $request->validate([
+            'snapshot' => 'required|array',
+            'snapshot.clientid' => 'required|exists:client,id',
+            'snapshot.booth_ids' => 'required|array|min:1',
+            'snapshot.booth_ids.*' => 'integer|exists:booth,id',
+        ]);
+
+        $snapshot = $request->input('snapshot');
+        $snapshot['date_book'] = isset($snapshot['date_book']) ? $snapshot['date_book'] : now();
+
+        try {
+            $booking = $this->bookingService->restoreBooking($snapshot);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Booking restored.',
+                'booking' => ['id' => $booking->id],
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Booking restore failed: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Remove the specified booking
      */
     public function destroy(Book $book)
@@ -1428,20 +1499,10 @@ class BookController extends Controller
 
     /**
      * Whether the current user can manage this booking (edit/update/delete).
-     * Admins can manage all; when "restrict to own" is on, others can only manage bookings they created.
+     * Admins and users with "owner" role can manage all; when "restrict to own" is on, others can only manage bookings they created.
      */
     private function canManageBooking(Book $book): bool
     {
-        if (! auth()->check()) {
-            return false;
-        }
-        if (auth()->user()->isAdmin()) {
-            return true;
-        }
-        if (! (bool) Setting::getValue('public_view_restrict_crud_to_own_booking', true)) {
-            return true;
-        }
-
-        return (int) $book->userid === (int) auth()->id();
+        return auth()->check() && $book->canBeManagedBy(auth()->user());
     }
 }

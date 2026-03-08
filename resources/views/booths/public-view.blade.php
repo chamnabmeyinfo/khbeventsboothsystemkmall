@@ -240,6 +240,17 @@
             background: rgba(255, 255, 255, 0.35);
             color: white;
         }
+        .header-action-link.header-action-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font: inherit;
+            color: white;
+        }
+        .header-action-link.header-action-btn:hover {
+            background: rgba(255, 255, 255, 0.35);
+            color: white;
+        }
         .header-action-text { white-space: nowrap; }
         @media (max-width: 575.98px) {
             .header-action-text { display: none; }
@@ -364,6 +375,10 @@
         
         .help-btn:hover {
             background: rgba(255, 255, 255, 0.25);
+        }
+        .help-btn.copied {
+            background: rgba(76, 175, 80, 0.5);
+            color: #fff;
         }
         
         /* Help Modal */
@@ -601,33 +616,6 @@
             cursor: grabbing;
         }
         
-        /* Canvas text (read-only on public view) */
-        .canvas-text-public {
-            position: absolute;
-            box-sizing: border-box;
-            overflow: visible;
-            pointer-events: none;
-            z-index: 50;
-        }
-        .canvas-text-public-inner {
-            width: 100%;
-            height: 100%;
-            box-sizing: border-box;
-            overflow: hidden;
-            word-wrap: break-word;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 4px 8px;
-            /* Defaults so text is always visible */
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid rgba(102, 126, 234, 0.5);
-            border-radius: 6px;
-            color: #333;
-            font-size: 14px;
-        }
-        
         .dropped-booth {
             position: absolute;
             border: 2px solid;
@@ -797,37 +785,64 @@
         }
         
         /* Fallback colors if no custom statuses - only apply if booth doesn't have custom colors */
+        /* Public view: Available (status 1) = white; Booked (2,3,4,5) = green/gray. JS also sets these via inline !important. */
         @if(empty($statusSettings))
         .dropped-booth.status-1:not(.has-custom-colors) {
-            background: rgba(40, 167, 69, 0.9);
-            border-color: #28a745;
-            color: white;
+            background: #ffffff !important;
+            border-color: #dee2e6 !important;
+            color: #333333 !important;
         }
         
         .dropped-booth.status-2:not(.has-custom-colors) {
-            background: rgba(13, 202, 240, 0.9);
-            border-color: #0dcaf0;
-            color: white;
+            background: #28a745 !important;
+            border-color: #28a745 !important;
+            color: white !important;
         }
         
         .dropped-booth.status-3:not(.has-custom-colors) {
-            background: rgba(255, 193, 7, 0.9);
-            border-color: #ffc107;
-            color: #333;
+            background: #28a745 !important;
+            border-color: #28a745 !important;
+            color: white !important;
         }
         
         .dropped-booth.status-4:not(.has-custom-colors) {
-            background: rgba(108, 117, 125, 0.7);
-            border-color: #6c757d;
-            color: white;
+            background: #6c757d !important;
+            border-color: #6c757d !important;
+            color: white !important;
         }
         
         .dropped-booth.status-5:not(.has-custom-colors) {
-            background: rgba(33, 37, 41, 0.9);
-            border-color: #212529;
-            color: white;
+            background: #28a745 !important;
+            border-color: #28a745 !important;
+            color: white !important;
+        }
+        @else
+        /* When DB status settings exist: public view still uses Available=white, Booked=green, Hidden=gray */
+        .dropped-booth.status-1:not(.has-custom-colors) {
+            background: #ffffff !important;
+            border-color: #dee2e6 !important;
+            color: #333333 !important;
+        }
+        .dropped-booth.status-2:not(.has-custom-colors),
+        .dropped-booth.status-3:not(.has-custom-colors),
+        .dropped-booth.status-5:not(.has-custom-colors) {
+            background: #28a745 !important;
+            border-color: #28a745 !important;
+            color: #ffffff !important;
+        }
+        .dropped-booth.status-4:not(.has-custom-colors) {
+            background: #6c757d !important;
+            border-color: #6c757d !important;
+            color: #ffffff !important;
         }
         @endif
+        
+        /* Public view: force Available (status-1) canvas booths to white so no other rule can override */
+        #print .dropped-booth.status-1 {
+            background: #ffffff !important;
+            border-color: #dee2e6 !important;
+            color: #333333 !important;
+        }
         
         .booth-tooltip {
             position: absolute;
@@ -1116,11 +1131,12 @@
             color: white;
         }
         
-        .status-1 { background: #28a745; }
-        .status-2 { background: #0dcaf0; }
-        .status-3 { background: #ffc107; color: #333 !important; }
-        .status-4 { background: #6c757d; }
-        .status-5 { background: #212529; }
+        /* Status badge colors only inside modal - do not affect canvas .dropped-booth */
+        .booth-modal .status-1 { background: #28a745; }
+        .booth-modal .status-2 { background: #0dcaf0; }
+        .booth-modal .status-3 { background: #ffc107; color: #333 !important; }
+        .booth-modal .status-4 { background: #6c757d; }
+        .booth-modal .status-5 { background: #212529; }
         
         .booth-detail-section {
             margin-bottom: 25px;
@@ -1175,21 +1191,21 @@
                 <div class="legend-items-horizontal">
                     @forelse($statusSettings ?? [] as $status)
                         <div class="legend-item-horizontal">
-                            <span class="legend-color" style="background: {{ $status->status_color }};"></span>
+                            <span class="legend-color" style="background: {{ $status->status_code == 1 ? '#ffffff' : ($status->status_code == 4 ? '#6c757d' : '#28a745') }}; border: 1px solid {{ $status->status_code == 1 ? '#dee2e6' : ($status->status_code == 4 ? '#6c757d' : '#28a745') }};"></span>
                             <span class="legend-text">{{ $status->status_name }}</span>
                         </div>
                     @empty
-                        {{-- Fallback to defaults if no custom statuses --}}
+                        {{-- Public view: Available = white, Booked = green, Hidden = gray --}}
                         <div class="legend-item-horizontal">
-                            <span class="legend-color" style="background: #28a745;"></span>
+                            <span class="legend-color" style="background: #ffffff; border: 1px solid #dee2e6;"></span>
                             <span class="legend-text">Available</span>
                         </div>
                         <div class="legend-item-horizontal">
-                            <span class="legend-color" style="background: #0dcaf0;"></span>
+                            <span class="legend-color" style="background: #28a745;"></span>
                             <span class="legend-text">Confirmed</span>
                         </div>
                         <div class="legend-item-horizontal">
-                            <span class="legend-color" style="background: #ffc107;"></span>
+                            <span class="legend-color" style="background: #28a745;"></span>
                             <span class="legend-text">Reserved</span>
                         </div>
                         <div class="legend-item-horizontal">
@@ -1197,7 +1213,7 @@
                             <span class="legend-text">Hidden</span>
                         </div>
                         <div class="legend-item-horizontal">
-                            <span class="legend-color" style="background: #212529;"></span>
+                            <span class="legend-color" style="background: #28a745;"></span>
                             <span class="legend-text">Paid</span>
                         </div>
                     @endforelse
@@ -1214,6 +1230,9 @@
                 <a href="{{ route('books.index') }}" class="header-action-link" title="My Bookings">
                     <i class="fas fa-calendar-check"></i><span class="header-action-text">My Bookings</span>
                 </a>
+                <button type="button" class="header-action-link header-action-btn" onclick="showPermissionsModal()" title="See what your account can do on this page">
+                    <i class="fas fa-user-shield"></i><span class="header-action-text">Show my permission</span>
+                </button>
                 @if($canCreateBookingOnPublicView ?? false)
                     <span class="header-action-hint" title="You can create a booking from this page">Create booking</span>
                 @endif
@@ -1222,6 +1241,10 @@
                     <i class="fas fa-sign-in-alt"></i><span class="header-action-text">Login</span>
                 </a>
             @endif
+            <!-- Copy public link (share URL) -->
+            <button type="button" class="help-btn" id="copyPublicLinkBtn" title="Copy link to this floor plan" onclick="copyPublicViewLink()">
+                <i class="fas fa-link"></i>
+            </button>
             <!-- Simple Zoom Controls -->
             <div class="zoom-controls-simple">
                 <div class="zoom-label">Zoom:</div>
@@ -1283,30 +1306,69 @@
                     <p>Each booth has a color that shows its availability:</p>
                     <div class="help-legend">
                         <div class="help-legend-item">
+                            <span class="help-legend-color" style="background: #ffffff; border: 1px solid #dee2e6;"></span>
+                            <span>White = Available for booking</span>
+                        </div>
+                        <div class="help-legend-item">
                             <span class="help-legend-color" style="background: #28a745;"></span>
-                            <span>Green = Available for booking</span>
-                        </div>
-                        <div class="help-legend-item">
-                            <span class="help-legend-color" style="background: #0dcaf0;"></span>
-                            <span>Blue = Confirmed booking</span>
-                        </div>
-                        <div class="help-legend-item">
-                            <span class="help-legend-color" style="background: #ffc107;"></span>
-                            <span>Yellow = Reserved</span>
+                            <span>Green = Booked (confirmed, reserved, or paid)</span>
                         </div>
                         <div class="help-legend-item">
                             <span class="help-legend-color" style="background: #6c757d;"></span>
                             <span>Gray = Hidden</span>
-                        </div>
-                        <div class="help-legend-item">
-                            <span class="help-legend-color" style="background: #212529;"></span>
-                            <span>Black = Paid</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- My Permissions Modal (logged-in users) -->
+    @if($authUser ?? null)
+    <div class="help-modal" id="permissionsModal" onclick="closePermissionsModal(event)">
+        <div class="help-modal-content" onclick="event.stopPropagation()">
+            <div class="help-modal-header">
+                <h3><i class="fas fa-user-shield mr-2"></i>My permissions on Public View</h3>
+                <button class="help-modal-close" onclick="closePermissionsModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="help-modal-body">
+                <p style="color: #6c757d; margin-bottom: 1rem;">What your account can do on this floor plan:</p>
+                <div class="help-section">
+                    <h4><i class="fas fa-id-badge text-primary"></i> Your role</h4>
+                    <p>{{ $authUser->role->name ?? 'User' }}</p>
+                </div>
+                <div class="help-section">
+                    <h4><i class="fas fa-calendar-plus text-primary"></i> Create booking</h4>
+                    @if($canCreateBookingOnPublicView ?? false)
+                        <p>You <strong>can</strong> create a booking from this page. Right-click an <strong>available</strong> (white) booth and choose &quot;Create Booking for Booth …&quot;.</p>
+                    @else
+                        <p>You <strong>cannot</strong> create bookings from this page.</p>
+                    @endif
+                </div>
+                <div class="help-section">
+                    <h4><i class="fas fa-edit text-primary"></i> Edit and delete bookings</h4>
+                    @if($canDeleteAnyBookingOnPublicView ?? false)
+                        <p>You <strong>can edit and delete any booking</strong> on this floor plan (Admin/Owner). Right-click a <strong>booked</strong> booth to see &quot;Delete Booking&quot;.</p>
+                    @elseif($restrictCrudToOwnBooking ?? true)
+                        <p>You can <strong>edit and delete only the bookings that you created</strong>. You cannot change or delete other users&apos; bookings. Right-click a booked booth that you created to see &quot;Delete Booking&quot;.</p>
+                    @else
+                        <p>You can edit and delete any booking on this floor plan.</p>
+                    @endif
+                </div>
+                <div class="help-section">
+                    <h4><i class="fas fa-pencil-ruler text-primary"></i> Canvas Design</h4>
+                    @if($canSwitchToCanvasDesign ?? false)
+                        <p>You <strong>can</strong> open &quot;Canvas Design&quot; from the header to edit the floor plan layout.</p>
+                    @else
+                        <p>You <strong>cannot</strong> access Canvas Design. Only users with canvas edit permission can change the floor plan.</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
     
     <!-- Welcome Message -->
     <div class="welcome-message" id="welcomeMessage">
@@ -1498,6 +1560,9 @@
 
         // Public view actions (from server: allow logged-in user to create booking)
         window.publicViewCanCreateBooking = @json($canCreateBookingOnPublicView ?? false);
+        window.publicViewCanDeleteAnyBooking = @json($canDeleteAnyBookingOnPublicView ?? false);
+        window.publicViewBookIdsCreatedByCurrentUser = @json($bookIdsCreatedByCurrentUser ?? []);
+        window.publicViewBooksDestroyBaseUrl = @json(url('/books'));
         window.publicViewFloorPlanId = @json($floorPlan->id ?? null);
         window.publicViewBooksCreateUrl = @json(route('books.create'));
         window.publicViewBooksStoreUrl = @json(route('books.store'));
@@ -1881,24 +1946,33 @@
                 if (booth.z_index) boothElement.style.zIndex = booth.z_index;
                 
                 // Set appearance - custom colors override status colors
-                // IMPORTANT: Custom colors ONLY apply when status is "Available" (status code 1)
-                const boothStatus = booth.status || '1';
-                const isAvailable = (boothStatus === '1' || boothStatus === 1);
+                // PUBLIC VIEW RULE: Available = white (or booth's own style); Booked = green. Inline styles override CSS.
+                const boothStatusNum = booth.status != null ? parseInt(booth.status, 10) : 1;
+                const boothStatus = isNaN(boothStatusNum) ? 1 : boothStatusNum;
+                const isAvailable = (boothStatus === 1);
                 const hasCustomColors = isAvailable && (booth.background_color || booth.border_color || booth.text_color);
                 
                 if (hasCustomColors) {
                     boothElement.classList.add('has-custom-colors');
                 }
                 
-                // Apply custom colors with !important to override status color CSS (ONLY for Available status)
-                if (booth.background_color && isAvailable) {
-                    boothElement.style.setProperty('background-color', booth.background_color, 'important');
-                }
-                if (booth.border_color && isAvailable) {
-                    boothElement.style.setProperty('border-color', booth.border_color, 'important');
-                }
-                if (booth.text_color && isAvailable) {
-                    boothElement.style.setProperty('color', booth.text_color, 'important');
+                // Always set background/border/color so status-1 CSS (green) cannot show through
+                if (isAvailable) {
+                    // Available: white by default, or booth's custom colors
+                    if (booth.background_color) {
+                        boothElement.style.setProperty('background-color', booth.background_color, 'important');
+                    } else {
+                        boothElement.style.setProperty('background-color', '#ffffff', 'important');
+                        boothElement.style.setProperty('border-color', '#dee2e6', 'important');
+                        boothElement.style.setProperty('color', '#333333', 'important');
+                    }
+                    if (booth.border_color) boothElement.style.setProperty('border-color', booth.border_color, 'important');
+                    if (booth.text_color) boothElement.style.setProperty('color', booth.text_color, 'important');
+                } else {
+                    // Booked (status 2, 3, 4, 5): green so it's clear the booth is taken
+                    boothElement.style.setProperty('background-color', '#28a745', 'important');
+                    boothElement.style.setProperty('border-color', '#28a745', 'important');
+                    boothElement.style.setProperty('color', '#ffffff', 'important');
                 }
                 
                 // Apply other appearance properties
@@ -2133,7 +2207,7 @@
                     showBoothModal(booth, statusLabels, statusColors, statusDescriptions);
                 });
 
-                // Right-click context menu (Create Booking for logged-in user)
+                // Right-click context menu (Create Booking for logged-in user; Delete Booking for admin/owner or creator of this booking)
                 boothElement.addEventListener('contextmenu', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -2144,6 +2218,44 @@
                             label: 'Create Booking for Booth ' + booth.booth_number,
                             icon: 'fa-calendar-plus',
                             action: function() { hidePublicViewContextMenu(); openPublicBookingModal(booth.id, booth.booth_number); }
+                        });
+                    }
+                    if ((window.publicViewCanDeleteAnyBooking || (booth.book_id && Array.isArray(window.publicViewBookIdsCreatedByCurrentUser) && window.publicViewBookIdsCreatedByCurrentUser.indexOf(Number(booth.book_id)) !== -1)) && booth.book_id) {
+                        items.push({
+                            label: 'Delete Booking',
+                            icon: 'fa-calendar-times',
+                            action: function() {
+                                hidePublicViewContextMenu();
+                                if (!confirm('Delete the booking for this booth? The booth will become available again.')) return;
+                                const bookId = booth.book_id;
+                                const destroyUrl = (window.publicViewBooksDestroyBaseUrl || '/books') + '/' + bookId;
+                                const token = document.querySelector('meta[name="csrf-token"]');
+                                const headers = { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' };
+                                if (token) headers['X-CSRF-TOKEN'] = token.getAttribute('content');
+                                const forRestoreUrl = (window.publicViewBooksDestroyBaseUrl || '/books') + '/' + bookId + '/for-restore';
+                                fetch(forRestoreUrl, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+                                    .then(function(r) { return r.json(); })
+                                    .then(function(snapRes) {
+                                        var snapshot = (snapRes.success && snapRes.snapshot) ? snapRes.snapshot : null;
+                                        return fetch(destroyUrl, { method: 'DELETE', headers: headers })
+                                            .then(function(r) { return r.json().then(function(data) { return { ok: r.ok, status: r.status, data: data, snapshot: snapshot }; }); });
+                                    })
+                                    .then(function(result) {
+                                        if (result.ok && result.data && result.data.success) {
+                                            if (result.snapshot) {
+                                                try {
+                                                    sessionStorage.setItem('publicViewUndoSnapshot', JSON.stringify(result.snapshot));
+                                                } catch (e) {}
+                                                window.location.reload();
+                                            } else {
+                                                window.location.reload();
+                                            }
+                                        } else {
+                                            alert((result.data && result.data.message) ? result.data.message : 'Failed to delete booking.');
+                                        }
+                                    })
+                                    .catch(function() { alert('Request failed. Please try again.'); });
+                            }
                         });
                     }
                     items.push({
@@ -2157,40 +2269,6 @@
                 canvas.appendChild(boothElement);
             }
         });
-        
-        // Load canvas text items (labels added in designer)
-        const canvasTextItems = @json($canvasTextItems ?? []);
-        if (Array.isArray(canvasTextItems) && canvasTextItems.length > 0) {
-            canvasTextItems.forEach(function(item) {
-                const wrap = document.createElement('div');
-                wrap.className = 'canvas-text-public';
-                const x = item.x != null ? Number(item.x) : 0;
-                const y = item.y != null ? Number(item.y) : 0;
-                const w = item.w != null ? Number(item.w) : 160;
-                const h = item.h != null ? Number(item.h) : 60;
-                const r = item.r != null ? Number(item.r) : 0;
-                wrap.style.left = x + 'px';
-                wrap.style.top = y + 'px';
-                wrap.style.width = w + 'px';
-                wrap.style.height = h + 'px';
-                wrap.style.transform = 'rotate(' + r + 'deg)';
-                wrap.style.zIndex = item.z != null ? String(item.z) : '50';
-                const inner = document.createElement('div');
-                inner.className = 'canvas-text-public-inner';
-                inner.style.width = '100%';
-                inner.style.height = '100%';
-                if (item.fontSize) inner.style.fontSize = item.fontSize + 'px';
-                if (item.color) inner.style.color = item.color;
-                if (item.backgroundColor) inner.style.backgroundColor = item.backgroundColor;
-                if (item.borderWidth) inner.style.borderWidth = item.borderWidth + 'px';
-                if (item.borderRadius) inner.style.borderRadius = item.borderRadius + 'px';
-                if (item.opacity != null) inner.style.opacity = item.opacity;
-                if (item.fontFamily) inner.style.fontFamily = item.fontFamily;
-                inner.textContent = (item.text || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                wrap.appendChild(inner);
-                canvas.appendChild(wrap);
-            });
-        }
 
         // Right-click on canvas (empty area): show Create Booking when logged-in user can create
         if (container && window.publicViewCanCreateBooking) {
@@ -2286,6 +2364,102 @@
             if (!event || event.target.id === 'helpModal') {
                 document.getElementById('helpModal').classList.remove('active');
             }
+        }
+        
+        function showPermissionsModal() {
+            var el = document.getElementById('permissionsModal');
+            if (el) el.classList.add('active');
+        }
+        
+        function closePermissionsModal(event) {
+            var el = document.getElementById('permissionsModal');
+            if (!el) return;
+            if (!event || event.target.id === 'permissionsModal') {
+                el.classList.remove('active');
+            }
+        }
+        
+        function showPublicViewUndoToast(message) {
+            var existing = document.getElementById('publicViewUndoToast');
+            if (existing) existing.remove();
+            if (window._undoToastTimer) clearTimeout(window._undoToastTimer);
+            var toast = document.createElement('div');
+            toast.id = 'publicViewUndoToast';
+            toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 20px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.3);display:flex;align-items:center;gap:16px;z-index:10003;font-size:14px;';
+            toast.innerHTML = '<span>' + message + '</span><button type="button" id="publicViewUndoBtn" style="background:#667eea;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;">Undo</button>';
+            document.body.appendChild(toast);
+            window._undoToastTimer = setTimeout(function() {
+                if (toast.parentNode) toast.remove();
+                window._lastUndo = null;
+                window._undoToastTimer = null;
+            }, 15000);
+            document.getElementById('publicViewUndoBtn').onclick = function() {
+                if (!window._lastUndo || window._lastUndo.type !== 'booking' || !window._lastUndo.snapshots || window._lastUndo.snapshots.length === 0) return;
+                if (window._undoToastTimer) { clearTimeout(window._undoToastTimer); window._undoToastTimer = null; }
+                toast.remove();
+                var snap = window._lastUndo.snapshots[0];
+                var token = document.querySelector('meta[name="csrf-token"]');
+                var csrf = token ? token.getAttribute('content') : '';
+                fetch((window.publicViewBooksDestroyBaseUrl || '/books').replace(/\/$/, '') + '/restore', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+                    body: JSON.stringify({ snapshot: snap })
+                }).then(function(r) { return r.json(); }).then(function(res) {
+                    window._lastUndo = null;
+                    if (res.success) window.location.reload();
+                    else alert(res.message || 'Failed to restore.');
+                }).catch(function() { window._lastUndo = null; alert('Request failed.'); });
+            };
+        }
+        
+        (function checkUndoAfterReload() {
+            try {
+                var stored = sessionStorage.getItem('publicViewUndoSnapshot');
+                if (stored) {
+                    var snap = JSON.parse(stored);
+                    sessionStorage.removeItem('publicViewUndoSnapshot');
+                    window._lastUndo = { type: 'booking', snapshots: [snap] };
+                    showPublicViewUndoToast('Booking deleted. You can undo within 15 seconds.');
+                }
+            } catch (e) {
+                try { sessionStorage.removeItem('publicViewUndoSnapshot'); } catch (e2) {}
+            }
+        })();
+        
+        function copyPublicViewLink() {
+            var btn = document.getElementById('copyPublicLinkBtn');
+            var url = window.location.href;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(function() {
+                    var orig = btn.getAttribute('title');
+                    btn.setAttribute('title', 'Copied!');
+                    btn.classList.add('copied');
+                    setTimeout(function() {
+                        btn.setAttribute('title', orig || 'Copy link to this floor plan');
+                        btn.classList.remove('copied');
+                    }, 2000);
+                }).catch(function() { fallbackCopy(url, btn); });
+            } else {
+                fallbackCopy(url, btn);
+            }
+        }
+        function fallbackCopy(text, btn) {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                var orig = btn.getAttribute('title');
+                btn.setAttribute('title', 'Copied!');
+                btn.classList.add('copied');
+                setTimeout(function() {
+                    btn.setAttribute('title', orig || 'Copy link to this floor plan');
+                    btn.classList.remove('copied');
+                }, 2000);
+            } catch (e) {}
+            document.body.removeChild(ta);
         }
         
         // Welcome message functions

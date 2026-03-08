@@ -21,7 +21,6 @@ class CanvasSetting extends Model
         'floorplan_image',
         'grid_enabled',
         'snap_to_grid',
-        'canvas_text_items',
     ];
 
     protected $casts = [
@@ -35,7 +34,6 @@ class CanvasSetting extends Model
         'pan_y' => 'float',
         'grid_enabled' => 'boolean',
         'snap_to_grid' => 'boolean',
-        'canvas_text_items' => 'array',
     ];
 
     /**

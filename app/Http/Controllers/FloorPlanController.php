@@ -167,12 +167,15 @@ class FloorPlanController extends Controller
      */
     public function store(Request $request)
     {
+        $floorImageRule = $this->buildFloorPlanUploadRule('floor_image', false);
+        $featureImageRule = $this->buildFloorPlanUploadRule('feature_image', false);
+
         $rules = [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'project_name' => 'nullable|string|max:255',
-            'floor_image' => \App\Helpers\UploadSettingsHelper::getRules(\App\Helpers\UploadSettingsHelper::CONTEXT_FLOOR_PLAN, 'floor_image', false)['floor_image'],
-            'feature_image' => \App\Helpers\UploadSettingsHelper::getRules(\App\Helpers\UploadSettingsHelper::CONTEXT_FLOOR_PLAN, 'feature_image', false)['feature_image'],
+            'floor_image' => $floorImageRule,
+            'feature_image' => $featureImageRule,
             'google_map_location' => 'nullable|string',
             'proposal' => 'nullable|string',
             'event_start_date' => 'nullable|date',
@@ -437,21 +440,15 @@ class FloorPlanController extends Controller
     private function performUpdate(Request $request, FloorPlan $floorPlan)
     {
         // --- 1. Build validation rules ---
-        $uploadRule = 'nullable|image|mimes:jpeg,jpg,png,gif|max:10240';
-        try {
-            $uploadRule = \App\Helpers\UploadSettingsHelper::getRules(
-                \App\Helpers\UploadSettingsHelper::CONTEXT_FLOOR_PLAN, 'floor_image', false
-            )['floor_image'];
-        } catch (\Throwable $e) {
-            \Log::warning('Could not load upload rules, using defaults: '.$e->getMessage());
-        }
+        $floorImageRule = $this->buildFloorPlanUploadRule('floor_image', false);
+        $featureImageRule = $this->buildFloorPlanUploadRule('feature_image', false);
 
         $rules = [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'project_name' => 'nullable|string|max:255',
-            'floor_image' => $uploadRule,
-            'feature_image' => $uploadRule,
+            'floor_image' => $floorImageRule,
+            'feature_image' => $featureImageRule,
             'google_map_location' => 'nullable|string',
             'proposal' => 'nullable|string',
             'event_start_date' => 'nullable|date',
@@ -646,6 +643,64 @@ class FloorPlanController extends Controller
         }
 
         return redirect()->route('floor-plans.index')->with('success', $message);
+    }
+
+    /**
+     * Build a safe upload validation rule for floor plan images.
+     * Falls back to extension-based validation when php_fileinfo is unavailable.
+     */
+    private function buildFloorPlanUploadRule(string $fieldName, bool $required = false): string
+    {
+        $defaultRule = ($required ? 'required|' : 'nullable|').'image|mimes:jpeg,jpg,png,gif|max:10240';
+
+        try {
+            $rules = \App\Helpers\UploadSettingsHelper::getRules(
+                \App\Helpers\UploadSettingsHelper::CONTEXT_FLOOR_PLAN,
+                $fieldName,
+                $required
+            );
+            $rule = $rules[$fieldName] ?? $defaultRule;
+        } catch (\Throwable $e) {
+            \Log::warning('Could not load upload rules, using defaults: '.$e->getMessage(), [
+                'field' => $fieldName,
+            ]);
+            $rule = $defaultRule;
+        }
+
+        if (! extension_loaded('fileinfo')) {
+            $fallbackRule = $this->convertMimeRuleToExtensionsRule($rule);
+            \Log::warning('php_fileinfo extension missing. Using extensions-based upload rule fallback.', [
+                'field' => $fieldName,
+                'original_rule' => $rule,
+                'fallback_rule' => $fallbackRule,
+            ]);
+
+            return $fallbackRule;
+        }
+
+        return $rule;
+    }
+
+    /**
+     * Convert image/mimes validation to file/extensions validation.
+     */
+    private function convertMimeRuleToExtensionsRule(string $rule): string
+    {
+        $parts = explode('|', $rule);
+
+        foreach ($parts as &$part) {
+            if ($part === 'image') {
+                $part = 'file';
+                continue;
+            }
+
+            if (str_starts_with($part, 'mimes:')) {
+                $part = 'extensions:'.substr($part, strlen('mimes:'));
+            }
+        }
+        unset($part);
+
+        return implode('|', $parts);
     }
 
     /**

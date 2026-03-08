@@ -784,30 +784,45 @@ class SettingsController extends Controller
     }
 
     /**
-     * Get booth status colors as JSON (for JavaScript use)
+     * Get booth status colors as JSON (for JavaScript use).
+     * Pass ?floor_plan_id= to get floor-plan-scoped colors (same scope as canvas).
      */
     public function getBoothStatusColors(Request $request)
     {
+        $floorPlanId = $request->query('floor_plan_id');
+        if ($floorPlanId !== null && $floorPlanId !== '') {
+            $floorPlanId = (int) $floorPlanId;
+        } else {
+            $floorPlanId = null;
+        }
+
         try {
-            $colors = BoothStatusSetting::getStatusColors();
+            $colors = BoothStatusSetting::getStatusColors($floorPlanId);
 
             return response()->json([
                 'status' => 200,
                 'data' => $colors,
             ]);
         } catch (\Exception $e) {
-            // Fallback to default colors if error
             return response()->json([
                 'status' => 200,
-                'data' => [
-                    1 => ['background' => '#28a745', 'border' => '#28a745', 'text' => '#ffffff'],
-                    2 => ['background' => '#0dcaf0', 'border' => '#0dcaf0', 'text' => '#ffffff'],
-                    3 => ['background' => '#ffc107', 'border' => '#ffc107', 'text' => '#333333'],
-                    4 => ['background' => '#6c757d', 'border' => '#6c757d', 'text' => '#ffffff'],
-                    5 => ['background' => '#212529', 'border' => '#212529', 'text' => '#ffffff'],
-                ],
+                'data' => self::defaultBoothStatusColorsArray(),
             ]);
         }
+    }
+
+    /**
+     * Single source of default status colors (used by API fallback and shared with frontend).
+     */
+    public static function defaultBoothStatusColorsArray(): array
+    {
+        return [
+            1 => ['background' => '#28a745', 'border' => '#28a745', 'text' => '#ffffff', 'border_width' => 2, 'border_style' => 'solid', 'border_radius' => 4],
+            2 => ['background' => '#0dcaf0', 'border' => '#0dcaf0', 'text' => '#ffffff', 'border_width' => 2, 'border_style' => 'solid', 'border_radius' => 4],
+            3 => ['background' => '#ffc107', 'border' => '#ffc107', 'text' => '#333333', 'border_width' => 2, 'border_style' => 'solid', 'border_radius' => 4],
+            4 => ['background' => '#6c757d', 'border' => '#6c757d', 'text' => '#ffffff', 'border_width' => 2, 'border_style' => 'solid', 'border_radius' => 4],
+            5 => ['background' => '#212529', 'border' => '#212529', 'text' => '#ffffff', 'border_width' => 2, 'border_style' => 'solid', 'border_radius' => 4],
+        ];
     }
 
     /**

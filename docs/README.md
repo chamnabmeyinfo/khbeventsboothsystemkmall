@@ -6,9 +6,16 @@
 
 ---
 
+## 📌 Resume / recent work
+
+**[SYSTEM-KHBEVENTS-RESUME.md](SYSTEM-KHBEVENTS-RESUME.md)** — Single-page summary of **system.khbevents.com**: what it is, what was done in recent Cursor sessions (audit, floor plan image fix, canvas load optimization), **chat/transcript IDs for resuming**, key routes/files, and a short test checklist. Update the “Chat ID” section when you finish a session so you can resume later.
+
+---
+
 ## 📖 Table of Contents
 
 - [Quick Start](#quick-start)
+- [Resume / recent work](#resume--recent-work)
 - [Documentation Structure](#documentation-structure)
 - [Document Index](#document-index)
 - [How to Use This Documentation](#how-to-use-this-documentation)

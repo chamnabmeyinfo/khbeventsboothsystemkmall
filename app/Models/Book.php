@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
-
 class Book extends Model
 {
     use HasFactory;
@@ -80,6 +79,29 @@ class Book extends Model
     const STATUS_PARTIALLY_PAID = 5;
 
     const STATUS_CANCELLED = 6;
+
+    /**
+     * Whether the given user can manage this booking (edit/update/delete).
+     * Admins and users with "owner" role can manage all; when "restrict to own" is on, others can only manage bookings they created.
+     */
+    public function canBeManagedBy($user): bool
+    {
+        if (! $user) {
+            return false;
+        }
+        if (method_exists($user, 'isAdmin') && $user->isAdmin()) {
+            return true;
+        }
+        $roleSlug = $user->role ? strtolower($user->role->slug ?? '') : '';
+        if ($roleSlug === 'owner') {
+            return true;
+        }
+        if (! (bool) \App\Models\Setting::getValue('public_view_restrict_crud_to_own_booking', true)) {
+            return true;
+        }
+
+        return (int) $this->userid === (int) $user->id;
+    }
 
     /**
      * Get the client

@@ -11,6 +11,7 @@ docs/
 │
 ├── README.md                              # 📖 Main documentation index (START HERE)
 ├── DOCUMENTATION_STRUCTURE.md             # 📁 This file - directory structure reference
+├── SYSTEM-KHBEVENTS-RESUME.md            # 📌 system.khbevents.com summary + Cursor chat IDs to resume
 │
 ├── 01-overview/                           # 📊 System Overview & Features
 │   ├── SYSTEM_REVIEW.md                   # Complete system analysis (12 modules)
@@ -179,6 +180,11 @@ README.md
 ---
 
 ### By Task
+
+#### 📌 Resuming work on system.khbevents.com (canvas / performance / restore)
+```
+docs/SYSTEM-KHBEVENTS-RESUME.md   # Chat IDs, what was done, key routes, test checklist
+```
 
 #### 🆕 Starting New Feature
 ```
