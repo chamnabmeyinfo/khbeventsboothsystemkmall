@@ -21,7 +21,7 @@
     
     @stack('styles')
 </head>
-<body style="background: #f1f5f9;">
+<body class="admin-body">
     @include('partials.modern-header')
 
     <div class="layout-wrapper">

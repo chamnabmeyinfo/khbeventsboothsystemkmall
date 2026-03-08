@@ -111,7 +111,7 @@
             @include('partials.modern-sidebar')
         @endauth
 
-        <main class="main-content-pushed container-fluid py-4" id="main-content" style="min-height: calc(100vh - 70px); background: #f8fafc;">
+        <main class="main-content-pushed container-fluid py-4" id="main-content" style="min-height: calc(100vh - 70px);">
             @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ session('success') }}

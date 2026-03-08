@@ -1,40 +1,55 @@
 /* Looker Studio Inspired Premium Dashboard UI */
 
 :root {
-    --bg-app: #f1f5f9;
-    --bg-card: #ffffff;
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-tertiary: #94a3b8;
-    --border-light: #e2e8f0;
-    --border-hover: #cbd5e1;
-    --accent-blue: #2563eb;
-    --accent-blue-light: #eff6ff;
-    --accent-green: #16a34a;
-    --accent-green-light: #f0fdf4;
-    --accent-orange: #ea580c;
-    --accent-orange-light: #fff7ed;
-    --accent-purple: #7c3aed;
-    --accent-purple-light: #f5f3ff;
+    --bg-app: #ffb8d2;
+    --bg-card: rgba(255, 255, 255, 0.45);
+    --bg-card-hover: rgba(255, 255, 255, 0.6);
+    --text-primary: #1d1d1f;
+    --text-secondary: #434353;
+    --text-tertiary: #86868b;
+    --border-light: rgba(255, 255, 255, 0.5);
+    --border-hover: rgba(255, 255, 255, 0.8);
+    --accent-blue: #007AFF;
+    --accent-blue-light: rgba(0, 122, 255, 0.15);
+    --accent-green: #34C759;
+    --accent-green-light: rgba(52, 199, 89, 0.15);
+    --accent-orange: #FF9500;
+    --accent-orange-light: rgba(255, 149, 0, 0.15);
+    --accent-purple: #AF52DE;
+    --accent-purple-light: rgba(175, 82, 222, 0.15);
     
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
-    --shadow-hover: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --shadow-sm: 0 4px 10px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+    --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+    --shadow-hover: 0 30px 60px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.9);
     
-    --radius-md: 12px;
-    --radius-lg: 16px;
-    --radius-xl: 24px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-xl: 36px;
     --radius-pill: 9999px;
     
-    --transition-all: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-all: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
-
 body {
-    background-color: var(--bg-app);
-    font-family: 'Inter', 'Roboto', 'Noto Sans Khmer', sans-serif;
+    background-color: #ffb8d2;
+    background-image: 
+        radial-gradient(at 0% 0%, #4facfe 0px, transparent 50%),
+        radial-gradient(at 100% 0%, #00f2fe 0px, transparent 50%),
+        radial-gradient(at 100% 100%, #f093fb 0px, transparent 50%),
+        radial-gradient(at 0% 100%, #f5576c 0px, transparent 50%),
+        radial-gradient(at 50% 50%, #5ee7df 0px, transparent 50%);
+    background-attachment: fixed;
+    background-size: 200% 200%;
+    animation: gradientMove 15s ease infinite;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
+}
+
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 /* Dashboard Container */
@@ -135,10 +150,12 @@ body {
 
 .kpi-card-looker {
     background: var(--bg-card);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
     border-radius: var(--radius-lg);
     padding: 1.75rem;
     box-shadow: var(--shadow-md);
-    border: 1px solid var(--border-light);
+    border: none;
     transition: var(--transition-all);
     position: relative;
     overflow: hidden;
@@ -147,9 +164,9 @@ body {
 }
 
 .kpi-card-looker:hover {
-    transform: translateY(-4px);
+    transform: translateY(-4px) scale(1.01);
     box-shadow: var(--shadow-hover);
-    border-color: var(--border-hover);
+    background: var(--bg-card-hover);
 }
 
 /* Subtle gradient decoration */
@@ -162,7 +179,8 @@ body {
     height: 100%;
     background: var(--accent-blue);
     border-radius: var(--radius-lg) 0 0 var(--radius-lg);
-    opacity: 0.8;
+    opacity: 0.9;
+    width: 8px;
 }
 
 .kpi-card-looker.success::before { background: var(--accent-green); }
@@ -284,7 +302,7 @@ body {
 }
 
 .looker-table th {
-    background: var(--bg-app);
+    background: rgba(255,255,255,0.2); backdrop-filter: blur(10px);
     padding: 1rem;
     font-size: 0.75rem;
     font-weight: 700;
@@ -370,7 +388,7 @@ body {
 /* Progress Bars */
 .progress-bar-container {
     height: 8px;
-    background: var(--bg-app);
+    background: rgba(255,255,255,0.2); backdrop-filter: blur(10px);
     border-radius: var(--radius-pill);
     overflow: hidden;
     margin-top: 0.5rem;
@@ -398,3 +416,30 @@ body {
 .delay-3 { animation-delay: 0.3s; }
 .delay-4 { animation-delay: 0.4s; }
 .delay-5 { animation-delay: 0.5s; }
+
+
+/* iOS Frosted Glass UI for Sidebar & Header on Dashboard */
+body:has(.looker-dashboard) .modern-unified-header,
+body:has(.looker-dashboard) .modern-sidebar {
+    background: rgba(255, 255, 255, 0.45) !important;
+    backdrop-filter: blur(40px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+body:has(.looker-dashboard) .sidebar-nav-link:hover {
+    background: rgba(255, 255, 255, 0.6) !important;
+}
+
+body:has(.looker-dashboard) .looker-table th {
+    background: rgba(255, 255, 255, 0.25) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+body:has(.looker-dashboard) .looker-table tr:hover td {
+    background-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+body:has(.looker-dashboard) .main-content-pushed {
+    background: transparent !important;
+}
