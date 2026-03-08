@@ -1749,7 +1749,7 @@ class BoothController extends Controller
 
         // Get all booths for this floor plan
         $booths = Booth::where('floor_plan_id', $id)
-            ->with(['client', 'category', 'subCategory', 'boothType'])
+            ->with(['client', 'category', 'subCategory', 'boothType', 'book'])
             ->orderBy('booth_number', 'asc')
             ->get();
 
@@ -1801,6 +1801,8 @@ class BoothController extends Controller
                 'font_family' => $booth->font_family,
                 'text_align' => $booth->text_align,
                 'box_shadow' => $booth->box_shadow,
+                'book_id' => $booth->bookid,
+                'can_manage_booking' => ($booth->book && auth()->check()) ? $booth->book->canBeManagedBy(auth()->user()) : false,
             ];
         })->values();
 

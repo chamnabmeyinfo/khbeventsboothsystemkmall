@@ -2807,6 +2807,14 @@
                 html += '<p class="text-muted small mt-2 mb-0">Opens the booking form on this page.</p>';
                 html += '</div>';
             }
+
+            // Delete booking (only when user has management permission and booth is booked)
+            if (booth.can_manage_booking && booth.book_id) {
+                html += '<div class="booth-detail-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e9ecef;">';
+                html += '<button type="button" class="btn-delete-booking-public" data-book-id="' + booth.book_id + '" data-booth-id="' + booth.id + '" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);"><i class="fas fa-trash"></i> Delete Booking</button>';
+                html += '<p class="text-muted small mt-2 mb-0">Delete this booking. (If payment exists, action will be blocked)</p>';
+                html += '</div>';
+            }
             
             modalBody.innerHTML = html;
             modal.classList.add('active');
@@ -2817,6 +2825,46 @@
                 bookBtn.addEventListener('click', function() {
                     closeBoothModal();
                     openPublicBookingModal(parseInt(bookBtn.dataset.boothId, 10), bookBtn.dataset.boothNumber || '');
+                });
+            }
+
+            // Delete booking button: trigger destroy request
+            const deleteBtn = modalBody.querySelector('.btn-delete-booking-public');
+            if (deleteBtn && deleteBtn.dataset.bookId) {
+                deleteBtn.addEventListener('click', function() {
+                    if (confirm('Are you sure you want to delete this booking?')) {
+                        const bookId = deleteBtn.dataset.bookId;
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                        
+                        deleteBtn.disabled = true;
+                        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+                        
+                        fetch('/books/' + bookId, {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': csrfToken
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert(data.message || 'Booking deleted successfully.');
+                                window.location.reload();
+                            } else {
+                                alert(data.message || 'Error deleting booking.');
+                                deleteBtn.disabled = false;
+                                deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete Booking';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred. Please try again.');
+                            deleteBtn.disabled = false;
+                            deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete Booking';
+                        });
+                    }
                 });
             }
             
