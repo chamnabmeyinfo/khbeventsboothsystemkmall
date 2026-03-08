@@ -155,6 +155,8 @@
         
         @media (max-width: 768px) {
             .public-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
                 padding: 6px 12px;
                 gap: 8px;
             }
@@ -198,6 +200,8 @@
         
         @media (max-width: 480px) {
             .public-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
                 padding: 6px 10px;
                 min-height: 44px;
             }
@@ -518,6 +522,8 @@
         
         @media (max-width: 768px) {
             .public-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
                 padding: 15px 20px;
             }
             
@@ -796,25 +802,25 @@
         .dropped-booth.status-2:not(.has-custom-colors) {
             background: #28a745 !important;
             border-color: #28a745 !important;
-            color: white !important;
+            color: #1d1d1f !important;
         }
         
         .dropped-booth.status-3:not(.has-custom-colors) {
             background: #28a745 !important;
             border-color: #28a745 !important;
-            color: white !important;
+            color: #1d1d1f !important;
         }
         
         .dropped-booth.status-4:not(.has-custom-colors) {
             background: #6c757d !important;
             border-color: #6c757d !important;
-            color: white !important;
+            color: #1d1d1f !important;
         }
         
         .dropped-booth.status-5:not(.has-custom-colors) {
             background: #28a745 !important;
             border-color: #28a745 !important;
-            color: white !important;
+            color: #1d1d1f !important;
         }
         @else
         /* When DB status settings exist: public view still uses Available=white, Booked=green, Hidden=gray */
@@ -1073,7 +1079,7 @@
         .public-booking-modal .bf-alert-error { background: #f8d7da; color: #721c24; }
         .public-booking-modal .bf-footer { padding: 16px 20px; border-top: 1px solid #e9ecef; background: #f8f9fa; border-radius: 0 0 16px 16px; display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0; margin-top: auto; box-shadow: 0 -4px 12px rgba(0,0,0,0.06); position: relative; z-index: 5; flex-wrap: wrap; }
         .public-booking-modal .bf-btn { padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; }
-        .public-booking-modal .bf-btn-secondary { background: #fff; color: #495057; border: 1px solid #dee2e6; }
+        .public-booking-modal .bf-btn-outline-secondary { background: #fff; color: #495057; border: 1px solid #dee2e6; }
         .public-booking-modal .bf-btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
         .public-booking-modal .bf-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
         @media (max-width: 576px) {
@@ -1499,7 +1505,7 @@
                                 </div>
                             </div>
                             <div class="bf-form-row bf-new-client-actions">
-                                <button type="button" class="bf-btn bf-btn-secondary" id="publicNewClientCancel">Cancel</button>
+                                <button type="button" class="bf-btn bf-btn-outline-secondary" id="publicNewClientCancel">Cancel</button>
                                 <button type="button" class="bf-btn bf-btn-primary" id="publicNewClientSave"><i class="fas fa-save"></i> Save &amp; Select</button>
                             </div>
                             <div class="bf-form-row bf-new-client-create-booking-row">
@@ -1532,7 +1538,7 @@
                     <div class="bf-body-end-spacer" aria-hidden="true"></div>
                 </div>
                 <div class="bf-footer">
-                    <button type="button" class="bf-btn bf-btn-secondary" id="publicBookingCancel">Cancel</button>
+                    <button type="button" class="bf-btn bf-btn-outline-secondary" id="publicBookingCancel">Cancel</button>
                     <button type="submit" class="bf-btn bf-btn-primary" id="publicBookingSubmit"><i class="fas fa-save"></i> Create booking</button>
                 </div>
             </form>

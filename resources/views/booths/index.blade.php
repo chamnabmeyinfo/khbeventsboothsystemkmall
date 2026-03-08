@@ -2,39 +2,12 @@
 
 @section('title', isset($currentFloorPlan) && $currentFloorPlan ? (e($currentFloorPlan->name) . ' — Floor Plan') : 'Floor Plan Management')
 
-
-
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
-<style>
-    .looker-dashboard { padding: 0 !important; }
-    .glass-card {
-        background: rgba(255, 255, 255, 0.45);
-        backdrop-filter: blur(40px) saturate(180%);
-        -webkit-backdrop-filter: blur(40px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        border-radius: 24px;
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-        margin-bottom: 24px;
-        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        overflow: hidden;
-    }
-    .glass-card:hover {
-        transform: translateY(-5px);
-        background: rgba(255, 255, 255, 0.55);
-        box-shadow: 0 15px 45px rgba(31, 38, 135, 0.2);
-    }
-    .kpi-card-looker {
-        margin-bottom: 24px;
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('css/floor-plan-designer.css') }}?v={{ config('app.asset_version') ?? filemtime(public_path('css/floor-plan-designer.css')) }}">
 @endpush
 
-@push('body-class', 'ios-dashboard-mode')
-
-
 @section('content')
-<div class='looker-dashboard'>
+
 <div class="container-fluid mt-2 mb-2">
     @if(!isset($currentFloorPlan) || !$currentFloorPlan)
     {{-- No floor plan chosen: show message at top and list at bottom; all other UI is hidden/blocked --}}
@@ -67,7 +40,7 @@
     @else
     <!-- Floor Plan Selector -->
     @if(isset($floorPlans) && $floorPlans->count() > 0)
-    <div class="card mb-3" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.18); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);">
+    <div class="card mb-3">
         <div class="card-body py-2">
             <div class="row align-items-center">
                 <div class="col-md-4">
@@ -120,20 +93,20 @@
     
     <!-- Error Log Panel (Hidden by default) -->
     <div id="errorLogPanel" style="display: none; position: fixed; top: 60px; right: 20px; width: 450px; max-height: 600px; background: white; border: 2px solid #ff4444; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 10000; overflow: hidden;">
-        <div style="background: #ff4444; color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="background: #ff4444; color: #1d1d1f; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 8px;">
                 <i class="fas fa-exclamation-triangle"></i>
                 <strong>Error Log</strong>
                 <span id="errorLogBadge" style="background: rgba(255,255,255,0.3); padding: 2px 8px; border-radius: 10px; font-size: 11px;">0</span>
             </div>
             <div style="display: flex; gap: 8px;">
-                <button onclick="ErrorLogger.exportLogs(); return false;" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;" title="Export Logs">
+                <button onclick="ErrorLogger.exportLogs(); return false;" style="background: rgba(255,255,255,0.2); border: none; color: #1d1d1f; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;" title="Export Logs">
                     <i class="fas fa-download"></i>
                 </button>
-                <button onclick="ErrorLogger.clearLogs(); return false;" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;" title="Clear Logs">
+                <button onclick="ErrorLogger.clearLogs(); return false;" style="background: rgba(255,255,255,0.2); border: none; color: #1d1d1f; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;" title="Clear Logs">
                     <i class="fas fa-trash"></i>
                 </button>
-                <button onclick="ErrorLogger.togglePanel(); return false;" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;" title="Close">
+                <button onclick="ErrorLogger.togglePanel(); return false;" style="background: rgba(255,255,255,0.2); border: none; color: #1d1d1f; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;" title="Close">
                     <i class="fas fa-times"></i>
             </button>
         </div>
@@ -259,7 +232,7 @@
                 @endif
                 <button class="toolbar-btn" id="btnErrorLog" title="Error Log" onclick="ErrorLogger.togglePanel(); return false;" style="position: relative;">
                     <i class="fas fa-exclamation-triangle"></i>
-                    <span id="errorLogBadge" style="display: none; position: absolute; top: -5px; right: -5px; background: #ff4444; color: white; border-radius: 10px; padding: 2px 6px; font-size: 10px; font-weight: bold;">0</span>
+                    <span id="errorLogBadge" style="display: none; position: absolute; top: -5px; right: -5px; background: #ff4444; color: #1d1d1f; border-radius: 10px; padding: 2px 6px; font-size: 10px; font-weight: bold;">0</span>
                 </button>
                 <div class="toolbar-divider"></div>
                 @if(isset($canEditCanvas) && $canEditCanvas)
@@ -796,7 +769,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="btnUploadFloorplanSubmit">
                     <i class="fas fa-upload"></i> Upload
                 </button>
@@ -860,7 +833,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="applyCanvasSettings">
                     <i class="fas fa-check"></i> Apply Settings
                 </button>
@@ -924,7 +897,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="btnAddBoothSubmit">
                     <i class="fas fa-plus"></i> Add Booth(s)
                 </button>
@@ -967,7 +940,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="btnAddZoneSubmit">
                     <i class="fas fa-plus"></i> Create Zone
                 </button>
@@ -1050,10 +1023,10 @@
                                 <small class="form-text text-muted">Check the booths you want to delete. You can select multiple booths.</small>
                             </div>
                             <div class="form-group">
-                                <button type="button" class="btn btn-sm btn-secondary" id="selectAllBooths">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="selectAllBooths">
                                     <i class="fas fa-check-square"></i> Select All
                                 </button>
-                                <button type="button" class="btn btn-sm btn-secondary" id="deselectAllBooths">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllBooths">
                                     <i class="fas fa-square"></i> Deselect All
                                 </button>
                             </div>
@@ -1110,7 +1083,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-danger" id="btnDeleteBoothSubmit">
                     <i class="fas fa-trash"></i> Delete
                 </button>
@@ -1150,7 +1123,7 @@
                                 <button type="button" class="btn btn-primary" id="btnSearchClient">
                                     <i class="fas fa-search"></i> Search
                                 </button>
-                                <button type="button" class="btn btn-secondary" id="btnClearSearch" style="display: none;">
+                                <button type="button" class="btn btn-outline-secondary" id="btnClearSearch" style="display: none;">
                                     <i class="fas fa-times"></i> Clear
                                 </button>
                             </div>
@@ -1293,7 +1266,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
                     <i class="fas fa-times"></i> Cancel
                 </button>
                 <button type="button" class="btn btn-primary" id="btnBookBoothSubmit">
@@ -1308,7 +1281,7 @@
 <div class="modal fade" id="boothColorPickerModal" tabindex="-1" role="dialog" aria-labelledby="boothColorPickerModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #1d1d1f;">
                 <h5 class="modal-title" id="boothColorPickerModalLabel">
                     <i class="fas fa-palette"></i> Set Colors for Booth: <span id="colorPickerBoothNumber"></span>
                 </h5>
@@ -1382,7 +1355,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
                     <i class="fas fa-times"></i> Cancel
                 </button>
                 <button type="button" class="btn btn-warning" id="resetBoothColors">
@@ -1587,7 +1560,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="applyBoothSettings">
                     <i class="fas fa-check"></i> Apply Settings
                 </button>
@@ -1595,7 +1568,6 @@
         </div>
     </div>
     @endif
-</div>
 </div>
 @endsection
 

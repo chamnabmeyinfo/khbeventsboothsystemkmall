@@ -1,17 +1,18 @@
-@extends('layouts.adminlte')
+@extends('layouts.admin')
 
 @section('title', 'Booth Details')
 @section('page-title', 'Booth Details')
 @section('breadcrumb', 'Booth Details')
 
 @section('content')
+<div class='looker-dashboard'>
 <div class="row">
     <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Booth Information</h3>
+        <div class="glass-card">
+            <div class="p-4 border-bottom">
+                <h3 class="h5 fw-bold mb-0 text-white">Booth Information</h3>
                 <div class="card-tools">
-                    <a href="{{ route('booths.index') }}" class="btn btn-sm btn-secondary">
+                    <a href="{{ route('booths.index') }}" class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-arrow-left"></i> Back to Booths
                     </a>
                     @auth
@@ -23,7 +24,7 @@
                     @endauth
                 </div>
             </div>
-            <div class="card-body">
+            <div class="p-4">
                 <dl class="row">
                     <dt class="col-sm-4">Booth Number:</dt>
                     <dd class="col-sm-8"><strong>{{ $booth->booth_number }}</strong></dd>
@@ -67,9 +68,9 @@
         </div>
 
         {{-- Booth Image Gallery --}}
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">
+        <div class="glass-card">
+            <div class="p-4 border-bottom">
+                <h3 class="h5 fw-bold mb-0 text-white">
                     <i class="fas fa-images"></i> Booth Images
                 </h3>
                 @auth
@@ -82,7 +83,7 @@
                 @endif
                 @endauth
             </div>
-            <div class="card-body">
+            <div class="p-4">
                 <div id="boothGalleryContainer">
                     <div class="text-center text-muted py-4">
                         <i class="fas fa-spinner fa-spin fa-2x"></i>
@@ -93,11 +94,11 @@
         </div>
 
         @if($booth->client)
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Client Information</h3>
+        <div class="glass-card">
+            <div class="p-4 border-bottom">
+                <h3 class="h5 fw-bold mb-0 text-white">Client Information</h3>
             </div>
-            <div class="card-body">
+            <div class="p-4">
                 <dl class="row">
                     <dt class="col-sm-4">Name:</dt>
                     <dd class="col-sm-8">{{ $booth->client->name }}</dd>
@@ -126,11 +127,11 @@
         @endif
 
         @if($booth->book)
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Booking Information</h3>
+        <div class="glass-card">
+            <div class="p-4 border-bottom">
+                <h3 class="h5 fw-bold mb-0 text-white">Booking Information</h3>
             </div>
-            <div class="card-body">
+            <div class="p-4">
                 <dl class="row">
                     <dt class="col-sm-4">Booking ID:</dt>
                     <dd class="col-sm-8">#{{ $booth->book->id }}</dd>
@@ -157,13 +158,13 @@
 
         {{-- Booking Timeline --}}
         @if($booth->timeline->count() > 0)
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">
+        <div class="glass-card">
+            <div class="p-4 border-bottom">
+                <h3 class="h5 fw-bold mb-0 text-white">
                     <i class="fas fa-history"></i> Booking Timeline
                 </h3>
             </div>
-            <div class="card-body">
+            <div class="p-4">
                 <div class="timeline">
                     @foreach($booth->timeline as $entry)
                     <div class="timeline-item">
@@ -213,12 +214,12 @@
     </div>
 
     <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Quick Actions</h3>
+        <div class="glass-card">
+            <div class="p-4 border-bottom">
+                <h3 class="h5 fw-bold mb-0 text-white">Quick Actions</h3>
             </div>
-            <div class="card-body">
-                <a href="{{ route('booths.index') }}" class="btn btn-block btn-secondary mb-2">
+            <div class="p-4">
+                <a href="{{ route('booths.index') }}" class="btn btn-block btn-outline-secondary mb-2">
                     <i class="fas fa-list"></i> All Booths
                 </a>
                 @auth
@@ -263,7 +264,7 @@
                     <div id="imagePreviewContainer" class="row"></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary" id="uploadBtn">
                         <i class="fas fa-upload"></i> Upload Images
                     </button>
@@ -289,313 +290,35 @@
     </div>
 </div>
 
+
 @push('styles')
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
 <style>
-/* Mobile Responsive Styles */
-@media (max-width: 768px) {
-    /* Stack columns on mobile */
-    .row > [class*='col-'] {
-        margin-bottom: 15px;
+    .looker-dashboard { padding: 0 !important; }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(40px) saturate(180%);
+        -webkit-backdrop-filter: blur(40px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        margin-bottom: 24px;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        overflow: hidden;
     }
-    
-    /* Card headers */
-    .card-header {
-        padding: 12px 15px;
+    .glass-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.55);
+        box-shadow: 0 15px 45px rgba(31, 38, 135, 0.2);
     }
-    
-    .card-header .card-title {
-        font-size: 1.1rem;
+    .kpi-card-looker {
+        margin-bottom: 24px;
     }
-    
-    .card-header .card-tools .btn {
-        padding: 6px 12px;
-        font-size: 0.85rem;
-    }
-    
-    /* Card body */
-    .card-body {
-        padding: 15px;
-    }
-    
-    /* Definition list - Stack on mobile */
-    dl.row {
-        display: block;
-    }
-    
-    dl.row dt,
-    dl.row dd {
-        width: 100% !important;
-        padding: 8px 0;
-    }
-    
-    dl.row dt {
-        font-weight: 600;
-        color: #667eea;
-        font-size: 0.9rem;
-    }
-    
-    dl.row dd {
-        margin-left: 0 !important;
-        padding-left: 15px;
-        border-left: 3px solid #e9ecef;
-    }
-    
-    /* Quick actions - Full width buttons */
-    .btn-block {
-        width: 100%;
-        margin-bottom: 8px;
-    }
-    
-    /* Gallery grid - 2 columns on mobile */
-    .gallery-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 10px !important;
-    }
-    
-    .gallery-item img {
-        height: 150px !important;
-    }
-    
-    /* Timeline - Adjust for mobile */
-    .timeline::before {
-        left: 15px;
-    }
-    
-    .timeline-item {
-        padding-left: 45px;
-    }
-    
-    .timeline-marker {
-        left: 0;
-        width: 35px;
-        height: 35px;
-        font-size: 14px;
-    }
-    
-    .timeline-content {
-        padding: 12px;
-        font-size: 0.9rem;
-    }
-    
-    .timeline-header {
-        font-size: 0.95rem;
-    }
-    
-    .timeline-header small {
-        display: block;
-        margin-top: 4px;
-    }
-    
-    /* Modals - Full screen on mobile */
-    .modal-dialog {
-        margin: 0;
-        max-width: 100%;
-        height: 100vh;
-    }
-    
-    .modal-content {
-        height: 100vh;
-        border-radius: 0;
-    }
-    
-    .modal-xl, .modal-lg {
-        max-width: 100%;
-    }
-    
-    /* Image preview in gallery */
-    .image-preview-item {
-        width: 100%;
-    }
-    
-    .image-preview-item img {
-        height: 120px !important;
-    }
-    
-    /* Upload modal */
-    #uploadImagesModal .modal-body {
-        padding: 15px;
-    }
-    
-    #imagePreviewContainer {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-    
-    /* Badges */
-    .badge {
-        font-size: 0.8rem;
-        padding: 6px 10px;
-    }
-}
-
-/* Tablet adjustments */
-@media (min-width: 769px) and (max-width: 1024px) {
-    .gallery-grid {
-        grid-template-columns: repeat(3, 1fr) !important;
-    }
-    
-    .card-body {
-        padding: 20px;
-    }
-}
-
-/* Touch-friendly improvements */
-@media (hover: none) and (pointer: coarse) {
-    /* Larger touch targets */
-    .btn, .gallery-item, .timeline-marker {
-        min-height: 44px;
-        min-width: 44px;
-    }
-    
-    /* Remove hover effects */
-    .gallery-item:hover,
-    .btn:hover {
-        transform: none;
-    }
-}
-
-/* Timeline Styles */
-.timeline {
-    position: relative;
-    padding: 20px 0;
-}
-
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 20px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: #dee2e6;
-}
-
-.timeline-item {
-    position: relative;
-    padding-left: 60px;
-    margin-bottom: 30px;
-}
-
-.timeline-marker {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 16px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    z-index: 1;
-}
-
-.timeline-content {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.timeline-header {
-    margin-bottom: 10px;
-    border-bottom: 1px solid #dee2e6;
-    padding-bottom: 8px;
-}
-
-.timeline-body {
-    margin: 10px 0;
-    color: #6c757d;
-}
-
-.timeline-footer {
-    margin-top: 10px;
-}
-
-.timeline-user {
-    margin-top: 8px;
-}
-
-/* Gallery Styles */
-.gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px;
-}
-
-.gallery-item {
-    position: relative;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transition: transform 0.2s;
-}
-
-.gallery-item:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.gallery-item img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    cursor: pointer;
-}
-
-.gallery-item-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
-    padding: 10px;
-}
-
-.gallery-item-actions {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(0,0,0,0.7);
-    padding: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.primary-badge {
-    background: #28a745;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: bold;
-}
-
-.type-badge {
-    background: #17a2b8;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-}
-
-.image-preview-item {
-    margin-bottom: 10px;
-}
-
-.image-preview-item img {
-    max-width: 100%;
-    height: 150px;
-    object-fit: cover;
-    border-radius: 4px;
-}
 </style>
 @endpush
+
+@push('body-class', 'ios-dashboard-mode')
+
 
 @push('scripts')
 <script>
@@ -811,5 +534,6 @@ function showError(message) {
 }
 </script>
 @endpush
+</div>
 @endsection
 

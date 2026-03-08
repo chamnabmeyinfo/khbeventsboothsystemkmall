@@ -1,283 +1,41 @@
-@extends('layouts.adminlte')
+@extends('layouts.admin')
 
 @section('title', 'Client Details')
 @section('page-title', 'Client Details')
 @section('breadcrumb', 'Clients / View')
 
+
 @push('styles')
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
 <style>
-    /* Profile Header - Horizontal Layout (Left to Right) */
-    .profile-header {
-        position: relative;
-        margin-bottom: 40px;
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
-        background: white;
-        display: flex;
-        align-items: stretch;
-        min-height: 200px;
-    }
-
-    .profile-cover {
-        width: 300px;
-        min-width: 300px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        position: relative;
-        overflow: hidden;
-        cursor: move;
-        user-select: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .profile-cover::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(90deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 100%);
-        z-index: 1;
-        pointer-events: none;
-    }
-
-    .profile-cover img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center center;
-        cursor: move;
-        transition: transform 0.3s ease-out;
-        user-select: none;
-        -webkit-user-drag: none;
-    }
-
-    .profile-cover:hover img {
-        transform: scale(1.05);
-    }
-    
-    .profile-cover.dragging img {
-        cursor: grabbing;
-        transform: scale(1.05);
-    }
-    
-    .profile-cover.dragging {
-        cursor: grabbing;
-    }
-
-    .profile-cover-upload {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.6);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s;
-        z-index: 2;
-        backdrop-filter: blur(2px);
-    }
-
-    .profile-cover-upload:hover {
-        background: rgba(0, 0, 0, 0.7);
-    }
-
-    .profile-cover:hover .profile-cover-upload {
-        display: flex;
-    }
-
-    .profile-avatar-wrapper {
-        position: absolute;
-        left: 20px;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 10;
-    }
-
-    .profile-avatar {
-        width: 140px;
-        height: 140px;
-        border-radius: 50%;
-        border: 5px solid white;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-        position: relative;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        background: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .profile-avatar:hover {
-        transform: scale(1.08);
-        box-shadow: 0 12px 32px rgba(0,0,0,0.3);
-    }
-
-    .profile-avatar-upload {
-        position: absolute;
-        bottom: 8px;
-        right: 8px;
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: 3px solid white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        transition: all 0.3s ease;
-        z-index: 5;
-    }
-
-    .profile-avatar-upload:hover {
-        transform: scale(1.15) rotate(5deg);
-        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
-    }
-
-    .profile-avatar-upload i {
-        color: white;
-        font-size: 18px;
-    }
-
-    .profile-info {
-        background: white;
-        padding: 30px 40px;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        position: relative;
-    }
-
-    .profile-actions {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        z-index: 20;
-        display: flex;
-        gap: 10px;
-    }
-
-    .profile-actions .btn {
-        border-radius: 12px;
-        padding: 8px 18px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        font-size: 0.9rem;
-    }
-
-    .profile-actions .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-    }
-
-    @media (max-width: 768px) {
-        .profile-header {
-            flex-direction: column;
-            min-height: auto;
-        }
-
-        .profile-cover {
-            width: 100%;
-            min-width: 100%;
-            height: 200px;
-        }
-
-        .profile-avatar-wrapper {
-            left: 50%;
-            top: auto;
-            bottom: -70px;
-            transform: translateX(-50%);
-        }
-
-        .profile-avatar {
-            width: 120px;
-            height: 120px;
-            border-width: 4px;
-        }
-
-        .profile-avatar-upload {
-            width: 36px;
-            height: 36px;
-            bottom: 6px;
-            right: 6px;
-            border-width: 3px;
-        }
-
-        .profile-info {
-            padding: 80px 20px 30px 20px;
-            text-align: center;
-        }
-
-        .profile-actions {
-            top: 15px;
-            right: 15px;
-            flex-direction: row;
-            gap: 8px;
-        }
-
-        .profile-actions .btn {
-            padding: 6px 12px;
-            font-size: 0.8rem;
-        }
-    }
-
-    .detail-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-        border-left: 4px solid;
-        transition: transform 0.2s;
+    .looker-dashboard { padding: 0 !important; }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(40px) saturate(180%);
+        -webkit-backdrop-filter: blur(40px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
         margin-bottom: 24px;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        overflow: hidden;
     }
-
-    .detail-card:hover {
-        transform: translateX(4px);
+    .glass-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.55);
+        box-shadow: 0 15px 45px rgba(31, 38, 135, 0.2);
     }
-
-    .detail-card.primary { border-left-color: #667eea; }
-    .detail-card.success { border-left-color: #84fab0; }
-    .detail-card.warning { border-left-color: #fa709a; }
-
-    .info-row {
-        padding: 0.75rem 0;
-        border-bottom: 1px solid rgba(0,0,0,0.05);
-    }
-
-    .info-row:last-child {
-        border-bottom: none;
-    }
-
-    .stat-card {
-        text-align: center;
-        padding: 1.5rem;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        transition: transform 0.3s;
-        height: 100%;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+    .kpi-card-looker {
+        margin-bottom: 24px;
     }
 </style>
 @endpush
 
+@push('body-class', 'ios-dashboard-mode')
+
+
 @section('content')
+<div class='looker-dashboard'>
 <div class="container-fluid">
     <!-- Breadcrumb Navigation -->
     <nav aria-label="breadcrumb" class="mb-3">
@@ -424,10 +182,10 @@
         <!-- Client Information -->
         <div class="col-md-6 mb-4">
             <div class="card detail-card primary">
-                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px 12px 0 0;">
+                <div class="p-4 border-bottom" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px 12px 0 0;">
                     <h5 class="mb-0"><i class="fas fa-user mr-2"></i>Client Information</h5>
                 </div>
-                <div class="card-body" style="padding: 24px;">
+                <div class="p-4" style="padding: 24px;">
                     <div class="info-row">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="text-muted"><i class="fas fa-hashtag mr-2"></i>Client ID:</span>
@@ -487,10 +245,10 @@
         <!-- Activity Statistics -->
         <div class="col-md-6 mb-4">
             <div class="card detail-card success">
-                <div class="card-header" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); color: white; border-radius: 12px 12px 0 0;">
+                <div class="p-4 border-bottom" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); color: white; border-radius: 12px 12px 0 0;">
                     <h5 class="mb-0"><i class="fas fa-chart-bar mr-2"></i>Activity Statistics</h5>
                 </div>
-                <div class="card-body" style="padding: 24px;">
+                <div class="p-4" style="padding: 24px;">
                     <div class="row text-center">
                         <div class="col-6 mb-3">
                             <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
@@ -517,10 +275,10 @@
     <div class="row">
         <div class="col-12">
             <div class="card detail-card warning">
-                <div class="card-header" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; border-radius: 12px 12px 0 0;">
+                <div class="p-4 border-bottom" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; border-radius: 12px 12px 0 0;">
                     <h5 class="mb-0"><i class="fas fa-calendar-alt mr-2"></i>Recent Bookings</h5>
                 </div>
-                <div class="card-body" style="padding: 24px;">
+                <div class="p-4" style="padding: 24px;">
                     <div class="table-responsive">
                         <table class="table table-hover mb-0">
                             <thead class="thead-light">
@@ -578,15 +336,15 @@
     <div class="row mt-4">
         <div class="col-12">
             <div class="card detail-card primary">
-                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px 12px 0 0;">
+                <div class="p-4 border-bottom" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px 12px 0 0;">
                     <h5 class="mb-0"><i class="fas fa-store mr-2"></i>Assigned Booths ({{ $client->booths->count() }})</h5>
                 </div>
-                <div class="card-body" style="padding: 24px;">
+                <div class="p-4" style="padding: 24px;">
                     <div class="row">
                         @foreach($client->booths as $booth)
                         <div class="col-md-4 mb-3">
-                            <div class="card" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: transform 0.2s;">
-                                <div class="card-body">
+                            <div class="glass-card" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: transform 0.2s;">
+                                <div class="p-4">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <h6 class="mb-0">
                                             <a href="{{ route('booths.show', $booth) }}" class="text-primary">
@@ -662,6 +420,7 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 @endsection
 

@@ -1,64 +1,41 @@
-@extends('layouts.adminlte')
+@extends('layouts.admin')
 
 @section('title', 'Edit Booking')
 @section('page-title', 'Edit Booking')
 @section('breadcrumb', 'Bookings / Edit')
 
+
 @push('styles')
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
 <style>
-    .form-section {
-        background: #f8f9fc;
-        padding: 1.5rem;
-        border-radius: 0.5rem;
-        margin-bottom: 1.5rem;
-        border-left: 4px solid #007bff;
+    .looker-dashboard { padding: 0 !important; }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(40px) saturate(180%);
+        -webkit-backdrop-filter: blur(40px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        margin-bottom: 24px;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        overflow: hidden;
     }
-    .form-section h6 {
-        color: #495057;
-        font-weight: 600;
-        margin-bottom: 1rem;
+    .glass-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.55);
+        box-shadow: 0 15px 45px rgba(31, 38, 135, 0.2);
     }
-    .booth-selector {
-        max-height: 400px;
-        overflow-y: auto;
-        background: #f8f9fc;
-    }
-    .booth-option {
-        cursor: pointer;
-        transition: all 0.2s;
-        background: white;
-    }
-    .booth-option:hover {
-        background-color: #e7f3ff;
-        border-color: #007bff !important;
-        transform: translateY(-2px);
-        box-shadow: 0 2px 8px rgba(0,123,255,0.2);
-    }
-    .booth-option.selected {
-        background-color: #cfe2ff;
-        border-color: #007bff !important;
-        box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
-    }
-    .booth-option input[type="checkbox"] {
-        margin-right: 0.5rem;
-        cursor: pointer;
-    }
-    .booth-option label {
-        cursor: pointer;
-        width: 100%;
-    }
-    .selected-booths-summary {
-        position: sticky;
-        top: 0;
-        background: white;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    .kpi-card-looker {
+        margin-bottom: 24px;
     }
 </style>
 @endpush
 
+@push('body-class', 'ios-dashboard-mode')
+
+
 @section('content')
+<div class='looker-dashboard'>
 <div class="container-fluid">
     <!-- Breadcrumb Navigation -->
     <nav aria-label="breadcrumb" class="mb-3">
@@ -71,8 +48,8 @@
     </nav>
 
     <div class="card card-warning card-outline">
-        <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-edit mr-2"></i>Edit Booking #{{ $book->id }}</h3>
+        <div class="p-4 border-bottom">
+            <h3 class="h5 fw-bold mb-0 text-dark"><i class="fas fa-edit mr-2"></i>Edit Booking #{{ $book->id }}</h3>
             <div class="card-tools">
                 <a href="{{ route('books.show', $book) }}" class="btn btn-sm btn-secondary">
                     <i class="fas fa-arrow-left mr-1"></i>Back to Booking
@@ -82,7 +59,7 @@
         <form action="{{ route('books.update', $book) }}" method="POST" id="bookingForm">
             @csrf
             @method('PUT')
-            <div class="card-body">
+            <div class="p-4">
                 <!-- General Error Display -->
                 @if($errors->any())
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -296,7 +273,7 @@
                     </div>
                 </div>
             </div>
-            <div class="card-footer">
+            <div class="p-3 border-top bg-transparent">
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save mr-1"></i>Update Booking
                 </button>
@@ -306,6 +283,7 @@
             </div>
         </form>
     </div>
+</div>
 </div>
 @endsection
 

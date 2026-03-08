@@ -1,4 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+@push('body-class', 'ios-dashboard-mode')
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
+@endpush
 
 @section('title', 'My Booths')
 
@@ -8,14 +12,14 @@
         <h2><i class="fas fa-calendar-check me-2"></i>My Booths</h2>
     </div>
     <div class="col-auto">
-        <a href="{{ route('booths.index') }}" class="btn btn-secondary">
+        <a href="{{ route('booths.index') }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-2"></i>Back to Floor Plan
         </a>
     </div>
 </div>
 
 <div class="card">
-    <div class="card-body">
+    <div class="p-4">
         <div class="table-responsive">
             <table class="table table-striped table-hover">
                 <thead>

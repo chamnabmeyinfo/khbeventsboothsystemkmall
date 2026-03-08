@@ -1,11 +1,36 @@
-@extends('layouts.adminlte')
+@extends('layouts.admin')
 
 @section('title', 'HR Dashboard')
 
+
 @push('styles')
-@include('hr._modern-styles')
-@include('hr._mobile-styles')
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
+<style>
+    .looker-dashboard { padding: 0 !important; }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(40px) saturate(180%);
+        -webkit-backdrop-filter: blur(40px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        margin-bottom: 24px;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        overflow: hidden;
+    }
+    .glass-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.55);
+        box-shadow: 0 15px 45px rgba(31, 38, 135, 0.2);
+    }
+    .kpi-card-looker {
+        margin-bottom: 24px;
+    }
+</style>
 @endpush
+
+@push('body-class', 'ios-dashboard-mode')
+
 
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center">
@@ -24,6 +49,7 @@
 @stop
 
 @section('content')
+<div class='looker-dashboard'>
 <div class="container-fluid">
     <!-- Statistics Cards - Modern Design -->
     <div class="row mb-4">
@@ -169,7 +195,7 @@
                     <a href="{{ route('hr.employees.index') }}" class="btn btn-sm btn-modern btn-modern-primary">View All</a>
                 </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
+                    <div class="looker-table-container">
                         <table class="table table-modern table-sm mb-0">
                             <thead>
                                 <tr>
@@ -216,7 +242,7 @@
                     <a href="{{ route('hr.leaves.index') }}" class="btn btn-sm btn-modern btn-modern-primary">View All</a>
                 </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
+                    <div class="looker-table-container">
                         <table class="table table-modern table-sm mb-0">
                             <thead>
                                 <tr>
@@ -274,8 +300,8 @@
                 <div class="card-header-modern">
                     <h3><i class="fas fa-building mr-2"></i>Department Statistics</h3>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
+                <div class="p-4">
+                    <div class="looker-table-container">
                         <table class="table table-modern table-sm mb-0">
                             <thead>
                                 <tr>
@@ -315,7 +341,7 @@
                     <h3><i class="fas fa-birthday-cake mr-2"></i>Upcoming Birthdays</h3>
                 </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
+                    <div class="looker-table-container">
                         <table class="table table-modern table-sm mb-0">
                             <thead>
                                 <tr>

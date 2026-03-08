@@ -192,8 +192,8 @@
                 </div>
             </div>
             <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover text-nowrap mb-0">
+                <div class="looker-table-container">
+                    <table class="looker-table text-nowrap mb-0">
                         <thead class="thead-light">
                             <tr>
                                 <th style="width: 50px;">

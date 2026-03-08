@@ -1,261 +1,41 @@
-@extends('layouts.adminlte')
+@extends('layouts.admin')
 
 @section('title', 'Financial Dashboard')
 @section('page-title', 'Financial Dashboard')
 @section('breadcrumb', 'Finance / Dashboard')
 
+
 @push('styles')
-@php
-    try {
-        $cdnSettings = \App\Models\Setting::getCDNSettings();
-        $useCDN = $cdnSettings['use_cdn'] ?? true; // Default to true (CDN enabled)
-    } catch (\Exception $e) {
-        // If settings table doesn't exist or error occurs, default to CDN enabled
-        $useCDN = true;
-    }
-@endphp
-@if($useCDN)
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">
-@else
-<link rel="stylesheet" href="{{ asset('vendor/chartjs/chart.min.css') }}">
-@endif
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
 <style>
-/* Mobile Responsive Styles */
-@media (max-width: 768px) {
-    /* Container padding */
-    .container-fluid {
-        padding-left: 10px;
-        padding-right: 10px;
+    .looker-dashboard { padding: 0 !important; }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(40px) saturate(180%);
+        -webkit-backdrop-filter: blur(40px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        margin-bottom: 24px;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        overflow: hidden;
     }
-    
-    /* Stat cards - Full width on mobile */
-    .stat-card {
-        margin-bottom: 15px !important;
-        padding: 18px !important;
+    .glass-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.55);
+        box-shadow: 0 15px 45px rgba(31, 38, 135, 0.2);
     }
-    
-    .stat-card-icon {
-        font-size: 2rem !important;
+    .kpi-card-looker {
+        margin-bottom: 24px;
     }
-    
-    .stat-card-value {
-        font-size: 1.8rem !important;
-    }
-    
-    .stat-card-label {
-        font-size: 0.8rem !important;
-    }
-    
-    .stat-card small {
-        font-size: 0.75rem !important;
-    }
-    
-    /* Filter card - Stack inputs */
-    .filter-card .row {
-        flex-direction: column;
-    }
-    
-    .filter-card .col-md-3 {
-        width: 100%;
-        margin-bottom: 10px;
-    }
-    
-    .filter-card .btn {
-        width: 100%;
-        margin-bottom: 8px;
-    }
-    
-    .filter-card .d-flex {
-        flex-direction: column;
-    }
-    
-    .filter-card .me-2 {
-        margin-right: 0 !important;
-        margin-bottom: 8px;
-    }
-    
-    /* Charts - Adjust height for mobile */
-    .chart-container {
-        height: 300px !important;
-        padding: 15px !important;
-        margin-bottom: 20px !important;
-    }
-    
-    .chart-container h5 {
-        font-size: 1rem;
-        margin-bottom: 15px !important;
-    }
-    
-    /* Table - Horizontal scroll */
-    .table-modern {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    
-    .table-modern table {
-        min-width: 700px;
-    }
-    
-    .table-modern th,
-    .table-modern td {
-        padding: 10px 8px !important;
-        font-size: 0.85rem !important;
-    }
-    
-    .table-modern .badge {
-        font-size: 0.75rem;
-        padding: 4px 8px;
-    }
-    
-    /* Card headers */
-    .card-header h5 {
-        font-size: 1.1rem;
-    }
-    
-    /* Responsive rows */
-    .row.mb-4 {
-        margin-bottom: 1rem !important;
-    }
-    
-    /* Form controls */
-    .form-control, .form-select {
-        font-size: 16px; /* Prevent iOS zoom */
-        padding: 10px;
-    }
-    
-    .form-label {
-        font-size: 14px;
-        font-weight: 600;
-        margin-bottom: 6px;
-    }
-}
-
-/* Tablet specific */
-@media (min-width: 769px) and (max-width: 1024px) {
-    .stat-card {
-        padding: 20px !important;
-    }
-    
-    .stat-card-value {
-        font-size: 2rem !important;
-    }
-    
-    .chart-container {
-        height: 320px !important;
-    }
-    
-    .table-modern th,
-    .table-modern td {
-        font-size: 0.9rem !important;
-    }
-}
-
-/* Touch-friendly improvements */
-@media (hover: none) and (pointer: coarse) {
-    /* Remove hover effects on touch */
-    .stat-card:hover {
-        transform: none;
-    }
-    
-    /* Larger touch targets */
-    .btn {
-        min-height: 44px;
-        padding: 12px 20px;
-    }
-}
-
-/* Landscape phone optimization */
-@media (max-width: 768px) and (orientation: landscape) {
-    .chart-container {
-        height: 250px !important;
-    }
-    
-    .stat-card {
-        padding: 12px !important;
-    }
-    
-    .stat-card-value {
-        font-size: 1.5rem !important;
-    }
-}
-
-.stat-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 12px;
-    padding: 24px;
-    text-align: center;
-    transition: transform 0.2s;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-}
-
-.stat-card.success {
-    background: linear-gradient(135deg, #1cc88a 0%, #17a673 100%);
-}
-
-.stat-card.warning {
-    background: linear-gradient(135deg, #f6c23e 0%, #dda20a 100%);
-}
-
-.stat-card.info {
-    background: linear-gradient(135deg, #36b9cc 0%, #2c9faf 100%);
-}
-
-.stat-card.danger {
-    background: linear-gradient(135deg, #e74a3b 0%, #c23321 100%);
-}
-
-.stat-card-icon {
-    font-size: 3rem;
-    opacity: 0.8;
-    margin-bottom: 10px;
-}
-
-.stat-card-value {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin: 10px 0;
-}
-
-.stat-card-label {
-    font-size: 0.95rem;
-    opacity: 0.9;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.chart-container {
-    position: relative;
-    height: 350px;
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.filter-card {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    margin-bottom: 24px;
-}
-
-.table-modern {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
 </style>
 @endpush
 
+@push('body-class', 'ios-dashboard-mode')
+
+
 @section('content')
+<div class='looker-dashboard'>
 <div class="container-fluid">
     
     {{-- Filters --}}
@@ -401,11 +181,11 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card table-modern">
-                <div class="card-header">
+                <div class="p-4 border-bottom">
                     <h5 class="mb-0"><i class="fas fa-crown"></i> Top Clients by Revenue</h5>
                 </div>
                 <div class="card-body p-0">
-                    <table class="table table-hover mb-0">
+                    <table class="looker-table mb-0">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -448,6 +228,7 @@
         </div>
     </div>
     
+</div>
 </div>
 @endsection
 

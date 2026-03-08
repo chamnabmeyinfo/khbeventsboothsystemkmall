@@ -24,17 +24,13 @@
         top: 0 !important;
         z-index: 1030 !important;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
-        background: white !important;
+        background: transparent !important;
     }
     
     /* Full Width Layout - Starting from Right Edge of Sidebar */
     @media (min-width: 769px) and (max-width: 1024px) {
         /* Tablet: Sidebar is 200px */
-        .content-wrapper {
-            margin-left: 200px !important;
-            width: calc(100% - 200px) !important;
-            max-width: calc(100% - 200px) !important;
-        }
+        
         
         .content {
             width: 100% !important;
@@ -53,11 +49,7 @@
     
     @media (min-width: 1025px) {
         /* Desktop: Use CSS variable for sidebar width (250px) */
-        .content-wrapper {
-            margin-left: var(--sidebar-width, 250px) !important;
-            width: calc(100% - var(--sidebar-width, 250px)) !important;
-            max-width: calc(100% - var(--sidebar-width, 250px)) !important;
-        }
+        
         
         .content {
             width: 100% !important;
@@ -75,11 +67,7 @@
     }
     
     @media (max-width: 768px) {
-        .content-wrapper {
-            margin-left: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
-        }
+        
         
         .content .container-fluid {
             padding-left: 0 !important;
@@ -88,9 +76,7 @@
     }
     
     @media (min-width: 769px) {
-        body {
-            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%) !important;
-        }
+        body { }
         
         .container-fluid {
             max-width: 100% !important;
@@ -101,12 +87,7 @@
     }
     
     @media (max-width: 768px) {
-        body {
-            background: #f5f7fa !important;
-            padding-bottom: 90px !important;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
+        body { }
         
         .container-fluid {
             padding: 0 !important;
@@ -128,13 +109,13 @@
             display: flex !important;
             align-items: center !important;
             justify-content: space-between !important;
-            color: white !important;
+            color: #1d1d1f !important;
         }
         
         .mobile-app-title {
             font-size: 24px !important;
             font-weight: 800 !important;
-            color: white !important;
+            color: #1d1d1f !important;
             margin: 0 !important;
             letter-spacing: -0.5px !important;
         }
@@ -157,7 +138,7 @@
             border-radius: 12px !important;
             background: rgba(255, 255, 255, 0.2) !important;
             border: none !important;
-            color: white !important;
+            color: #1d1d1f !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
@@ -179,9 +160,7 @@
     }
     
     @media (min-width: 769px) and (max-width: 1024px) {
-        body {
-            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%) !important;
-        }
+        body { }
         
         .container-fluid {
             max-width: 100% !important;
@@ -197,7 +176,7 @@
         padding: 32px !important;
         margin-bottom: 32px !important;
         box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
-        color: white !important;
+        color: #1d1d1f !important;
         position: relative !important;
         overflow: hidden !important;
     }
@@ -217,7 +196,7 @@
         font-size: 36px !important;
         font-weight: 800 !important;
         margin: 0 !important;
-        color: white !important;
+        color: #1d1d1f !important;
         position: relative !important;
         z-index: 1 !important;
     }
@@ -225,7 +204,7 @@
     .modern-page-header .btn {
         background: rgba(255, 255, 255, 0.2) !important;
         border: 1px solid rgba(255, 255, 255, 0.3) !important;
-        color: white !important;
+        color: #1d1d1f !important;
         border-radius: 12px !important;
         padding: 10px 20px !important;
         font-weight: 600 !important;
@@ -325,7 +304,7 @@
     
     /* Modern Stat Cards - Matching Dashboard */
     .modern-stat-card {
-        background: white !important;
+        background: transparent !important;
         border-radius: 24px !important;
         padding: 24px !important;
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !important;
@@ -387,7 +366,7 @@
     /* Legacy stat-card support */
     .stat-card {
         background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
-        color: white !important;
+        color: #1d1d1f !important;
         border-radius: 24px !important;
         padding: 24px !important;
         text-align: center !important;
@@ -437,7 +416,7 @@
         white-space: nowrap !important;
         padding: 10px 20px !important;
         border: 2px solid #e5e7eb !important;
-        background: white !important;
+        background: transparent !important;
     }
     
     .quick-filter-btn:hover {
@@ -449,7 +428,7 @@
     .quick-filter-btn.active {
         font-weight: 700 !important;
         background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
-        color: white !important;
+        color: #1d1d1f !important;
         border-color: #6366f1 !important;
         box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
     }
@@ -556,7 +535,7 @@
             display: grid !important;
             grid-template-columns: repeat(2, 1fr) !important;
             gap: 12px !important;
-            background: white !important;
+            background: transparent !important;
             margin-bottom: 12px !important;
         }
         
@@ -564,7 +543,7 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
             border-radius: 16px !important;
             padding: 16px !important;
-            color: white !important;
+            color: #1d1d1f !important;
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2) !important;
             position: relative !important;
             overflow: hidden !important;
@@ -604,7 +583,7 @@
         /* Mobile Search Bar */
         .mobile-search-container {
             padding: 0 20px 16px !important;
-            background: white !important;
+            background: transparent !important;
         }
         
         .mobile-search-bar {
@@ -624,7 +603,7 @@
         .mobile-search-input:focus {
             outline: none !important;
             border-color: #667eea !important;
-            background: white !important;
+            background: transparent !important;
             box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1) !important;
         }
         
@@ -640,7 +619,7 @@
         /* Mobile Quick Filters */
         .mobile-filters-container {
             padding: 0 20px 16px !important;
-            background: white !important;
+            background: transparent !important;
         }
         
         .mobile-filters-scroll {
@@ -668,13 +647,13 @@
         
         .mobile-filter-chip.active {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-            color: white !important;
+            color: #1d1d1f !important;
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
         }
         
         /* Mobile App Booth Cards */
         .mobile-booth-card {
-            background: white !important;
+            background: transparent !important;
             border-radius: 20px !important;
             margin: 0 20px 16px !important;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
@@ -806,24 +785,24 @@
         
         .mobile-booth-actions .btn-info {
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
-            color: white !important;
+            color: #1d1d1f !important;
         }
         
         .mobile-booth-actions .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-            color: white !important;
+            color: #1d1d1f !important;
         }
         
         .mobile-booth-actions .btn-danger {
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
-            color: white !important;
+            color: #1d1d1f !important;
         }
         
         /* Empty State */
         .mobile-empty-state {
             text-align: center !important;
             padding: 60px 20px !important;
-            background: white !important;
+            background: transparent !important;
             margin: 20px !important;
             border-radius: 20px !important;
         }
@@ -844,7 +823,7 @@
         .mobile-pagination {
             padding: 20px !important;
             text-align: center !important;
-            background: white !important;
+            background: transparent !important;
         }
         
         .mobile-pagination .pagination {
@@ -1042,7 +1021,7 @@
     
     /* Modern Filter Bar */
     .filter-bar {
-        background: white !important;
+        background: transparent !important;
         padding: 24px !important;
         border-radius: 24px !important;
         margin-bottom: 24px !important;
@@ -1089,7 +1068,7 @@
     /* Modern Table */
     /* Modern Table Card Design */
     .table-modern {
-        background: white !important;
+        background: transparent !important;
         border-radius: 20px !important;
         overflow: hidden !important;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
@@ -1102,15 +1081,12 @@
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
     }
     
-    .table-modern .card-body {
-        padding: 0 !important;
-        background: transparent !important;
-    }
+    .table-modern .card-body { }
     
     /* Modern Table Header */
     .table-modern thead {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        color: white !important;
+        color: #1d1d1f !important;
     }
     
     /* Sticky Table Header - Stays visible when scrolling */
@@ -1166,7 +1142,7 @@
         width: 18px !important;
         height: 18px !important;
         cursor: pointer !important;
-        accent-color: white !important;
+        accent-color: #1d1d1f !important;
     }
     
     /* Min widths only for checkbox/row_number so default % widths can fit container */
@@ -1188,14 +1164,12 @@
     }
     
     /* Modern Table Body */
-    .table-modern tbody {
-        background: white !important;
-    }
+    .table-modern tbody { }
     
     .table-modern tbody tr {
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
         border-bottom: 1px solid #f1f5f9 !important;
-        background: white !important;
+        background: transparent !important;
     }
     
     .table-modern tbody tr:last-child {
@@ -1280,17 +1254,17 @@
     
     .btn-action.btn-info {
         background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
-        color: white !important;
+        color: #1d1d1f !important;
     }
     
     .btn-action.btn-primary {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        color: white !important;
+        color: #1d1d1f !important;
     }
     
     .btn-action.btn-danger {
         background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
-        color: white !important;
+        color: #1d1d1f !important;
     }
     
     /* Modern Badges */
@@ -1303,27 +1277,27 @@
     
     .badge-success {
         background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-        color: white !important;
+        color: #1d1d1f !important;
     }
     
     .badge-warning {
         background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
-        color: white !important;
+        color: #1d1d1f !important;
     }
     
     .badge-info {
         background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
-        color: white !important;
+        color: #1d1d1f !important;
     }
     
     .badge-danger {
         background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
-        color: white !important;
+        color: #1d1d1f !important;
     }
     
     .badge-primary {
         background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
-        color: white !important;
+        color: #1d1d1f !important;
     }
     
     /* Modal Form Styles */
@@ -1479,16 +1453,16 @@
     }
     
     .pagination .page-link:hover {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: rgba(255, 255, 255, 0.4);
+        color: #1d1d1f;
         border-color: #667eea;
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
     }
     
     .pagination .page-item.active .page-link {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: rgba(255, 255, 255, 0.4);
+        color: #1d1d1f;
         border-color: #667eea;
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
     }
@@ -1605,11 +1579,7 @@
     }
     
     /* Settings Panel Card Body Styling */
-    #settingsPanel .card-body {
-        padding: 24px !important;
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
-        border-radius: 0 !important;
-    }
+    #settingsPanel .card-body { }
     
     #settingsPanel .card-body h5 {
         font-size: 16px !important;
@@ -1652,7 +1622,7 @@
     }
     
     #settingsPanel .card-body .form-check {
-        background: white !important;
+        background: transparent !important;
         padding: 8px 12px !important;
         border-radius: 8px !important;
         border: 1px solid #e5e7eb !important;
@@ -1745,7 +1715,7 @@
     
     .load-mode-btn.active {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        color: white !important;
+        color: #1d1d1f !important;
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
     }
     
@@ -1785,7 +1755,7 @@
     /* Modern Modal Styles */
     .modal-header {
         background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
-        color: white !important;
+        color: #1d1d1f !important;
         border-radius: 20px 20px 0 0 !important;
         position: sticky !important;
         top: 0 !important;
@@ -1818,7 +1788,7 @@
     #boothModal .modal-footer {
         position: sticky !important;
         bottom: 0 !important;
-        background: white !important;
+        background: transparent !important;
         border-top: 2px solid #f3f4f6 !important;
         z-index: 10 !important;
         padding: 20px 30px !important;
@@ -1914,7 +1884,7 @@
         height: 32px;
         border-radius: 50%;
         background: #e74a3b;
-        color: white;
+        color: #1d1d1f;
         border: none;
         display: flex;
         align-items: center;
@@ -1986,7 +1956,7 @@
     }
     
     .modern-filter-select:focus {
-        background-color: white !important;
+        background-color: #1d1d1f !important;
     }
     
     .modern-filter-select {
@@ -2100,7 +2070,7 @@
         width: 100% !important;
         max-width: 100% !important;
         transition: all 0.3s ease !important;
-        background: white !important;
+        background: transparent !important;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
         position: relative !important;
     }
@@ -2271,6 +2241,7 @@
 @endpush
 
 @section('content')
+<div class='looker-dashboard'>
 <div class="container-fluid" id="boothManagementContainer" data-space-mode="default">
     <!-- Top Control Bar - Desktop -->
     <div class="d-none d-md-block mb-3">
@@ -2288,7 +2259,7 @@
                         
                         <!-- Space Mode Toggle -->
                         <div class="btn-group" role="group" style="border-radius: 10px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                            <button type="button" class="btn btn-sm space-mode-btn active" data-mode="default" onclick="setSpaceMode('default')" style="padding: 8px 16px; font-weight: 600; border: none; background: #667eea; color: white;">
+                            <button type="button" class="btn btn-sm space-mode-btn active" data-mode="default" onclick="setSpaceMode('default')" style="padding: 8px 16px; font-weight: 600; border: none; background: #667eea; color: #1d1d1f;">
                                 <i class="fas fa-th"></i> Default
                             </button>
                             <button type="button" class="btn btn-sm space-mode-btn" data-mode="minimal" onclick="setSpaceMode('minimal')" style="padding: 8px 16px; font-weight: 600; border: none; background: #f8f9fa; color: #495057;">
@@ -2373,10 +2344,10 @@
                     <!-- Available -->
                     <div class="col-md-2 col-lg-2">
                         <div class="dashboard-metric-card success" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 4px rgba(16,185,129,0.2); border: 1px solid #10b981; transition: all 0.2s ease;">
-                            <div class="metric-icon" style="font-size: 24px; color: white; margin-bottom: 8px;">
+                            <div class="metric-icon" style="font-size: 24px; color: #1d1d1f; margin-bottom: 8px;">
                                 <i class="fas fa-check-circle"></i>
                             </div>
-                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: white; line-height: 1.2;">
+                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: #1d1d1f; line-height: 1.2;">
                                 {{ number_format($stats['available']) }}
                             </div>
                             <div class="metric-label" style="font-size: 12px; color: rgba(255,255,255,0.9); font-weight: 600; margin-top: 4px;">
@@ -2387,10 +2358,10 @@
                     <!-- Reserved -->
                     <div class="col-md-2 col-lg-2">
                         <div class="dashboard-metric-card warning" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 4px rgba(245,158,11,0.2); border: 1px solid #f59e0b; transition: all 0.2s ease;">
-                            <div class="metric-icon" style="font-size: 24px; color: white; margin-bottom: 8px;">
+                            <div class="metric-icon" style="font-size: 24px; color: #1d1d1f; margin-bottom: 8px;">
                                 <i class="fas fa-bookmark"></i>
                             </div>
-                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: white; line-height: 1.2;">
+                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: #1d1d1f; line-height: 1.2;">
                                 {{ number_format($stats['reserved']) }}
                             </div>
                             <div class="metric-label" style="font-size: 12px; color: rgba(255,255,255,0.9); font-weight: 600; margin-top: 4px;">
@@ -2401,10 +2372,10 @@
                     <!-- Confirmed -->
                     <div class="col-md-2 col-lg-2">
                         <div class="dashboard-metric-card info" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 4px rgba(6,182,212,0.2); border: 1px solid #06b6d4; transition: all 0.2s ease;">
-                            <div class="metric-icon" style="font-size: 24px; color: white; margin-bottom: 8px;">
+                            <div class="metric-icon" style="font-size: 24px; color: #1d1d1f; margin-bottom: 8px;">
                                 <i class="fas fa-check-double"></i>
                             </div>
-                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: white; line-height: 1.2;">
+                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: #1d1d1f; line-height: 1.2;">
                                 {{ number_format($stats['confirmed']) }}
                             </div>
                             <div class="metric-label" style="font-size: 12px; color: rgba(255,255,255,0.9); font-weight: 600; margin-top: 4px;">
@@ -2415,10 +2386,10 @@
                     <!-- Paid -->
                     <div class="col-md-2 col-lg-2">
                         <div class="dashboard-metric-card danger" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 4px rgba(239,68,68,0.2); border: 1px solid #ef4444; transition: all 0.2s ease;">
-                            <div class="metric-icon" style="font-size: 24px; color: white; margin-bottom: 8px;">
+                            <div class="metric-icon" style="font-size: 24px; color: #1d1d1f; margin-bottom: 8px;">
                                 <i class="fas fa-dollar-sign"></i>
                             </div>
-                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: white; line-height: 1.2;">
+                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: #1d1d1f; line-height: 1.2;">
                                 {{ number_format($stats['paid']) }}
                             </div>
                             <div class="metric-label" style="font-size: 12px; color: rgba(255,255,255,0.9); font-weight: 600; margin-top: 4px;">
@@ -2431,11 +2402,11 @@
                         @php
                             $occupancyRate = $stats['total'] > 0 ? round((($stats['total'] - $stats['available']) / $stats['total']) * 100, 1) : 0;
                         @endphp
-                        <div class="dashboard-metric-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 4px rgba(102,126,234,0.2); border: 1px solid #667eea; transition: all 0.2s ease;">
-                            <div class="metric-icon" style="font-size: 24px; color: white; margin-bottom: 8px;">
+                        <div class="dashboard-metric-card" style="background: rgba(255, 255, 255, 0.4); border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 4px rgba(102,126,234,0.2); border: 1px solid #667eea; transition: all 0.2s ease;">
+                            <div class="metric-icon" style="font-size: 24px; color: #1d1d1f; margin-bottom: 8px;">
                                 <i class="fas fa-chart-pie"></i>
                             </div>
-                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: white; line-height: 1.2;">
+                            <div class="metric-value" style="font-size: 28px; font-weight: 700; color: #1d1d1f; line-height: 1.2;">
                                 {{ $occupancyRate }}%
                             </div>
                             <div class="metric-label" style="font-size: 12px; color: rgba(255,255,255,0.9); font-weight: 600; margin-top: 4px;">
@@ -2671,7 +2642,7 @@
                         <!-- Filter Button -->
                         <div class="col-12 col-md-1">
                             <label class="form-label" style="font-weight: 600; color: #475569; margin-bottom: 8px; visibility: hidden;">&nbsp;</label>
-                            <button type="submit" class="btn btn-primary w-100 modern-filter-btn" style="border-radius: 12px; font-weight: 600; padding: 12px 20px; border: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); transition: all 0.3s ease; height: 48px; display: flex; align-items: center; justify-content: center;">
+                            <button type="submit" class="btn btn-primary w-100 modern-filter-btn" style="border-radius: 12px; font-weight: 600; padding: 12px 20px; border: none; background: rgba(255, 255, 255, 0.4); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); transition: all 0.3s ease; height: 48px; display: flex; align-items: center; justify-content: center;">
                                 <i class="fas fa-filter mr-2"></i>Filter
                             </button>
                         </div>
@@ -2745,7 +2716,7 @@
                 
                 <!-- Right: Actions -->
                 <div class="d-flex align-items-center gap-2">
-                    <button type="button" class="btn btn-sm" onclick="window.toggleSettingsPanel()" id="settingsToggleBtn" style="border-radius: 10px; padding: 8px 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; font-weight: 600; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3); transition: all 0.3s ease;">
+                    <button type="button" class="btn btn-sm" onclick="window.toggleSettingsPanel()" id="settingsToggleBtn" style="border-radius: 10px; padding: 8px 16px; background: rgba(255, 255, 255, 0.4); color: #1d1d1f; border: none; font-weight: 600; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3); transition: all 0.3s ease;">
                         <i class="fas fa-cog mr-2"></i>Table Settings
                         <i class="fas fa-chevron-down ml-2" id="settingsChevron" style="transition: transform 0.3s ease;"></i>
                     </button>
@@ -3097,7 +3068,7 @@
 <div class="modal fade" id="boothModal" tabindex="-1" role="dialog" aria-labelledby="boothModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
         <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
-            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px 12px 0 0; padding: 20px 30px; border-bottom: none;">
+            <div class="modal-header" style="background: rgba(255, 255, 255, 0.4); border-radius: 12px 12px 0 0; padding: 20px 30px; border-bottom: none;">
                 <h5 class="modal-title text-white" id="modalTitle" style="font-size: 1.5rem; font-weight: 700;">
                     <i class="fas fa-store mr-2"></i><span id="modalTitleText">Create New Booth</span>
                 </h5>
@@ -3349,7 +3320,7 @@
                                             <img id="imagePreview" src="" alt="Preview" 
                                                  style="max-width: 100%; max-height: 400px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
                                             <button type="button" class="remove-image-btn" onclick="removeImage()"
-                                                    style="position: absolute; top: 10px; right: 10px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: all 0.3s;"
+                                                    style="position: absolute; top: 10px; right: 10px; background: #dc3545; color: #1d1d1f; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: all 0.3s;"
                                                     onmouseover="this.style.transform='scale(1.1)'; this.style.background='#c82333'"
                                                     onmouseout="this.style.transform='scale(1)'; this.style.background='#dc3545'">
                                                 <i class="fas fa-times"></i>
@@ -3362,12 +3333,12 @@
                     </div>
                 </div>
                 <div class="modal-footer" style="border-top: 1px solid #e9ecef; padding: 20px 30px; background: #f8f9fa; border-radius: 0 0 12px 12px;">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" 
+                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal" 
                             style="border-radius: 8px; padding: 10px 25px; font-weight: 600;">
                         <i class="fas fa-times mr-2"></i>Cancel
                     </button>
                     <button type="submit" class="btn btn-primary"
-                            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 8px; padding: 10px 30px; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
+                            style="background: rgba(255, 255, 255, 0.4); border: none; border-radius: 8px; padding: 10px 30px; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
                         <i class="fas fa-save mr-2"></i>Save Booth
                     </button>
                 </div>
@@ -3397,7 +3368,7 @@
 <div class="modal fade" id="statusSettingsModal" tabindex="-1" role="dialog" aria-labelledby="statusSettingsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
         <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <div class="modal-header" style="background: rgba(255, 255, 255, 0.4); color: #1d1d1f;">
                 <h5 class="modal-title" id="statusSettingsModalLabel">
                     <i class="fas fa-tags me-2"></i>Booth Status Settings
                 </h5>
@@ -3435,13 +3406,14 @@
                     <button type="button" class="btn btn-success" id="btnSaveStatusSettings">
                         <i class="fas fa-save me-2"></i>Save All Status Settings
                     </button>
-                    <button type="button" class="btn btn-secondary ms-2" id="btnResetStatusSettings">
+                    <button type="button" class="btn btn-outline-secondary ms-2" id="btnResetStatusSettings">
                         <i class="fas fa-undo me-2"></i>Reset to Defaults
                     </button>
                 </div>
             </div>
         </div>
     </div>
+</div>
 </div>
 @endsection
 

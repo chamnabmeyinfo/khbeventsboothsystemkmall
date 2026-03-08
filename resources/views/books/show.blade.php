@@ -1,43 +1,41 @@
-@extends('layouts.adminlte')
+@extends('layouts.admin')
 
 @section('title', 'Booking Details')
 @section('page-title', 'Booking Details')
 @section('breadcrumb', 'Bookings / View')
 
+
 @push('styles')
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
 <style>
-    .detail-card {
-        border-left: 4px solid;
-        transition: transform 0.2s;
+    .looker-dashboard { padding: 0 !important; }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(40px) saturate(180%);
+        -webkit-backdrop-filter: blur(40px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        margin-bottom: 24px;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        overflow: hidden;
     }
-    .detail-card:hover {
-        transform: translateX(5px);
+    .glass-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.55);
+        box-shadow: 0 15px 45px rgba(31, 38, 135, 0.2);
     }
-    .detail-card.primary { border-left-color: #007bff; }
-    .detail-card.success { border-left-color: #28a745; }
-    .detail-card.info { border-left-color: #17a2b8; }
-    .info-row {
-        padding: 0.75rem 0;
-        border-bottom: 1px solid #f0f0f0;
-    }
-    .info-row:last-child {
-        border-bottom: none;
-    }
-    .booth-card {
-        border: 1px solid #dee2e6;
-        border-radius: 0.5rem;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        transition: all 0.2s;
-    }
-    .booth-card:hover {
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        transform: translateY(-2px);
+    .kpi-card-looker {
+        margin-bottom: 24px;
     }
 </style>
 @endpush
 
+@push('body-class', 'ios-dashboard-mode')
+
+
 @section('content')
+<div class='looker-dashboard'>
 <div class="container-fluid">
     <!-- Breadcrumb Navigation -->
     <nav aria-label="breadcrumb" class="mb-3">
@@ -92,7 +90,7 @@
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0"><i class="fas fa-calendar-check mr-2"></i>Booking Information</h5>
                 </div>
-                <div class="card-body">
+                <div class="p-4">
                     <div class="info-row">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="text-muted"><i class="fas fa-hashtag mr-2"></i>Booking ID:</span>
@@ -226,7 +224,7 @@
                     </a>
                     @endif
                 </div>
-                <div class="card-body">
+                <div class="p-4">
                     @if($book->client)
                     <div class="info-row">
                         <div class="d-flex justify-content-between align-items-center">
@@ -282,7 +280,7 @@
                             <span class="badge badge-light">{{ ($booths->sum('price') ?? 0) > 0 ? '$' . number_format($booths->sum('price'), 2) : 'Free' }}</span>
                         </div>
                 </div>
-                <div class="card-body">
+                <div class="p-4">
                     @if(count($booths) > 0)
                         <div class="row">
                             @foreach($booths as $booth)
@@ -338,7 +336,7 @@
                         <i class="fas fa-plus mr-1"></i>Record Payment
                     </a>
                 </div>
-                <div class="card-body">
+                <div class="p-4">
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <div class="text-center p-3 bg-light rounded">
@@ -411,6 +409,7 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 @endsection
 

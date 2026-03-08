@@ -165,7 +165,7 @@
                     </div>
                     <hr class="my-4">
                     <h6 class="mb-3">Per-context limits (override global)</h6>
-                    <div class="table-responsive">
+                    <div class="looker-table-container">
                         <table class="table table-sm table-bordered">
                             <thead>
                                 <tr>

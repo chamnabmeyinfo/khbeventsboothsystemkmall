@@ -1,31 +1,45 @@
-@extends('layouts.adminlte')
+@extends('layouts.admin')
 
 @section('title', 'Edit Client')
 @section('page-title', 'Edit Client')
 @section('breadcrumb', 'Clients / Edit')
 
+
 @push('styles')
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
 <style>
-    .form-section {
-        background: #f8f9fc;
-        padding: 1.5rem;
-        border-radius: 0.5rem;
-        margin-bottom: 1.5rem;
-        border-left: 4px solid #007bff;
+    .looker-dashboard { padding: 0 !important; }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(40px) saturate(180%);
+        -webkit-backdrop-filter: blur(40px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        margin-bottom: 24px;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        overflow: hidden;
     }
-    .form-section h6 {
-        color: #495057;
-        font-weight: 600;
-        margin-bottom: 1rem;
+    .glass-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.55);
+        box-shadow: 0 15px 45px rgba(31, 38, 135, 0.2);
+    }
+    .kpi-card-looker {
+        margin-bottom: 24px;
     }
 </style>
 @endpush
 
+@push('body-class', 'ios-dashboard-mode')
+
+
 @section('content')
+<div class='looker-dashboard'>
 <div class="container-fluid">
     <div class="card card-primary card-outline">
-        <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-user-edit mr-2"></i>Edit Client: {{ $client->name }}</h3>
+        <div class="p-4 border-bottom">
+            <h3 class="h5 fw-bold mb-0 text-dark"><i class="fas fa-user-edit mr-2"></i>Edit Client: {{ $client->name }}</h3>
             <div class="card-tools">
                 <a href="{{ route('clients.show', $client) }}" class="btn btn-sm btn-info">
                     <i class="fas fa-eye mr-1"></i>View Details
@@ -38,7 +52,7 @@
         <form action="{{ route('clients.update', $client) }}" method="POST" id="clientForm">
             @csrf
             @method('PUT')
-            <div class="card-body">
+            <div class="p-4">
                 <!-- Basic Information -->
                 <div class="form-section">
                     <h6><i class="fas fa-user mr-2"></i>Basic Information</h6>
@@ -325,7 +339,7 @@
                     </div>
                 </div>
             </div>
-            <div class="card-footer">
+            <div class="p-3 border-top bg-transparent">
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save mr-1"></i>Update Client
                 </button>
@@ -336,6 +350,7 @@
             </div>
         </form>
     </div>
+</div>
 </div>
 @endsection
 
