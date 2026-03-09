@@ -16,9 +16,17 @@
             </li>
             @if($user->hasPermission('booths.view') || $user->isAdmin())
             <li class="sidebar-nav-item">
-                <a href="{{ route('booths.index') }}" class="sidebar-nav-link {{ request()->is('booths*') ? 'active' : '' }}">
+                <a href="{{ route('booths.index') }}" class="sidebar-nav-link {{ request()->is('booths*') && !request()->is('floor-plans*') ? 'active' : '' }}">
                     <i class="fas fa-cube"></i>
                     <span>Booth Inventory</span>
+                </a>
+            </li>
+            @endif
+            @if($user->hasPermission('floor_plans.view') || $user->isAdmin())
+            <li class="sidebar-nav-item">
+                <a href="{{ route('floor-plans.index') }}" class="sidebar-nav-link {{ request()->is('floor-plans*') ? 'active' : '' }}">
+                    <i class="fas fa-map"></i>
+                    <span>Floor Plans</span>
                 </a>
             </li>
             @endif
