@@ -1438,6 +1438,12 @@ const FloorPlanDesigner = {
             
         });
         
+        // Initialize existing zone toggles
+        const zoneHeaders = document.querySelectorAll('[data-zone-toggle]');
+        zoneHeaders.forEach(function(header) {
+            self.setupZoneToggle(header);
+        });
+        
     },
     
     // Remove booth from sidebar

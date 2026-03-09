@@ -617,7 +617,7 @@
                             @endphp
                             
                             @foreach($zones as $zoneName => $zoneBooths)
-                                <div class="zone-section" data-zone="{{ $zoneName }}">
+                                <div class="zone-section collapsed" data-zone="{{ $zoneName }}">
                                     <div class="zone-header" data-zone-toggle="{{ $zoneName }}">
                                         <div class="zone-header-left">
                                             <i class="fas fa-chevron-down zone-chevron" aria-hidden="true"></i>
