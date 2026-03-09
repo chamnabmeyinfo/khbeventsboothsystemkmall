@@ -40,24 +40,32 @@
         width:     100% !important;
     }
 
-    /* Floor-plan selector panel: compact, no card rounding on left/right edges */
+    /* Floor-plan selector panel: very compact for dashboard */
     .looker-dashboard .canvas-panel {
-        margin:        0 0 0 0 !important;
-        border-radius: 0 !important;
+        margin:        0 0 8px 0 !important;
+        padding:       12px 20px !important;
+        background:    #ffffff !important;
+        border-bottom: 2px solid #f0f0f2 !important;
+        border-top:    none !important;
         border-left:   none !important;
         border-right:  none !important;
+        border-radius: 0 !important;
+        box-shadow:    0 2px 4px rgba(0,0,0,0.02) !important;
     }
 
-    /* Designer fills remaining height exactly under the 70px header */
+    /* Fixed top header height safety */
     .floorplan-designer {
         height: calc(100vh - 70px) !important;
+        background: #f8f9fa;
     }
 
     .text-dark-gray { color: #1d1d1f !important; }
 
-    /* Remove blocking modal backdrop as requested */
-    .modal-backdrop {
+    /* Kill the backdrop entirely as it blocks interaction */
+    .modal-backdrop, .modal-backdrop.show, .modal-backdrop.fade.show {
         display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
     }
 </style>
 @endpush
@@ -104,47 +112,37 @@
     @else
     <!-- Floor Plan Selector - Dashboard Design -->
     @if(isset($floorPlans) && $floorPlans->count() > 0)
-    <div class="canvas-panel mb-4">
-        <div class="panel-header">
-            <h2 class="panel-title"><i class="fas fa-map"></i> Floor Plan</h2>
-            <div class="looker-actions">
-                <a href="{{ route('booths.index', ['view' => 'table']) }}" class="action-btn action-btn-primary" title="Booth Management">
-                    <i class="fas fa-table"></i> Management
-                </a>
-                <a href="{{ route('floor-plans.index') }}" class="action-btn action-btn-secondary" title="Manage Floor Plans">
-                    <i class="fas fa-cog"></i> Floor Plans
-                </a>
-            </div>
-        </div>
-        <div class="row align-items-center g-3">
-            <div class="col-md-4">
-                <label class="mb-0 fw-semibold" style="color: var(--text-secondary);">
-                    <i class="fas fa-map me-2" style="color: var(--accent-blue);"></i>Select Floor Plan
+    <div class="canvas-panel mb-2 py-3 px-4" style="background: var(--bg-surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-light);">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3 flex-grow-1">
+                <label class="mb-0 fw-semibold text-nowrap" style="color: var(--text-secondary); font-size: 0.9rem;">
+                    <i class="fas fa-map me-1" style="color: var(--accent-blue);"></i>Floor Plan:
                 </label>
-            </div>
-            <div class="col-md-6">
-                <select id="floorPlanSelector" class="form-select" onchange="switchFloorPlan(this.value)" style="border-radius: var(--radius-md); border: 1px solid var(--border-light); padding: 0.5rem 1rem;">
+                <select id="floorPlanSelector" class="form-select form-select-sm" onchange="switchFloorPlan(this.value)" style="border-radius: var(--radius-md); border: 1px solid var(--border-light); max-width: 300px; font-weight: 500;">
                     @foreach($floorPlans as $fp)
                         <option value="{{ $fp->id }}" {{ (isset($currentFloorPlan) && $currentFloorPlan && $currentFloorPlan->id == $fp->id) || (isset($floorPlanId) && $floorPlanId == $fp->id) ? 'selected' : '' }}>
                             {{ $fp->name }}
                             @if($fp->is_default) (Default) @endif
-                            @if($fp->event) - {{ $fp->event->title }} @endif
                         </option>
                     @endforeach
                 </select>
+                @if(isset($currentFloorPlan) && $currentFloorPlan)
+                <div class="d-none d-lg-block ms-2 px-3 py-1" style="background: var(--bg-alt); border-radius: 20px; border: 1px solid var(--border-light);">
+                    <small style="color: var(--text-tertiary); font-size: 0.8rem;">
+                        <i class="fas fa-th-large me-1"></i>Total: <strong>{{ $totalBooths ?? 0 }}</strong>
+                    </small>
+                </div>
+                @endif
+            </div>
+            <div class="looker-actions d-flex gap-2">
+                <a href="{{ route('booths.index', ['view' => 'table']) }}" class="btn btn-sm btn-glass-primary" title="Booth Management" style="border-radius: 8px; padding: 0.4rem 1rem;">
+                    <i class="fas fa-table me-1"></i> Management
+                </a>
+                <a href="{{ route('floor-plans.index') }}" class="btn btn-sm btn-glass-secondary" title="Manage Floor Plans" style="border-radius: 8px; padding: 0.4rem 1rem;">
+                    <i class="fas fa-cog"></i> Setup
+                </a>
             </div>
         </div>
-        @if(isset($currentFloorPlan) && $currentFloorPlan)
-        <div class="mt-3 pt-3" style="border-top: 1px dashed var(--border-light);">
-            <small style="color: var(--text-tertiary); font-weight: 600;">
-                <i class="fas fa-info-circle me-1"></i>
-                Current: <strong>{{ $currentFloorPlan->name }}</strong>
-                @if($currentFloorPlan->project_name) | Project: {{ $currentFloorPlan->project_name }} @endif
-                @if($currentFloorPlan->event) | Event: {{ $currentFloorPlan->event->title }} @endif
-                | <i class="fas fa-th-large me-1"></i>Booths: <strong>{{ $totalBooths ?? 0 }}</strong>
-            </small>
-        </div>
-        @endif
     </div>
     @endif
 
@@ -183,7 +181,7 @@
         <!-- Canvas loading overlay: hidden once floor plan and booths are ready -->
         <div id="canvasLoadingOverlay" class="canvas-loading-overlay" aria-live="polite" aria-busy="true">
             <div class="canvas-loading-content">
-                <div class="spinner-border text-dark-gray-gray" role="status" style="width: 3rem; height: 3rem;"><span class="sr-only">Loading...</span></div>
+                <div class="spinner-border text-dark-gray" role="status" style="width: 3rem; height: 3rem;"><span class="sr-only">Loading...</span></div>
                 <p class="mt-3 mb-0 font-weight-bold">Loading floor plan…</p>
                 <p class="small text-muted">Setting up canvas and booths</p>
             </div>
@@ -511,7 +509,7 @@
                                 <i class="fas fa-check-circle"></i>
                                 <span>In Stock</span>
                             </button>
-                            <button class="btn btn-sm btn-link text-dark-gray-gray" id="toggleSidebar" title="Collapse Sidebar">
+                            <button class="btn btn-sm btn-link text-dark-gray" id="toggleSidebar" title="Collapse Sidebar">
                         <i class="fas fa-chevron-left"></i>
                     </button>
                         </div>
@@ -779,7 +777,7 @@
         <div class="properties-panel" id="propertiesPanel">
             <div class="panel-header">
                 <h6><i class="fas fa-info-circle"></i> Properties</h6>
-                <button class="btn btn-sm btn-link text-dark-gray-gray" id="closePropertiesPanel" title="Close">
+                <button class="btn btn-sm btn-link text-dark-gray" id="closePropertiesPanel" title="Close">
                     <i class="fas fa-times"></i>
                 </button>
                     </div>
@@ -1017,11 +1015,11 @@
 <div class="modal fade" id="deleteBoothModal" tabindex="-1" role="dialog" aria-labelledby="deleteBoothModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <div class="modal-header bg-danger text-dark-gray-gray">
+            <div class="modal-header bg-danger text-dark-gray">
                 <h5 class="modal-title" id="deleteBoothModalLabel">
                     <i class="fas fa-trash"></i> Delete Booths from Zone <span id="deleteBoothZoneName"></span>
                 </h5>
-                <button type="button" class="close text-dark-gray-gray" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close text-dark-gray" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -1160,11 +1158,11 @@
 <div class="modal fade" id="bookBoothModal" tabindex="-1" role="dialog" aria-labelledby="bookBoothModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <div class="modal-header bg-primary text-dark-gray-gray">
+            <div class="modal-header bg-primary text-dark-gray">
                 <h5 class="modal-title" id="bookBoothModalLabel">
                     <i class="fas fa-calendar-check"></i> Book Booth: <span id="bookBoothNumber"></span>
                 </h5>
-                <button type="button" class="close text-dark-gray-gray" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close text-dark-gray" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -1173,7 +1171,7 @@
                     <input type="hidden" id="bookBoothId" name="booth_id">
                     <input type="hidden" id="selectedClientId" name="client_id" value="">
                     <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> <strong>Search for an existing client or fill in the form to create a new client. All fields marked with * are mandatory.</strong>
+                        <i class="fas fa-info-circle"></i> <strong>Search for an existing client or fill in the form to create a new client.</strong>
                     </div>
                     
                     <!-- Client Search -->
@@ -1205,9 +1203,9 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="clientName">
-                                    <i class="fas fa-user"></i> Client Name <span class="text-danger">*</span>
+                                    <i class="fas fa-user"></i> Client Name
                                 </label>
-                                <input type="text" class="glass-input" id="clientName" name="name" required placeholder="Enter client name">
+                                <input type="text" class="glass-input" id="clientName" name="name" placeholder="Enter client name">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -1229,9 +1227,9 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="clientCompany">
-                                    <i class="fas fa-building"></i> Company <span class="text-danger">*</span>
+                                    <i class="fas fa-building"></i> Company
                                 </label>
-                                <input type="text" class="glass-input" id="clientCompany" name="company" required placeholder="Enter company name">
+                                <input type="text" class="glass-input" id="clientCompany" name="company" placeholder="Enter company name">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -1248,26 +1246,26 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="clientPhone">
-                                    <i class="fas fa-phone"></i> Phone Number <span class="text-danger">*</span>
+                                    <i class="fas fa-phone"></i> Phone Number
                                 </label>
-                                <input type="tel" class="glass-input" id="clientPhone" name="phone_number" required placeholder="Enter phone number">
+                                <input type="tel" class="glass-input" id="clientPhone" name="phone_number" placeholder="Enter phone number">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="clientEmail">
-                                    <i class="fas fa-envelope"></i> Email Address <span class="text-danger">*</span>
+                                    <i class="fas fa-envelope"></i> Email Address
                                 </label>
-                                <input type="email" class="glass-input" id="clientEmail" name="email" required placeholder="Enter email address">
+                                <input type="email" class="glass-input" id="clientEmail" name="email" placeholder="Enter email address">
                             </div>
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label for="clientAddress">
-                            <i class="fas fa-map-marker-alt"></i> Address <span class="text-danger">*</span>
+                            <i class="fas fa-map-marker-alt"></i> Address
                         </label>
-                        <textarea class="glass-input" id="clientAddress" name="address" rows="2" required placeholder="Enter complete address (street, city, country)"></textarea>
+                        <textarea class="glass-input" id="clientAddress" name="address" rows="2" placeholder="Enter complete address (street, city, country)"></textarea>
                     </div>
                     
                     <div class="row">
@@ -1349,7 +1347,7 @@
                 <h5 class="modal-title" id="boothColorPickerModalLabel">
                     <i class="fas fa-palette"></i> Set Colors for Booth: <span id="colorPickerBoothNumber"></span>
                 </h5>
-                <button type="button" class="close text-dark-gray-gray" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close text-dark-gray" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
