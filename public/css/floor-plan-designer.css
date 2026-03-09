@@ -1510,6 +1510,10 @@
     gap: 12px;
 }
 
+body.ios-dashboard-mode .designer-sidebar .sidebar-content {
+    background: transparent !important;
+}
+
 .designer-sidebar .sidebar-content .mb-2,
 .designer-sidebar .sidebar-content .mb-3 {
     margin-bottom: 0 !important;
@@ -2586,12 +2590,14 @@ body.ios-dashboard-mode .designer-sidebar .sidebar-header h6 {
 
 body.ios-dashboard-mode .designer-sidebar .sidebar-content {
     background: transparent !important;
+    background-image: none !important;
 }
 
 body.ios-dashboard-mode .designer-sidebar .sidebar-search input {
-    background: rgba(255, 255, 255, 0.6) !important;
+    background: rgba(255, 255, 255, 0.4) !important;
     border: 1px solid var(--fpd-light-border) !important;
     color: var(--fpd-light-text) !important;
+    backdrop-filter: blur(5px);
 }
 
 body.ios-dashboard-mode .designer-sidebar .sidebar-search::before {
