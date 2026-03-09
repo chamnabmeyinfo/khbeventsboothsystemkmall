@@ -512,23 +512,6 @@
                         </div>
                 </div>
                 <div class="sidebar-content">
-                    @if(isset($floorPlans) && $floorPlans->count() > 0)
-                    <div class="sidebar-fp-list">
-                        <div class="sidebar-fp-title">
-                            <i class="fas fa-list-ul"></i> Floor Plans List
-                        </div>
-                        <div class="sidebar-fp-items">
-                            @foreach($floorPlans as $fp)
-                            <a href="{{ route('booths.index', ['view' => 'canvas', 'floor_plan_id' => $fp->id]) }}" 
-                               class="sidebar-fp-item {{ (isset($currentFloorPlan) && $currentFloorPlan && $currentFloorPlan->id == $fp->id) ? 'active' : '' }}"
-                               title="{{ $fp->name }}">
-                                {{ $fp->name }}
-                            </a>
-                            @endforeach
-                        </div>
-                    </div>
-                    @endif
-
                     <div class="mb-3 d-flex align-items-center" style="gap:8px;">
                         <button class="btn btn-sm btn-glass-primary btn-block" id="btnAddZoneMain" style="flex:1; border-radius: 10px; padding: 10px 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
                             <i class="fas fa-plus"></i> Add Zone
