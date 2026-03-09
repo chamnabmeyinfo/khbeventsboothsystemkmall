@@ -622,7 +622,8 @@
                                         <div class="zone-header-left">
                                             <i class="fas fa-chevron-down zone-chevron" aria-hidden="true"></i>
                                             <span class="zone-name">Zone {{ $zoneName }}</span>
-                                            <span class="zone-count">({{ count($zoneBooths) }})</span>
+                                            <span class="zone-count" title="Booths in stock">({{ count($zoneBooths) }})</span>
+                                            <span class="canvas-count" title="Booths on canvas" style="color: var(--fpd-primary); font-weight: 700; margin-left: 4px; font-size: 11px;">(0)</span>
                                         </div>
                                         <div class="zone-header-actions">
                                         <button class="btn-add-all-zone" 

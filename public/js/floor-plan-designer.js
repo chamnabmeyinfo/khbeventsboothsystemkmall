@@ -6835,11 +6835,26 @@ const FloorPlanDesigner = {
     updateZoneCount: function(zoneName) {
         const zoneSection = document.querySelector('[data-zone="' + zoneName + '"]');
         if (zoneSection) {
+            // Update sidebar (stock) count
             const zoneContent = zoneSection.querySelector('.zone-content');
             const count = zoneContent ? zoneContent.querySelectorAll('.booth-number-item').length : 0;
             const countSpan = zoneSection.querySelector('.zone-count');
             if (countSpan) {
                 countSpan.textContent = '(' + count + ')';
+            }
+            
+            // Update canvas count for this zone
+            const canvasCount = document.querySelectorAll('.dropped-booth[data-booth-zone="' + zoneName + '"]').length;
+            const canvasCountSpan = zoneSection.querySelector('.canvas-count');
+            if (canvasCountSpan) {
+                canvasCountSpan.textContent = '(' + canvasCount + ')';
+                // Highlight if any booths are on canvas
+                if (canvasCount > 0) {
+                    canvasCountSpan.style.opacity = '1';
+                    canvasCountSpan.style.display = 'inline';
+                } else {
+                    canvasCountSpan.style.opacity = '0.5';
+                }
             }
         }
     },
