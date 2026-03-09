@@ -7096,7 +7096,7 @@ const FloorPlanDesigner = {
         
         // Get status-based colors (these will override custom colors)
         // boothStatus already declared at the top of createBoothElement function
-        const statusColor = statusColors[boothStatus] || statusColors[1] || { bg: '#28a745', border: '#28a745', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 };
+        const statusColor = statusColors[boothStatus] || statusColors[1] || { bg: '#ffffff', border: '#007bff', text: '#000000', border_width: 2, border_style: 'solid', border_radius: 4 };
         
         // Check if booth has custom colors (individual booth colors override status colors)
         // Custom colors are stored in boothData or will be loaded from database
@@ -11086,7 +11086,7 @@ const FloorPlanDesigner = {
             }
             // Fallback to defaults
             return {
-                1: { background: '#28a745', bg: '#28a745', border: '#28a745', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 },
+                1: { background: '#ffffff', bg: '#ffffff', border: '#007bff', text: '#000000', border_width: 2, border_style: 'solid', border_radius: 4 },
                 2: { background: '#0dcaf0', bg: '#0dcaf0', border: '#0dcaf0', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 },
                 3: { background: '#ffc107', bg: '#ffc107', border: '#ffc107', text: '#333333', border_width: 2, border_style: 'solid', border_radius: 4 },
                 4: { background: '#6c757d', bg: '#6c757d', border: '#6c757d', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 },
@@ -11097,7 +11097,7 @@ const FloorPlanDesigner = {
             console.error('Error loading status colors:', error);
             // Return defaults on error
             return {
-                1: { bg: '#28a745', border: '#28a745', text: '#ffffff' },
+                1: { bg: '#ffffff', border: '#007bff', text: '#000000' },
                 2: { bg: '#0dcaf0', border: '#0dcaf0', text: '#ffffff' },
                 3: { bg: '#ffc107', border: '#ffc107', text: '#333333' },
                 4: { bg: '#6c757d', border: '#6c757d', text: '#ffffff' },
@@ -11114,7 +11114,7 @@ const FloorPlanDesigner = {
         }
             // Return defaults if not loaded yet
         return {
-            1: { background: '#28a745', bg: '#28a745', border: '#28a745', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 },
+            1: { background: '#ffffff', bg: '#ffffff', border: '#007bff', text: '#000000', border_width: 2, border_style: 'solid', border_radius: 4 },
             2: { background: '#0dcaf0', bg: '#0dcaf0', border: '#0dcaf0', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 },
             3: { background: '#ffc107', bg: '#ffc107', border: '#ffc107', text: '#333333', border_width: 2, border_style: 'solid', border_radius: 4 },
             4: { background: '#6c757d', bg: '#6c757d', border: '#6c757d', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 },
@@ -11820,7 +11820,7 @@ const FloorPlanDesigner = {
                     const statusColors = self.getStatusColors();
                     
                     // Apply status-based colors (custom booth colors override status colors)
-                    const statusColor = statusColors[boothStatus] || statusColors[1] || { background: '#28a745', border: '#28a745', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 };
+                    const statusColor = statusColors[boothStatus] || statusColors[1] || { background: '#ffffff', border: '#007bff', text: '#000000', border_width: 2, border_style: 'solid', border_radius: 4 };
                     
                     // Check if booth has custom colors (individual booth colors override status colors)
                     const customBgColor = booth.background_color;
@@ -12017,7 +12017,7 @@ const FloorPlanDesigner = {
                 
                 // Apply status-based colors (these override custom background/border colors)
                 // boothStatus already declared at the top of the forEach loop
-                const statusColor = statusColors[boothStatus] || statusColors[1] || { background: '#28a745', border: '#28a745', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 };
+                const statusColor = statusColors[boothStatus] || statusColors[1] || { background: '#ffffff', border: '#007bff', text: '#000000', border_width: 2, border_style: 'solid', border_radius: 4 };
                 
                 // Check if booth has custom colors (individual booth colors override status colors)
                 // IMPORTANT: Custom colors ONLY apply when status is "Available" (status code 1)
@@ -15290,11 +15290,11 @@ $(document).ready(function() {
         // Get status colors
         const statusColors = FloorPlanDesigner.getStatusColors();
         const boothStatus = boothElement.getAttribute('data-booth-status') || '1';
-        const statusColor = statusColors[boothStatus] || statusColors[1] || { bg: '#28a745', border: '#28a745', text: '#ffffff' };
+        const statusColor = statusColors[boothStatus] || statusColors[1] || { bg: '#ffffff', border: '#007bff', text: '#000000' };
         
-        const bgColor = statusColor.background || statusColor.bg || '#28a745';
-        const borderColor = statusColor.border || '#28a745';
-        const textColor = statusColor.text || '#ffffff';
+        const bgColor = statusColor.background || statusColor.bg || '#ffffff';
+        const borderColor = statusColor.border || '#007bff';
+        const textColor = statusColor.text || '#000000';
         
         // Update inputs
         $('#boothBackgroundColor').val(bgColor);
