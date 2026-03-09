@@ -54,6 +54,11 @@
     }
 
     .text-dark-gray { color: #1d1d1f !important; }
+
+    /* Remove blocking modal backdrop as requested */
+    .modal-backdrop {
+        display: none !important;
+    }
 </style>
 @endpush
 

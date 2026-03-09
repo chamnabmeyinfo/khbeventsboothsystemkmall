@@ -889,7 +889,17 @@ const FloorPlanDesigner = {
         $(document).on('click', function(e) {
             if (!$(e.target).closest('.dropdown').length) {
                 $('.dropdown').removeClass('show');
-        }
+            }
+        });
+        
+        // Global fix for modal backdrops blocking clicks
+        $(document).on('show.bs.modal shown.bs.modal', function () {
+            $('.modal-backdrop').remove();
+        });
+        
+        $(document).on('hidden.bs.modal', function () {
+             $('.modal-backdrop').remove();
+             $('body').removeClass('modal-open');
         });
         
         // Set Select tool as active by default
@@ -12366,6 +12376,12 @@ const FloorPlanDesigner = {
             if (infoBooths) {
                 infoBooths.textContent = count;
             }
+            
+            // Update all zone counts on canvas
+            document.querySelectorAll('.zone-section').forEach(section => {
+                const zoneName = section.getAttribute('data-zone');
+                if (zoneName) self.updateZoneCount(zoneName);
+            });
         };
         
         // Function to flash all booths
