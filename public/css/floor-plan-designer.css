@@ -3,72 +3,70 @@
    Neutral grays · flat surfaces · compact · precise · professional
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ── Design Tokens (Photoshop Palette) ─────────────────────────── */
+/* ── Design Tokens (Photoshop Light Theme) ─────────────────────────── */
 :root {
-    /* Surface — Photoshop neutral grays */
-    --fpd-bg:           #535353;
-    --fpd-surface:      #333333;
-    --fpd-surface-2:    #3c3c3c;
-    --fpd-surface-3:    #464646;
-    --fpd-glass:        rgba(255,255,255,0.05);
-    --fpd-glass-hover:  rgba(255,255,255,0.08);
-    --fpd-glass-active: rgba(255,255,255,0.12);
-    --fpd-panel:        #282828;
-    --fpd-well:         #1e1e1e;
+    /* Surface — Photoshop Light Theme grays */
+    --fpd-bg:           #e1e1e1; /* Photoshop workspace background */
+    --fpd-surface:      #ffffff; /* Main panel background */
+    --fpd-surface-2:    #f0f0f0; /* Tool options background */
+    --fpd-surface-3:    #e0e0e0; /* Hover state background */
+    --fpd-glass:        rgba(255,255,255,0.8);
+    --fpd-glass-hover:  rgba(255,255,255,0.95);
+    --fpd-glass-active: #ffffff;
+    --fpd-panel:        #ffffff;
+    --fpd-well:         #f8f8f8;
 
-    /* Light Theme Overrides for iOS Mode */
-    --fpd-light-bg:       rgba(245, 245, 247, 0.8);
-    --fpd-light-surface:  rgba(255, 255, 255, 0.7);
-    --fpd-light-border:   rgba(0, 0, 0, 0.08);
+    /* Light Theme Overrides (Synced with Adobe Light UI) */
+    --fpd-light-bg:       #e1e1e1;
+    --fpd-light-surface:  #ffffff;
+    --fpd-light-border:   #bcbcbc;
     --fpd-light-text:     #1d1d1f;
     --fpd-light-text-2:   #424245;
     --fpd-light-text-3:   #86868b;
 
-    /* Border — sharp, thin, dark */
-    --fpd-border:       #1a1a1a;
-    --fpd-border-light: #4a4a4a;
-    --fpd-border-hover: #5a5a5a;
-    --fpd-border-focus: #2d8ceb;
+    /* Border — Photoshop: thin, precise, light */
+    --fpd-border:       #bcbcbc;
+    --fpd-border-light: #d1d1d1;
+    --fpd-border-hover: #9e9e9e;
+    --fpd-border-focus: #1473e6;
 
-    /* Primary — Photoshop selection blue */
-    --fpd-primary:      #2d8ceb;
-    --fpd-primary-rgb:  45,140,235;
-    --fpd-primary-dark: #2076c9;
-    --fpd-primary-glow: rgba(45,140,235,0.30);
+    /* Primary — Adobe Blue */
+    --fpd-primary:      #1473e6;
+    --fpd-primary-rgb:  20,115,230;
+    --fpd-primary-dark: #0d66d0;
+    --fpd-primary-glow: rgba(20,115,230,0.15);
 
     /* Semantic */
     --fpd-accent:       #8e5ce6;
-    --fpd-success:      #3ba55c;
-    --fpd-success-rgb:  59,165,92;
+    --fpd-success:      #2d8e4e;
+    --fpd-success-rgb:  45,142,78;
     --fpd-warning:      #e6a817;
-    --fpd-warning-rgb:  230,168,23;
     --fpd-danger:       #e04b4b;
-    --fpd-danger-rgb:   224,75,75;
-    --fpd-info:         #2d8ceb;
 
-    /* Text — Photoshop grays */
-    --fpd-text:         #cccccc;
-    --fpd-text-2:       #999999;
+    /* Text — High contrast black/gray */
+    --fpd-text:         #1d1d1f;
+    --fpd-text-2:       #424245;
     --fpd-text-3:       #707070;
 
-    /* Radius — Photoshop: nearly flat */
-    --fpd-radius-sm:    2px;
-    --fpd-radius:       3px;
-    --fpd-radius-lg:    4px;
-    --fpd-radius-xl:    4px;
+    /* Radius — Photoshop: sharp corners but slightly refined for web */
+    --fpd-radius-sm:    3px;
+    --fpd-radius:       4px;
+    --fpd-radius-lg:    8px;
+    --fpd-radius-xl:    12px;
 
-    /* Shadows — Photoshop: subtle or none */
-    --fpd-shadow-sm:    0 1px 2px rgba(0,0,0,0.4);
-    --fpd-shadow:       0 2px 6px rgba(0,0,0,0.45);
-    --fpd-shadow-lg:    0 4px 14px rgba(0,0,0,0.5);
+    /* Shadows — Floating effect */
+    --fpd-shadow-sm:    0 1px 3px rgba(0,0,0,0.1);
+    --fpd-shadow:       0 4px 12px rgba(0,0,0,0.08);
+    --fpd-shadow-lg:    0 12px 32px rgba(0,0,0,0.12);
+    --fpd-float-shadow: 0 8px 24px rgba(0,0,0,0.15);
 
-    /* Transition — snappy */
-    --fpd-ease:         ease;
-    --fpd-speed:        0.12s;
+    /* Transition — Professional, snappy but smooth */
+    --fpd-ease:         cubic-bezier(0.165, 0.84, 0.44, 1);
+    --fpd-speed:        0.3s;
 
-    /* Font — Photoshop system UI */
-    --fpd-font:         'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
-    --fpd-mono:         'Consolas', 'Menlo', 'Monaco', 'Courier New', monospace;
+    /* Font — Clean system sans */
+    --fpd-font:         -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --fpd-mono:         'SF Mono', 'Cascadia Code', 'Consolas', monospace;
 }
 
 /* ── Mobile Responsive Styles — CRITICAL ──────────────────────── */
@@ -327,33 +325,32 @@
     flex-direction: column;
     width: 100%;
     margin-left: 0;
-    height: calc(100vh - 120px);
+    height: calc(100vh - 70px) !important; /* Full height minus header */
     min-height: 600px;
-    background: var(--fpd-bg);
-    border-radius: 8px;
+    background: #e1e1e1; /* Photoshop workspace gray */
+    border-radius: 0;
     overflow: hidden;
     box-shadow: none;
     border: none;
-    border-top: 1px solid var(--fpd-border);
-    border-bottom: 1px solid var(--fpd-border);
     position: relative;
     font-family: var(--fpd-font);
-    font-size: 12px;
+    font-size: 13px;
     color: var(--fpd-text);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Loading Overlay ───────────────────────────────────────────── */
+/* ── Loading Overlay (Light) ───────────────────────────────────────────── */
 .canvas-loading-overlay {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(40,40,40,0.95);
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(10px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 9998;
-    transition: opacity 0.2s var(--fpd-ease), visibility 0.2s var(--fpd-ease);
+    transition: opacity 0.3s var(--fpd-ease), visibility 0.3s var(--fpd-ease);
 }
 .canvas-loading-overlay.canvas-loaded {
     opacity: 0;
@@ -367,20 +364,22 @@
 .canvas-loading-content .spinner-border {
     color: var(--fpd-primary) !important;
     border-width: 0.2em;
+    width: 3.5rem;
+    height: 3.5rem;
 }
 
 /* ── Toolbar (Options Bar) ─────────────────────────────────────── */
 .designer-toolbar {
-    background: linear-gradient(180deg, var(--fpd-surface-2) 0%, var(--fpd-surface) 100%);
-    padding: 6px 12px;
+    background: #ffffff;
+    padding: 8px 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 12px;
     z-index: 1000;
-    box-shadow: 0 1px 0 var(--fpd-border);
-    min-height: 36px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05), inset 0 -1px 0 var(--fpd-border);
+    min-height: 48px;
     border-bottom: 1px solid var(--fpd-border);
 }
 
@@ -606,31 +605,49 @@
 }
 
 .toolbar-btn {
-    background: transparent;
-    border: 1px solid transparent;
+    background: #ffffff;
+    border: 1px solid var(--fpd-border-light);
     color: var(--fpd-text-2);
-    padding: 5px 10px;
-    border-radius: 4px;
+    padding: 6px 12px;
+    border-radius: var(--fpd-radius);
     cursor: pointer;
     transition: all var(--fpd-speed) var(--fpd-ease);
-    font-size: 11px;
+    font-size: 13px;
+    font-weight: 500;
     font-family: var(--fpd-font);
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    min-height: 28px;
+    gap: 8px;
+    min-height: 32px;
+    box-shadow: var(--fpd-shadow-sm); /* Subtle float by default */
+}
+
+.toolbar-btn i {
+    font-size: 14px;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .toolbar-btn:hover {
-    background: var(--fpd-surface-3);
-    color: var(--fpd-text);
+    background: #ffffff;
+    color: var(--fpd-primary);
+    border-color: var(--fpd-primary);
+    box-shadow: var(--fpd-float-shadow); /* "Float" effect */
+    transform: translateY(-2px);
+}
+
+.toolbar-btn:hover i {
+    transform: scale(1.15); /* More floaty icon */
 }
 
 .toolbar-btn.active {
-    background: var(--fpd-surface-3);
-    border-color: var(--fpd-border-light);
-    color: #fff;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+    background: var(--fpd-primary);
+    border-color: var(--fpd-primary-dark);
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(20, 115, 230, 0.3);
+}
+
+.toolbar-btn.active i {
+    transform: scale(1.1);
 }
 
 .toolbar-btn.btn-primary {
@@ -805,18 +822,17 @@
 
 /* ── Sidebar (Left) - Booth Number Area ──────────────────────────── */
 .designer-sidebar {
-    width: 300px;
+    width: 320px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: var(--fpd-panel);
-    border: 1px solid var(--fpd-border);
-    border-radius: 12px;
-    box-shadow: var(--fpd-shadow-lg);
+    background: #f8f8f8;
+    border-right: 1px solid var(--fpd-border);
+    box-shadow: 4px 0 20px rgba(0,0,0,0.03);
     position: relative;
-    z-index: 100;
-    transition: all 0.2s var(--fpd-ease);
+    z-index: 1000;
+    transition: all var(--fpd-speed) var(--fpd-ease);
     overflow: hidden;
 }
 
@@ -1427,22 +1443,20 @@
     justify-content: space-between;
     align-items: center;
     gap: 8px;
-    padding: 12px 14px;
-    background: var(--fpd-surface);
+    padding: 16px 20px;
+    background: #ffffff;
     border-bottom: 1px solid var(--fpd-border);
-    min-height: 44px;
+    min-height: 56px;
 }
 
 .designer-sidebar .sidebar-header h6 {
     margin: 0;
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    font-weight: 400;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 700;
     color: var(--fpd-text);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
 .designer-sidebar .sidebar-header h6 i {
@@ -1510,8 +1524,9 @@
     gap: 12px;
 }
 
-body.ios-dashboard-mode .designer-sidebar .sidebar-content {
-    background: transparent !important;
+body.ios-dashboard-mode .designer-sidebar {
+    background: #ffffff !important;
+    backdrop-filter: blur(20px);
 }
 
 .designer-sidebar .sidebar-content .mb-2,
@@ -1690,20 +1705,25 @@ body.ios-dashboard-mode .designer-sidebar .sidebar-content {
     background: rgba(102, 126, 234, 0.7);
 }
 
-/* ── Canvas Container (Right) - main content area (Floating Right) ── */
+/* ── Canvas Container (Right) ───────────────────────────────────── */
 .canvas-container {
     flex: 1;
-    position: relative;
+    background: #e1e1e1; /* Photoshop artboard background */
     overflow: hidden;
-    min-width: 0;
-    min-height: 0;
-    height: 100%;
+    position: relative;
+    cursor: default;
     display: flex;
-    flex-direction: column;
-    background: var(--fpd-panel);
-    border: 1px solid var(--fpd-border);
-    border-radius: 12px;
-    box-shadow: var(--fpd-shadow-lg);
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.designer-main-row {
+    display: flex;
+    flex: 1;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
 }
 
 
