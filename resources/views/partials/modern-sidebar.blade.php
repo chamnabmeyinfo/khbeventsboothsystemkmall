@@ -71,7 +71,7 @@
                     <span>HR Management</span>
                     <i class="fas fa-chevron-right dropdown-toggle-icon"></i>
                 </a>
-                <ul class="sidebar-sub-nav {{ request()->is('hr*') ? 'show' : '' }}" id="hrSubmenu">
+                <ul class="sidebar-sub-nav collapse {{ request()->is('hr*') ? 'show' : '' }}" id="hrSubmenu">
                     <li><a href="{{ route('hr.dashboard') }}" class="sidebar-sub-link {{ request()->routeIs('hr.dashboard') ? 'active' : '' }}">HR Dashboard</a></li>
                     <li><a href="{{ route('hr.employees.index') }}" class="sidebar-sub-link {{ request()->is('hr/employees*') ? 'active' : '' }}">Employees</a></li>
                     <li><a href="{{ route('hr.attendance.index') }}" class="sidebar-sub-link {{ request()->is('hr/attendance*') ? 'active' : '' }}">Attendance</a></li>
@@ -91,7 +91,7 @@
                     <span>Finance Hub</span>
                     <i class="fas fa-chevron-right dropdown-toggle-icon"></i>
                 </a>
-                <ul class="sidebar-sub-nav {{ request()->is('finance*') ? 'show' : '' }}" id="financeSubmenu">
+                <ul class="sidebar-sub-nav collapse {{ request()->is('finance*') ? 'show' : '' }}" id="financeSubmenu">
                     <li><a href="{{ route('finance.payments.index') }}" class="sidebar-sub-link {{ request()->is('finance/payments*') ? 'active' : '' }}">Payments</a></li>
                     <li><a href="{{ route('finance.expenses.index') }}" class="sidebar-sub-link {{ request()->is('finance/expenses*') ? 'active' : '' }}">Expenses</a></li>
                     <li><a href="{{ route('finance.revenues.index') }}" class="sidebar-sub-link {{ request()->is('finance/revenues*') ? 'active' : '' }}">Revenues</a></li>
