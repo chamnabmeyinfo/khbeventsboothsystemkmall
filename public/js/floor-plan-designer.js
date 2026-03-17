@@ -14956,9 +14956,10 @@ const FloorPlanDesigner = {
         if (this.selectedBooths && this.selectedBooths.length === 1 && this.updateInfoToolbar) {
             this.updateInfoToolbar(this.selectedBooths[0]);
         }
-    },
-    
-    // Open individual booth color picker modal
+    }
+};
+
+// Open individual booth color picker modal
 
 // CRITICAL: Load floor plan image IMMEDIATELY when DOM is ready (before FloorPlanDesigner.init)
 // This ensures the canvas automatically shows the correct floor plan image when user clicks "View Booths"
