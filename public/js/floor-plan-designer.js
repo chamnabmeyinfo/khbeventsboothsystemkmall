@@ -12756,9 +12756,6 @@ const FloorPlanDesigner = {
             });
         });
         
-                });
-        });
-        
         // Canvas Settings button
         $('#btnSettings').on('click', function() {
             $('#canvasSettingsModal').modal('show');
