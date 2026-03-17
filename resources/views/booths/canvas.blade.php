@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.8">
 {{-- SweetAlert2 CSS – must be in <head> --}}
 <link rel="stylesheet" href="{{ asset('vendor/sweetalert2/css/sweetalert2.min.css') }}">
+<link rel="stylesheet" href="{{ asset('css/sweetalert2-custom.css') }}?v={{ config('app.asset_version') ?? '1' }}">
 <style>
     /* ── Full-width canvas: kill every wrapper gap ────────────── */
 
@@ -537,12 +538,6 @@
                             </div>
                             <div class="zone-control-item">
                                 <label class="zone-control-label">
-                                    <input type="checkbox" class="zone-control-checkbox" data-button="add-selected" checked>
-                                    <span class="zone-control-text">Add Selected</span>
-                                </label>
-                            </div>
-                            <div class="zone-control-item">
-                                <label class="zone-control-label">
                                     <input type="checkbox" class="zone-control-checkbox" data-button="add-click" checked>
                                     <span class="zone-control-text">Click to Place</span>
                                 </label>
@@ -551,12 +546,6 @@
                                 <label class="zone-control-label">
                                     <input type="checkbox" class="zone-control-checkbox" data-button="settings" checked>
                                     <span class="zone-control-text">Zone Settings</span>
-                                </label>
-                            </div>
-                            <div class="zone-control-item">
-                                <label class="zone-control-label">
-                                    <input type="checkbox" class="zone-control-checkbox" data-button="appearance" checked>
-                                    <span class="zone-control-text">Appearance</span>
                                 </label>
                             </div>
                             <div class="zone-control-item">
@@ -618,7 +607,7 @@
                             
                             @foreach($zones as $zoneName => $zoneBooths)
                                 <div class="zone-section collapsed" data-zone="{{ $zoneName }}">
-                                    <div class="zone-header" data-zone-toggle="{{ $zoneName }}">
+                                    <div class="zone-header" data-zone-toggle="{{ $zoneName }}" onclick="if (!event.target.closest('button')) this.closest('.zone-section').classList.toggle('collapsed')">
                                         <div class="zone-header-left">
                                             <i class="fas fa-chevron-down zone-chevron" aria-hidden="true"></i>
                                             <span class="zone-name">Zone {{ $zoneName }}</span>
@@ -632,12 +621,6 @@
                                                 onclick="event.stopPropagation(); FloorPlanDesigner.addAllZoneToCanvas({{ json_encode($zoneName) }});">
                                             <i class="fas fa-plus-circle"></i> Add All
                                         </button>
-                                        <button class="btn-add-selected-zone" 
-                                                data-zone="{{ $zoneName }}" 
-                                                title="Add Selected Booths in Zone {{ $zoneName }} to Canvas (Stick Together)"
-                                                onclick="event.stopPropagation(); FloorPlanDesigner.addSelectedZoneBoothsToCanvas({{ json_encode($zoneName) }});">
-                                            <i class="fas fa-layer-group"></i> Add Selected
-                                        </button>
                                         <button class="btn-add-all-zone-click" 
                                                 data-zone="{{ $zoneName }}" 
                                                 title="Add All Booths in Zone {{ $zoneName }} - Click on Canvas to Place"
@@ -646,15 +629,9 @@
                                         </button>
                                         <button class="btn-zone-settings" 
                                                 data-zone="{{ $zoneName }}" 
-                                                title="Zone Settings - Adjust Size, Rotation & Dimensions for All Booths in Zone {{ $zoneName }}"
+                                                title="Zone Settings - Adjust Size, Rotation, Dimensions & Appearance for All Booths in Zone {{ $zoneName }}"
                                                 onclick="event.stopPropagation(); FloorPlanDesigner.openZoneSettings({{ json_encode($zoneName) }});">
                                             <i class="fas fa-cog"></i>
-                                        </button>
-                                        <button class="btn-zone-appearance" 
-                                                data-zone="{{ $zoneName }}" 
-                                                title="Zone Appearance - Customize Colors & Appearance Only for Zone {{ $zoneName }}"
-                                                onclick="event.stopPropagation(); FloorPlanDesigner.openZoneAppearanceSettings({{ json_encode($zoneName) }});">
-                                            <i class="fas fa-palette"></i>
                                         </button>
                                         <button class="btn-zone-clear" 
                                                 data-zone="{{ $zoneName }}" 
@@ -1352,6 +1329,21 @@
 <script>
 /* ── Global helpers that floor-plan-designer.js expects ─────────── */
 
+/** showNotification – floor-plan-designer.js expects this (toast-style) */
+window.showNotification = function(message, type) {
+    if (typeof Swal === 'undefined') { console.warn('[Notification]', message); return; }
+    var Toast = Swal.mixin({
+        toast: true, position: 'bottom-end', showConfirmButton: false,
+        timer: (type === 'error' ? 5000 : 3000), timerProgressBar: true,
+        didOpen: function(toast) {
+            toast.addEventListener('mouseenter', Swal.stopTimer);
+            toast.addEventListener('mouseleave', Swal.resumeTimer);
+        }
+    });
+    var icon = (type === 'success' || type === 'error' || type === 'warning' || type === 'info') ? type : 'info';
+    Toast.fire({ icon: icon, title: message });
+};
+
 /** showToast – small non-blocking notification */
 window.showToast = function(message, type) {
     if (typeof Swal === 'undefined') { console.warn('[Toast]', message); return; }
@@ -1377,7 +1369,8 @@ window.customAlert = function(message, type, title) {
         text:              message,
         confirmButtonText: 'OK',
         confirmButtonColor: '#007AFF',
-        borderRadius:      '14px',
+        allowOutsideClick: false,
+        allowEscapeKey:    false,
     });
 };
 
@@ -1398,6 +1391,8 @@ window.customConfirm = function(message, title, confirmText, cancelText, type) {
         confirmButtonColor:    '#007AFF',
         cancelButtonColor:     '#e5e5ea',
         reverseButtons:        true,
+        allowOutsideClick:     false,
+        allowEscapeKey:        false,
     }).then(function(result) { return result.isConfirmed; });
 };
 </script>

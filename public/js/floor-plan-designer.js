@@ -624,19 +624,79 @@ const FloorPlanDesigner = {
         const zoneContent = zoneSection ? zoneSection.querySelector('.zone-content') : null;
         
         const sidebarCount = zoneContent ? zoneContent.querySelectorAll('.booth-number-item').length : 0;
-        const canvasCount = canvas ? canvas.querySelectorAll('.dropped-booth[data-booth-zone="' + zoneName + '"]').length : 0;
+        const canvasBooths = canvas ? canvas.querySelectorAll('.dropped-booth[data-booth-zone="' + zoneName + '"]') : [];
+        const canvasCount = canvasBooths.length;
         const totalCount = sidebarCount + canvasCount;
         
-        self.getZoneSettings(zoneName, function(settings) {
-            self.showZoneSettingsModal(zoneName, totalCount, settings);
+        // Build default settings (used when API returns null or as fallback)
+        function buildDefaultSettings() {
+            return {
+                width: self.defaultBoothWidth || 80,
+                height: self.defaultBoothHeight || 50,
+                rotation: 0,
+                zIndex: 10,
+                borderRadius: 6,
+                borderWidth: 2,
+                opacity: 1.0,
+                price: 500,
+                zone_about: '',
+                background_color: '',
+                border_color: '',
+                text_color: '',
+                font_weight: '',
+                font_family: '',
+                text_align: '',
+                box_shadow: ''
+            };
+        }
+        
+        // Build settings from first canvas booth (when no saved settings)
+        function buildSettingsFromFirstBooth() {
+            if (canvasBooths.length === 0) return buildDefaultSettings();
+            const first = canvasBooths[0];
+            let rotation = parseFloat(first.getAttribute('data-rotation')) || 0;
+            if (!first.getAttribute('data-rotation') && first.style.transform) {
+                const m = first.style.transform.match(/rotate\(([^)]+)\)/);
+                if (m) rotation = parseFloat(m[1]) || 0;
+            }
+            return {
+                width: parseFloat(first.style.width) || self.defaultBoothWidth || 80,
+                height: parseFloat(first.style.height) || self.defaultBoothHeight || 50,
+                rotation: rotation,
+                zIndex: parseInt(first.style.zIndex, 10) || 10,
+                borderRadius: parseFloat(first.style.borderRadius) || parseFloat(first.getAttribute('data-border-radius')) || 6,
+                borderWidth: parseFloat(first.style.borderWidth) || parseFloat(first.getAttribute('data-border-width')) || 2,
+                opacity: parseFloat(first.style.opacity) || parseFloat(first.getAttribute('data-opacity')) || 1.0,
+                price: 500,
+                zone_about: '',
+                background_color: first.style.backgroundColor || first.getAttribute('data-background-color') || '',
+                border_color: first.style.borderColor || first.getAttribute('data-border-color') || '',
+                text_color: first.style.color || first.getAttribute('data-text-color') || '',
+                font_weight: first.style.fontWeight || first.getAttribute('data-font-weight') || '',
+                font_family: first.style.fontFamily || first.getAttribute('data-font-family') || '',
+                text_align: first.style.textAlign || first.getAttribute('data-text-align') || '',
+                box_shadow: first.style.boxShadow || first.getAttribute('data-box-shadow') || ''
+            };
+        }
+        
+        self.getZoneSettings(zoneName, function(apiSettings) {
+            var settings = apiSettings;
+            if (!settings || typeof settings !== 'object') {
+                settings = canvasBooths.length > 0 ? buildSettingsFromFirstBooth() : buildDefaultSettings();
+            }
+            // Ensure all required keys exist (API may use different key names)
+            var merged = Object.assign({}, buildDefaultSettings(), settings);
+            merged.width = merged.width ?? 80;
+            merged.height = merged.height ?? 50;
+            merged.rotation = merged.rotation ?? 0;
+            merged.zIndex = merged.zIndex ?? 10;
+            merged.borderRadius = merged.borderRadius ?? merged.border_radius ?? 6;
+            merged.borderWidth = merged.borderWidth ?? merged.border_width ?? 2;
+            merged.opacity = merged.opacity ?? 1.0;
+            self.showZoneSettingsModal(zoneName, totalCount, merged);
         });
     },
     
-    openZoneAppearanceSettings: function(zoneName) {
-        this.showZoneAppearanceModal(zoneName);
-    },
-    
-
     // ============================================
     // DYNAMIC DOM UPDATES (INSTANT UPDATES)
     // ============================================
@@ -691,54 +751,12 @@ const FloorPlanDesigner = {
     },
     
     addZoneToSidebar: function(zoneName) {
-        const self = this;
-        const container = document.querySelector('.sidebar-content');
-        if (!container) return;
-        
-        const section = document.createElement('div');
-        section.className = 'sidebar-zone-section';
-        section.setAttribute('data-zone', zoneName);
-        
-        // Simplified HTML for the zone section (matches index.blade.php patterns)
-        section.innerHTML = `
-            <div class="zone-header" id="heading${zoneName}">
-                <div class="zone-info" onclick="event.stopPropagation(); this.closest('.sidebar-zone-section').classList.toggle('collapsed');">
-                    <i class="fas fa-chevron-down zone-chevron" aria-hidden="true"></i>
-                    <span class="zone-name">Zone ${zoneName}</span>
-                    <span class="zone-count">(0)</span>
-                </div>
-                <div class="zone-header-actions">
-                    <button class="btn-add-all-zone" data-zone="${zoneName}" title="Add All" onclick="event.stopPropagation(); FloorPlanDesigner.addAllZoneToCanvas('${zoneName}');">
-                        <i class="fas fa-plus-circle"></i>
-                    </button>
-                    <button class="btn-zone-add-new" data-zone="${zoneName}" title="Add New" onclick="event.stopPropagation(); FloorPlanDesigner.showAddBoothModal('${zoneName}');">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                    <button class="btn-zone-delete" data-zone="${zoneName}" title="Delete" onclick="event.stopPropagation(); FloorPlanDesigner.showDeleteBoothModal('${zoneName}');">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="zone-content" id="zoneContent${zoneName}">
-                <p class="no-booths-message text-muted text-center p-2"><small>No booths yet</small></p>
-            </div>
-        `;
-        
-        // Insert in alphabetical order
-        const zones = Array.from(container.querySelectorAll('.sidebar-zone-section'));
-        let inserted = false;
-        for (let z of zones) {
-            if (z.getAttribute('data-zone').localeCompare(zoneName) > 0) {
-                container.insertBefore(section, z);
-                inserted = true;
-                break;
-            }
+        // Delegate to getOrCreateZoneSection so all zones have the same full structure and all buttons
+        const zoneSection = this.getOrCreateZoneSection(zoneName);
+        if (zoneSection) {
+            // Expand the new zone
+            zoneSection.classList.remove('collapsed');
         }
-        if (!inserted) {
-            container.appendChild(section);
-        }
-        
-        // Update click handlers etc if needed
     },
     
     removeBoothDynamically: function(boothId) {
@@ -757,9 +775,10 @@ const FloorPlanDesigner = {
     },
     
     updateSidebarZoneCount: function(zoneName) {
-        const section = document.querySelector('.sidebar-zone-section[data-zone="' + zoneName + '"]');
+        const section = document.querySelector('[data-zone="' + zoneName + '"]');
         if (!section) return;
-        const count = section.querySelectorAll('.booth-number-item').length;
+        const zoneContent = section.querySelector('.zone-content');
+        const count = zoneContent ? zoneContent.querySelectorAll('.booth-number-item').length : 0;
         const badge = section.querySelector('.zone-count');
         if (badge) badge.textContent = '(' + count + ')';
     },
@@ -1693,7 +1712,6 @@ const FloorPlanDesigner = {
                         box_shadow: boxShadow ? String(boxShadow) : null
                     };
                     
-                    console.log('Preparing booth data for save (ID:', boothIdInt, '):', boothDataToSave);
                     boothsToSave.push(boothDataToSave);
                 }
                 
@@ -1741,261 +1759,6 @@ const FloorPlanDesigner = {
             // Save state
             self.saveState();
         });
-    },
-    
-    // Add selected booths from a zone to canvas (stick together)
-    addSelectedZoneBoothsToCanvas: function(zoneName) {
-        const self = this;
-        const canvas = self._cachedElements.canvas;
-        if (!canvas) {
-            console.error('Canvas not found');
-            return;
-        }
-        
-        // Ensure zoneName is a string and trimmed
-        zoneName = String(zoneName).trim();
-        console.log('Adding selected booths from Zone:', zoneName);
-        
-        // Find the zone section
-        let zoneSection = document.querySelector('[data-zone="' + zoneName + '"]');
-        if (!zoneSection) {
-            const allZoneSections = document.querySelectorAll('[data-zone]');
-            for (let i = 0; i < allZoneSections.length; i++) {
-                const section = allZoneSections[i];
-                if (section.getAttribute('data-zone').toUpperCase() === zoneName.toUpperCase()) {
-                    zoneSection = section;
-                    break;
-                }
-            }
-        }
-        
-        if (!zoneSection) {
-            console.error('Zone section not found for:', zoneName);
-            showNotification('Zone ' + zoneName + ' not found', 'error');
-            return;
-        }
-        
-        // Ensure zone section is expanded
-        if (zoneSection.classList.contains('collapsed')) {
-            zoneSection.classList.remove('collapsed');
-        }
-        
-        // Get selected booth items in this zone
-        const zoneContent = zoneSection.querySelector('.zone-content');
-        if (!zoneContent) {
-            console.error('Zone content not found for:', zoneName);
-            return;
-        }
-        
-        const selectedBoothItems = zoneContent.querySelectorAll('.booth-number-item.selected');
-        console.log('Found', selectedBoothItems.length, 'selected booths in Zone', zoneName);
-        
-        if (selectedBoothItems.length === 0) {
-            showNotification('Please select at least one booth from Zone ' + zoneName, 'warning');
-            return;
-        }
-        
-        // Fetch zone settings first
-        self.getZoneSettings(zoneName, function(zoneSettings) {
-            const effectiveSettings = zoneSettings || self.getEffectiveBoothSettings('');
-            const spacingX = effectiveSettings.width + 15; // Tighter spacing for sticking together
-            const spacingY = effectiveSettings.height + 15;
-            
-            // Calculate grid dimensions for selected booths
-            const gridCols = Math.ceil(Math.sqrt(selectedBoothItems.length));
-            
-            // Calculate starting position (center of visible canvas area)
-            let startX = 500;
-            let startY = 300;
-            const container = self.getElement('printContainer');
-            if (container) {
-                const containerRect = container.getBoundingClientRect();
-                let scale = 1;
-                let panX = 0;
-                let panY = 0;
-                if (self.panzoomInstance) {
-                    if (self.panzoomInstance.getScale) {
-                        scale = self.panzoomInstance.getScale();
-                    }
-                    if (self.panzoomInstance.getTransform) {
-                        const transform = self.panzoomInstance.getTransform();
-                        panX = transform.x || 0;
-                        panY = transform.y || 0;
-                    }
-                }
-                const containerCenterX = containerRect.width / 2;
-                const containerCenterY = containerRect.height / 2;
-                startX = (containerCenterX - panX) / scale;
-                startY = (containerCenterY - panY) / scale;
-            }
-            
-            let addedCount = 0;
-            let skippedCount = 0;
-            const boothsToRemove = [];
-            const boothsToSave = [];
-            
-            // Add selected booths to canvas in a compact grid (stick together)
-            Array.from(selectedBoothItems).forEach(function(boothItem, index) {
-                const boothId = boothItem.getAttribute('data-booth-id');
-                const boothNumber = boothItem.getAttribute('data-booth-number');
-                
-                if (!boothId) {
-                    console.warn('Booth item missing data-booth-id:', boothItem, 'Zone:', zoneName);
-                    return;
-                }
-                
-                const existingBooth = canvas.querySelector('[data-booth-id="' + boothId + '"]');
-                if (existingBooth) {
-                    console.log('Booth', boothNumber, '(ID:', boothId, ') already on canvas, skipping');
-                    skippedCount++;
-                    return;
-                }
-                
-                // Prepare booth data
-                const boothData = {
-                    id: boothId,
-                    number: boothNumber,
-                    status: boothItem.getAttribute('data-booth-status'),
-                    clientId: boothItem.getAttribute('data-client-id') || '',
-                    userId: boothItem.getAttribute('data-user-id') || '',
-                    categoryId: boothItem.getAttribute('data-category-id') || '',
-                    subCategoryId: boothItem.getAttribute('data-sub-category-id') || '',
-                    assetId: boothItem.getAttribute('data-asset-id') || '',
-                    boothTypeId: boothItem.getAttribute('data-booth-type-id') || ''
-                };
-                
-                // Calculate compact grid position (stick together)
-                const col = index % gridCols;
-                const row = Math.floor(index / gridCols);
-                const x = startX + (col * spacingX);
-                const y = startY + (row * spacingY);
-                
-                // Snap to grid if enabled
-                let finalX = x;
-                let finalY = y;
-                if (self.snapEnabled) {
-                    finalX = Math.round(x / self.gridSize) * self.gridSize;
-                    finalY = Math.round(y / self.gridSize) * self.gridSize;
-                }
-                
-                console.log('Adding selected booth', boothNumber, 'to canvas at', finalX, finalY, 'Zone:', zoneName);
-                
-                // Add booth to canvas (skip individual save)
-                self.addBoothToCanvas(boothData, finalX, finalY, true);
-                
-                // Collect booth data for batch save
-                const boothElement = canvas.querySelector('[data-booth-id="' + boothId + '"]');
-                if (boothElement) {
-                    const width = parseFloat(boothElement.style.width) || effectiveSettings.width;
-                    const height = parseFloat(boothElement.style.height) || effectiveSettings.height;
-                    const rotation = parseFloat(boothElement.getAttribute('data-rotation')) || effectiveSettings.rotation;
-                    const zIndex = parseFloat(boothElement.style.zIndex) || effectiveSettings.zIndex;
-                    const fontSize = parseFloat(boothElement.style.fontSize) || effectiveSettings.fontSize;
-                    const borderWidth = parseFloat(boothElement.style.borderWidth) || effectiveSettings.borderWidth;
-                    const borderRadius = parseFloat(boothElement.style.borderRadius) || effectiveSettings.borderRadius;
-                    const opacity = parseFloat(boothElement.style.opacity) || effectiveSettings.opacity;
-                    
-                    const backgroundColor = boothElement.style.backgroundColor || boothElement.getAttribute('data-background-color') || effectiveSettings.background_color || self.defaultBackgroundColor;
-                    const borderColor = boothElement.style.borderColor || boothElement.getAttribute('data-border-color') || effectiveSettings.border_color || self.defaultBorderColor;
-                    const textColor = boothElement.style.color || boothElement.getAttribute('data-text-color') || effectiveSettings.text_color || self.defaultTextColor;
-                    const fontWeight = boothElement.style.fontWeight || boothElement.getAttribute('data-font-weight') || effectiveSettings.font_weight || self.defaultFontWeight;
-                    const fontFamily = boothElement.style.fontFamily || boothElement.getAttribute('data-font-family') || effectiveSettings.font_family || self.defaultFontFamily;
-                    const textAlign = boothElement.style.textAlign || boothElement.getAttribute('data-text-align') || effectiveSettings.text_align || self.defaultTextAlign;
-                    const boxShadow = boothElement.style.boxShadow || boothElement.getAttribute('data-box-shadow') || effectiveSettings.box_shadow || self.defaultBoxShadow;
-                    
-                    const boothIdInt = parseInt(boothId);
-                    if (isNaN(boothIdInt) || boothIdInt <= 0) {
-                        console.error('Invalid booth ID:', boothId);
-                        return;
-                    }
-                    
-                    const boothDataToSave = {
-                        id: boothIdInt,
-                        position_x: (isNaN(finalX) || finalX === null || finalX === undefined) ? null : Number(finalX),
-                        position_y: (isNaN(finalY) || finalY === null || finalY === undefined) ? null : Number(finalY),
-                        width: (isNaN(width) || width === null || width === undefined) ? null : Number(width),
-                        height: (isNaN(height) || height === null || height === undefined) ? null : Number(height),
-                        rotation: (isNaN(rotation) || rotation === null || rotation === undefined) ? 0 : Number(rotation),
-                        z_index: (isNaN(zIndex) || zIndex === null || zIndex === undefined) ? 10 : parseInt(zIndex),
-                        font_size: (isNaN(fontSize) || fontSize === null || fontSize === undefined) ? 14 : parseInt(fontSize),
-                        border_width: (isNaN(borderWidth) || borderWidth === null || borderWidth === undefined) ? 2 : parseInt(borderWidth),
-                        border_radius: (isNaN(borderRadius) || borderRadius === null || borderRadius === undefined) ? 6 : parseInt(borderRadius),
-                        opacity: (isNaN(opacity) || opacity === null || opacity === undefined) ? 1.00 : Number(opacity),
-                        background_color: backgroundColor ? String(backgroundColor) : null,
-                        border_color: borderColor ? String(borderColor) : null,
-                        text_color: textColor ? String(textColor) : null,
-                        font_weight: fontWeight ? String(fontWeight) : null,
-                        font_family: fontFamily ? String(fontFamily) : null,
-                        text_align: textAlign ? String(textAlign) : null,
-                        box_shadow: boxShadow ? String(boxShadow) : null
-                    };
-                    
-                    boothsToSave.push(boothDataToSave);
-                }
-                
-                // Remove selection state and collect for removal
-                boothItem.classList.remove('selected');
-                boothsToRemove.push(boothItem);
-                addedCount++;
-            });
-            
-            // Remove booths from sidebar after adding to canvas
-            boothsToRemove.forEach(function(boothItem) {
-                self.removeBoothFromSidebar(boothItem);
-            });
-            
-            // Update "Add Selected" button state
-            self.updateZoneAddSelectedButton(zoneName);
-            
-            // Batch save all booths
-            if (boothsToSave.length > 0) {
-                console.log('Saving', boothsToSave.length, 'selected booths from Zone', zoneName, 'to database');
-                self.saveBoothsBatch(boothsToSave).then(function(result) {
-                    console.log('✅ Selected booths from Zone', zoneName, 'saved successfully:', result);
-                }).catch(function(error) {
-                    console.error('❌ Error saving selected booths from Zone', zoneName, ':', error);
-                    showNotification('Error saving selected booths from Zone ' + zoneName + ' to database', 'error');
-                });
-            }
-            
-            // Show notification
-            if (addedCount > 0) {
-                console.log('✅ Successfully added', addedCount, 'selected booth(s) from Zone', zoneName, 'to canvas (stuck together)');
-                showNotification(addedCount + ' selected booth' + (addedCount !== 1 ? 's' : '') + ' from Zone ' + zoneName + ' added to canvas (stuck together)' + (skippedCount > 0 ? ' (' + skippedCount + ' already on canvas)' : ''), 'success');
-            } else if (skippedCount > 0) {
-                showNotification('All selected booths from Zone ' + zoneName + ' are already on canvas', 'info');
-            }
-            
-            // Update booth count
-            if (self.updateBoothCount) {
-                self.updateBoothCount();
-            }
-            
-            // Save state
-            self.saveState();
-        });
-    },
-    
-    // Update "Add Selected" button state based on selected booths
-    updateZoneAddSelectedButton: function(zoneName) {
-        const zoneSection = document.querySelector('[data-zone="' + zoneName + '"]');
-        if (!zoneSection) return;
-        
-        const zoneContent = zoneSection.querySelector('.zone-content');
-        if (!zoneContent) return;
-        
-        const selectedBoothItems = zoneContent.querySelectorAll('.booth-number-item.selected');
-        const addSelectedBtn = zoneSection.querySelector('.btn-add-selected-zone');
-        
-        if (addSelectedBtn) {
-            if (selectedBoothItems.length > 0) {
-                addSelectedBtn.disabled = false;
-                addSelectedBtn.title = 'Add ' + selectedBoothItems.length + ' Selected Booth' + (selectedBoothItems.length !== 1 ? 's' : '') + ' to Canvas (Stick Together)';
-            } else {
-                addSelectedBtn.disabled = true;
-                addSelectedBtn.title = 'Select booths first to add them to canvas';
-            }
-        }
     },
     
     // Enable click-to-place mode for adding all booths from a zone
@@ -2249,7 +2012,6 @@ const FloorPlanDesigner = {
                         box_shadow: boxShadow ? String(boxShadow) : null
                     };
                     
-                    console.log('Preparing booth data for save (ID:', boothIdInt, '):', boothDataToSave);
                     boothsToSave.push(boothDataToSave);
                 }
                 
@@ -2472,6 +2234,7 @@ const FloorPlanDesigner = {
     
     // Show modal to add a new zone (creates first booth in the zone)
     showAddZoneModal: function() {
+        const self = this;
         // Reset form
         document.getElementById('addZoneForm').reset();
         document.getElementById('zoneNameInput').value = '';
@@ -2562,7 +2325,7 @@ const FloorPlanDesigner = {
                     }
                     
                     // Show the new zone in the sidebar (expand it)
-                    const zoneSection = document.querySelector('.sidebar-zone-section[data-zone="' + zoneName + '"]');
+                    const zoneSection = document.querySelector('[data-zone="' + zoneName + '"]');
                     if (zoneSection && zoneSection.classList.contains('collapsed')) {
                         zoneSection.classList.remove('collapsed');
                     }
@@ -3365,6 +3128,8 @@ const FloorPlanDesigner = {
                         confirmButtonColor: '#3085d6',
                         cancelButtonColor: '#aaa',
                         focusConfirm: false,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
                         preConfirm: function() {
                             const priceInput = document.getElementById('boothPriceInput');
                             const price = parseFloat(priceInput.value);
@@ -3488,15 +3253,17 @@ const FloorPlanDesigner = {
                 var list = data.booths_with_bookings.map(function(b) {
                     return b.booth_number + ' (Booking #' + b.book_id + ', ' + (b.client_company || 'Unknown') + ')';
                 }).join('<br>');
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Cannot delete: active bookings',
-                    html: 'The following booth(s) have active bookings. Please cancel or reassign the booking first before deleting.<br><br><div style="text-align: left; max-height: 200px; overflow-y: auto;">' + list + '</div><br><small>Go to Bookings to manage or cancel bookings.</small>',
-                    confirmButtonText: 'Go to Bookings',
-                    showCancelButton: true,
-                    cancelButtonText: 'Cancel',
-                    confirmButtonColor: '#3085d6'
-                }).then(function(result) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Cannot delete: active bookings',
+                html: 'The following booth(s) have active bookings. Please cancel or reassign the booking first before deleting.<br><br><div style="text-align: left; max-height: 200px; overflow-y: auto;">' + list + '</div><br><small>Go to Bookings to manage or cancel bookings.</small>',
+                confirmButtonText: 'Go to Bookings',
+                showCancelButton: true,
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#3085d6',
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then(function(result) {
                     if (result.isConfirmed) {
                         window.location.href = FPD.urls.books;
                     }
@@ -3512,7 +3279,9 @@ const FloorPlanDesigner = {
                 showCancelButton: true,
                 confirmButtonText: 'Delete',
                 confirmButtonColor: '#dc3545',
-                cancelButtonText: 'Cancel'
+                cancelButtonText: 'Cancel',
+                allowOutsideClick: false,
+                allowEscapeKey: false
             }).then(function(result) {
                 if (!result.isConfirmed) return;
                 fetch('/booths/delete-by-ids', {
@@ -3697,344 +3466,65 @@ const FloorPlanDesigner = {
         }
     },
     
-    // Open zone settings modal to adjust all booths in a zone
-    openZoneSettings: function(zoneName) {
-        const self = this;
-        const canvas = document.getElementById('print');
-        if (!canvas) return;
-        
-        // Find all booths on canvas that belong to this zone
-        const zoneBooths = canvas.querySelectorAll('.dropped-booth[data-booth-zone="' + zoneName + '"]');
-        
-        if (zoneBooths.length === 0) {
-            showNotification('No booths from Zone ' + zoneName + ' found on canvas', 'warning');
-            return;
-        }
-        
-        // Get current floor plan ID
-        const floorPlanId = FPD.floorPlanId;
-        
-        // Load zone settings from database first (floor-plan-specific), then use saved values or fallback to current booth values
-        const zoneSettingsUrl = '/booths/zone-settings/' + encodeURIComponent(zoneName) + 
-            (floorPlanId ? '?floor_plan_id=' + floorPlanId : '');
-        fetch(zoneSettingsUrl, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        })
-        .then(function(response) {
-            return response.json();
-        })
-        .then(function(data) {
-            let currentWidth, currentHeight, currentRotation, currentZIndex, currentBorderRadius, currentBorderWidth, currentOpacity, currentPrice;
-            let currentBackgroundColor, currentBorderColor, currentTextColor, currentFontWeight, currentFontFamily, currentTextAlign, currentBoxShadow;
-            
-            // Use saved zone settings if available, otherwise use current booth values
-            if (data.status === 200 && data.settings) {
-                // Get current floor plan ID for cache key
-                const floorPlanId = FPD.floorPlanId;
-                const cacheKey = floorPlanId ? floorPlanId + '_' + zoneName : 'global_' + zoneName;
-                // Update cache with loaded settings (floor-plan-specific key)
-                self.zoneSettingsCache[cacheKey] = data.settings;
-                
-                currentWidth = data.settings.width || self.defaultBoothWidth;
-                currentHeight = data.settings.height || self.defaultBoothHeight;
-                currentRotation = data.settings.rotation || 0;
-                currentZIndex = data.settings.zIndex || 10;
-                currentBorderRadius = data.settings.borderRadius || 6;
-                currentBorderWidth = data.settings.borderWidth || 2;
-                currentOpacity = data.settings.opacity || 1.00;
-                currentPrice = data.settings.price || 500;
-                // Appearance/Color fields
-                currentBackgroundColor = data.settings.background_color || data.settings.backgroundColor || '';
-                currentBorderColor = data.settings.border_color || data.settings.borderColor || '';
-                currentTextColor = data.settings.text_color || data.settings.textColor || '';
-                currentFontWeight = data.settings.font_weight || data.settings.fontWeight || '';
-                currentFontFamily = data.settings.font_family || data.settings.fontFamily || '';
-                currentTextAlign = data.settings.text_align || data.settings.textAlign || '';
-                currentBoxShadow = data.settings.box_shadow || data.settings.boxShadow || '';
-            } else {
-                // Fallback: Get values from first booth
-                const firstBooth = zoneBooths[0];
-                currentWidth = parseFloat(firstBooth.style.width) || self.defaultBoothWidth;
-                currentHeight = parseFloat(firstBooth.style.height) || self.defaultBoothHeight;
-                let rotation = parseFloat(firstBooth.getAttribute('data-rotation')) || 0;
-                if (!firstBooth.getAttribute('data-rotation')) {
-                    const transform = firstBooth.style.transform || '';
-                    const match = transform.match(/rotate\(([^)]+)\)/);
-                    if (match) {
-                        rotation = parseFloat(match[1]) || 0;
-                    }
-                }
-                currentRotation = rotation;
-                currentZIndex = parseFloat(firstBooth.style.zIndex) || 10;
-                currentBorderRadius = parseFloat(firstBooth.style.borderRadius) || parseFloat(firstBooth.getAttribute('data-border-radius')) || 6;
-                currentBorderWidth = parseFloat(firstBooth.style.borderWidth) || parseFloat(firstBooth.getAttribute('data-border-width')) || 2;
-                currentOpacity = parseFloat(firstBooth.style.opacity) || parseFloat(firstBooth.getAttribute('data-opacity')) || 1.00;
-                currentPrice = 500; // Default price if not in settings
-                // Get appearance from first booth (check both style and data attributes)
-                currentBackgroundColor = firstBooth.style.backgroundColor || firstBooth.getAttribute('data-background-color') || '';
-                currentBorderColor = firstBooth.style.borderColor || firstBooth.getAttribute('data-border-color') || '';
-                currentTextColor = firstBooth.style.color || firstBooth.getAttribute('data-text-color') || '';
-                currentFontWeight = firstBooth.style.fontWeight || firstBooth.getAttribute('data-font-weight') || '';
-                currentFontFamily = firstBooth.style.fontFamily || firstBooth.getAttribute('data-font-family') || '';
-                currentTextAlign = firstBooth.style.textAlign || firstBooth.getAttribute('data-text-align') || '';
-                currentBoxShadow = firstBooth.style.boxShadow || firstBooth.getAttribute('data-box-shadow') || '';
-            }
-            
-            self.showZoneSettingsModal(zoneName, zoneBooths.length, {
-                width: currentWidth,
-                height: currentHeight,
-                rotation: currentRotation,
-                zIndex: currentZIndex,
-                borderRadius: currentBorderRadius,
-                borderWidth: currentBorderWidth,
-                opacity: currentOpacity,
-                price: currentPrice || 500,
-                background_color: currentBackgroundColor,
-                border_color: currentBorderColor,
-                text_color: currentTextColor,
-                font_weight: currentFontWeight,
-                font_family: currentFontFamily,
-                text_align: currentTextAlign,
-                box_shadow: currentBoxShadow
-            });
-        })
-        .catch(function(error) {
-            console.error('Error loading zone settings:', error);
-            // Fallback: Use current booth values if database load fails
-            const firstBooth = zoneBooths[0];
-            const currentWidth = parseFloat(firstBooth.style.width) || self.defaultBoothWidth;
-            const currentHeight = parseFloat(firstBooth.style.height) || self.defaultBoothHeight;
-            let currentRotation = parseFloat(firstBooth.getAttribute('data-rotation')) || 0;
-            if (!firstBooth.getAttribute('data-rotation')) {
-                const transform = firstBooth.style.transform || '';
-                const match = transform.match(/rotate\(([^)]+)\)/);
-                if (match) {
-                    currentRotation = parseFloat(match[1]) || 0;
-                }
-            }
-            const currentZIndex = parseFloat(firstBooth.style.zIndex) || 10;
-            const currentBorderRadius = parseFloat(firstBooth.style.borderRadius) || parseFloat(firstBooth.getAttribute('data-border-radius')) || 6;
-            const currentBorderWidth = parseFloat(firstBooth.style.borderWidth) || parseFloat(firstBooth.getAttribute('data-border-width')) || 2;
-            const currentOpacity = parseFloat(firstBooth.style.opacity) || parseFloat(firstBooth.getAttribute('data-opacity')) || 1.00;
-            const currentPrice = 500; // Default price in fallback case
-            // Get appearance from first booth (check both style and data attributes)
-            const currentBackgroundColor = firstBooth.style.backgroundColor || firstBooth.getAttribute('data-background-color') || '';
-            const currentBorderColor = firstBooth.style.borderColor || firstBooth.getAttribute('data-border-color') || '';
-            const currentTextColor = firstBooth.style.color || firstBooth.getAttribute('data-text-color') || '';
-            const currentFontWeight = firstBooth.style.fontWeight || firstBooth.getAttribute('data-font-weight') || '';
-            const currentFontFamily = firstBooth.style.fontFamily || firstBooth.getAttribute('data-font-family') || '';
-            const currentTextAlign = firstBooth.style.textAlign || firstBooth.getAttribute('data-text-align') || '';
-            const currentBoxShadow = firstBooth.style.boxShadow || firstBooth.getAttribute('data-box-shadow') || '';
-            
-            self.showZoneSettingsModal(zoneName, zoneBooths.length, {
-                width: currentWidth,
-                height: currentHeight,
-                rotation: currentRotation,
-                zIndex: currentZIndex,
-                borderRadius: currentBorderRadius,
-                borderWidth: currentBorderWidth,
-                opacity: currentOpacity,
-                price: currentPrice,
-                background_color: currentBackgroundColor,
-                border_color: currentBorderColor,
-                text_color: currentTextColor,
-                font_weight: currentFontWeight,
-                font_family: currentFontFamily,
-                text_align: currentTextAlign,
-                box_shadow: currentBoxShadow
-            });
-        });
-    },
-    
     // Show zone settings modal with separated Shape/Layout and Appearance groups
     showZoneSettingsModal: function(zoneName, boothCount, settings) {
         const self = this;
         
-        // Create settings modal with two separate groups
-        var modalHtml = '<div style="text-align: left; max-width: 700px; margin: 0 auto;">';
-        modalHtml += '<p style="margin-bottom: 20px; color: #666; padding: 12px; background: #f8f9fa; border-radius: 8px;">';
-        modalHtml += 'Found <strong>' + boothCount + '</strong> booth(s) in Zone ' + zoneName + '.';
-        modalHtml += '<br><small><strong>Instant preview:</strong> Changing any number or color applies to all booths in this zone immediately. Use Save to persist.</small>';
-        modalHtml += '</p>';
-        
-        // Group 0: Zone General Information (Zone About)
-        modalHtml += '<div style="background: #fff; border: 2px solid #10b981; border-radius: 12px; padding: 20px; margin-bottom: 20px;">';
-        modalHtml += '<h4 style="margin: 0 0 15px 0; color: #10b981; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">';
-        modalHtml += '<i class="fas fa-info-circle"></i> Zone Information';
-        modalHtml += '</h4>';
-        modalHtml += '<div style="margin-bottom: 15px;">';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-file-alt"></i> Zone About / Description';
-        modalHtml += '</label>';
-        modalHtml += '<textarea id="zoneAbout" class="swal2-textarea" placeholder="Describe this zone, its features, location, benefits, etc." style="width: 100%; margin: 0; padding: 12px; border-radius: 8px; border: 1px solid #ddd; min-height: 100px;">' + (settings.zone_about || '') + '</textarea>';
-        modalHtml += '<small style="color: #999; display: block; margin-top: 5px;">This information helps users understand the zone features when booking.</small>';
+        // Zone Settings modal — tabbed redesign
+        var modalHtml = '<div class="zs-modal">';
+        modalHtml += '<div class="zs-header">';
+        modalHtml += '<span class="zs-zone-name">Zone ' + zoneName + '</span>';
+        modalHtml += '<span class="zs-badge">' + boothCount + ' booth' + (boothCount !== 1 ? 's' : '') + '</span>';
+        modalHtml += '<span class="zs-hint">Preview on change. Save to persist.</span>';
         modalHtml += '</div>';
-        modalHtml += '<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">';
-        modalHtml += '<button id="saveZoneInfoBtn" class="swal2-confirm swal2-styled" style="background-color: #10b981; width: 100%; padding: 12px; font-weight: 600;">';
-        modalHtml += '<i class="fas fa-save mr-2"></i>Save Zone Information';
-        modalHtml += '</button>';
+        modalHtml += '<nav class="zs-tabs">';
+        modalHtml += '<button type="button" class="zs-tab active" data-tab="info"><i class="fas fa-info-circle"></i> Info</button>';
+        modalHtml += '<button type="button" class="zs-tab" data-tab="shape"><i class="fas fa-ruler-combined"></i> Shape</button>';
+        modalHtml += '<button type="button" class="zs-tab" data-tab="appearance"><i class="fas fa-palette"></i> Appearance</button>';
+        modalHtml += '</nav>';
+        modalHtml += '<div class="zs-panels">';
+        // Tab 1: Zone Info
+        modalHtml += '<div class="zs-panel active" id="zs-panel-info">';
+        modalHtml += '<label class="zs-label">Zone About</label>';
+        modalHtml += '<textarea id="zoneAbout" class="zs-textarea" placeholder="Describe this zone, its features, location, benefits…">' + (settings.zone_about || '') + '</textarea>';
+        modalHtml += '<button id="saveZoneInfoBtn" class="zs-btn zs-btn--primary"><i class="fas fa-save"></i> Save</button>';
         modalHtml += '</div>';
-        modalHtml += '</div>'; // End Zone Information group
-        
-        // Group 1: Shape & Layout Settings (W, H, R, Z)
-        modalHtml += '<div style="background: #fff; border: 2px solid #667eea; border-radius: 12px; padding: 20px; margin-bottom: 20px;">';
-        modalHtml += '<h4 style="margin: 0 0 15px 0; color: #667eea; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">';
-        modalHtml += '<i class="fas fa-ruler-combined"></i> Shape & Layout Settings';
-        modalHtml += '</h4>';
-        modalHtml += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">';
-        modalHtml += '<div>';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-arrows-alt-h"></i> Width (W)';
-        modalHtml += '</label>';
-        modalHtml += '<input type="number" id="zoneWidth" class="swal2-input" value="' + settings.width + '" min="5" step="1" style="width: 100%;">';
+        // Tab 2: Shape & Layout
+        modalHtml += '<div class="zs-panel" id="zs-panel-shape">';
+        modalHtml += '<div class="zs-row">';
+        modalHtml += '<div class="zs-field"><label class="zs-label">Width</label><input type="number" id="zoneWidth" class="zs-input" value="' + settings.width + '" min="5" step="1"></div>';
+        modalHtml += '<div class="zs-field"><label class="zs-label">Height</label><input type="number" id="zoneHeight" class="zs-input" value="' + settings.height + '" min="5" step="1"></div>';
         modalHtml += '</div>';
-        modalHtml += '<div>';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-arrows-alt-v"></i> Height (H)';
-        modalHtml += '</label>';
-        modalHtml += '<input type="number" id="zoneHeight" class="swal2-input" value="' + settings.height + '" min="5" step="1" style="width: 100%;">';
+        modalHtml += '<div class="zs-row">';
+        modalHtml += '<div class="zs-field"><label class="zs-label">Rotation (°)</label><input type="number" id="zoneRotation" class="zs-input" value="' + settings.rotation + '" min="-360" max="360" step="1"></div>';
+        modalHtml += '<div class="zs-field"><label class="zs-label">Z-Index</label><input type="number" id="zoneZIndex" class="zs-input" value="' + settings.zIndex + '" min="1" max="1000" step="1"></div>';
         modalHtml += '</div>';
+        modalHtml += '<button id="saveShapeLayoutBtn" class="zs-btn zs-btn--primary"><i class="fas fa-save"></i> Save</button>';
         modalHtml += '</div>';
-        modalHtml += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">';
-        modalHtml += '<div>';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-redo"></i> Rotation (R)';
-        modalHtml += '</label>';
-        modalHtml += '<input type="number" id="zoneRotation" class="swal2-input" value="' + settings.rotation + '" min="-360" max="360" step="1" style="width: 100%;">';
+        // Tab 3: Appearance
+        modalHtml += '<div class="zs-panel" id="zs-panel-appearance">';
+        modalHtml += '<div class="zs-row">';
+        modalHtml += '<div class="zs-field"><label class="zs-label">Background</label><div class="zs-color-row"><input type="color" id="zoneAppearanceBackgroundColor" value="' + (settings.background_color || '#ffffff') + '"><input type="text" id="zoneAppearanceBackgroundColorText" class="zs-input zs-input--flex" value="' + (settings.background_color || '') + '" placeholder="#ffffff"></div></div>';
+        modalHtml += '<div class="zs-field"><label class="zs-label">Border Color</label><div class="zs-color-row"><input type="color" id="zoneAppearanceBorderColor" value="' + (settings.border_color || '#007bff') + '"><input type="text" id="zoneAppearanceBorderColorText" class="zs-input zs-input--flex" value="' + (settings.border_color || '') + '" placeholder="#007bff"></div></div>';
         modalHtml += '</div>';
-        modalHtml += '<div>';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-layer-group"></i> Z-Index (Z)';
-        modalHtml += '</label>';
-        modalHtml += '<input type="number" id="zoneZIndex" class="swal2-input" value="' + settings.zIndex + '" min="1" max="1000" step="1" style="width: 100%;">';
+        modalHtml += '<div class="zs-field"><label class="zs-label">Text Color</label><div class="zs-color-row"><input type="color" id="zoneAppearanceTextColor" value="' + (settings.text_color || '#000000') + '"><input type="text" id="zoneAppearanceTextColorText" class="zs-input zs-input--flex" value="' + (settings.text_color || '') + '" placeholder="#000000"></div></div>';
+        modalHtml += '<div class="zs-row">';
+        modalHtml += '<div class="zs-field"><label class="zs-label">Border Radius</label><input type="number" id="zoneAppearanceBorderRadius" class="zs-input" value="' + settings.borderRadius + '" min="0" max="50" step="1"></div>';
+        modalHtml += '<div class="zs-field"><label class="zs-label">Border Width</label><input type="number" id="zoneAppearanceBorderWidth" class="zs-input" value="' + settings.borderWidth + '" min="0" max="10" step="1"></div>';
+        modalHtml += '<div class="zs-field"><label class="zs-label">Opacity</label><input type="number" id="zoneAppearanceOpacity" class="zs-input" value="' + settings.opacity + '" min="0" max="1" step="0.1"></div>';
+        modalHtml += '</div>';
+        modalHtml += '<div class="zs-row">';
+        modalHtml += '<div class="zs-field"><label class="zs-label">Font Weight</label><select id="zoneAppearanceFontWeight" class="zs-input"><option value="">Default</option><option value="300"' + (settings.font_weight === '300' ? ' selected' : '') + '>Light</option><option value="400"' + (settings.font_weight === '400' ? ' selected' : '') + '>Normal</option><option value="600"' + (settings.font_weight === '600' ? ' selected' : '') + '>Semi-Bold</option><option value="700"' + (settings.font_weight === '700' ? ' selected' : '') + '>Bold</option><option value="800"' + (settings.font_weight === '800' ? ' selected' : '') + '>Extra Bold</option></select></div>';
+        modalHtml += '<div class="zs-field"><label class="zs-label">Text Align</label><select id="zoneAppearanceTextAlign" class="zs-input"><option value="">Default</option><option value="left"' + (settings.text_align === 'left' ? ' selected' : '') + '>Left</option><option value="center"' + (settings.text_align === 'center' ? ' selected' : '') + '>Center</option><option value="right"' + (settings.text_align === 'right' ? ' selected' : '') + '>Right</option></select></div>';
+        modalHtml += '</div>';
+        modalHtml += '<div class="zs-field"><label class="zs-label">Font Family</label><input type="text" id="zoneAppearanceFontFamily" class="zs-input" value="' + (settings.font_family || '') + '" placeholder="Arial, sans-serif"></div>';
+        modalHtml += '<div class="zs-field"><label class="zs-label">Box Shadow</label><input type="text" id="zoneAppearanceBoxShadow" class="zs-input" value="' + (settings.box_shadow || '') + '" placeholder="0 2px 8px rgba(0,0,0,0.2)"></div>';
+        modalHtml += '<button id="saveAppearanceBtn" class="zs-btn zs-btn--primary"><i class="fas fa-save"></i> Save</button>';
         modalHtml += '</div>';
         modalHtml += '</div>';
-        modalHtml += '<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">';
-        modalHtml += '<button id="saveShapeLayoutBtn" class="swal2-confirm swal2-styled" style="background-color: #667eea; width: 100%; padding: 12px; font-weight: 600;">';
-        modalHtml += '<i class="fas fa-save mr-2"></i>Save Shape & Layout';
-        modalHtml += '</button>';
+        modalHtml += '<div class="zs-footer">';
+        modalHtml += '<button id="saveAllZoneBtn" class="zs-btn zs-btn--save-all"><i class="fas fa-save"></i> Save All</button>';
         modalHtml += '</div>';
-        modalHtml += '</div>'; // End Shape & Layout group
-        
-        // Group 2: Appearance & Style Settings
-        modalHtml += '<div style="background: #fff; border: 2px solid #f6c23e; border-radius: 12px; padding: 20px; margin-bottom: 20px;">';
-        modalHtml += '<h4 style="margin: 0 0 15px 0; color: #f6c23e; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">';
-        modalHtml += '<i class="fas fa-palette"></i> Appearance & Style Settings';
-        modalHtml += '</h4>';
-        
-        // Colors
-        modalHtml += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">';
-        modalHtml += '<div>';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-fill-drip"></i> Background Color';
-        modalHtml += '</label>';
-        modalHtml += '<div style="display: flex; gap: 8px; align-items: center;">';
-        modalHtml += '<input type="color" id="zoneAppearanceBackgroundColor" value="' + (settings.background_color || '#ffffff') + '" style="width: 60px; height: 38px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">';
-        modalHtml += '<input type="text" id="zoneAppearanceBackgroundColorText" class="swal2-input" value="' + (settings.background_color || '') + '" placeholder="#ffffff" style="flex: 1;">';
-        modalHtml += '</div>';
-        modalHtml += '</div>';
-        modalHtml += '<div>';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-border-all"></i> Border Color';
-        modalHtml += '</label>';
-        modalHtml += '<div style="display: flex; gap: 8px; align-items: center;">';
-        modalHtml += '<input type="color" id="zoneAppearanceBorderColor" value="' + (settings.border_color || '#007bff') + '" style="width: 60px; height: 38px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">';
-        modalHtml += '<input type="text" id="zoneAppearanceBorderColorText" class="swal2-input" value="' + (settings.border_color || '') + '" placeholder="#007bff" style="flex: 1;">';
-        modalHtml += '</div>';
-        modalHtml += '</div>';
-        modalHtml += '</div>';
-        modalHtml += '<div style="margin-bottom: 15px;">';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-font"></i> Text Color';
-        modalHtml += '</label>';
-        modalHtml += '<div style="display: flex; gap: 8px; align-items: center;">';
-        modalHtml += '<input type="color" id="zoneAppearanceTextColor" value="' + (settings.text_color || '#000000') + '" style="width: 60px; height: 38px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">';
-        modalHtml += '<input type="text" id="zoneAppearanceTextColorText" class="swal2-input" value="' + (settings.text_color || '') + '" placeholder="#000000" style="flex: 1;">';
-        modalHtml += '</div>';
-        modalHtml += '</div>';
-        
-        // Border & Opacity
-        modalHtml += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">';
-        modalHtml += '<div>';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-circle"></i> Border Radius';
-        modalHtml += '</label>';
-        modalHtml += '<input type="number" id="zoneAppearanceBorderRadius" class="swal2-input" value="' + settings.borderRadius + '" min="0" max="50" step="1" style="width: 100%;">';
-        modalHtml += '</div>';
-        modalHtml += '<div>';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-border-style"></i> Border Width';
-        modalHtml += '</label>';
-        modalHtml += '<input type="number" id="zoneAppearanceBorderWidth" class="swal2-input" value="' + settings.borderWidth + '" min="0" max="10" step="1" style="width: 100%;">';
-        modalHtml += '</div>';
-        modalHtml += '</div>';
-        modalHtml += '<div style="margin-bottom: 15px;">';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-adjust"></i> Opacity (0.0 - 1.0)';
-        modalHtml += '</label>';
-        modalHtml += '<input type="number" id="zoneAppearanceOpacity" class="swal2-input" value="' + settings.opacity + '" min="0" max="1" step="0.1" style="width: 100%;">';
-        modalHtml += '</div>';
-        
-        // Font Settings
-        modalHtml += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">';
-        modalHtml += '<div>';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-bold"></i> Font Weight';
-        modalHtml += '</label>';
-        modalHtml += '<select id="zoneAppearanceFontWeight" class="swal2-input" style="width: 100%;">';
-        modalHtml += '<option value="">Use Default</option>';
-        modalHtml += '<option value="300"' + (settings.font_weight === '300' ? ' selected' : '') + '>Light (300)</option>';
-        modalHtml += '<option value="400"' + (settings.font_weight === '400' ? ' selected' : '') + '>Normal (400)</option>';
-        modalHtml += '<option value="600"' + (settings.font_weight === '600' ? ' selected' : '') + '>Semi-Bold (600)</option>';
-        modalHtml += '<option value="700"' + (settings.font_weight === '700' ? ' selected' : '') + '>Bold (700)</option>';
-        modalHtml += '<option value="800"' + (settings.font_weight === '800' ? ' selected' : '') + '>Extra Bold (800)</option>';
-        modalHtml += '</select>';
-        modalHtml += '</div>';
-        modalHtml += '<div>';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-align-center"></i> Text Align';
-        modalHtml += '</label>';
-        modalHtml += '<select id="zoneAppearanceTextAlign" class="swal2-input" style="width: 100%;">';
-        modalHtml += '<option value="">Use Default</option>';
-        modalHtml += '<option value="left"' + (settings.text_align === 'left' ? ' selected' : '') + '>Left</option>';
-        modalHtml += '<option value="center"' + (settings.text_align === 'center' ? ' selected' : '') + '>Center</option>';
-        modalHtml += '<option value="right"' + (settings.text_align === 'right' ? ' selected' : '') + '>Right</option>';
-        modalHtml += '</select>';
-        modalHtml += '</div>';
-        modalHtml += '</div>';
-        modalHtml += '<div style="margin-bottom: 15px;">';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-font"></i> Font Family';
-        modalHtml += '</label>';
-        modalHtml += '<input type="text" id="zoneAppearanceFontFamily" class="swal2-input" value="' + (settings.font_family || '') + '" placeholder="Arial, sans-serif" style="width: 100%;">';
-        modalHtml += '</div>';
-        modalHtml += '<div style="margin-bottom: 15px;">';
-        modalHtml += '<label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">';
-        modalHtml += '<i class="fas fa-shadow"></i> Box Shadow';
-        modalHtml += '</label>';
-        modalHtml += '<input type="text" id="zoneAppearanceBoxShadow" class="swal2-input" value="' + (settings.box_shadow || '') + '" placeholder="0 2px 8px rgba(0,0,0,0.2)" style="width: 100%;">';
-        modalHtml += '</div>';
-        modalHtml += '<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">';
-        modalHtml += '<button id="saveAppearanceBtn" class="swal2-confirm swal2-styled" style="background-color: #f6c23e; width: 100%; padding: 12px; font-weight: 600;">';
-        modalHtml += '<i class="fas fa-save mr-2"></i>Save Appearance & Style';
-        modalHtml += '</button>';
-        modalHtml += '</div>';
-        modalHtml += '</div>'; // End Appearance & Style group
-        
-        modalHtml += '<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 20px; margin-bottom: 20px;">';
-        modalHtml += '<button id="saveAllZoneBtn" class="swal2-confirm swal2-styled" style="background: #fff; color: #667eea; width: 100%; padding: 14px; font-weight: 700; border: 2px solid #fff;">';
-        modalHtml += '<i class="fas fa-save mr-2"></i>Save All Zone Settings';
-        modalHtml += '</button>';
-        modalHtml += '<p style="font-size: 11px; color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">Saves Zone Info, Shape & Layout, and Appearance & Style for Zone ' + zoneName + '.</p>';
-        modalHtml += '</div>';
-        
-        modalHtml += '<p style="font-size: 11px; color: #999; margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px;">';
-        modalHtml += '<i class="fas fa-info-circle"></i> <strong>Note:</strong> Changes apply instantly on canvas. Use the Save buttons above to persist. "Save All" persists everything for this zone.';
-        modalHtml += '</p>';
         modalHtml += '</div>';
         
         Swal.fire({
@@ -4043,12 +3533,30 @@ const FloorPlanDesigner = {
             icon: 'info',
             showCancelButton: true,
             cancelButtonText: 'Close',
+            showCloseButton: true,
             confirmButtonText: false,
-            width: '750px',
+            width: '520px',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            customClass: { popup: 'zone-settings-swal' },
             didOpen: () => {
                 // Hide default confirm button
                 const confirmBtn = Swal.getConfirmButton();
                 if (confirmBtn) confirmBtn.style.display = 'none';
+                
+                // Tab switching
+                var tabs = document.querySelectorAll('.zs-tab');
+                var panels = document.querySelectorAll('.zs-panel');
+                tabs.forEach(function(tab) {
+                    tab.addEventListener('click', function() {
+                        var target = tab.getAttribute('data-tab');
+                        tabs.forEach(function(t) { t.classList.remove('active'); });
+                        panels.forEach(function(p) { p.classList.remove('active'); });
+                        tab.classList.add('active');
+                        var panel = document.getElementById('zs-panel-' + target);
+                        if (panel) panel.classList.add('active');
+                    });
+                });
                 
                 // Sync color pickers with text inputs
                 const bgColorPicker = document.getElementById('zoneAppearanceBackgroundColor');
@@ -4376,10 +3884,10 @@ const FloorPlanDesigner = {
                 height: height,
                 rotation: rotation,
                 z_index: zIndex,
-                font_size: calculatedFontSize,
-                border_width: boothElement.getAttribute('data-border-width') || 2,
-                border_radius: boothElement.getAttribute('data-border-radius') || 6,
-                opacity: boothElement.getAttribute('data-opacity') || 1,
+                font_size: Math.round(calculatedFontSize) || 14,
+                border_width: Math.round(parseFloat(boothElement.getAttribute('data-border-width')) || 2),
+                border_radius: Math.round(parseFloat(boothElement.getAttribute('data-border-radius')) || 6),
+                opacity: parseFloat(boothElement.getAttribute('data-opacity')) || 1,
                 background_color: boothElement.style.backgroundColor || boothElement.getAttribute('data-background-color') || null,
                 border_color: boothElement.style.borderColor || boothElement.getAttribute('data-border-color') || null,
                 text_color: boothElement.style.color || boothElement.getAttribute('data-text-color') || null,
@@ -4391,16 +3899,7 @@ const FloorPlanDesigner = {
             updatedCount++;
         });
         
-        if (updatedCount === 0) {
-            Swal.fire({
-                icon: 'info',
-                title: 'No Booths in Zone',
-                text: 'No booths from Zone ' + zoneName + ' found. Settings will be saved for future booths added to this zone.'
-            });
-            return;
-        }
-        
-        // Get current floor plan ID
+        // Get current floor plan ID (required for zone_settings save)
         const floorPlanId = FPD.floorPlanId;
         if (!floorPlanId) {
             Swal.fire({
@@ -4411,37 +3910,36 @@ const FloorPlanDesigner = {
             return;
         }
         
-        // Load existing zone settings to preserve appearance settings
-        const zoneSettingsUrl = '/booths/zone-settings/' + encodeURIComponent(zoneName) + 
-            (floorPlanId ? '?floor_plan_id=' + floorPlanId : '');
+        // Load existing zone settings for this zone only (floor-plan-specific)
+        const zoneSettingsUrl = '/booths/zone-settings/' + encodeURIComponent(zoneName) + '?floor_plan_id=' + floorPlanId;
         
+        Swal.showLoading();
         fetch(zoneSettingsUrl)
             .then(response => response.json())
             .then(function(data) {
-                const existingSettings = data.settings || {};
+                const existingSettings = (data.settings && typeof data.settings === 'object') ? data.settings : {};
                 
-                // Merge shape settings with existing appearance settings
+                // Merge shape settings with existing appearance (preserve this zone's appearance only)
                 const settingsToSave = {
                     width: shapeSettings.width,
                     height: shapeSettings.height,
                     rotation: shapeSettings.rotation,
                     zIndex: shapeSettings.zIndex,
-                    // Preserve existing appearance settings
-                    borderRadius: existingSettings.borderRadius || 6,
-                    borderWidth: existingSettings.borderWidth || 2,
-                    opacity: existingSettings.opacity || 1.0,
-                    price: existingSettings.price || 500,
-                    background_color: existingSettings.background_color || null,
-                    border_color: existingSettings.border_color || null,
-                    text_color: existingSettings.text_color || null,
-                    font_weight: existingSettings.font_weight || null,
-                    font_family: existingSettings.font_family || null,
-                    text_align: existingSettings.text_align || null,
-                    box_shadow: existingSettings.box_shadow || null,
+                    borderRadius: existingSettings.borderRadius ?? 6,
+                    borderWidth: existingSettings.borderWidth ?? 2,
+                    opacity: existingSettings.opacity ?? 1.0,
+                    price: existingSettings.price ?? 500,
+                    background_color: existingSettings.background_color ?? null,
+                    border_color: existingSettings.border_color ?? null,
+                    text_color: existingSettings.text_color ?? null,
+                    font_weight: existingSettings.font_weight ?? null,
+                    font_family: existingSettings.font_family ?? null,
+                    text_align: existingSettings.text_align ?? null,
+                    box_shadow: existingSettings.box_shadow ?? null,
                     floor_plan_id: floorPlanId
                 };
                 
-                // Save to database
+                // Save zone_settings to database (always, for this zone + floor plan)
                 return fetch('/booths/zone-settings/' + encodeURIComponent(zoneName), {
                     method: 'POST',
                     headers: {
@@ -4451,27 +3949,32 @@ const FloorPlanDesigner = {
                     body: JSON.stringify(settingsToSave)
                 });
             })
-            .then(response => response.json())
-            .then(function(data) {
-                if (data.status === 200) {
-                    // Update cache
-                    const cacheKey = floorPlanId ? floorPlanId + '_' + zoneName : 'global_' + zoneName;
-                    if (self.zoneSettingsCache[cacheKey]) {
-                        self.zoneSettingsCache[cacheKey].width = shapeSettings.width;
-                        self.zoneSettingsCache[cacheKey].height = shapeSettings.height;
-                        self.zoneSettingsCache[cacheKey].rotation = shapeSettings.rotation;
-                        self.zoneSettingsCache[cacheKey].zIndex = shapeSettings.zIndex;
-                    } else {
-                        self.zoneSettingsCache[cacheKey] = {
-                            width: shapeSettings.width,
-                            height: shapeSettings.height,
-                            rotation: shapeSettings.rotation,
-                            zIndex: shapeSettings.zIndex
-                        };
+            .then(function(response) {
+                return response.json().then(function(data) {
+                    if (data.status !== 200) {
+                        throw new Error(data.message || 'Failed to save zone settings');
                     }
+                    return data;
+                });
+            })
+            .then(function(data) {
+                // Update cache for this zone only
+                const cacheKey = floorPlanId + '_' + zoneName;
+                if (self.zoneSettingsCache[cacheKey]) {
+                    self.zoneSettingsCache[cacheKey].width = shapeSettings.width;
+                    self.zoneSettingsCache[cacheKey].height = shapeSettings.height;
+                    self.zoneSettingsCache[cacheKey].rotation = shapeSettings.rotation;
+                    self.zoneSettingsCache[cacheKey].zIndex = shapeSettings.zIndex;
+                } else {
+                    self.zoneSettingsCache[cacheKey] = {
+                        width: shapeSettings.width,
+                        height: shapeSettings.height,
+                        rotation: shapeSettings.rotation,
+                        zIndex: shapeSettings.zIndex
+                    };
                 }
                 
-                // Save booth updates to database
+                // Save booth updates only if we have booths
                 if (boothsToSave.length > 0) {
                     return self.saveBoothsBatch(boothsToSave);
                 }
@@ -4480,7 +3983,9 @@ const FloorPlanDesigner = {
                 Swal.fire({
                     icon: 'success',
                     title: 'Saved!',
-                    text: 'Shape & Layout applied to entire Zone ' + zoneName + ' — ' + updatedCount + ' booth(s) updated.',
+                    text: updatedCount > 0
+                        ? 'Shape & Layout applied to Zone ' + zoneName + ' — ' + updatedCount + ' booth(s) updated.'
+                        : 'Zone ' + zoneName + ' settings saved for future booths.',
                     timer: 3000,
                     showConfirmButton: false
                 });
@@ -4492,7 +3997,7 @@ const FloorPlanDesigner = {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'Failed to save settings. Please try again.'
+                    text: (error && error.message) || 'Failed to save settings. Please try again.'
                 });
             });
     },
@@ -4522,9 +4027,9 @@ const FloorPlanDesigner = {
             font_family: appearanceSettings.font_family,
             text_align: appearanceSettings.text_align,
             box_shadow: appearanceSettings.box_shadow,
-            border_radius: appearanceSettings.borderRadius,
-            border_width: appearanceSettings.borderWidth,
-            opacity: appearanceSettings.opacity
+            border_radius: Math.round(parseFloat(appearanceSettings.borderRadius) || 6),
+            border_width: Math.round(parseFloat(appearanceSettings.borderWidth) || 2),
+            opacity: appearanceSettings.opacity != null ? parseFloat(appearanceSettings.opacity) : 1
         };
         
         // 1) Sidebar booths (not on canvas): save appearance to DB only
@@ -4573,10 +4078,10 @@ const FloorPlanDesigner = {
                 height: parseInt(boothElement.getAttribute('data-height'), 10) || parseInt(boothElement.style.height, 10) || 50,
                 rotation: parseFloat(boothElement.getAttribute('data-rotation')) || 0,
                 z_index: parseInt(boothElement.getAttribute('data-z-index'), 10) || 10,
-                font_size: parseFloat(boothElement.getAttribute('data-calculated-font-size')) || 14,
-                border_width: appearanceSettings.borderWidth,
-                border_radius: appearanceSettings.borderRadius,
-                opacity: appearanceSettings.opacity != null ? appearanceSettings.opacity : 1,
+                font_size: Math.round(parseFloat(boothElement.getAttribute('data-calculated-font-size')) || 14),
+                border_width: Math.round(parseFloat(appearanceSettings.borderWidth) || 2),
+                border_radius: Math.round(parseFloat(appearanceSettings.borderRadius) || 6),
+                opacity: appearanceSettings.opacity != null ? parseFloat(appearanceSettings.opacity) : 1,
                 background_color: appearanceSettings.background_color,
                 border_color: appearanceSettings.border_color,
                 text_color: appearanceSettings.text_color,
@@ -4588,16 +4093,7 @@ const FloorPlanDesigner = {
             updatedCount++;
         });
         
-        if (updatedCount === 0) {
-            Swal.fire({
-                icon: 'info',
-                title: 'No Booths in Zone',
-                text: 'No booths from Zone ' + zoneName + ' found. Settings will be saved for future booths added to this zone.'
-            });
-            return;
-        }
-        
-        // Get current floor plan ID
+        // Get current floor plan ID (required for zone_settings save)
         const floorPlanId = FPD.floorPlanId;
         if (!floorPlanId) {
             Swal.fire({
@@ -4608,27 +4104,25 @@ const FloorPlanDesigner = {
             return;
         }
         
-        // Load existing zone settings to preserve shape/layout settings
-        const zoneSettingsUrl = '/booths/zone-settings/' + encodeURIComponent(zoneName) + 
-            (floorPlanId ? '?floor_plan_id=' + floorPlanId : '');
+        // Load existing zone settings for this zone only (floor-plan-specific)
+        const zoneSettingsUrl = '/booths/zone-settings/' + encodeURIComponent(zoneName) + '?floor_plan_id=' + floorPlanId;
         
+        Swal.showLoading();
         fetch(zoneSettingsUrl)
             .then(response => response.json())
             .then(function(data) {
-                const existingSettings = data.settings || {};
+                const existingSettings = (data.settings && typeof data.settings === 'object') ? data.settings : {};
                 
-                // Merge appearance settings with existing shape/layout settings
+                // Merge appearance with existing shape/layout (preserve this zone's shape only)
                 const settingsToSave = {
-                    // Preserve existing shape/layout settings
-                    width: existingSettings.width || 80,
-                    height: existingSettings.height || 50,
-                    rotation: existingSettings.rotation || 0,
-                    zIndex: existingSettings.zIndex || 10,
-                    // Update appearance settings
+                    width: existingSettings.width ?? 80,
+                    height: existingSettings.height ?? 50,
+                    rotation: existingSettings.rotation ?? 0,
+                    zIndex: existingSettings.zIndex ?? 10,
                     borderRadius: appearanceSettings.borderRadius,
                     borderWidth: appearanceSettings.borderWidth,
                     opacity: appearanceSettings.opacity,
-                    price: existingSettings.price || 500,
+                    price: existingSettings.price ?? 500,
                     background_color: appearanceSettings.background_color,
                     border_color: appearanceSettings.border_color,
                     text_color: appearanceSettings.text_color,
@@ -4639,7 +4133,7 @@ const FloorPlanDesigner = {
                     floor_plan_id: floorPlanId
                 };
                 
-                // Save to database
+                // Save zone_settings to database (always, for this zone + floor plan)
                 return fetch('/booths/zone-settings/' + encodeURIComponent(zoneName), {
                     method: 'POST',
                     headers: {
@@ -4649,39 +4143,44 @@ const FloorPlanDesigner = {
                     body: JSON.stringify(settingsToSave)
                 });
             })
-            .then(response => response.json())
-            .then(function(data) {
-                if (data.status === 200) {
-                    // Update cache
-                    const cacheKey = floorPlanId ? floorPlanId + '_' + zoneName : 'global_' + zoneName;
-                    if (self.zoneSettingsCache[cacheKey]) {
-                        self.zoneSettingsCache[cacheKey].background_color = appearanceSettings.background_color;
-                        self.zoneSettingsCache[cacheKey].border_color = appearanceSettings.border_color;
-                        self.zoneSettingsCache[cacheKey].text_color = appearanceSettings.text_color;
-                        self.zoneSettingsCache[cacheKey].font_weight = appearanceSettings.font_weight;
-                        self.zoneSettingsCache[cacheKey].font_family = appearanceSettings.font_family;
-                        self.zoneSettingsCache[cacheKey].text_align = appearanceSettings.text_align;
-                        self.zoneSettingsCache[cacheKey].box_shadow = appearanceSettings.box_shadow;
-                        self.zoneSettingsCache[cacheKey].borderRadius = appearanceSettings.borderRadius;
-                        self.zoneSettingsCache[cacheKey].borderWidth = appearanceSettings.borderWidth;
-                        self.zoneSettingsCache[cacheKey].opacity = appearanceSettings.opacity;
-                    } else {
-                        self.zoneSettingsCache[cacheKey] = {
-                            background_color: appearanceSettings.background_color,
-                            border_color: appearanceSettings.border_color,
-                            text_color: appearanceSettings.text_color,
-                            font_weight: appearanceSettings.font_weight,
-                            font_family: appearanceSettings.font_family,
-                            text_align: appearanceSettings.text_align,
-                            box_shadow: appearanceSettings.box_shadow,
-                            borderRadius: appearanceSettings.borderRadius,
-                            borderWidth: appearanceSettings.borderWidth,
-                            opacity: appearanceSettings.opacity
-                        };
+            .then(function(response) {
+                return response.json().then(function(data) {
+                    if (data.status !== 200) {
+                        throw new Error(data.message || 'Failed to save zone appearance settings');
                     }
+                    return data;
+                });
+            })
+            .then(function(data) {
+                // Update cache for this zone only
+                const cacheKey = floorPlanId + '_' + zoneName;
+                if (self.zoneSettingsCache[cacheKey]) {
+                    self.zoneSettingsCache[cacheKey].background_color = appearanceSettings.background_color;
+                    self.zoneSettingsCache[cacheKey].border_color = appearanceSettings.border_color;
+                    self.zoneSettingsCache[cacheKey].text_color = appearanceSettings.text_color;
+                    self.zoneSettingsCache[cacheKey].font_weight = appearanceSettings.font_weight;
+                    self.zoneSettingsCache[cacheKey].font_family = appearanceSettings.font_family;
+                    self.zoneSettingsCache[cacheKey].text_align = appearanceSettings.text_align;
+                    self.zoneSettingsCache[cacheKey].box_shadow = appearanceSettings.box_shadow;
+                    self.zoneSettingsCache[cacheKey].borderRadius = appearanceSettings.borderRadius;
+                    self.zoneSettingsCache[cacheKey].borderWidth = appearanceSettings.borderWidth;
+                    self.zoneSettingsCache[cacheKey].opacity = appearanceSettings.opacity;
+                } else {
+                    self.zoneSettingsCache[cacheKey] = {
+                        background_color: appearanceSettings.background_color,
+                        border_color: appearanceSettings.border_color,
+                        text_color: appearanceSettings.text_color,
+                        font_weight: appearanceSettings.font_weight,
+                        font_family: appearanceSettings.font_family,
+                        text_align: appearanceSettings.text_align,
+                        box_shadow: appearanceSettings.box_shadow,
+                        borderRadius: appearanceSettings.borderRadius,
+                        borderWidth: appearanceSettings.borderWidth,
+                        opacity: appearanceSettings.opacity
+                    };
                 }
                 
-                // Save booth updates to database
+                // Save booth updates only if we have booths
                 if (boothsToSave.length > 0) {
                     return self.saveBoothsBatch(boothsToSave);
                 }
@@ -4690,7 +4189,9 @@ const FloorPlanDesigner = {
                 Swal.fire({
                     icon: 'success',
                     title: 'Saved!',
-                    text: 'Appearance & Style applied to entire Zone ' + zoneName + ' — ' + updatedCount + ' booth(s) updated.',
+                    text: updatedCount > 0
+                        ? 'Appearance & Style applied to Zone ' + zoneName + ' — ' + updatedCount + ' booth(s) updated.'
+                        : 'Zone ' + zoneName + ' appearance saved for future booths.',
                     timer: 3000,
                     showConfirmButton: false
                 });
@@ -4702,7 +4203,7 @@ const FloorPlanDesigner = {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'Failed to save settings. Please try again.'
+                    text: (error && error.message) || 'Failed to save settings. Please try again.'
                 });
             });
     },
@@ -4876,7 +4377,7 @@ const FloorPlanDesigner = {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Failed to save settings. Please try again.'
+                text: (error && error.message) || 'Failed to save settings. Please try again.'
             });
         });
     },
@@ -5109,12 +4610,6 @@ const FloorPlanDesigner = {
         
         // Save state for undo/redo
         self.saveState();
-    },
-    
-    // Open zone appearance settings - redirects to unified modal
-    openZoneAppearanceSettings: function(zoneName) {
-        // Redirect to the unified zone settings modal (which has both groups)
-        this.openZoneSettings(zoneName);
     },
     
     // Show zone appearance settings modal (colors/appearance only)
@@ -5522,7 +5017,9 @@ const FloorPlanDesigner = {
             showCancelButton: true,
             confirmButtonText: 'Yes, Clear Zone',
             cancelButtonText: 'Cancel',
-            confirmButtonColor: '#dc3545'
+            confirmButtonColor: '#dc3545',
+            allowOutsideClick: false,
+            allowEscapeKey: false
         }).then((result) => {
             if (result.isConfirmed) {
                 self.executeClearZone(zoneName);
@@ -5602,6 +5099,18 @@ const FloorPlanDesigner = {
             }
         }
         
+        // Update window.boothsData immediately so syncSidebarWithCanvas does not remove
+        // the booths we just added back to the sidebar (DB save is async)
+        if (typeof window.boothsData !== 'undefined' && Array.isArray(window.boothsData)) {
+            const clearedIds = new Set(boothsToSave.map(function(b) { return b.id; }));
+            window.boothsData.forEach(function(booth) {
+                if (clearedIds.has(booth.id)) {
+                    booth.position_x = null;
+                    booth.position_y = null;
+                }
+            });
+        }
+        
         // Batch save to clear positions in database
         if (boothsToSave.length > 0) {
             self.saveBoothsBatch(boothsToSave).then(function(result) {
@@ -5612,7 +5121,7 @@ const FloorPlanDesigner = {
             });
         }
         
-        // Sync sidebar
+        // Sync sidebar (boothsData already updated, so cleared booths stay in sidebar)
         self.syncSidebarWithCanvas();
         
         // Update booth count
@@ -5847,6 +5356,8 @@ const FloorPlanDesigner = {
             confirmButtonText: 'Apply Rotation',
             cancelButtonText: 'Cancel',
             confirmButtonColor: '#ff9800',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
             inputValidator: (value) => {
                 if (!value && value !== 0) {
                     return 'Please enter a rotation degree';
@@ -6667,11 +6178,18 @@ const FloorPlanDesigner = {
             zoneCountSpan.className = 'zone-count';
             zoneCountSpan.textContent = '(0)';
             
+            const canvasCountSpan = document.createElement('span');
+            canvasCountSpan.className = 'canvas-count';
+            canvasCountSpan.setAttribute('title', 'Booths on canvas');
+            canvasCountSpan.style.cssText = 'color: var(--fpd-primary); font-weight: 700; margin-left: 4px; font-size: 11px;';
+            canvasCountSpan.textContent = '(0)';
+            
             const zoneHeaderLeft = document.createElement('div');
             zoneHeaderLeft.className = 'zone-header-left';
             zoneHeaderLeft.appendChild(chevron);
             zoneHeaderLeft.appendChild(zoneNameSpan);
             zoneHeaderLeft.appendChild(zoneCountSpan);
+            zoneHeaderLeft.appendChild(canvasCountSpan);
             
             const addAllBtn = document.createElement('button');
             addAllBtn.className = 'btn-add-all-zone';
@@ -6681,18 +6199,6 @@ const FloorPlanDesigner = {
             addAllBtn.onclick = function(e) {
                 e.stopPropagation();
                 FloorPlanDesigner.addAllZoneToCanvas(zoneName);
-            };
-            
-            // Add "Add Selected" button
-            const addSelectedBtn = document.createElement('button');
-            addSelectedBtn.className = 'btn-add-selected-zone';
-            addSelectedBtn.setAttribute('data-zone', zoneName);
-            addSelectedBtn.setAttribute('title', 'Select booths first to add them to canvas');
-            addSelectedBtn.innerHTML = '<i class="fas fa-layer-group"></i> Add Selected';
-            addSelectedBtn.disabled = true;
-            addSelectedBtn.onclick = function(e) {
-                e.stopPropagation();
-                FloorPlanDesigner.addSelectedZoneBoothsToCanvas(zoneName);
             };
             
             // Add click-to-place button
@@ -6749,15 +6255,36 @@ const FloorPlanDesigner = {
                 FloorPlanDesigner.selectAllBoothsByZone(zoneName);
             };
             
+            const addNewZoneBtn = document.createElement('button');
+            addNewZoneBtn.className = 'btn-zone-add-new';
+            addNewZoneBtn.setAttribute('data-zone', zoneName);
+            addNewZoneBtn.setAttribute('title', 'Add New Booth ID to Zone ' + zoneName);
+            addNewZoneBtn.innerHTML = '<i class="fas fa-plus"></i>';
+            addNewZoneBtn.onclick = function(e) {
+                e.stopPropagation();
+                FloorPlanDesigner.showAddBoothModal(zoneName);
+            };
+            
+            const deleteZoneBtn = document.createElement('button');
+            deleteZoneBtn.className = 'btn-zone-delete';
+            deleteZoneBtn.setAttribute('data-zone', zoneName);
+            deleteZoneBtn.setAttribute('title', 'Delete Booths from Zone ' + zoneName);
+            deleteZoneBtn.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteZoneBtn.onclick = function(e) {
+                e.stopPropagation();
+                FloorPlanDesigner.showDeleteBoothModal(zoneName);
+            };
+            
             const zoneHeaderActions = document.createElement('div');
             zoneHeaderActions.className = 'zone-header-actions';
             zoneHeaderActions.appendChild(addAllBtn);
-            zoneHeaderActions.appendChild(addSelectedBtn);
             zoneHeaderActions.appendChild(clickToPlaceBtn);
             zoneHeaderActions.appendChild(zoneSettingsBtn);
             zoneHeaderActions.appendChild(clearZoneBtn);
             zoneHeaderActions.appendChild(zoomToZoneBtn);
             zoneHeaderActions.appendChild(selectAllZoneBtn);
+            zoneHeaderActions.appendChild(addNewZoneBtn);
+            zoneHeaderActions.appendChild(deleteZoneBtn);
             
             zoneHeader.appendChild(zoneHeaderLeft);
             zoneHeader.appendChild(zoneHeaderActions);
@@ -6785,8 +6312,7 @@ const FloorPlanDesigner = {
                 container.appendChild(zoneSection);
             }
             
-            // Setup toggle handler for new zone
-            this.setupZoneToggle(zoneHeader);
+            // Zone toggle is handled by document delegation ($(document).on('click', '.zone-header', ...))
             
             // Apply button visibility settings to newly created zone
             if (typeof window.applyZoneButtonVisibility === 'function') {
@@ -6799,9 +6325,8 @@ const FloorPlanDesigner = {
     
     // Setup zone toggle functionality
     setupZoneToggle: function(zoneHeader) {
-        const self = this;
-        zoneHeader.addEventListener('click', function() {
-            const zoneName = this.getAttribute('data-zone-toggle');
+        zoneHeader.addEventListener('click', function(e) {
+            if (e.target.closest('button')) return;
             const zoneSection = this.closest('.zone-section');
             if (zoneSection) {
                 zoneSection.classList.toggle('collapsed');
@@ -6837,22 +6362,50 @@ const FloorPlanDesigner = {
         }
     },
     
-    // Add booth back to sidebar
-    addBoothToSidebar: function(boothData) {
+    // Add booth back to sidebar (accepts boothData or (booth, zoneName) for API-created booths)
+    addBoothToSidebar: function(boothDataOrBooth, zoneNameParam) {
         const container = document.getElementById('boothNumbersContainer');
         if (!container) return;
         
-        // Check if booth already exists in sidebar
-        const existingItem = container.querySelector('[data-booth-id="' + boothData.id + '"]');
-        if (existingItem) {
-            // Already exists, don't add duplicate
-            return;
+        // Normalize: support both (boothData) and (booth, zoneName) from API
+        let boothData = boothDataOrBooth;
+        let zoneName;
+        if (zoneNameParam) {
+            zoneName = zoneNameParam;
+            boothData = {
+                id: boothDataOrBooth.id || boothDataOrBooth.booth_id,
+                number: boothDataOrBooth.booth_number || boothDataOrBooth.number,
+                status: boothDataOrBooth.status || '1',
+                clientId: boothDataOrBooth.client_id || boothDataOrBooth.clientId || '',
+                userId: boothDataOrBooth.userid || boothDataOrBooth.userId || '',
+                categoryId: boothDataOrBooth.category_id || boothDataOrBooth.categoryId || '',
+                subCategoryId: boothDataOrBooth.sub_category_id || boothDataOrBooth.subCategoryId || '',
+                assetId: boothDataOrBooth.asset_id || boothDataOrBooth.assetId || '',
+                boothTypeId: boothDataOrBooth.booth_type_id || boothDataOrBooth.boothTypeId || ''
+            };
+        } else {
+            zoneName = this.getZoneFromBoothNumber(boothData.number || boothData.booth_number || '');
+            boothData = {
+                id: boothData.id || boothData.booth_id,
+                number: boothData.number || boothData.booth_number,
+                status: boothData.status || '1',
+                clientId: boothData.clientId || boothData.client_id || '',
+                userId: boothData.userId || boothData.userid || '',
+                categoryId: boothData.categoryId || boothData.category_id || '',
+                subCategoryId: boothData.subCategoryId || boothData.sub_category_id || '',
+                assetId: boothData.assetId || boothData.asset_id || '',
+                boothTypeId: boothData.boothTypeId || boothData.booth_type_id || ''
+            };
         }
         
-        // Get zone from booth number
-        const zoneName = this.getZoneFromBoothNumber(boothData.number);
+        const boothNumber = boothData.number || '';
+        if (!boothNumber) return;
         
-        // Get or create zone section
+        const boothId = boothData.id;
+        if (!boothId) return;
+        const existingItem = container.querySelector('[data-booth-id="' + boothId + '"]');
+        if (existingItem) return;
+        
         const zoneSection = this.getOrCreateZoneSection(zoneName);
         if (!zoneSection) return;
         
@@ -6863,23 +6416,20 @@ const FloorPlanDesigner = {
         const boothItem = document.createElement('div');
         boothItem.className = 'booth-number-item';
         boothItem.setAttribute('draggable', 'true');
-        boothItem.setAttribute('data-booth-id', boothData.id);
-        boothItem.setAttribute('data-booth-number', boothData.number);
+        boothItem.setAttribute('data-booth-id', boothId);
+        boothItem.setAttribute('data-booth-number', boothNumber);
         boothItem.setAttribute('data-booth-status', boothData.status || '1');
         boothItem.setAttribute('data-booth-zone', zoneName);
         boothItem.setAttribute('data-client-id', boothData.clientId || '');
         boothItem.setAttribute('data-user-id', boothData.userId || '');
         
-        // Add booked class if booth has client_id or status != 1
         const isBooked = (boothData.clientId && boothData.clientId !== '') || (boothData.status != '1' && boothData.status != 1);
-        if (isBooked) {
-            boothItem.classList.add('booked');
-        }
+        if (isBooked) boothItem.classList.add('booked');
         boothItem.setAttribute('data-category-id', boothData.categoryId || '');
         boothItem.setAttribute('data-sub-category-id', boothData.subCategoryId || '');
         boothItem.setAttribute('data-asset-id', boothData.assetId || '');
         boothItem.setAttribute('data-booth-type-id', boothData.boothTypeId || '');
-        boothItem.textContent = boothData.number;
+        boothItem.textContent = boothNumber;
         
         // Make it draggable
         boothItem.style.pointerEvents = 'auto';
@@ -7103,10 +6653,12 @@ const FloorPlanDesigner = {
         // Custom booth colors take priority over status colors ONLY for Available status, then status colors, then defaults
         const backgroundColor = customBgColor || (statusColor.background || statusColor.bg); // Custom color takes priority only if Available
         const borderColor = customBorderColor || statusColor.border; // Custom color takes priority only if Available
-        // Override borderWidth and borderRadius with status color values if available
-        borderWidth = statusColor.border_width !== undefined ? statusColor.border_width : borderWidth;
+        // Use status color values only when booth has no explicit value from DB/designer
+        const boothHasExplicitBorderWidth = boothData.border_width !== undefined && boothData.border_width !== null;
+        const boothHasExplicitBorderRadius = boothData.border_radius !== undefined && boothData.border_radius !== null;
+        borderWidth = boothHasExplicitBorderWidth ? borderWidth : (statusColor.border_width !== undefined ? statusColor.border_width : borderWidth);
         const borderStyle = statusColor.border_style || 'solid';
-        borderRadius = statusColor.border_radius !== undefined ? statusColor.border_radius : borderRadius;
+        borderRadius = boothHasExplicitBorderRadius ? borderRadius : (statusColor.border_radius !== undefined ? statusColor.border_radius : borderRadius);
         const textColor = customTextColor || statusColor.text; // Custom color takes priority only if Available
         const fontWeight = boothData.font_weight || effectiveSettings.font_weight || this.defaultFontWeight || 'bold';
         const fontFamily = boothData.font_family || effectiveSettings.font_family || this.defaultFontFamily || 'Arial, sans-serif';
@@ -10575,7 +10127,11 @@ const FloorPlanDesigner = {
             return Promise.resolve({ saved: 0, total: 0 });
         }
         
-        console.log('saveBoothsBatch: Saving', boothsData.length, 'booths:', boothsData);
+        if (boothsData.length > 10) {
+            console.log('saveBoothsBatch: Saving', boothsData.length, 'booths');
+        } else {
+            console.log('saveBoothsBatch: Saving', boothsData.length, 'booths:', boothsData);
+        }
         
         return fetch('/booths/save-all-positions', {
             method: 'POST',
@@ -10620,7 +10176,7 @@ const FloorPlanDesigner = {
         .catch(function(error) {
             console.error('❌ Error batch saving booths:', error);
             console.error('Error details:', error.message, error.stack);
-            return { error: error.message, saved: 0, total: boothsData.length };
+            throw error; // Rethrow so caller's catch runs and user sees error
         });
     },
     
@@ -10656,9 +10212,9 @@ const FloorPlanDesigner = {
             const height = parseFloat(booth.style.height) || null;
             const rotation = parseFloat(booth.getAttribute('data-rotation')) || 0;
             const zIndex = parseFloat(booth.style.zIndex) || 10;
-            const fontSize = parseFloat(booth.style.fontSize) || 14;
+            const fontSize = parseInt(booth.style.fontSize) || 14;
             const borderWidth = parseFloat(booth.style.borderWidth) || 2;
-            const borderRadius = parseFloat(booth.style.borderRadius) || 6;
+            const borderRadius = Math.round(parseFloat(booth.style.borderRadius) || parseFloat(booth.getAttribute('data-border-radius')) || 6);
             const opacity = parseFloat(booth.style.opacity) || 1.00;
             
             // Get appearance properties
@@ -10693,7 +10249,7 @@ const FloorPlanDesigner = {
                     z_index: zIndex,
                     font_size: fontSize,
                     border_width: borderWidth,
-                    border_radius: borderRadius,
+                    border_radius: Math.max(0, Math.min(50, borderRadius)),
                     opacity: opacity,
                     price: price,
                     // Appearance properties
@@ -12197,12 +11753,6 @@ const FloorPlanDesigner = {
                 e.preventDefault();
                 e.stopPropagation();
                 $(this).toggleClass('selected');
-                
-                // Update "Add Selected" button state
-                const zoneName = $(this).attr('data-booth-zone');
-                if (zoneName) {
-                    self.updateZoneAddSelectedButton(zoneName);
-                }
             } else if (e.shiftKey) {
                 // Shift+Click: Multi-select range (future enhancement)
                 e.preventDefault();
@@ -12216,25 +11766,12 @@ const FloorPlanDesigner = {
                         const wasDragging = $(this).hasClass('dragging');
                         if (!wasDragging) {
                             $(this).toggleClass('selected');
-                            
-                            // Update "Add Selected" button state
-                            const zoneName = $(this).attr('data-booth-zone');
-                            if (zoneName) {
-                                self.updateZoneAddSelectedButton(zoneName);
-                            }
                         }
                     }
                 }.bind(this), 100);
             }
         });
         
-        // Initialize "Add Selected" button states for all zones
-        document.querySelectorAll('.zone-section').forEach(function(zoneSection) {
-            const zoneName = zoneSection.getAttribute('data-zone');
-            if (zoneName) {
-                self.updateZoneAddSelectedButton(zoneName);
-            }
-        });
     },
     
     // Setup toolbar
@@ -13199,7 +12736,7 @@ const FloorPlanDesigner = {
         $(document).on('click', '.zone-header', function(e) {
             if ($(e.target).closest('button').length) return;
             const zoneSection = $(this).closest('.zone-section');
-            zoneSection.toggleClass('collapsed');
+            if (zoneSection.length) zoneSection.toggleClass('collapsed');
         });
         
         // Toggle "In Stock" filter - Show only booths with status 1 (Available)
@@ -13292,10 +12829,8 @@ const FloorPlanDesigner = {
             const settings = {};
             const buttonMap = {
                 'add-all': '.btn-add-all-zone',
-                'add-selected': '.btn-add-selected-zone',
                 'add-click': '.btn-add-all-zone-click',
                 'settings': '.btn-zone-settings',
-                'appearance': '.btn-zone-appearance',
                 'clear': '.btn-zone-clear',
                 'zoom': '.btn-zone-zoom',
                 'add-new': '.btn-zone-add-new',
@@ -13356,10 +12891,12 @@ const FloorPlanDesigner = {
             });
             
             // Update zone counts and show/hide empty zones
+            const canvas = document.getElementById('print');
             const zones = document.querySelectorAll('.zone-section');
             zones.forEach(function(zoneSection) {
+                const zoneName = zoneSection.getAttribute('data-zone');
                 const zoneContent = zoneSection.querySelector('.zone-content');
-                if (zoneContent) {
+                if (zoneContent && zoneName) {
                     const visibleBooths = Array.from(zoneContent.querySelectorAll('.booth-number-item')).filter(function(item) {
                         return item.style.display !== 'none';
                     });
@@ -13368,8 +12905,12 @@ const FloorPlanDesigner = {
                         countSpan.textContent = '(' + visibleBooths.length + ')';
                     }
                     
-                    // Show/hide zone based on whether it has visible booths
-                    if (visibleBooths.length === 0 && searchTerm.length > 0) {
+                    // Count booths on canvas for this zone (so zones with all booths on canvas stay visible)
+                    const canvasBoothsCount = canvas ? canvas.querySelectorAll('.dropped-booth[data-booth-zone="' + zoneName + '"]').length : 0;
+                    
+                    // Show/hide zone: keep visible if it has sidebar booths OR canvas booths (so Zone Settings works when all on canvas)
+                    const hasRelevantBooths = visibleBooths.length > 0 || canvasBoothsCount > 0;
+                    if (!hasRelevantBooths && searchTerm.length > 0) {
                         zoneSection.style.display = 'none';
                     } else {
                         zoneSection.style.display = '';

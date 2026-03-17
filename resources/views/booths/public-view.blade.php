@@ -2003,11 +2003,15 @@
                     boothElement.style.setProperty('color', '#ffffff', 'important');
                 }
                 
-                // Apply other appearance properties
-                if (booth.font_size) boothElement.style.fontSize = booth.font_size + 'px';
-                if (booth.border_width) boothElement.style.borderWidth = booth.border_width + 'px';
-                if (booth.border_radius) boothElement.style.borderRadius = booth.border_radius + 'px';
-                if (booth.opacity !== null) boothElement.style.opacity = booth.opacity;
+                // Apply other appearance properties (use setProperty with 'important' to override status CSS)
+                if (booth.font_size != null) boothElement.style.setProperty('font-size', booth.font_size + 'px', 'important');
+                if (booth.border_width != null) boothElement.style.setProperty('border-width', booth.border_width + 'px', 'important');
+                if (booth.border_radius != null) boothElement.style.setProperty('border-radius', booth.border_radius + 'px', 'important');
+                if (booth.opacity !== null && booth.opacity !== undefined) boothElement.style.setProperty('opacity', booth.opacity, 'important');
+                if (booth.font_weight) boothElement.style.setProperty('font-weight', booth.font_weight, 'important');
+                if (booth.font_family) boothElement.style.setProperty('font-family', booth.font_family, 'important');
+                if (booth.text_align) boothElement.style.setProperty('text-align', booth.text_align, 'important');
+                if (booth.box_shadow) boothElement.style.setProperty('box-shadow', booth.box_shadow, 'important');
                 
                 // Status labels, descriptions, and colors from database
                 @php

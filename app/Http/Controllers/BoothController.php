@@ -35,6 +35,7 @@ use App\Services\ClientService;
 use App\Services\FloorPlanService;
 use App\Services\ZoneService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BoothController extends Controller
 {
@@ -892,8 +893,6 @@ class BoothController extends Controller
         }
 
         try {
-            \Log::info('saveAllPositions called', ['request_data' => $request->all()]);
-
             $validated = $request->validate([
                 'booths' => 'required|array',
                 'booths.*.id' => 'required|exists:booth,id',
@@ -919,101 +918,71 @@ class BoothController extends Controller
                 'booths.*.is_locked' => 'nullable|integer|in:0,1', // Lock state: 0=unlocked, 1=locked
             ]);
 
-            \Log::info('Validation passed', ['booth_count' => count($validated['booths'])]);
-
-            $saved = 0;
+            $total = count($validated['booths']);
             $errors = [];
 
-            foreach ($validated['booths'] as $boothData) {
-                try {
-                    $booth = Booth::findOrFail($boothData['id']);
+            // Update existing booths only (do not use upsert - it attempts INSERT which fails
+            // because booth_number and other required columns are not provided)
+            $updateColumns = [
+                'position_x', 'position_y', 'width', 'height', 'rotation', 'z_index',
+                'font_size', 'border_width', 'border_radius', 'opacity',
+                'price', 'background_color', 'border_color', 'text_color',
+                'font_weight', 'font_family', 'text_align', 'box_shadow',
+            ];
 
-                    \Log::info('Saving booth', [
-                        'booth_id' => $booth->id,
-                        'booth_number' => $booth->booth_number,
-                        'position_x' => $boothData['position_x'] ?? null,
-                        'position_y' => $boothData['position_y'] ?? null,
-                        'width' => $boothData['width'] ?? null,
-                        'height' => $boothData['height'] ?? null,
-                    ]);
+            $rows = [];
+            foreach ($validated['booths'] as $b) {
+                $rows[] = [
+                    'id' => $b['id'],
+                    'position_x' => $b['position_x'] ?? null,
+                    'position_y' => $b['position_y'] ?? null,
+                    'width' => $b['width'] ?? null,
+                    'height' => $b['height'] ?? null,
+                    'rotation' => $b['rotation'] ?? 0,
+                    'z_index' => $b['z_index'] ?? 10,
+                    'font_size' => $b['font_size'] ?? 14,
+                    'border_width' => $b['border_width'] ?? 2,
+                    'border_radius' => $b['border_radius'] ?? 6,
+                    'opacity' => $b['opacity'] ?? 1.00,
+                    'price' => $b['price'] ?? null,
+                    'background_color' => $b['background_color'] ?? null,
+                    'border_color' => $b['border_color'] ?? null,
+                    'text_color' => $b['text_color'] ?? null,
+                    'font_weight' => $b['font_weight'] ?? null,
+                    'font_family' => $b['font_family'] ?? null,
+                    'text_align' => $b['text_align'] ?? null,
+                    'box_shadow' => $b['box_shadow'] ?? null,
+                ];
+            }
 
-                    $booth->position_x = $boothData['position_x'] ?? null;
-                    $booth->position_y = $boothData['position_y'] ?? null;
-                    $booth->width = $boothData['width'] ?? null;
-                    $booth->height = $boothData['height'] ?? null;
-                    $booth->rotation = $boothData['rotation'] ?? 0;
-                    $booth->z_index = $boothData['z_index'] ?? 10;
-                    $booth->font_size = $boothData['font_size'] ?? 14;
-                    $booth->border_width = $boothData['border_width'] ?? 2;
-                    $booth->border_radius = $boothData['border_radius'] ?? 6;
-                    $booth->opacity = $boothData['opacity'] ?? 1.00;
+            try {
+                // Columns that are NOT NULL in DB - never overwrite with null
+                $notNullColumns = ['price'];
 
-                    // Save price if provided
-                    if (isset($boothData['price'])) {
-                        $booth->price = $boothData['price'];
+                DB::transaction(function () use ($rows, $updateColumns, $notNullColumns) {
+                    foreach ($rows as $row) {
+                        $id = $row['id'];
+                        $updateData = array_intersect_key($row, array_flip($updateColumns));
+                        foreach ($notNullColumns as $col) {
+                            if (array_key_exists($col, $updateData) && $updateData[$col] === null) {
+                                unset($updateData[$col]);
+                            }
+                        }
+                        if (! empty($updateData)) {
+                            DB::table('booth')->where('id', $id)->update($updateData);
+                        }
                     }
-
-                    // Save appearance properties
-                    if (isset($boothData['background_color'])) {
-                        $booth->background_color = $boothData['background_color'];
-                    }
-                    if (isset($boothData['border_color'])) {
-                        $booth->border_color = $boothData['border_color'];
-                    }
-                    if (isset($boothData['text_color'])) {
-                        $booth->text_color = $boothData['text_color'];
-                    }
-                    if (isset($boothData['font_weight'])) {
-                        $booth->font_weight = $boothData['font_weight'];
-                    }
-                    if (isset($boothData['font_family'])) {
-                        $booth->font_family = $boothData['font_family'];
-                    }
-                    if (isset($boothData['text_align'])) {
-                        $booth->text_align = $boothData['text_align'];
-                    }
-                    if (isset($boothData['box_shadow'])) {
-                        $booth->box_shadow = $boothData['box_shadow'];
-                    }
-
-                    // Save lock state (will be stored and can be retrieved on load)
-                    // Note: If you want to persist this in database, add an 'is_locked' column to the booth table
-                    // For now, we'll store it in localStorage on the frontend
-
-                    $savedSuccess = $booth->save();
-
-                    if ($savedSuccess) {
-                        \Log::info('Booth saved successfully', [
-                            'booth_id' => $booth->id,
-                            'position_x' => $booth->position_x,
-                            'position_y' => $booth->position_y,
-                        ]);
-                        $saved++;
-                    } else {
-                        \Log::error('Booth save returned false', ['booth_id' => $booth->id]);
-                        $errors[] = [
-                            'booth_id' => $boothData['id'],
-                            'error' => 'Save operation returned false',
-                        ];
-                    }
-                } catch (\Exception $e) {
-                    \Log::error('Error saving booth', [
-                        'booth_id' => $boothData['id'] ?? 'unknown',
-                        'error' => $e->getMessage(),
-                        'trace' => $e->getTraceAsString(),
-                    ]);
-                    $errors[] = [
-                        'booth_id' => $boothData['id'],
-                        'error' => $e->getMessage(),
-                    ];
-                }
+                });
+            } catch (\Exception $e) {
+                \Log::error('Bulk save booths failed: '.$e->getMessage());
+                throw $e;
             }
 
             return response()->json([
                 'status' => 200,
                 'message' => 'Positions saved successfully.',
-                'saved' => $saved,
-                'total' => count($validated['booths']),
+                'saved' => $total,
+                'total' => $total,
                 'errors' => $errors,
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {

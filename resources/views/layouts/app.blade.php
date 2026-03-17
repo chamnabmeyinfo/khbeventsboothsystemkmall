@@ -91,6 +91,7 @@
     
     <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}?v=2.6">
     <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=2.6">
+    <link rel="stylesheet" href="{{ asset('css/sweetalert2-custom.css') }}?v=1">
     
     @stack('styles')
 </head>
@@ -288,6 +289,8 @@
             confirmButtonText: 'OK',
             confirmButtonColor: type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : type === 'warning' ? '#ffc107' : '#007bff',
             buttonsStyling: true,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
             customClass: {
                 popup: 'custom-swal-popup'
             },
@@ -349,6 +352,8 @@
             cancelButtonText: cancelText,
             buttonsStyling: true,
             reverseButtons: true,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
             customClass: {
                 popup: 'custom-swal-popup'
             }
@@ -404,8 +409,8 @@
     }
     
     .custom-swal-popup {
-        border-radius: 12px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        border-radius: 16px;
+        box-shadow: 0 24px 48px -12px rgba(0,0,0,0.18);
     }
     
     #copyErrorBtn {

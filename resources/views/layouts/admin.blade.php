@@ -18,6 +18,7 @@
     
     <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}?v=2.7">
     <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=2.7">
+    <link rel="stylesheet" href="{{ asset('css/sweetalert2-custom.css') }}?v=1">
     
     @stack('styles')
 </head>

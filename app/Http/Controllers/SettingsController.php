@@ -163,7 +163,7 @@ class SettingsController extends Controller
     public function clearAll(Request $request)
     {
         $results = [];
-
+        
         try {
             Artisan::call('cache:clear');
             $results[] = 'Application cache cleared.';
@@ -322,7 +322,7 @@ class SettingsController extends Controller
                     ],
                 ]);
             }
-
+            
             // Get floor_plan_id from request (query parameter or JSON body)
             $floorPlanId = $request->input('floor_plan_id');
             if ($floorPlanId) {
@@ -330,7 +330,7 @@ class SettingsController extends Controller
             } else {
                 $floorPlanId = null;
             }
-
+            
             // Get floor-plan-specific settings
             $settings = CanvasSetting::getForFloorPlan($floorPlanId);
 
@@ -340,17 +340,17 @@ class SettingsController extends Controller
             $floorplanImage = null;
             if ($floorPlanId) {
                 $floorPlan = \App\Models\FloorPlan::find($floorPlanId);
-
+                
                 if ($floorPlan && $floorPlan->floor_image) {
                     $floorplanImage = $floorPlan->floor_image; // Relative path: 'images/floor-plans/...'
-
+                    
                     // Clean up invalid image paths (empty strings, etc.)
                     if (trim($floorplanImage) === '' || $floorplanImage === 'null') {
                         $floorplanImage = null;
                     }
                 }
             }
-
+            
             // Always sync canvas_settings.floorplan_image with floor_plans.floor_image
             // This ensures consistency and prevents conflicts when switching floor plans
             if ($floorPlanId) {
@@ -362,19 +362,19 @@ class SettingsController extends Controller
                     \Log::warning('Could not sync canvas_settings.floorplan_image: '.$e->getMessage());
                 }
             }
-
+            
             // Clean up any invalid data in canvas_settings (Blade templates, full URLs, etc.)
             if ($settings->floorplan_image) {
                 $canvasImagePath = $settings->floorplan_image;
                 $isInvalid = (
                     strpos($canvasImagePath, '{{') !== false || // Blade template
-                    strpos($canvasImagePath, 'asset') !== false || // Blade asset() function
+                    strpos($canvasImagePath, 'asset') !== false || // Blade asset() function  
                     strpos($canvasImagePath, 'http://') !== false || // Full URL
                     strpos($canvasImagePath, 'https://') !== false || // Full URL
                     trim($canvasImagePath) === '' || // Empty string
                     $canvasImagePath === 'null' // String "null"
                 );
-
+                
                 if ($isInvalid) {
                     try {
                         // Use floor plan's image instead (or null if none)
@@ -399,7 +399,7 @@ class SettingsController extends Controller
                 'grid_enabled' => $settings->grid_enabled ?? true,
                 'snap_to_grid' => $settings->snap_to_grid ?? false,
             ];
-
+            
             return response()->json([
                 'status' => 200,
                 'data' => $responseData,
@@ -441,7 +441,7 @@ class SettingsController extends Controller
                     'data' => $request->all(),
                 ]);
             }
-
+            
             // Get floor_plan_id from request (required for floor-plan-specific settings)
             $floorPlanId = $request->input('floor_plan_id');
             if ($floorPlanId) {
@@ -457,11 +457,11 @@ class SettingsController extends Controller
             } else {
                 $floorPlanId = null; // Allow null for backward compatibility
             }
-
+            
             // Prepare data with type conversion
             $data = [];
             $input = $request->all();
-
+            
             // Only include fields that are present and valid
             if ($floorPlanId !== null) {
                 $data['floor_plan_id'] = $floorPlanId;
@@ -499,7 +499,7 @@ class SettingsController extends Controller
             if (isset($input['snap_to_grid'])) {
                 $data['snap_to_grid'] = filter_var($input['snap_to_grid'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
             }
-
+            
             // If no data to save, return success
             if (empty($data)) {
                 return response()->json([
@@ -670,7 +670,7 @@ class SettingsController extends Controller
             ]);
 
             $file = $request->file('logo');
-
+            
             // Create directory if it doesn't exist
             $directory = public_path('images/company');
             if (! File::exists($directory)) {
@@ -686,13 +686,13 @@ class SettingsController extends Controller
 
             // Save the path relative to public directory
             $relativePath = 'images/company/'.$filename;
-
+            
             // Delete old logo if exists
             $oldLogo = Setting::getValue('company_logo', '');
             if ($oldLogo && File::exists(public_path($oldLogo))) {
                 File::delete(public_path($oldLogo));
             }
-
+            
             Setting::setValue('company_logo', $relativePath, 'string', 'Company logo file path');
 
             return response()->json([
@@ -722,7 +722,7 @@ class SettingsController extends Controller
             ]);
 
             $file = $request->file('favicon');
-
+            
             // Create directory if it doesn't exist
             $directory = public_path('images/company');
             if (! File::exists($directory)) {
@@ -738,13 +738,13 @@ class SettingsController extends Controller
 
             // Save the path relative to public directory
             $relativePath = 'images/company/'.$filename;
-
+            
             // Delete old favicon if exists
             $oldFavicon = Setting::getValue('company_favicon', '');
             if ($oldFavicon && File::exists(public_path($oldFavicon))) {
                 File::delete(public_path($oldFavicon));
             }
-
+            
             Setting::setValue('company_favicon', $relativePath, 'string', 'Company favicon file path');
 
             return response()->json([
@@ -850,10 +850,10 @@ class SettingsController extends Controller
                 }
             }
             unset($status);
-
+            
             // Replace the request input with processed data
             $request->merge(['statuses' => $statuses]);
-
+            
             $validated = $request->validate([
                 'statuses' => 'required|array',
                 'statuses.*.id' => 'nullable|integer|exists:booth_status_settings,id',
@@ -882,7 +882,7 @@ class SettingsController extends Controller
                     if (! isset($statusData['floor_plan_id']) || $statusData['floor_plan_id'] === '') {
                         $statusData['floor_plan_id'] = null;
                     }
-
+                    
                     // If only one status should be default, unset others first (within same floor plan scope)
                     if (isset($statusData['is_default']) && $statusData['is_default']) {
                         $defaultQuery = BoothStatusSetting::where('id', '!=', $statusData['id'] ?? 0);
@@ -894,7 +894,7 @@ class SettingsController extends Controller
                         }
                         $defaultQuery->update(['is_default' => false]);
                     }
-
+                    
                     // Check for duplicate status_code within same floor plan
                     $existingStatus = BoothStatusSetting::where('status_code', $statusData['status_code'])
                         ->where(function ($q) use ($statusData) {
@@ -906,11 +906,11 @@ class SettingsController extends Controller
                         })
                         ->where('id', '!=', $statusData['id'] ?? 0)
                         ->first();
-
+                    
                     if ($existingStatus) {
                         throw new \Exception('Status code '.$statusData['status_code'].' already exists for this floor plan assignment.');
                     }
-
+                    
                     if (isset($statusData['id']) && $statusData['id']) {
                         // Update existing
                         $status = BoothStatusSetting::findOrFail($statusData['id']);
@@ -957,7 +957,7 @@ class SettingsController extends Controller
     {
         try {
             $status = BoothStatusSetting::findOrFail($id);
-
+            
             // Don't allow deleting if it's the only active status
             $activeCount = BoothStatusSetting::where('is_active', true)->count();
             if ($status->is_active && $activeCount <= 1) {
