@@ -359,6 +359,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/settings/push-notifications', [SettingsController::class, 'savePushNotificationSettings'])->name('settings.push-notifications.save');
         Route::post('/settings/upload-control', [SettingsController::class, 'saveUploadSettings'])->name('settings.upload-control.save');
 
+        // cPanel Database Pull
+        Route::get('/settings/cpanel-database', [SettingsController::class, 'getCpanelDatabaseSettings'])->name('settings.cpanel-database');
+        Route::post('/settings/cpanel-database', [SettingsController::class, 'saveCpanelDatabaseSettings'])->name('settings.cpanel-database.save');
+        Route::get('/settings/cpanel-database/pull', [SettingsController::class, 'pullCpanelDatabase'])->name('settings.cpanel-database.pull');
+
         // Booth Default Settings API
         Route::get('/settings/booth-defaults', [SettingsController::class, 'getBoothDefaults'])->name('settings.booth-defaults');
         Route::post('/settings/booth-defaults', [SettingsController::class, 'saveBoothDefaults'])->name('settings.booth-defaults.save');
