@@ -15,6 +15,16 @@ class SaveZoneSettingsRequest extends FormRequest
     {
         return [
             'price' => 'nullable|numeric|min:0',
+            'width' => 'nullable|numeric|min:5',
+            'height' => 'nullable|numeric|min:5',
+            'rotation' => 'nullable|numeric|min:-360|max:360',
+            'zIndex' => 'nullable|integer|min:1',
+            'z_index' => 'nullable|integer|min:1',
+            'borderRadius' => 'nullable|numeric|min:0',
+            'border_radius' => 'nullable|numeric|min:0',
+            'borderWidth' => 'nullable|numeric|min:0',
+            'border_width' => 'nullable|numeric|min:0',
+            'opacity' => 'nullable|numeric|min:0|max:1',
             'background_color' => 'nullable|string|max:50',
             'border_color' => 'nullable|string|max:50',
             'text_color' => 'nullable|string|max:50',
