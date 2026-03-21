@@ -1,10 +1,9 @@
 import MainArea from './MainArea';
-import Sidebar from './Sidebar';
 
+/** Renders inside layouts.admin (default header + sidebar). No duplicate app sidebar. */
 export default function App({ initialData }) {
     return (
-        <div className="flex min-h-screen font-sans text-slate-800">
-            <Sidebar nav={initialData.routes} user={initialData.user} />
+        <div className="font-sans text-slate-800">
             <MainArea data={initialData} />
         </div>
     );

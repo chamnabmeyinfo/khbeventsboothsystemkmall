@@ -90,8 +90,8 @@ export default function MainArea({ data }) {
     };
 
     return (
-        <main className="min-h-screen flex-1 bg-slate-100/80 pl-[260px]">
-            <div className="mx-auto max-w-[1400px] px-6 pb-10 pt-6">
+        <div className="w-full bg-slate-100/80">
+            <div className="mx-auto max-w-[1400px] px-2 pb-8 pt-2 sm:px-4 lg:px-6 lg:pb-10 lg:pt-4">
                 <nav className="text-sm text-slate-500" aria-label="Breadcrumb">
                     <ol className="flex flex-wrap items-center gap-2">
                         <li>
@@ -388,6 +388,6 @@ export default function MainArea({ data }) {
                     </div>
                 </div>
             </div>
-        </main>
+        </div>
     );
 }

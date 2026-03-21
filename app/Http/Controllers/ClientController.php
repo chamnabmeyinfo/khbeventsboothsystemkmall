@@ -10,7 +10,6 @@ use App\Models\Client;
 use App\Services\ClientService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 
@@ -440,17 +439,6 @@ class ClientController extends Controller
      */
     private function buildClientProfilePayload(Client $client, array $stats, $recentBookings): array
     {
-        $user = Auth::user();
-
-        $username = $user?->username ?? 'User';
-        $userInitial = function_exists('mb_substr')
-            ? mb_substr($username, 0, 1)
-            : substr($username, 0, 1);
-        $userInitial = strtoupper($userInitial !== '' ? $userInitial : 'U');
-        $roleLabel = ($user && method_exists($user, 'isAdmin') && $user->isAdmin())
-            ? 'Administrator'
-            : 'User';
-
         $genderLabel = match ((int) ($client->sex ?? 0)) {
             1 => 'Male',
             2 => 'Female',
@@ -590,11 +578,6 @@ class ClientController extends Controller
                 'financeDashboard' => $this->safeRoute('finance.dashboard'),
                 'usersIndex' => $this->safeRoute('users.index'),
                 'settingsIndex' => $this->safeRoute('settings.index'),
-            ],
-            'user' => [
-                'initial' => $userInitial,
-                'username' => $username,
-                'roleLabel' => $roleLabel,
             ],
         ];
     }

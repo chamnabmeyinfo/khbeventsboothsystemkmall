@@ -67,9 +67,4 @@ export const DEMO_PAYLOAD = {
         usersIndex: '#',
         settingsIndex: '#',
     },
-    user: {
-        initial: 'V',
-        username: 'vutha_admin',
-        roleLabel: 'Administrator',
-    },
 };

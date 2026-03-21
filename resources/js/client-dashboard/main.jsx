@@ -15,9 +15,7 @@ function readPayload() {
     return DEMO_PAYLOAD;
 }
 
-const mountEl =
-    document.getElementById('client-profile-root') ||
-    document.getElementById('client-profile-dashboard-root');
+const mountEl = document.getElementById('client-profile-root');
 
 if (mountEl) {
     createRoot(mountEl).render(<App initialData={readPayload()} />);
