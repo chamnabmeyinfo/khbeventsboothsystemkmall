@@ -245,6 +245,100 @@
     .kpi-card.primary .kpi-icon { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
     .kpi-card.success .kpi-icon { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
     .kpi-card.info .kpi-icon { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+
+    /* Keep search/filter above floor-plan cards (cards use transform on hover and would steal clicks) */
+    .floor-plans-toolbar {
+        position: relative;
+        z-index: 30;
+    }
+    .floor-plans-toolbar .form-control,
+    .floor-plans-toolbar .btn {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Floor plans toolbar: one column — no 50/50 split (avoids empty center gap) */
+    .fp-toolbar-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .fp-filter-panel {
+        --fp-filter-bg: #f4f6f9;
+        --fp-filter-border: #dee2e6;
+        background: var(--fp-filter-bg);
+        border: 1px solid var(--fp-filter-border);
+        border-radius: 12px;
+        padding: 1rem 1.125rem;
+    }
+    .fp-filter-panel-title {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #6c757d;
+        margin-bottom: 0.625rem;
+    }
+    .fp-filter-label {
+        display: block;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.35rem;
+    }
+    .fp-search-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 0.75rem;
+    }
+    .fp-search-row .fp-search-input-wrap {
+        flex: 1 1 220px;
+        min-width: 0;
+    }
+    .fp-filter-field {
+        flex: 1 1 140px;
+        min-width: 140px;
+        max-width: 100%;
+    }
+    .fp-filter-field .form-control {
+        min-height: 42px;
+    }
+    @media (min-width: 576px) {
+        .fp-filter-field {
+            flex: 0 1 160px;
+            max-width: 220px;
+        }
+    }
+    .fp-refine-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 0.75rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--fp-filter-border);
+    }
+    .fp-refine-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.25rem;
+    }
+    @media (min-width: 768px) {
+        .fp-refine-actions {
+            margin-top: 0;
+            margin-left: auto;
+        }
+    }
+
+    /* First row of cards: clip paint so hover lift does not cover toolbar */
+    .floor-plans-grid {
+        position: relative;
+        z-index: 1;
+    }
 </style>
 @endpush
 
@@ -287,61 +381,106 @@
         </div>
     </div>
 
-    <!-- Action Bar -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    @auth
-                    <a href="{{ route('floor-plans.create') }}" class="btn btn-primary">
-                        <i class="fas fa-plus mr-1"></i>Create Floor Plan
-                    </a>
-                    <a href="{{ route('booths.index') }}" class="btn btn-info">
-                        <i class="fas fa-map-marked-alt mr-1"></i>View Booths
-                    </a>
-                    @else
-                    <div class="d-flex align-items-center">
-                        <h5 class="mb-0 mr-3"><i class="fas fa-map mr-2"></i>Browse Floor Plans</h5>
-                        <a href="{{ route('login') }}" class="btn btn-primary btn-sm">
-                            <i class="fas fa-sign-in-alt mr-1"></i>Login to Manage
-                        </a>
+    <!-- Toolbar: actions full width, then one filter panel (no split columns) -->
+    <div class="card mb-4 floor-plans-toolbar">
+        <div class="card-body py-3 px-3 px-lg-4">
+            @auth
+            <div class="fp-toolbar-actions">
+                <a href="{{ route('floor-plans.create') }}" class="btn btn-primary">
+                    <i class="fas fa-plus mr-1"></i>Create Floor Plan
+                </a>
+                <a href="{{ route('booths.index') }}" class="btn btn-info">
+                    <i class="fas fa-map-marked-alt mr-1"></i>View Booths
+                </a>
+            </div>
+            @else
+            <div class="fp-toolbar-actions">
+                <h5 class="mb-0 mr-2"><i class="fas fa-map mr-2"></i>Browse Floor Plans</h5>
+                <a href="{{ route('login') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-sign-in-alt mr-1"></i>Login to Manage
+                </a>
+            </div>
+            @endauth
+
+            <form method="GET" action="{{ route('floor-plans.index') }}" class="floor-plans-filter-form fp-filter-panel mt-3">
+                @php
+                    $activationVal = request('activation', 'active');
+                    $boothsFilterVal = request('booths_filter', 'any');
+                    $sortVal = request('sort', 'newest');
+                @endphp
+                <p class="fp-filter-panel-title mb-2">Search &amp; filter</p>
+                <div class="fp-search-row">
+                    <div class="fp-search-input-wrap">
+                        <label class="fp-filter-label" for="fp-filter-search">Search</label>
+                        <input type="text" id="fp-filter-search" name="search" class="form-control" placeholder="Name, project, or description…" value="{{ request('search') }}" autocomplete="off">
                     </div>
-                    @endauth
-                </div>
-                <div class="col-md-6">
-                    <form method="GET" action="{{ route('floor-plans.index') }}" class="d-flex">
-                        <input type="text" name="search" class="form-control mr-2" placeholder="Search floor plans..." value="{{ request('search') }}">
-                        @if($events && $events->count() > 0)
-                        <select name="event_id" class="form-control mr-2">
-                            <option value="">All Events</option>
-                            @foreach($events as $event)
+                    <div class="fp-filter-field" style="flex: 1 1 200px; max-width: 280px;">
+                        <label class="fp-filter-label" for="fp-filter-event">Event</label>
+                        <select id="fp-filter-event" name="event_id" class="form-control" aria-label="Filter by event">
+                            <option value="">All events</option>
+                            @foreach($events ?? [] as $event)
                                 @php
                                     $eventId = is_object($event) ? ($event->id ?? null) : ($event['id'] ?? null);
                                     $eventTitle = is_object($event) ? ($event->title ?? 'N/A') : ($event['title'] ?? 'N/A');
                                 @endphp
                                 @if($eventId)
-                                    <option value="{{ $eventId }}" {{ request('event_id') == $eventId ? 'selected' : '' }}>
+                                    <option value="{{ $eventId }}" {{ (string) request('event_id') === (string) $eventId ? 'selected' : '' }}>
                                         {{ $eventTitle }}
                                     </option>
                                 @endif
                             @endforeach
                         </select>
-                        @else
-                        <select name="event_id" class="form-control mr-2" disabled title="Events table not available">
-                            <option value="">Events Not Available</option>
-                        </select>
-                        @endif
-                        <button type="submit" class="btn btn-secondary">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </form>
+                    </div>
                 </div>
-            </div>
+
+                <div class="fp-refine-row">
+                    <div class="fp-filter-field">
+                        <label class="fp-filter-label" for="fp-filter-activation">Status</label>
+                        <select id="fp-filter-activation" name="activation" class="form-control" aria-label="Filter by active status">
+                            <option value="active" {{ $activationVal === 'active' ? 'selected' : '' }}>Active only</option>
+                            <option value="inactive" {{ $activationVal === 'inactive' ? 'selected' : '' }}>Inactive only</option>
+                            <option value="all" {{ $activationVal === 'all' ? 'selected' : '' }}>All statuses</option>
+                        </select>
+                    </div>
+                    <div class="fp-filter-field">
+                        <label class="fp-filter-label" for="fp-filter-default">Plan type</label>
+                        <select id="fp-filter-default" name="default_only" class="form-control" aria-label="Filter default floor plan">
+                            <option value="" {{ request('default_only') !== '1' ? 'selected' : '' }}>Any plan</option>
+                            <option value="1" {{ request('default_only') === '1' ? 'selected' : '' }}>Default only</option>
+                        </select>
+                    </div>
+                    <div class="fp-filter-field">
+                        <label class="fp-filter-label" for="fp-filter-booths">Booths</label>
+                        <select id="fp-filter-booths" name="booths_filter" class="form-control" aria-label="Filter by booth presence">
+                            <option value="any" {{ $boothsFilterVal === 'any' ? 'selected' : '' }}>Any count</option>
+                            <option value="with" {{ $boothsFilterVal === 'with' ? 'selected' : '' }}>Has booths</option>
+                            <option value="without" {{ $boothsFilterVal === 'without' ? 'selected' : '' }}>No booths</option>
+                        </select>
+                    </div>
+                    <div class="fp-filter-field">
+                        <label class="fp-filter-label" for="fp-filter-sort">Sort</label>
+                        <select id="fp-filter-sort" name="sort" class="form-control" aria-label="Sort floor plans">
+                            <option value="newest" {{ $sortVal === 'newest' ? 'selected' : '' }}>Newest first</option>
+                            <option value="oldest" {{ $sortVal === 'oldest' ? 'selected' : '' }}>Oldest first</option>
+                            <option value="name_asc" {{ $sortVal === 'name_asc' ? 'selected' : '' }}>Name A–Z</option>
+                            <option value="name_desc" {{ $sortVal === 'name_desc' ? 'selected' : '' }}>Name Z–A</option>
+                            <option value="booths_desc" {{ $sortVal === 'booths_desc' ? 'selected' : '' }}>Most booths</option>
+                            <option value="booths_asc" {{ $sortVal === 'booths_asc' ? 'selected' : '' }}>Fewest booths</option>
+                        </select>
+                    </div>
+                    <div class="fp-refine-actions">
+                        <button type="submit" class="btn btn-primary px-3">
+                            <i class="fas fa-search mr-1" aria-hidden="true"></i>Apply filters
+                        </button>
+                        <a href="{{ route('floor-plans.index') }}" class="btn btn-outline-secondary">Clear all</a>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 
     <!-- Floor Plans List -->
-    <div class="row">
+    <div class="row floor-plans-grid">
         @forelse($floorPlans as $floorPlan)
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="card floor-plan-card {{ $floorPlan->is_default ? 'default' : '' }}">

@@ -10,6 +10,7 @@ use App\Models\ZoneSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class FloorPlanController extends Controller
 {
@@ -25,16 +26,37 @@ class FloorPlanController extends Controller
 
             $query = FloorPlan::with($with)->withCount('booths');
 
-            // Filter by event
+            // Filter by event (validated positive int)
             if ($request->filled('event_id')) {
-                $query->where('event_id', $request->event_id);
+                $eventId = filter_var($request->event_id, FILTER_VALIDATE_INT);
+                if ($eventId !== false && $eventId > 0) {
+                    $query->where('event_id', $eventId);
+                }
             }
 
-            // Filter by active status
-            if ($request->filled('is_active')) {
-                $query->where('is_active', $request->is_active);
-            } else {
-                $query->where('is_active', true); // Default to active only
+            // Activation: active (default), inactive, or all
+            $activation = $request->input('activation', 'active');
+            if (! in_array($activation, ['active', 'inactive', 'all'], true)) {
+                $activation = 'active';
+            }
+            if ($activation === 'active') {
+                $query->where('is_active', true);
+            } elseif ($activation === 'inactive') {
+                $query->where('is_active', false);
+            }
+
+            if ($request->input('default_only') === '1') {
+                $query->where('is_default', true);
+            }
+
+            $boothsFilter = $request->input('booths_filter', 'any');
+            if (! in_array($boothsFilter, ['any', 'with', 'without'], true)) {
+                $boothsFilter = 'any';
+            }
+            if ($boothsFilter === 'with') {
+                $query->has('booths');
+            } elseif ($boothsFilter === 'without') {
+                $query->doesntHave('booths');
             }
 
             // Search
@@ -47,7 +69,20 @@ class FloorPlanController extends Controller
                 });
             }
 
-            $floorPlans = $query->latest('created_at')->paginate(20)->withQueryString();
+            $sort = $request->input('sort', 'newest');
+            if (! in_array($sort, ['newest', 'oldest', 'name_asc', 'name_desc', 'booths_desc', 'booths_asc'], true)) {
+                $sort = 'newest';
+            }
+            match ($sort) {
+                'oldest' => $query->oldest('created_at'),
+                'name_asc' => $query->orderBy('name'),
+                'name_desc' => $query->orderByDesc('name'),
+                'booths_desc' => $query->orderByDesc('booths_count'),
+                'booths_asc' => $query->orderBy('booths_count'),
+                default => $query->latest('created_at'),
+            };
+
+            $floorPlans = $query->paginate(20)->withQueryString();
 
             // Load additional data for each floor plan (canvas settings, zone count)
             $floorPlans->getCollection()->transform(function ($floorPlan) {
@@ -68,36 +103,7 @@ class FloorPlanController extends Controller
                 return $floorPlan;
             });
 
-            // Get events if table exists - check table existence first, then query safely
-            $events = collect([]);
-            try {
-                // First check if table exists using SHOW TABLES (doesn't query the events table itself)
-                $tableCheck = DB::select("SHOW TABLES LIKE 'events'");
-                if (! empty($tableCheck)) {
-                    // Table exists - query it safely
-                    try {
-                        $eventsData = DB::select('SELECT * FROM events WHERE status = 1 ORDER BY title ASC');
-                        if (is_array($eventsData)) {
-                            $events = collect($eventsData);
-                        }
-                    } catch (\Illuminate\Database\QueryException $e) {
-                        // Query failed even though table exists - return empty
-                        $events = collect([]);
-                    } catch (\Exception $e) {
-                        // Any other error - return empty
-                        $events = collect([]);
-                    }
-                }
-            } catch (\Illuminate\Database\QueryException $e) {
-                // SHOW TABLES failed or events table doesn't exist - return empty (expected)
-                $events = collect([]);
-            } catch (\PDOException $e) {
-                // PDO exceptions - return empty
-                $events = collect([]);
-            } catch (\Exception $e) {
-                // Any other exception - return empty
-                $events = collect([]);
-            }
+            $events = $this->eventsForFloorPlanIndexFilter();
 
             return view('floor-plans.index', compact('floorPlans', 'events'));
         } catch (\Illuminate\Database\QueryException $e) {
@@ -107,7 +113,7 @@ class FloorPlanController extends Controller
             } catch (\Exception $e2) {
                 $floorPlans = collect([]);
             }
-            $events = collect([]);
+            $events = $this->eventsForFloorPlanIndexFilter();
 
             return view('floor-plans.index', compact('floorPlans', 'events'));
         } catch (\Exception $e) {
@@ -117,9 +123,26 @@ class FloorPlanController extends Controller
             } catch (\Exception $e2) {
                 $floorPlans = collect([]);
             }
-            $events = collect([]);
+            $events = $this->eventsForFloorPlanIndexFilter();
 
             return view('floor-plans.index', compact('floorPlans', 'events'));
+        }
+    }
+
+    /**
+     * Events for floor plan index filter dropdown (DB-agnostic; view keeps select enabled).
+     */
+    private function eventsForFloorPlanIndexFilter(): \Illuminate\Support\Collection
+    {
+        if (! Schema::hasTable('events')) {
+            return collect([]);
+        }
+        try {
+            return Event::query()
+                ->orderBy('title')
+                ->get(['id', 'title']);
+        } catch (\Throwable $e) {
+            return collect([]);
         }
     }
 
