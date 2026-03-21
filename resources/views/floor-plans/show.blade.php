@@ -232,8 +232,8 @@
     </div>
 </div>
 
-<!-- Delete Floor Plan Modal -->
-<div class="modal fade" id="deleteFloorPlanModal" tabindex="-1" role="dialog" aria-labelledby="deleteFloorPlanModalLabel" aria-hidden="true">
+@push('modals')
+<div class="modal fade" id="deleteFloorPlanModal" tabindex="-1" role="dialog" aria-labelledby="deleteFloorPlanModalLabel">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
@@ -249,7 +249,7 @@
                 @method('DELETE')
                 <div class="modal-body">
                     <p class="mb-3">
-                        Are you sure you want to delete <strong id="deleteFloorPlanName"></strong>?
+                        Are you sure you want to delete <strong id="deleteFloorPlanName" data-fp-delete-name></strong>?
                     </p>
                     
                     <div id="boothActionSection" style="display: none;">
@@ -308,58 +308,80 @@
         </div>
     </div>
 </div>
+@endpush
 
 @push('scripts')
 <script>
 function deleteFloorPlan(floorPlanId, floorPlanName, boothCount) {
-    // Set form action
-    document.getElementById('deleteFloorPlanForm').action = '{{ url("/floor-plans") }}/' + floorPlanId;
-    
-    // Set floor plan name
-    document.getElementById('deleteFloorPlanName').textContent = floorPlanName;
-    
-    // Handle booth action section
-    const boothActionSection = document.getElementById('boothActionSection');
-    const targetFloorPlanSelect = document.getElementById('targetFloorPlanSelect');
-    
-    if (boothCount > 0) {
-        boothActionSection.style.display = 'block';
-        document.getElementById('boothCountText').textContent = boothCount;
-        
-        // Reset radio buttons
-        document.getElementById('boothActionDelete').checked = true;
-        document.getElementById('boothActionMove').checked = false;
-        targetFloorPlanSelect.style.display = 'none';
-        document.getElementById('target_floor_plan_id').required = false;
-        
-        // Handle radio button change
-        document.getElementById('boothActionMove').addEventListener('change', function() {
-            if (this.checked) {
-                targetFloorPlanSelect.style.display = 'block';
-                document.getElementById('target_floor_plan_id').required = true;
-            }
-        });
-        
-        document.getElementById('boothActionDelete').addEventListener('change', function() {
-            if (this.checked) {
-                targetFloorPlanSelect.style.display = 'none';
-                document.getElementById('target_floor_plan_id').required = false;
-            }
-        });
-    } else {
-        boothActionSection.style.display = 'none';
+    var modalEl = document.getElementById('deleteFloorPlanModal');
+    if (!modalEl) {
+        console.error('deleteFloorPlanModal not in DOM');
+        alert('Delete dialog could not be opened. Please refresh the page.');
+        return;
     }
-    
-    // Show modal
-    $('#deleteFloorPlanModal').modal('show');
+    var formEl = modalEl.querySelector('#deleteFloorPlanForm');
+    var nameEl = modalEl.querySelector('[data-fp-delete-name]') || modalEl.querySelector('#deleteFloorPlanName');
+    if (!formEl || !nameEl) {
+        console.error('Delete modal form/name missing');
+        alert('Delete dialog could not be opened. Please refresh the page.');
+        return;
+    }
+
+    formEl.action = '{{ url("/floor-plans") }}/' + floorPlanId;
+    nameEl.textContent = floorPlanName;
+
+    var boothActionSection = document.getElementById('boothActionSection');
+    var targetFloorPlanSelect = document.getElementById('targetFloorPlanSelect');
+    var targetFloorPlanId = document.getElementById('target_floor_plan_id');
+    var boothActionDelete = document.getElementById('boothActionDelete');
+    var boothActionMove = document.getElementById('boothActionMove');
+
+    if (boothCount > 0 && boothActionSection && boothActionDelete && boothActionMove && targetFloorPlanSelect && targetFloorPlanId) {
+        boothActionSection.style.display = 'block';
+        var boothCountEl = document.getElementById('boothCountText');
+        if (boothCountEl) {
+            boothCountEl.textContent = boothCount;
+        }
+        boothActionDelete.checked = true;
+        boothActionMove.checked = false;
+        targetFloorPlanSelect.style.display = 'none';
+        targetFloorPlanId.required = false;
+        targetFloorPlanId.value = '';
+    } else if (boothActionSection) {
+        boothActionSection.style.display = 'none';
+        if (targetFloorPlanId) {
+            targetFloorPlanId.required = false;
+        }
+    }
+
+    if (typeof window.jQuery !== 'undefined' && window.jQuery.fn && window.jQuery.fn.modal) {
+        window.jQuery(modalEl).modal('show');
+    } else {
+        modalEl.classList.add('show');
+        modalEl.style.display = 'block';
+        document.body.classList.add('modal-open');
+    }
 }
 
-// Validate form before submit
-document.getElementById('deleteFloorPlanForm').addEventListener('submit', function(e) {
-    const boothActionMove = document.getElementById('boothActionMove');
-    const targetFloorPlanId = document.getElementById('target_floor_plan_id');
-    
-    if (boothActionMove && boothActionMove.checked) {
+$(document).on('change', '#boothActionMove', function() {
+    if (this.checked) {
+        $('#targetFloorPlanSelect').show();
+        $('#target_floor_plan_id').prop('required', true);
+    }
+});
+
+$(document).on('change', '#boothActionDelete', function() {
+    if (this.checked) {
+        $('#targetFloorPlanSelect').hide();
+        $('#target_floor_plan_id').prop('required', false);
+        $('#target_floor_plan_id').val('');
+    }
+});
+
+$(document).on('submit', '#deleteFloorPlanForm', function(e) {
+    var boothActionMove = document.getElementById('boothActionMove');
+    var targetFloorPlanId = document.getElementById('target_floor_plan_id');
+    if (boothActionMove && boothActionMove.checked && targetFloorPlanId) {
         if (!targetFloorPlanId.value) {
             e.preventDefault();
             alert('Please select a target floor plan to move booths to.');

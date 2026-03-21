@@ -1914,6 +1914,8 @@
 <!-- Image Upload Handler -->
 <script src="{{ asset('js/image-upload.js') }}"></script>
 
+@stack('modals')
+
 @stack('scripts')
 
 <script>

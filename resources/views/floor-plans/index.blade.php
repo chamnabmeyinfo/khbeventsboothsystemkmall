@@ -587,8 +587,12 @@
     </div>
     @endif
 
-    <!-- Delete Floor Plan Modal -->
-    <div class="modal fade" id="deleteFloorPlanModal" tabindex="-1" role="dialog" aria-labelledby="deleteFloorPlanModalLabel" aria-hidden="true">
+</div>
+{{-- /.container-fluid --}}
+
+@push('modals')
+    <!-- Delete modal at end of body (avoids nested layout / aria-hidden focus issues) -->
+    <div class="modal fade" id="deleteFloorPlanModal" tabindex="-1" role="dialog" aria-labelledby="deleteFloorPlanModalLabel">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
@@ -604,7 +608,7 @@
                     @method('DELETE')
                     <div class="modal-body">
                         <p class="mb-3">
-                            Are you sure you want to delete <strong id="deleteFloorPlanName"></strong>?
+                            Are you sure you want to delete <strong id="deleteFloorPlanName" data-fp-delete-name></strong>?
                         </p>
                         
                         <div id="boothActionSection" style="display: none;">
@@ -656,7 +660,7 @@
             </div>
         </div>
     </div>
-</div>
+@endpush
 
 @push('scripts')
 <script>
@@ -664,55 +668,74 @@ let currentFloorPlanId = null;
 
 function deleteFloorPlan(floorPlanId, floorPlanName, boothCount) {
     currentFloorPlanId = floorPlanId;
-    
-    // Set form action
-    document.getElementById('deleteFloorPlanForm').action = '{{ url("/floor-plans") }}/' + floorPlanId;
-    
-    // Set floor plan name
-    document.getElementById('deleteFloorPlanName').textContent = floorPlanName;
-    
-    // Handle booth action section
-    const boothActionSection = document.getElementById('boothActionSection');
-    const targetFloorPlanSelect = document.getElementById('targetFloorPlanSelect');
-    const targetFloorPlanId = document.getElementById('target_floor_plan_id');
-    const boothActionMove = document.getElementById('boothActionMove');
-    const boothActionDelete = document.getElementById('boothActionDelete');
-    
-    // Filter out current floor plan from options
-    const options = targetFloorPlanId.querySelectorAll('option[data-floor-plan-id]');
-    options.forEach(function(option) {
-        const optionId = parseInt(option.getAttribute('data-floor-plan-id'));
-        if (optionId === floorPlanId) {
-            option.style.display = 'none';
-            option.disabled = true;
-            option.selected = false;
-        } else {
-            option.style.display = '';
-            option.disabled = false;
+
+    var modalEl = document.getElementById('deleteFloorPlanModal');
+    if (!modalEl) {
+        console.error('deleteFloorPlanModal not in DOM');
+        alert('Delete dialog could not be opened. Please refresh the page.');
+        return;
+    }
+
+    var formEl = modalEl.querySelector('#deleteFloorPlanForm');
+    var nameEl = modalEl.querySelector('[data-fp-delete-name]') || modalEl.querySelector('#deleteFloorPlanName');
+    if (!formEl || !nameEl) {
+        console.error('Delete modal form/name missing', { formEl: formEl, nameEl: nameEl });
+        alert('Delete dialog could not be opened. Please refresh the page.');
+        return;
+    }
+
+    formEl.action = '{{ url("/floor-plans") }}/' + floorPlanId;
+    nameEl.textContent = floorPlanName;
+
+    var boothActionSection = document.getElementById('boothActionSection');
+    var targetFloorPlanSelect = document.getElementById('targetFloorPlanSelect');
+    var targetFloorPlanId = document.getElementById('target_floor_plan_id');
+    var boothActionMove = document.getElementById('boothActionMove');
+    var boothActionDelete = document.getElementById('boothActionDelete');
+
+    if (targetFloorPlanId) {
+        var options = targetFloorPlanId.querySelectorAll('option[data-floor-plan-id]');
+        options.forEach(function(option) {
+            var optionId = parseInt(option.getAttribute('data-floor-plan-id'), 10);
+            if (optionId === floorPlanId) {
+                option.style.display = 'none';
+                option.disabled = true;
+                option.selected = false;
+            } else {
+                option.style.display = '';
+                option.disabled = false;
+            }
+        });
+        var blankOpt = targetFloorPlanId.querySelector('option[value=""]');
+        if (blankOpt) {
+            blankOpt.selected = true;
         }
-    });
-    
-    // Set default option as selected
-    targetFloorPlanId.querySelector('option[value=""]').selected = true;
-    
-    if (boothCount > 0) {
+    }
+
+    if (boothCount > 0 && boothActionSection && boothActionDelete && boothActionMove && targetFloorPlanSelect && targetFloorPlanId) {
         boothActionSection.style.display = 'block';
-        document.getElementById('boothCountText').textContent = boothCount;
-        
-        // Reset radio buttons
+        var boothCountEl = document.getElementById('boothCountText');
+        if (boothCountEl) {
+            boothCountEl.textContent = boothCount;
+        }
         boothActionDelete.checked = true;
         boothActionMove.checked = false;
         targetFloorPlanSelect.style.display = 'none';
         targetFloorPlanId.required = false;
         targetFloorPlanId.value = '';
-    } else {
+    } else if (boothActionSection && targetFloorPlanId) {
         boothActionSection.style.display = 'none';
         targetFloorPlanId.value = '';
         targetFloorPlanId.required = false;
     }
-    
-    // Show modal
-    $('#deleteFloorPlanModal').modal('show');
+
+    if (typeof window.jQuery !== 'undefined' && window.jQuery.fn && window.jQuery.fn.modal) {
+        window.jQuery(modalEl).modal('show');
+    } else {
+        modalEl.classList.add('show');
+        modalEl.style.display = 'block';
+        document.body.classList.add('modal-open');
+    }
 }
 
 // Handle radio button changes (using event delegation)
