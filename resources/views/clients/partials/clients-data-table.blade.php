@@ -7,10 +7,29 @@
     $clientTableColspan = 17;
 @endphp
 <div class="clients-table-scroll looker-table-wrapper">
-    <table class="looker-table mb-0 clients-density-default clients-table-fluid" id="clientsDataTable">
+    <table class="looker-table mb-0 clients-density-default clients-table-fluid clients-table-resizable" id="clientsDataTable">
+        <colgroup id="clientsDataTableColgroup">
+            <col data-clients-col-idx="0" style="width: 44px;" />
+            <col data-clients-col-idx="1" />
+            <col data-clients-col-idx="2" />
+            <col data-clients-col-idx="3" />
+            <col data-clients-col-idx="4" />
+            <col data-clients-col-idx="5" />
+            <col data-clients-col-idx="6" />
+            <col data-clients-col-idx="7" />
+            <col data-clients-col-idx="8" />
+            <col data-clients-col-idx="9" />
+            <col data-clients-col-idx="10" />
+            <col data-clients-col-idx="11" />
+            <col data-clients-col-idx="12" />
+            <col data-clients-col-idx="13" />
+            <col data-clients-col-idx="14" />
+            <col data-clients-col-idx="15" />
+            <col data-clients-col-idx="16" style="min-width: 108px;" />
+        </colgroup>
         <thead>
             <tr>
-                <th rowspan="2" class="align-middle text-center" style="width: 44px;">
+                <th rowspan="2" class="align-middle text-center">
                     <input type="checkbox" id="selectAllClients" class="form-check-input" aria-label="Select all on this page">
                 </th>
                 <th class="align-top" data-clients-col="id">
@@ -58,7 +77,7 @@
                 <th class="align-top" data-clients-col="books_count">
                     <a href="{{ $clientsSortUrl('books_count') }}" class="clients-sort-link">Bookings {!! $clientsSortIcon('books_count') !!}</a>
                 </th>
-                <th rowspan="2" class="align-middle" style="min-width: 108px;">Actions</th>
+                <th rowspan="2" class="align-middle">Actions</th>
             </tr>
             <tr class="clients-filter-row">
                 <th data-clients-col="id">

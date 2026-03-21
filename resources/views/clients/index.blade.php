@@ -6,7 +6,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.1">
-<link rel="stylesheet" href="{{ asset('css/clients-page.css') }}?v=1.4">
+<link rel="stylesheet" href="{{ asset('css/clients-page.css') }}?v=1.9">
 @endpush
 
 @push('body-class', 'ios-dashboard-mode clients-page')
@@ -166,13 +166,10 @@
     <div id="tableView" class="view-content">
         <div class="canvas-panel clients-data-canvas">
             <div class="clients-canvas-header">
-                <div>
-                    <h2 class="panel-title mb-1"><i class="fas fa-list" aria-hidden="true"></i> All clients</h2>
-                    <p class="clients-hint mb-0">Scroll horizontally on smaller screens to reach every column. Use Columns to show or hide fields (saved in this browser).</p>
-                </div>
-                <div class="d-flex flex-wrap align-items-center gap-2">
-                    @include('clients.partials.column-visibility-menu', ['clientsColumnDefs' => $clientsColumnDefs])
-                    <span class="status-badge status-badge-green">{{ $clients->total() }} total</span>
+                <h2 class="clients-canvas-header__title"><span class="clients-canvas-header__icon" aria-hidden="true"><i class="fas fa-list"></i></span>All clients</h2>
+                <div class="clients-canvas-header__tools">
+                    @include('clients.partials.clients-table-options-menu', ['clientsColumnDefs' => $clientsColumnDefs])
+                    <span class="status-badge status-badge-green clients-canvas-header__count">{{ $clients->total() }} total</span>
                 </div>
             </div>
             <div class="clients-pagination-wrap">
@@ -369,6 +366,10 @@ const CLIENTS_BULK_DELETE_URL = @json(route('bulk.clients.delete'));
 const CLIENTS_BULK_MERGE_URL = @json(route('bulk.clients.merge'));
 const CLIENTS_COLUMN_KEYS = @json(collect($clientsColumnDefs)->pluck('key')->values());
 const CLIENTS_TABLE_COL_STORAGE = 'clientsTableColumnVisibility';
+const CLIENTS_TABLE_COL_WIDTHS_STORAGE = 'clientsTableColWidths';
+const CLIENTS_TABLE_COL_DEFAULT_WIDTH_STORAGE = 'clientsTableColDefaultWidthPx';
+const CLIENTS_TABLE_COL_MIN_DEFAULT_STORAGE_LEGACY = 'clientsTableColMinDefaultPx';
+const CLIENTS_COL_DEFAULT_WIDTH_PX = 100;
 
 function clientsGetModal() {
     const el = document.getElementById('createClientModal');
@@ -467,6 +468,362 @@ function clientsApplyColumnVisibility(state) {
     });
 }
 
+function clientsGetUserColDefaultWidth() {
+    try {
+        let raw = localStorage.getItem(CLIENTS_TABLE_COL_DEFAULT_WIDTH_STORAGE);
+        if (raw == null || raw === '') {
+            raw = localStorage.getItem(CLIENTS_TABLE_COL_MIN_DEFAULT_STORAGE_LEGACY);
+        }
+        if (raw == null || raw === '') {
+            return CLIENTS_COL_DEFAULT_WIDTH_PX;
+        }
+        const n = parseInt(raw, 10);
+        if (!Number.isFinite(n) || n < 0) {
+            return CLIENTS_COL_DEFAULT_WIDTH_PX;
+        }
+        if (n === 0) {
+            return 0;
+        }
+        return Math.min(n, 300);
+    } catch (e) {
+        return CLIENTS_COL_DEFAULT_WIDTH_PX;
+    }
+}
+
+function clientsColResizeMinWidth(index) {
+    const u = clientsGetUserColDefaultWidth();
+    const builtin = index === 0 ? 40 : (index === 16 ? 100 : 56);
+    const base = u === 0 ? builtin : Math.max(builtin, u);
+    const maxW = clientsColResizeMaxWidth(index);
+    return Math.min(base, maxW);
+}
+
+function clientsColResizeMaxWidth(index) {
+    if (index === 0) return 80;
+    if (index === 16) return 280;
+    return 640;
+}
+
+function clientsLoadColWidths() {
+    try {
+        const raw = localStorage.getItem(CLIENTS_TABLE_COL_WIDTHS_STORAGE);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) && parsed.length === 17 ? parsed : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+function clientsSaveColWidths(widthsPx) {
+    try {
+        localStorage.setItem(CLIENTS_TABLE_COL_WIDTHS_STORAGE, JSON.stringify(widthsPx));
+    } catch (e) { /* ignore */ }
+}
+
+function clientsApplyColWidths(table, widthsPx) {
+    const cg = document.getElementById('clientsDataTableColgroup');
+    if (!cg) return;
+    const cols = cg.querySelectorAll('col[data-clients-col-idx]');
+    cols.forEach(function (col, i) {
+        const w = widthsPx[i];
+        if (w == null || w === '' || typeof w !== 'number') {
+            col.style.width = '';
+            if (i === 0) {
+                col.style.width = '44px';
+            }
+            if (i === 16) {
+                col.style.minWidth = '108px';
+            }
+        } else {
+            col.style.width = Math.round(w) + 'px';
+            if (i === 16) {
+                col.style.minWidth = '';
+            }
+        }
+    });
+}
+
+function clientsInitColumnResize() {
+    const table = document.getElementById('clientsDataTable');
+    if (!table || !table.classList.contains('clients-table-resizable')) return;
+
+    const cg = document.getElementById('clientsDataTableColgroup');
+    if (!cg) return;
+
+    const saved = clientsLoadColWidths();
+    if (saved) {
+        clientsApplyColWidths(table, saved);
+    }
+
+    const headerRow = table.querySelector('thead tr:first-child');
+    if (!headerRow) return;
+
+    const ths = headerRow.querySelectorAll('th');
+    ths.forEach(function (th, index) {
+        th.classList.add('clients-th-resizable');
+        const handle = document.createElement('span');
+        handle.className = 'clients-col-resize-handle';
+        handle.setAttribute('data-clients-col-idx', String(index));
+        handle.setAttribute('role', 'separator');
+        handle.setAttribute('aria-orientation', 'vertical');
+        handle.setAttribute('aria-label', 'Resize column');
+        handle.title = 'Drag to resize column (double-click to reset)';
+        th.appendChild(handle);
+
+        handle.addEventListener('dblclick', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const cols = cg.querySelectorAll('col[data-clients-col-idx]');
+            const col = cols[index];
+            if (!col) return;
+            if (index === 0) {
+                col.style.width = '44px';
+                col.style.minWidth = '';
+            } else if (index === 16) {
+                col.style.width = '';
+                col.style.minWidth = '108px';
+            } else {
+                col.style.width = '';
+                col.style.minWidth = '';
+            }
+            const widthsPx = [];
+            cols.forEach(function (c, i) {
+                const w = c.style.width;
+                if (!w || w === 'auto') {
+                    widthsPx.push(null);
+                } else {
+                    const n = parseFloat(w);
+                    widthsPx.push(Number.isFinite(n) ? n : null);
+                }
+            });
+            clientsSaveColWidths(widthsPx);
+        });
+
+        handle.addEventListener('mousedown', function (e) {
+            if (e.button !== 0) return;
+            e.preventDefault();
+            e.stopPropagation();
+
+            const cols = cg.querySelectorAll('col[data-clients-col-idx]');
+            const col = cols[index];
+            if (!col) return;
+
+            const startX = e.clientX;
+            if (index === 16) {
+                col.style.minWidth = '';
+            }
+            const rect = col.getBoundingClientRect();
+            const startW = rect.width;
+            const minW = clientsColResizeMinWidth(index);
+            const maxW = clientsColResizeMaxWidth(index);
+
+            document.body.classList.add('clients-col-resizing');
+            const prevCursor = document.body.style.cursor;
+            document.body.style.cursor = 'col-resize';
+
+            function onMove(ev) {
+                const dx = ev.clientX - startX;
+                let next = startW + dx;
+                next = Math.max(minW, Math.min(maxW, next));
+                col.style.width = Math.round(next) + 'px';
+            }
+
+            function onUp() {
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+                document.body.classList.remove('clients-col-resizing');
+                document.body.style.cursor = prevCursor;
+
+                const allCols = cg.querySelectorAll('col[data-clients-col-idx]');
+                const widthsPx = [];
+                allCols.forEach(function (c) {
+                    const w = c.style.width;
+                    if (!w || w === 'auto') {
+                        widthsPx.push(null);
+                    } else {
+                        const n = parseFloat(w);
+                        widthsPx.push(Number.isFinite(n) ? n : null);
+                    }
+                });
+                clientsSaveColWidths(widthsPx);
+            }
+
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+        });
+    });
+}
+
+function clientsColumnIsHidden(table, colIdx) {
+    if (colIdx === 0 || colIdx === 16) return false;
+    const firstRow = table.querySelector('thead tr:first-child');
+    if (!firstRow || !firstRow.children[colIdx]) return false;
+    return firstRow.children[colIdx].classList.contains('clients-col-hidden');
+}
+
+function clientsGetHeaderCellsForColumn(table, colIdx) {
+    const firstRow = table.querySelector('thead tr:first-child');
+    if (!firstRow) return [];
+    const out = [];
+    if (colIdx === 0) {
+        if (firstRow.children[0]) out.push(firstRow.children[0]);
+        return out;
+    }
+    if (colIdx === 16) {
+        const last = firstRow.children[firstRow.children.length - 1];
+        if (last) out.push(last);
+        return out;
+    }
+    if (firstRow.children[colIdx]) out.push(firstRow.children[colIdx]);
+    const filterRow = table.querySelector('thead tr.clients-filter-row');
+    if (filterRow && filterRow.children[colIdx - 1]) {
+        out.push(filterRow.children[colIdx - 1]);
+    }
+    return out;
+}
+
+function clientsEnforceColMinWidths() {
+    const table = document.getElementById('clientsDataTable');
+    const cg = document.getElementById('clientsDataTableColgroup');
+    if (!cg || !table) return;
+
+    const headerRow = table.querySelector('thead tr:first-child');
+    if (!headerRow) return;
+
+    const cols = cg.querySelectorAll('col[data-clients-col-idx]');
+    cols.forEach(function (col, i) {
+        if (clientsColumnIsHidden(table, i)) {
+            return;
+        }
+        const minW = clientsColResizeMinWidth(i);
+        const maxW = clientsColResizeMaxWidth(i);
+        let current;
+        const inline = col.style.width;
+        const parsed = parseFloat(inline);
+        if (inline && inline !== 'auto' && Number.isFinite(parsed)) {
+            current = parsed;
+        } else {
+            const cell = headerRow.children[i];
+            current = cell ? cell.getBoundingClientRect().width : minW;
+        }
+        if (!Number.isFinite(current) || current < 1) {
+            current = minW;
+        }
+        let next = Math.max(minW, Math.min(maxW, Math.round(current)));
+        if (i === 16) {
+            col.style.minWidth = '';
+        }
+        col.style.width = next + 'px';
+    });
+
+    const widthsPx = [];
+    cols.forEach(function (c) {
+        const cw = c.style.width;
+        if (!cw || cw === 'auto') {
+            widthsPx.push(null);
+        } else {
+            const num = parseFloat(cw);
+            widthsPx.push(Number.isFinite(num) ? num : null);
+        }
+    });
+    clientsSaveColWidths(widthsPx);
+}
+
+function clientsCollectCellsForColumn(table, colIdx) {
+    const cells = [];
+    clientsGetHeaderCellsForColumn(table, colIdx).forEach(function (el) {
+        if (el && !el.classList.contains('clients-col-hidden')) {
+            cells.push(el);
+        }
+    });
+    table.querySelectorAll('#tableClientsBody tr').forEach(function (tr) {
+        if (tr.querySelector('td[colspan]')) return;
+        const td = tr.children[colIdx];
+        if (td && !td.classList.contains('clients-col-hidden')) {
+            cells.push(td);
+        }
+    });
+    return cells;
+}
+
+function clientsAutoFitTableColumns() {
+    const table = document.getElementById('clientsDataTable');
+    const cg = document.getElementById('clientsDataTableColgroup');
+    if (!table || !cg || !table.classList.contains('clients-table-resizable')) return;
+
+    const MEASURE_COL_PX = 5600;
+    const NARROW_COL_PX = 48;
+    const HIDDEN_COL_PX = 40;
+
+    const colEls = cg.querySelectorAll('col[data-clients-col-idx]');
+    const prevWidths = [];
+    colEls.forEach(function (c, i) {
+        const w = c.style.width;
+        if (w && w !== 'auto') {
+            const n = parseFloat(w);
+            prevWidths[i] = Number.isFinite(n) ? n : null;
+        } else {
+            prevWidths[i] = null;
+        }
+    });
+
+    const hiddenCol = [];
+    for (let h = 0; h < 17; h++) {
+        hiddenCol[h] = clientsColumnIsHidden(table, h);
+    }
+
+    colEls.forEach(function (col) {
+        col.style.width = '';
+        col.style.minWidth = '';
+    });
+
+    table.classList.add('clients-table-autofit-measure');
+
+    const widthsPx = [];
+    for (let i = 0; i < 17; i++) {
+        if (hiddenCol[i]) {
+            widthsPx.push(prevWidths[i]);
+            continue;
+        }
+
+        colEls.forEach(function (col, j) {
+            if (hiddenCol[j]) {
+                col.style.width = HIDDEN_COL_PX + 'px';
+            } else if (j === i) {
+                col.style.width = MEASURE_COL_PX + 'px';
+            } else {
+                col.style.width = NARROW_COL_PX + 'px';
+            }
+            col.style.minWidth = '';
+        });
+        void table.offsetWidth;
+
+        let maxW = 0;
+        clientsCollectCellsForColumn(table, i).forEach(function (cell) {
+            const sw = cell.scrollWidth;
+            if (sw > maxW) maxW = sw;
+        });
+        if (maxW < 1) {
+            maxW = clientsColResizeMinWidth(i);
+        }
+        const clamped = Math.max(
+            clientsColResizeMinWidth(i),
+            Math.min(clientsColResizeMaxWidth(i), Math.ceil(maxW))
+        );
+        widthsPx.push(clamped);
+    }
+
+    table.classList.remove('clients-table-autofit-measure');
+    colEls.forEach(function (col) {
+        col.style.width = '';
+        col.style.minWidth = '';
+    });
+
+    clientsApplyColWidths(table, widthsPx);
+    clientsSaveColWidths(widthsPx);
+}
+
 function clientsInitColumnVisibility() {
     const state = clientsLoadColumnVisibility();
     CLIENTS_COLUMN_KEYS.forEach(function (key) {
@@ -516,6 +873,44 @@ $(document).ready(function () {
     applyClientsTableDensity(localStorage.getItem('clientsTableDensity') || 'default');
 
     clientsInitColumnVisibility();
+    clientsInitColumnResize();
+
+    $('#clientsColsAutoFitBtn').on('click', function () {
+        clientsAutoFitTableColumns();
+    });
+
+    const clientsColDefaultWidthInput = document.getElementById('clientsColDefaultWidthInput');
+    if (clientsColDefaultWidthInput) {
+        clientsColDefaultWidthInput.value = String(clientsGetUserColDefaultWidth());
+    }
+    $('#clientsColDefaultWidthApply').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const raw = clientsColDefaultWidthInput ? clientsColDefaultWidthInput.value.trim() : '';
+        let v = parseInt(raw, 10);
+        if (raw === '' || !Number.isFinite(v) || v < 0) {
+            v = CLIENTS_COL_DEFAULT_WIDTH_PX;
+        }
+        if (v > 300) v = 300;
+        try {
+            localStorage.setItem(CLIENTS_TABLE_COL_DEFAULT_WIDTH_STORAGE, String(v));
+            localStorage.removeItem(CLIENTS_TABLE_COL_MIN_DEFAULT_STORAGE_LEGACY);
+        } catch (err) { /* ignore */ }
+        if (clientsColDefaultWidthInput) clientsColDefaultWidthInput.value = String(v);
+        clientsEnforceColMinWidths();
+    });
+    $('#clientsColDefaultWidthReset').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+            localStorage.removeItem(CLIENTS_TABLE_COL_DEFAULT_WIDTH_STORAGE);
+            localStorage.removeItem(CLIENTS_TABLE_COL_MIN_DEFAULT_STORAGE_LEGACY);
+        } catch (err) { /* ignore */ }
+        if (clientsColDefaultWidthInput) {
+            clientsColDefaultWidthInput.value = String(CLIENTS_COL_DEFAULT_WIDTH_PX);
+        }
+        clientsEnforceColMinWidths();
+    });
 
     $('.clients-density-option').on('click', function () {
         applyClientsTableDensity($(this).data('density'));

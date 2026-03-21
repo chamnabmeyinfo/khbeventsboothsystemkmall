@@ -114,25 +114,159 @@ body.clients-page .looker-dashboard {
     flex-wrap: wrap;
 }
 
+/*
+ * Auto-fit columns: intrinsic width measurement.
+ * JS adds .clients-table-autofit-measure on #clientsDataTable while sweeping <col> widths.
+ */
+.clients-page #clientsDataTable.clients-table-autofit-measure th,
+.clients-page #clientsDataTable.clients-table-autofit-measure td {
+    white-space: nowrap !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    max-width: none !important;
+}
+
+.clients-page #clientsDataTable.clients-table-autofit-measure .clients-sort-link {
+    white-space: nowrap !important;
+    flex-wrap: nowrap !important;
+}
+
+.clients-page #clientsDataTable.clients-table-autofit-measure .clients-name-cell .clients-name-text {
+    flex: 0 0 auto !important;
+    min-width: max-content !important;
+}
+
+.clients-page #clientsDataTable.clients-table-autofit-measure .clients-filter-row input.form-control,
+.clients-page #clientsDataTable.clients-table-autofit-measure .clients-filter-row select.form-select {
+    width: auto !important;
+    max-width: none !important;
+    min-width: 9rem !important;
+}
+
 /* Column visibility (toggled via JS + localStorage) */
 .clients-page #clientsDataTable th.clients-col-hidden,
 .clients-page #clientsDataTable td.clients-col-hidden {
     display: none !important;
 }
 
-.clients-page .clients-column-picker {
-    min-width: 280px;
-    max-height: min(70vh, 420px);
+/* Table options dropdown (columns + auto-fit + min width) — single responsive implementation */
+.clients-page .clients-table-options__trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.55rem 0.35rem 0.65rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light) !important;
+    background: rgba(255, 255, 255, 0.72) !important;
+    color: var(--text-primary) !important;
+    min-height: 36px;
+    line-height: 1.2;
+    box-shadow: var(--shadow-sm);
+}
+
+.clients-page .clients-table-options__trigger:hover,
+.clients-page .clients-table-options__trigger:focus-visible {
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: var(--text-primary) !important;
+}
+
+.clients-page .clients-table-options__trigger::after {
+    margin-inline-start: 0.1rem;
+    vertical-align: 0.12em;
+}
+
+@media (max-width: 575.98px) {
+    .clients-page .clients-table-options__trigger-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+}
+
+.clients-page .clients-table-options__panel {
+    min-width: 13.5rem;
+    max-width: min(17.5rem, calc(100vw - 1.5rem));
+    padding: 0.3rem 0;
+    border-radius: var(--radius-md) !important;
+}
+
+.clients-page .clients-table-options__scroll {
+    max-height: min(40vh, 200px);
     overflow-y: auto;
+    padding: 0 0.65rem;
+    margin-bottom: 0.1rem;
 }
 
-.clients-page .clients-column-picker .form-check {
-    padding-left: 1.75rem;
-    margin-bottom: 0.35rem;
+.clients-page .clients-table-options__caption {
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-secondary);
+    opacity: 0.85;
+    margin-bottom: 0.3rem;
+    padding-top: 0.2rem;
 }
 
-.clients-page .clients-column-picker .form-check-input {
-    margin-top: 0.35rem;
+.clients-page .clients-table-options__checks {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.clients-page .clients-table-options__check {
+    margin-bottom: 0;
+    padding-left: 1.35rem;
+    min-height: 0;
+}
+
+.clients-page .clients-table-options__check .form-check-input {
+    margin-top: 0.18rem;
+    width: 0.9rem;
+    height: 0.9rem;
+}
+
+.clients-page .clients-table-options__check .form-check-label {
+    font-size: 0.8125rem;
+    line-height: 1.25;
+    padding-top: 0.02rem;
+}
+
+.clients-page .clients-table-options__link {
+    font-size: 0.8125rem;
+}
+
+.clients-page .clients-table-options__default-width {
+    padding: 0.35rem 0.65rem 0.45rem;
+    border-top: 1px solid var(--border-light);
+    margin-top: 0.1rem;
+}
+
+.clients-page .clients-table-options__default-width-row {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.2rem;
+    flex-wrap: nowrap;
+}
+
+.clients-page .clients-table-options__default-width-row .form-control {
+    width: 3.75rem;
+    flex-shrink: 0;
+}
+
+.clients-page .clients-table-options__icon-btn {
+    padding: 0.22rem 0.35rem;
+    min-width: 2rem;
+    line-height: 1;
 }
 
 .clients-page .clients-filter-row th {
@@ -210,13 +344,49 @@ body.clients-page .looker-dashboard {
 }
 
 .clients-page .clients-data-canvas .clients-canvas-header {
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px dashed var(--border-light);
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid var(--border-light);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: 0.5rem 0.75rem;
+}
+
+.clients-page .clients-canvas-header__title {
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+}
+
+.clients-page .clients-canvas-header__icon {
+    opacity: 0.4;
+    font-size: 0.9em;
+}
+
+.clients-page .clients-canvas-header__tools {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+}
+
+.clients-page .clients-canvas-header__count {
+    font-size: 0.72rem;
+    padding: 0.22rem 0.5rem;
+    line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+    .clients-page .clients-data-canvas .clients-canvas-header {
+        padding: 0.75rem 1.25rem;
+    }
 }
 
 .clients-page .clients-data-canvas .clients-pagination-wrap {
@@ -443,4 +613,52 @@ body.clients-page .looker-dashboard {
 /* Icon tint on action buttons (matches dashboard index pattern) */
 .clients-page .text-tertiary {
     color: var(--text-tertiary);
+}
+
+/* Draggable column resize (first header row) — single responsive implementation */
+.clients-page #clientsDataTable thead tr:first-child th.clients-th-resizable {
+    position: relative;
+    padding-right: 0.5rem;
+}
+
+.clients-page #clientsDataTable .clients-col-resize-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 8px;
+    margin-right: -4px;
+    height: 100%;
+    min-height: 2.75rem;
+    cursor: col-resize;
+    z-index: 4;
+    user-select: none;
+    touch-action: none;
+    box-sizing: border-box;
+}
+
+.clients-page #clientsDataTable .clients-col-resize-handle::after {
+    content: '';
+    position: absolute;
+    top: 15%;
+    bottom: 15%;
+    right: 3px;
+    width: 2px;
+    border-radius: 1px;
+    background: rgba(0, 0, 0, 0.12);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.clients-page #clientsDataTable thead tr:first-child th:hover .clients-col-resize-handle::after,
+.clients-page #clientsDataTable .clients-col-resize-handle:hover::after {
+    opacity: 1;
+}
+
+body.clients-page.clients-col-resizing,
+body.clients-page.clients-col-resizing * {
+    cursor: col-resize !important;
+}
+
+body.clients-page.clients-col-resizing {
+    user-select: none;
 }
