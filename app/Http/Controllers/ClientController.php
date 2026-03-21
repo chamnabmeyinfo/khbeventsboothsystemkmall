@@ -2,11 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\AssetHelper;
 use App\Http\Requests\CreateClientRequest;
 use App\Http\Requests\UpdateClientRequest;
+use App\Models\Book;
 use App\Models\Client;
 use App\Services\ClientService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 
 class ClientController extends Controller
 {
@@ -132,8 +138,8 @@ class ClientController extends Controller
         $totalRevenue = $client->booths->where('status', \App\Models\Booth::STATUS_PAID)->sum('price');
         $stats['total_revenue'] = $totalRevenue;
 
-        // Get recent bookings with user relationship
-        $recentBookings = $client->books()->with('user')->latest('date_book')->take(10)->get();
+        // Get recent bookings with user + floor plan (for React profile UI)
+        $recentBookings = $client->books()->with(['user', 'floorPlan'])->latest('date_book')->take(10)->get();
 
         // Manually load booths for recent bookings
         $recentBookings->each(function ($book) {
@@ -162,7 +168,9 @@ class ClientController extends Controller
             ]);
         }
 
-        return view('clients.show', compact('client', 'stats', 'recentBookings'));
+        $clientProfilePayload = $this->buildClientProfilePayload($client, $stats, $recentBookings);
+
+        return view('clients.show', compact('client', 'stats', 'recentBookings', 'clientProfilePayload'));
     }
 
     public function edit(Client $client)
@@ -414,6 +422,168 @@ class ClientController extends Controller
     /**
      * Merge data from duplicate client into the kept client
      */
+    private function safeRoute(string $name, array $parameters = []): string
+    {
+        if (! Route::has($name)) {
+            return '#';
+        }
+
+        try {
+            return route($name, $parameters);
+        } catch (\Throwable $e) {
+            return '#';
+        }
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<int, \App\Models\Book>  $recentBookings
+     */
+    private function buildClientProfilePayload(Client $client, array $stats, $recentBookings): array
+    {
+        $user = Auth::user();
+
+        $genderLabel = match ((int) ($client->sex ?? 0)) {
+            1 => 'Male',
+            2 => 'Female',
+            default => 'N/A',
+        };
+
+        $coverPosition = $client->cover_position ?? null;
+        if (! $coverPosition) {
+            $coverPosition = \App\Models\Setting::getValue('client_'.$client->id.'_cover_position', null);
+        }
+        $coverPosition = $coverPosition ?? 'center center';
+
+        $totalBooths = max(0, (int) ($stats['total_booths'] ?? 0));
+        $confirmed = (int) ($stats['confirmed_booths'] ?? 0);
+        $reserved = (int) ($stats['reserved_booths'] ?? 0);
+        $paid = (int) ($stats['paid_booths'] ?? 0);
+        $tb = max(1, $totalBooths);
+        $boothsRingPct = $totalBooths > 0 ? (int) round(min(100, ($confirmed + $reserved) / $tb * 100)) : 0;
+        $paidRingPct = $totalBooths > 0 ? (int) round(min(100, $paid / $tb * 100)) : 0;
+
+        $hasBookingStatus = Schema::hasColumn('book', 'status');
+        $cancelled = $hasBookingStatus
+            ? (int) Book::where('clientid', $client->id)->where('status', Book::STATUS_CANCELLED)->count()
+            : 0;
+
+        $primaryTags = [];
+        if (Schema::hasColumn('book', 'floor_plan_id')) {
+            $primaryTags = Book::query()
+                ->where('clientid', $client->id)
+                ->whereNotNull('floor_plan_id')
+                ->with('floorPlan')
+                ->get()
+                ->pluck('floorPlan.name')
+                ->filter()
+                ->unique()
+                ->values()
+                ->take(8)
+                ->all();
+        }
+
+        $activityBooks = Book::query()
+            ->where('clientid', $client->id)
+            ->with('user')
+            ->latest('date_book')
+            ->take(3)
+            ->get();
+
+        $activity = [];
+        foreach ($activityBooks as $book) {
+            $by = $book->user ? ' by '.$book->user->username : '';
+            $activity[] = [
+                'variant' => 'log',
+                'title' => 'Log: Booking #'.$book->id.$by,
+                'date' => $book->date_book ? $book->date_book->format('M jS') : '',
+            ];
+        }
+
+        $upcomingEvents = [];
+        foreach ($recentBookings as $book) {
+            $fp = $book->floorPlan;
+            $name = $fp?->project_name ?: ($fp?->name ?: 'Booking #'.$book->id);
+            $venue = $fp?->event_venue ?: ($fp?->event_location ?: '—');
+            $dateStr = '—';
+            if ($fp && $fp->event_start_date && $fp->event_end_date) {
+                $dateStr = Carbon::parse($fp->event_start_date)->format('M jS').' - '.Carbon::parse($fp->event_end_date)->format('M jS');
+            } elseif ($book->date_book) {
+                $dateStr = $book->date_book->format('M jS, Y');
+            }
+
+            if ($hasBookingStatus) {
+                $st = (int) ($book->status ?? 0);
+                $tone = match ($st) {
+                    Book::STATUS_CONFIRMED, Book::STATUS_PAID => 'green',
+                    Book::STATUS_RESERVED => 'yellow',
+                    Book::STATUS_CANCELLED => 'red',
+                    default => 'gray',
+                };
+                $label = $book->status_label ?? 'Unknown';
+            } else {
+                $tone = 'gray';
+                $label = 'Booking';
+            }
+
+            $upcomingEvents[] = [
+                'name' => $name,
+                'date' => $dateStr,
+                'location' => $venue ?: '—',
+                'statusLabel' => $label,
+                'statusTone' => $tone,
+            ];
+        }
+
+        return [
+            'client' => [
+                'id' => $client->id,
+                'name' => $client->name,
+                'position' => $client->position ?? '',
+                'company' => $client->company ?? '',
+                'email' => $client->email ?? '',
+                'phone' => $client->phone_number ?? '',
+                'address' => $client->address ?? '',
+                'genderLabel' => $genderLabel,
+                'avatarUrl' => AssetHelper::imageUrl($client->avatar ?? null),
+                'coverUrl' => AssetHelper::imageUrl($client->cover_image ?? null),
+                'coverPosition' => $coverPosition,
+            ],
+            'stats' => [
+                'totalBooths' => $totalBooths,
+                'totalBookings' => (int) ($stats['total_bookings'] ?? 0),
+                'paidBooths' => $paid,
+                'totalRevenue' => (float) ($stats['total_revenue'] ?? 0),
+                'confirmed' => $confirmed,
+                'reserved' => $reserved,
+                'cancelled' => $cancelled,
+                'boothsRingPct' => $boothsRingPct,
+                'paidRingPct' => $paidRingPct,
+            ],
+            'primaryTags' => array_values($primaryTags),
+            'activity' => $activity,
+            'upcomingEvents' => $upcomingEvents,
+            'routes' => [
+                'dashboard' => $this->safeRoute('dashboard'),
+                'clientsIndex' => $this->safeRoute('clients.index'),
+                'clientEdit' => $this->safeRoute('clients.edit', ['client' => $client->id]),
+                'clientBack' => $this->safeRoute('clients.index'),
+                'booksIndex' => $this->safeRoute('books.index'),
+                'boothsIndex' => $this->safeRoute('booths.index'),
+                'floorPlansIndex' => $this->safeRoute('floor-plans.index'),
+                'affiliatesIndex' => $this->safeRoute('affiliates.index'),
+                'hrDashboard' => $this->safeRoute('hr.dashboard'),
+                'financeDashboard' => $this->safeRoute('finance.dashboard'),
+                'usersIndex' => $this->safeRoute('users.index'),
+                'settingsIndex' => $this->safeRoute('settings.index'),
+            ],
+            'user' => [
+                'initial' => strtoupper(mb_substr($user->username ?? 'U', 0, 1)),
+                'username' => $user->username ?? 'User',
+                'roleLabel' => $user->isAdmin() ? 'Administrator' : 'User',
+            ],
+        ];
+    }
+
     private function mergeClientData(Client $keepClient, Client $duplicateClient)
     {
         $fieldsToMerge = [
