@@ -474,7 +474,11 @@ class ClientController extends Controller
                 ->whereNotNull('floor_plan_id')
                 ->with('floorPlan')
                 ->get()
-                ->pluck('floorPlan.name')
+                ->map(function ($book) {
+                    $fp = $book->floorPlan;
+
+                    return $fp ? ($fp->project_name ?: $fp->name) : null;
+                })
                 ->filter()
                 ->unique()
                 ->values()
@@ -541,7 +545,9 @@ class ClientController extends Controller
                 'position' => $client->position ?? '',
                 'company' => $client->company ?? '',
                 'email' => $client->email ?? '',
-                'phone' => $client->phone_number ?? '',
+                'phone' => trim((string) ($client->phone_number ?? '')) !== ''
+                    ? $client->phone_number
+                    : (string) ($client->phone_1 ?? ''),
                 'address' => $client->address ?? '',
                 'genderLabel' => $genderLabel,
                 'avatarUrl' => AssetHelper::imageUrl($client->avatar ?? null),
