@@ -442,6 +442,15 @@ class ClientController extends Controller
     {
         $user = Auth::user();
 
+        $username = $user?->username ?? 'User';
+        $userInitial = function_exists('mb_substr')
+            ? mb_substr($username, 0, 1)
+            : substr($username, 0, 1);
+        $userInitial = strtoupper($userInitial !== '' ? $userInitial : 'U');
+        $roleLabel = ($user && method_exists($user, 'isAdmin') && $user->isAdmin())
+            ? 'Administrator'
+            : 'User';
+
         $genderLabel = match ((int) ($client->sex ?? 0)) {
             1 => 'Male',
             2 => 'Female',
@@ -546,8 +555,8 @@ class ClientController extends Controller
                 'company' => $client->company ?? '',
                 'email' => $client->email ?? '',
                 'phone' => trim((string) ($client->phone_number ?? '')) !== ''
-                    ? $client->phone_number
-                    : (string) ($client->phone_1 ?? ''),
+                    ? (string) $client->phone_number
+                    : (Schema::hasColumn('client', 'phone_1') ? (string) ($client->phone_1 ?? '') : ''),
                 'address' => $client->address ?? '',
                 'genderLabel' => $genderLabel,
                 'avatarUrl' => AssetHelper::imageUrl($client->avatar ?? null),
@@ -583,9 +592,9 @@ class ClientController extends Controller
                 'settingsIndex' => $this->safeRoute('settings.index'),
             ],
             'user' => [
-                'initial' => strtoupper(mb_substr($user->username ?? 'U', 0, 1)),
-                'username' => $user->username ?? 'User',
-                'roleLabel' => $user->isAdmin() ? 'Administrator' : 'User',
+                'initial' => $userInitial,
+                'username' => $username,
+                'roleLabel' => $roleLabel,
             ],
         ];
     }
