@@ -176,23 +176,6 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="phone_2" class="form-label">Phone 2</label>
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text"><i class="fas fa-phone"></i></span>
-                                    </div>
-                                    <input type="text" class="form-control @error('phone_2') is-invalid @enderror" 
-                                           id="phone_2" name="phone_2" value="{{ old('phone_2') }}" 
-                                           placeholder="Enter secondary phone number">
-                                </div>
-                                @error('phone_2')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                                <small class="form-text text-muted">Secondary phone number</small>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
                                 <label for="email" class="form-label">Email Address</label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
@@ -206,42 +189,6 @@
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                                 <small class="form-text text-muted">Email address (must be unique if provided)</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="email_1" class="form-label">Email 1</label>
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                    </div>
-                                    <input type="email" class="form-control @error('email_1') is-invalid @enderror" 
-                                           id="email_1" name="email_1" value="{{ old('email_1') }}" 
-                                           placeholder="Enter primary email address">
-                                </div>
-                                @error('email_1')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                                <small class="form-text text-muted">Primary email address</small>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="email_2" class="form-label">Email 2</label>
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                    </div>
-                                    <input type="email" class="form-control @error('email_2') is-invalid @enderror" 
-                                           id="email_2" name="email_2" value="{{ old('email_2') }}" 
-                                           placeholder="Enter secondary email address">
-                                </div>
-                                @error('email_2')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                                <small class="form-text text-muted">Secondary email address</small>
                             </div>
                         </div>
                     </div>

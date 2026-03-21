@@ -56,7 +56,16 @@ class ExportController extends Controller
      */
     public function exportClients(Request $request)
     {
-        $clients = Client::with('booths')->orderBy('company')->get();
+        $query = Client::with('booths')->orderBy('company');
+        $rawIds = $request->query('ids');
+        if (is_array($rawIds) && $rawIds !== []) {
+            $ids = array_values(array_unique(array_filter(array_map('intval', $rawIds))));
+            $ids = array_slice($ids, 0, 500);
+            if ($ids !== []) {
+                $query->whereIn('id', $ids);
+            }
+        }
+        $clients = $query->get();
 
         $filename = 'clients_export_'.date('Y-m-d_His').'.csv';
 
@@ -73,10 +82,10 @@ class ExportController extends Controller
             foreach ($clients as $client) {
                 fputcsv($file, [
                     $client->id,
-                    $client->company ?? 'N/A',
+                    $client->company ?? '-',
                     $client->name,
-                    $client->position ?? 'N/A',
-                    $client->phone_number ?? 'N/A',
+                    $client->position ?? '-',
+                    $client->phone_number ?? '-',
                     $client->booths->count(),
                 ]);
             }

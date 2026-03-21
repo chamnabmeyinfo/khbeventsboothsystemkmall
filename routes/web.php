@@ -258,6 +258,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/booths/delete', [\App\Http\Controllers\BulkOperationController::class, 'bulkDeleteBooths'])->name('booths.delete');
         Route::post('/clients/update', [\App\Http\Controllers\BulkOperationController::class, 'bulkUpdateClients'])->name('clients.update');
         Route::post('/clients/delete', [\App\Http\Controllers\BulkOperationController::class, 'bulkDeleteClients'])->name('clients.delete');
+        Route::post('/clients/merge', [\App\Http\Controllers\BulkOperationController::class, 'bulkMergeClients'])->name('clients.merge');
     });
 
     // HR Routes

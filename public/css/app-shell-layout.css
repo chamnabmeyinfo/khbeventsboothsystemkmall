@@ -1,0 +1,118 @@
+/**
+ * App shell: dedicated header row on top; sidebar + main fill the rest below.
+ * Used with body.app-shell (layouts.admin + layouts.app).
+ */
+body.app-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+    margin: 0;
+}
+
+/* Header is the first document row — not fixed; nothing sits underneath it */
+body.app-shell .modern-unified-header {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    width: 100% !important;
+    flex: 0 0 auto;
+    z-index: 2000;
+}
+
+/* Row below header: sidebar + main */
+body.app-shell .layout-wrapper {
+    display: flex !important;
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    width: 100%;
+    padding-top: 0 !important;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* Sidebar participates in flex row (desktop) */
+body.app-shell .modern-sidebar {
+    position: relative !important;
+    top: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    height: auto !important;
+    max-height: none !important;
+    align-self: stretch;
+    flex: 0 0 var(--sidebar-width, 280px);
+    width: var(--sidebar-width, 280px) !important;
+    min-width: 0;
+    transition: flex-basis 0.45s cubic-bezier(0.16, 1, 0.3, 1), width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.app-shell .modern-sidebar.collapsed {
+    flex: 0 0 var(--sidebar-collapsed-width, 80px);
+    width: var(--sidebar-collapsed-width, 80px) !important;
+}
+
+/* Main fills remaining width; scrolls independently */
+body.app-shell .layout-wrapper > main#main-content.main-content-pushed {
+    margin-left: 0 !important;
+    width: auto !important;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0 !important;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Anchor / focus scroll inside main — header is above the scrollport */
+    scroll-padding-top: 0.5rem;
+    scroll-margin-top: 0;
+}
+
+/*
+ * global-ux-consistency.css (desktop) sets .container-fluid { max-width: 1400px; margin: 0 auto }.
+ * <main> uses container-fluid as the scroll column — that rule turns it into a centered 1400px box,
+ * so .looker-dashboard (width 100%) never fills the flex area beside the sidebar.
+ */
+@media (min-width: 1025px) {
+    body.app-shell .layout-wrapper > main#main-content.main-content-pushed.container-fluid {
+        max-width: none !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+}
+
+body.app-shell .main-content-pushed.expanded {
+    margin-left: 0 !important;
+    width: auto !important;
+}
+
+/* Mobile: sidebar becomes off-canvas; main full width */
+@media (max-width: 991.98px) {
+    body.app-shell .layout-wrapper {
+        display: block !important;
+        overflow: visible;
+    }
+
+    body.app-shell .modern-sidebar {
+        position: fixed !important;
+        top: var(--admin-header-height, 70px);
+        bottom: 0;
+        left: 0;
+        height: auto !important;
+        max-height: calc(100dvh - var(--admin-header-height, 70px)) !important;
+        flex: none !important;
+        width: min(280px, 88vw) !important;
+        z-index: 1040;
+        transform: translateX(-100%);
+    }
+
+    body.app-shell .modern-sidebar.show {
+        transform: translateX(0);
+    }
+
+    body.app-shell .layout-wrapper > main#main-content.main-content-pushed {
+        width: 100% !important;
+        min-height: min(100vh, 100dvh) !important;
+        overflow-y: visible;
+    }
+}

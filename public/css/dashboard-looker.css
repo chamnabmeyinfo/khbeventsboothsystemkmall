@@ -50,11 +50,14 @@ body.ios-dashboard-mode {
     50% { opacity: 0.95; }
 }
 
-/* Dashboard Container */
+/* Dashboard container — full width of parent (e.g. main); use inner wrappers if you need a max column */
 .looker-dashboard {
     padding: 2rem;
-    max-width: 1600px;
-    margin: 0 auto;
+    max-width: 100%;
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    box-sizing: border-box;
 }
 
 /* Glassmorphism Header */
@@ -421,8 +424,7 @@ body.ios-dashboard-mode {
 .delay-5 { animation-delay: 0.5s; }
 
 
-/* iOS 18 Frosted Glass – Sidebar & Header */
-body.ios-dashboard-mode .modern-unified-header,
+/* iOS 18 Frosted Glass – sidebar only (header uses modern-header.css everywhere) */
 body.ios-dashboard-mode .modern-sidebar {
     background: rgba(255, 255, 255, 0.72) !important;
     backdrop-filter: blur(60px) saturate(180%) !important;

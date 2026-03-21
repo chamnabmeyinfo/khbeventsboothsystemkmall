@@ -4,7 +4,7 @@
 
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.1">
 <style>
     .looker-dashboard { padding: 0 !important; }
     .glass-card {

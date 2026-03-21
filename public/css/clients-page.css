@@ -1,0 +1,446 @@
+/**
+ * Clients module — single responsive sheet (Bootstrap 5 breakpoints).
+ * Visual system: dashboard-looker.css tokens on body.ios-dashboard-mode.
+ */
+body.clients-page .looker-dashboard {
+    padding: 0 1rem 2rem;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+    body.clients-page .looker-dashboard {
+        padding: 0 1.25rem 2.5rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    body.clients-page .looker-dashboard {
+        padding: 0 1.5rem 3rem;
+    }
+}
+
+/* Shared “surface” for legacy glass-card call sites on show/edit */
+.clients-page .glass-card,
+.clients-page .surface-panel {
+    background: var(--bg-card);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    transition: var(--transition-all);
+    overflow: hidden;
+}
+
+.clients-page .glass-card:hover,
+.clients-page .surface-panel:hover {
+    background: var(--bg-card-hover);
+    box-shadow: var(--shadow-hover);
+}
+
+.clients-page .clients-field-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.35rem;
+}
+
+.clients-page .clients-hint {
+    font-size: 0.8125rem;
+    color: var(--text-tertiary);
+}
+
+/* Table fits canvas width; cells wrap (no forced 1180px min-width) */
+.clients-page .clients-data-canvas .clients-canvas-body {
+    padding: 0 0.5rem 1rem;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.clients-page .clients-canvas-body .clients-table-scroll {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.clients-page #clientsDataTable {
+    width: 100% !important;
+    max-width: 100%;
+    table-layout: fixed;
+}
+
+.clients-page #clientsDataTable th,
+.clients-page #clientsDataTable td {
+    white-space: normal !important;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    vertical-align: top;
+}
+
+/* Let checkbox + actions columns size to content */
+.clients-page #clientsDataTable th:first-child,
+.clients-page #clientsDataTable td:first-child,
+.clients-page #clientsDataTable th:last-child,
+.clients-page #clientsDataTable td:last-child {
+    max-width: none;
+    width: 1%;
+    white-space: nowrap;
+}
+
+.clients-page #clientsDataTable .clients-filter-row th {
+    max-width: none;
+}
+
+.clients-page #clientsDataTable .clients-filter-row .form-control,
+.clients-page #clientsDataTable .clients-filter-row .form-select {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.clients-page #clientsDataTable .clients-name-cell .clients-name-text {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.clients-page .clients-sort-link {
+    white-space: normal;
+    flex-wrap: wrap;
+}
+
+/* Column visibility (toggled via JS + localStorage) */
+.clients-page #clientsDataTable th.clients-col-hidden,
+.clients-page #clientsDataTable td.clients-col-hidden {
+    display: none !important;
+}
+
+.clients-page .clients-column-picker {
+    min-width: 280px;
+    max-height: min(70vh, 420px);
+    overflow-y: auto;
+}
+
+.clients-page .clients-column-picker .form-check {
+    padding-left: 1.75rem;
+    margin-bottom: 0.35rem;
+}
+
+.clients-page .clients-column-picker .form-check-input {
+    margin-top: 0.35rem;
+}
+
+.clients-page .clients-filter-row th {
+    background: rgba(0, 0, 0, 0.04) !important;
+    vertical-align: middle;
+    padding-top: 0.35rem !important;
+    padding-bottom: 0.35rem !important;
+}
+
+.clients-page .clients-filter-row .form-control,
+.clients-page .clients-filter-row .form-select {
+    min-width: 0;
+    border-radius: var(--radius-md);
+}
+
+.clients-page .clients-sort-link {
+    color: inherit;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: normal;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+.clients-page .clients-sort-link:hover {
+    color: var(--accent-blue);
+}
+
+/* Active filter chips */
+.clients-page .clients-filter-chips .clients-chip {
+    font-weight: 600;
+    padding: 0.4rem 0.75rem;
+    border-radius: var(--radius-pill);
+    text-decoration: none;
+    border: 1px solid var(--border-light);
+    background: rgba(255, 255, 255, 0.65);
+    color: var(--text-primary);
+    font-size: 0.8125rem;
+}
+
+.clients-page .clients-filter-chips .clients-chip:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-hover);
+}
+
+.clients-page .clients-filter-chips .clients-chip-meta {
+    background: var(--accent-blue-light);
+    color: var(--accent-blue);
+    border: none;
+}
+
+/* Bulk actions */
+.clients-page .clients-bulk-bar {
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    background: linear-gradient(135deg, #1d1d1f 0%, #2d2d32 100%) !important;
+    color: #f5f5f7;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: var(--shadow-md);
+}
+
+.clients-page .clients-bulk-bar .btn {
+    border-radius: var(--radius-md);
+}
+
+/* Table + cards panel shell */
+.clients-page .clients-data-canvas {
+    padding: 0;
+    overflow: hidden;
+}
+
+.clients-page .clients-data-canvas .clients-canvas-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px dashed var(--border-light);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.clients-page .clients-data-canvas .clients-pagination-wrap {
+    padding: 0.75rem 1.25rem 0;
+}
+
+/* View mode toggle */
+.clients-page .clients-view-toggle {
+    display: inline-flex;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+}
+
+.clients-page .clients-view-toggle .btn {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0;
+    border: none;
+    line-height: 1;
+    min-width: 44px;
+    min-height: 44px;
+    background: rgba(255, 255, 255, 0.5);
+    color: var(--text-secondary);
+}
+
+.clients-page .clients-view-toggle .btn:hover {
+    background: rgba(255, 255, 255, 0.85);
+    color: var(--text-primary);
+}
+
+.clients-page .clients-view-toggle .btn.active {
+    background: var(--accent-blue);
+    color: #fff;
+}
+
+.clients-page .clients-view-toggle .btn + .btn {
+    border-left: 1px solid var(--border-light);
+}
+
+/* Density dropdown trigger */
+.clients-page .clients-density-trigger {
+    border-radius: var(--radius-md) !important;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border: 1px solid var(--border-light) !important;
+    background: rgba(255, 255, 255, 0.65) !important;
+    color: var(--text-primary) !important;
+    min-height: 44px;
+}
+
+/* Card grid (card view) */
+.clients-page .clients-entity-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    transition: var(--transition-all);
+    cursor: pointer;
+    overflow: hidden;
+    height: 100%;
+}
+
+.clients-page .clients-entity-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+    background: var(--bg-card-hover);
+}
+
+.clients-page .clients-entity-card .clients-entity-head {
+    padding: 1.25rem 1.35rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.clients-page .clients-entity-card .clients-entity-body {
+    padding: 1.25rem 1.35rem;
+}
+
+.clients-page .clients-entity-card .clients-entity-foot {
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.35);
+    border-top: 1px solid var(--border-light);
+}
+
+.clients-page .clients-entity-card .clients-entity-foot .btn {
+    border-radius: var(--radius-md);
+}
+
+.clients-page .clients-link-tel {
+    color: var(--accent-blue);
+    text-decoration: none;
+}
+
+.clients-page .clients-link-tel:hover {
+    text-decoration: underline;
+}
+
+.clients-page .clients-position-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: var(--accent-blue-light);
+    color: var(--accent-blue);
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+/* Pagination bar */
+.clients-page .clients-pagination-bar .pagination {
+    margin-bottom: 0;
+}
+
+.clients-page .clients-per-page-select {
+    width: auto;
+    min-width: 4.5rem;
+    border-radius: var(--radius-md);
+}
+
+/* Row hover */
+.clients-page .clients-table-row:hover td {
+    background-color: rgba(0, 122, 255, 0.04) !important;
+}
+
+/* Density */
+.clients-page #clientsDataTable.clients-density-compact td,
+.clients-page #clientsDataTable.clients-density-compact th {
+    padding: 0.35rem 0.5rem !important;
+}
+
+.clients-page #clientsDataTable.clients-density-default td,
+.clients-page #clientsDataTable.clients-density-default th {
+    padding: 0.65rem 0.75rem !important;
+}
+
+.clients-page #clientsDataTable.clients-density-comfort td,
+.clients-page #clientsDataTable.clients-density-comfort th {
+    padding: 0.95rem 1rem !important;
+}
+
+/* Modal — new client */
+.clients-page .clients-modal-content {
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+}
+
+.clients-page .clients-modal-header {
+    background: linear-gradient(135deg, var(--accent-blue) 0%, #0056d6 100%);
+    color: #fff;
+    padding: 1.25rem 1.5rem;
+    border-bottom: none;
+}
+
+.clients-page .clients-modal-header .modal-title {
+    font-weight: 800;
+    font-size: 1.25rem;
+}
+
+.clients-page .clients-modal-header .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.9;
+}
+
+.clients-page .clients-modal-body {
+    padding: 1.5rem;
+    max-height: min(70vh, 720px);
+    overflow-y: auto;
+}
+
+.clients-page .clients-modal-section-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.clients-page .clients-modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-light);
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.clients-page .clients-modal-body .form-control,
+.clients-page .clients-modal-body .form-select {
+    border-radius: var(--radius-md);
+}
+
+/* Muted badge for counts in table */
+.clients-page .status-badge-muted {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.65rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--text-secondary);
+}
+
+@media (max-width: 575.98px) {
+    .clients-page .looker-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .clients-page .looker-actions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+}
+
+/* Icon tint on action buttons (matches dashboard index pattern) */
+.clients-page .text-tertiary {
+    color: var(--text-tertiary);
+}

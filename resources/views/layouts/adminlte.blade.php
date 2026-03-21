@@ -1615,7 +1615,7 @@
     <link rel="stylesheet" href="{{ asset('css/mobile-design-system.css') }}">
     <link rel="stylesheet" href="{{ asset('css/global-mobile-enhancements.css') }}">
     
-    <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}?v=3.2">
     <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}">
     
     @stack('styles')
@@ -1724,7 +1724,7 @@
 <div class="wrapper">
 
     <!-- Navbar -->
-    @include('partials.modern-header', ['headerClass' => 'main-header modern-header-v2', 'useSidebarToggle' => true])
+    @include('partials.modern-header')
     <!-- /.navbar -->
 
     @include('partials.modern-sidebar')

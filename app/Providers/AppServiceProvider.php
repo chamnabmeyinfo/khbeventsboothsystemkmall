@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\ActivityLog;
 use App\Observers\ActivityLogObserver;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -23,6 +24,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        /* Laravel 10 defaults to Tailwind pagination (w-5/h-5 SVGs); this app uses Bootstrap 5. */
+        Paginator::useBootstrapFive();
+
         ActivityLog::observe(ActivityLogObserver::class);
 
         // Fix: Ensure database prefix is always a string, not an array

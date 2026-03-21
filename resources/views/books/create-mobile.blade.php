@@ -5175,22 +5175,8 @@ button:not([type="submit"]):not([type="button"]),
                         </div>
                         <div class="row mt-2">
                             <div class="col-md-6">
-                                <label for="modal_phone_2" class="form-label">Phone 2</label>
-                                <input type="text" class="form-control" id="modal_phone_2" name="phone_2" placeholder="Enter secondary phone number">
-                            </div>
-                            <div class="col-md-6">
                                 <label for="modal_email" class="form-label">Email Address</label>
                                 <input type="email" class="form-control" id="modal_email" name="email" placeholder="Enter email address">
-                            </div>
-                        </div>
-                        <div class="row mt-2">
-                            <div class="col-md-6">
-                                <label for="modal_email_1" class="form-label">Email 1</label>
-                                <input type="email" class="form-control" id="modal_email_1" name="email_1" placeholder="Enter primary email address">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="modal_email_2" class="form-label">Email 2</label>
-                                <input type="email" class="form-control" id="modal_email_2" name="email_2" placeholder="Enter secondary email address">
                             </div>
                         </div>
                         <div class="row mt-2">

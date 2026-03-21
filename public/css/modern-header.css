@@ -3,8 +3,14 @@
    A high-end, glassmorphism-based navigation system
    ============================================ */
 
+:root {
+    --admin-header-height: 70px;
+}
+
+/* In document flow by default: main/sidebar always start below the bar (layouts.app / layouts.admin + body.app-shell). */
 .modern-unified-header {
-    height: 70px;
+    height: var(--admin-header-height);
+    box-sizing: border-box;
     background: rgba(255, 255, 255, 0.4) !important;
     backdrop-filter: blur(40px) saturate(200%);
     -webkit-backdrop-filter: blur(40px) saturate(200%);
@@ -13,12 +19,21 @@
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
+    position: relative !important;
+    top: auto;
+    left: auto;
+    right: auto;
+    width: 100% !important;
+    flex-shrink: 0;
+    z-index: 2000 !important;
+}
+
+/* AdminLTE and other shells without body.app-shell: keep fixed top bar + existing content offsets */
+body:not(.app-shell) .modern-unified-header {
     position: fixed !important;
     top: 0;
     left: 0;
     right: 0;
-    width: 100% !important;
-    z-index: 2000 !important;
 }
 
 /* Fix for AdminLTE layout where it might be inside a wrapper or navbar class */
@@ -250,6 +265,19 @@ nav.main-header.modern-header-v2 {
 .sidebar-toggle-btn:hover {
     background: var(--color-gray-100);
     color: var(--color-primary);
+}
+
+/*
+ * App shell: one bar everywhere — page themes (e.g. ios-dashboard-mode) must not
+ * change background/blur/padding; specificity beats loose body.* overrides.
+ */
+body.app-shell header.modern-unified-header {
+    background: rgba(255, 255, 255, 0.4) !important;
+    backdrop-filter: blur(40px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3) !important;
+    padding: 0 1.5rem !important;
+    box-shadow: none !important;
 }
 
 @media (max-width: 768px) {

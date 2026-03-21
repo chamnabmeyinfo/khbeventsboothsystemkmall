@@ -760,7 +760,7 @@
 
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.1">
 <style>
 /* cPanel pull log line styling */
 #pullLog .log-info    { color: #93c5fd; }

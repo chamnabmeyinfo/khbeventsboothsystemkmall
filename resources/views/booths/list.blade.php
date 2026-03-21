@@ -5,7 +5,7 @@
 @section('breadcrumb', 'Booths')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.8">
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.1">
 <style>
     .booths-list-page .looker-dashboard { padding: 0; max-width: 100%; }
     .booths-list-page .booth-row-card { transition: all var(--transition-base, 0.25s ease); }

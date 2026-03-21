@@ -286,22 +286,8 @@
                         </div>
                         <div class="row mt-2">
                             <div class="col-md-6">
-                                <label for="modal_client_phone_2" class="form-label">Phone 2</label>
-                                <input type="text" class="form-control" id="modal_client_phone_2" name="phone_2" placeholder="Enter secondary phone number" style="border-radius: 8px;">
-                            </div>
-                            <div class="col-md-6">
                                 <label for="modal_client_email" class="form-label">Email Address</label>
                                 <input type="email" class="form-control" id="modal_client_email" name="email" placeholder="Enter email address" style="border-radius: 8px;">
-                            </div>
-                        </div>
-                        <div class="row mt-2">
-                            <div class="col-md-6">
-                                <label for="modal_client_email_1" class="form-label">Email 1</label>
-                                <input type="email" class="form-control" id="modal_client_email_1" name="email_1" placeholder="Enter primary email address" style="border-radius: 8px;">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="modal_client_email_2" class="form-label">Email 2</label>
-                                <input type="email" class="form-control" id="modal_client_email_2" name="email_2" placeholder="Enter secondary email address" style="border-radius: 8px;">
                             </div>
                         </div>
                         <div class="row mt-2">

@@ -16,99 +16,42 @@ class ClientController extends Controller
 
     public function index(Request $request)
     {
-        // If AJAX request for lazy loading
-        if (($request->ajax() || $request->wantsJson() || $request->hasHeader('X-Requested-With')) && $request->has('page')) {
-            return $this->lazyLoad($request);
+        $allowedPerPage = [10, 20, 50];
+        $perPage = (int) $request->input('per_page', 20);
+        if (! in_array($perPage, $allowedPerPage, true)) {
+            $perPage = 20;
+        }
+
+        $filterInput = $request->input('filter', []);
+        if (! is_array($filterInput)) {
+            $filterInput = [];
+        }
+        if ($request->filled('company') && empty($filterInput['company'])) {
+            $filterInput['company'] = $request->input('company');
         }
 
         $filters = [
             'search' => $request->input('search'),
-            'company' => $request->input('company'),
+            'filter' => $filterInput,
             'sort_by' => $request->get('sort_by', 'company'),
             'sort_dir' => $request->get('sort_dir', 'asc'),
         ];
 
-        $result = $this->clientService->getClients($filters, 20, 1);
-        $clients = $result['clients'];
-        $total = $result['total'];
-        $sortBy = $result['sortBy'];
-        $sortDir = $result['sortDir'];
+        $clients = $this->clientService->paginateClients($filters, $perPage);
+        $resolved = $this->clientService->resolveClientListSort($filters);
+        $sortBy = $resolved['sortBy'];
+        $sortDir = $resolved['sortDir'];
 
         $stats = $this->clientService->getClientStatistics();
-        $companies = $this->clientService->getUniqueCompanies();
 
-        return view('clients.index', compact('clients', 'total', 'sortBy', 'sortDir', 'stats', 'companies'));
-    }
-
-    /**
-     * Lazy load clients (AJAX endpoint)
-     */
-    public function lazyLoad(Request $request)
-    {
-        // Use exact same query structure as index method
-        $query = Client::withCount(['booths', 'books']);
-
-        // Search functionality (exact same as index)
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('company', 'like', "%{$search}%")
-                    ->orWhere('phone_number', 'like', "%{$search}%")
-                    ->orWhere('position', 'like', "%{$search}%");
-            });
-        }
-
-        // Filter by company (exact same as index)
-        if ($request->filled('company')) {
-            $query->where('company', 'like', "%{$request->company}%");
-        }
-
-        // Sort functionality (exact same as index)
-        $sortBy = $request->get('sort_by', 'company');
-        $sortDir = $request->get('sort_dir', 'asc');
-
-        if (in_array($sortBy, ['company', 'name', 'position', 'phone_number'])) {
-            $query->orderBy($sortBy, $sortDir);
-        } else {
-            $query->orderBy('company', 'asc');
-        }
-
-        // Use same ordering and limit as initial load
-        $page = $request->input('page', 1);
-        $perPage = 20; // Same as initial load limit(20)
-        $offset = ($page - 1) * $perPage;
-
-        // Get total before pagination
-        $total = $query->count();
-
-        // Use exact same ordering as index method
-        $clients = $query->offset($offset)->limit($perPage)->get();
-        $hasMore = ($offset + $clients->count()) < $total;
-
-        $html = '';
-        foreach ($clients as $client) {
-            // Ensure relationships are loaded (same as initial load)
-            if (! $client->relationLoaded('booths')) {
-                $client->load('booths');
-            }
-            if (! $client->relationLoaded('books')) {
-                $client->load('books');
-            }
-
-            // Table row HTML - partial will calculate everything internally to match main view exactly
-            $html .= view('clients.partials.table-row', compact('client'))->render();
-        }
-
-        return response()->json([
-            'success' => true,
-            'html' => $html,
-            'hasMore' => $hasMore,
-            'total' => $total,
-            'loaded' => $offset + $clients->count(),
-            'page' => $page,
-            'perPage' => $perPage,
-        ], 200, [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        return view('clients.index', compact(
+            'clients',
+            'sortBy',
+            'sortDir',
+            'stats',
+            'allowedPerPage',
+            'perPage'
+        ));
     }
 
     public function create()
@@ -350,18 +293,26 @@ class ClientController extends Controller
     }
 
     /**
-     * Remove duplicate clients based on phone_2, email_1, or email_2
+     * Remove duplicate clients based on email, phone_number, or phone_1
      */
     public function removeDuplicates(Request $request)
     {
         try {
-            $field = $request->input('field', 'all'); // all, phone_2, email_1, email_2
+            $field = $request->input('field', 'all');
             $dryRun = $request->input('dry_run', false);
             $keepOldest = $request->input('keep_oldest', false);
 
+            $allowed = ['email', 'phone_number', 'phone_1', 'all'];
+            if (! in_array($field, $allowed, true)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid field. Use email, phone_number, phone_1, or all.',
+                ], 422);
+            }
+
             $fieldsToCheck = [];
             if ($field === 'all') {
-                $fieldsToCheck = ['phone_2', 'email_1', 'email_2'];
+                $fieldsToCheck = ['email', 'phone_number', 'phone_1'];
             } else {
                 $fieldsToCheck = [$field];
             }
@@ -467,8 +418,8 @@ class ClientController extends Controller
     {
         $fieldsToMerge = [
             'name', 'sex', 'position', 'company', 'company_name_khmer',
-            'phone_number', 'phone_1', 'phone_2',
-            'email', 'email_1', 'email_2',
+            'phone_number', 'phone_1',
+            'email',
             'address', 'tax_id', 'website', 'notes',
         ];
 

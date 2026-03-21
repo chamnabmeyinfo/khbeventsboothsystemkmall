@@ -6,38 +6,17 @@
 
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
-<style>
-    .looker-dashboard { padding: 0 !important; }
-    .glass-card {
-        background: rgba(255, 255, 255, 0.45);
-        backdrop-filter: blur(40px) saturate(180%);
-        -webkit-backdrop-filter: blur(40px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        border-radius: 24px;
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-        margin-bottom: 24px;
-        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        overflow: hidden;
-    }
-    .glass-card:hover {
-        transform: translateY(-5px);
-        background: rgba(255, 255, 255, 0.55);
-        box-shadow: 0 15px 45px rgba(31, 38, 135, 0.2);
-    }
-    .kpi-card-looker {
-        margin-bottom: 24px;
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.1">
+<link rel="stylesheet" href="{{ asset('css/clients-page.css') }}?v=1.0">
 @endpush
 
-@push('body-class', 'ios-dashboard-mode')
+@push('body-class', 'ios-dashboard-mode clients-page')
 
 
 @section('content')
-<div class='looker-dashboard'>
+<div class="looker-dashboard">
 <div class="container-fluid">
-    <div class="card card-primary card-outline">
+    <div class="card card-primary card-outline glass-card border-0 shadow-none">
         <div class="p-4 border-bottom">
             <h3 class="h5 fw-bold mb-0 text-dark"><i class="fas fa-user-edit mr-2"></i>Edit Client: {{ $client->name }}</h3>
             <div class="card-tools">
@@ -194,23 +173,6 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="phone_2" class="form-label">Phone 2</label>
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text"><i class="fas fa-phone"></i></span>
-                                    </div>
-                                    <input type="text" class="form-control @error('phone_2') is-invalid @enderror" 
-                                           id="phone_2" name="phone_2" value="{{ old('phone_2', $client->phone_2 ?? '') }}" 
-                                           placeholder="Enter secondary phone number">
-                                </div>
-                                @error('phone_2')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                                <small class="form-text text-muted">Secondary phone number</small>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
                                 <label for="email" class="form-label">Email Address</label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
@@ -224,42 +186,6 @@
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                                 <small class="form-text text-muted">Email address (must be unique if provided)</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="email_1" class="form-label">Email 1</label>
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                    </div>
-                                    <input type="email" class="form-control @error('email_1') is-invalid @enderror" 
-                                           id="email_1" name="email_1" value="{{ old('email_1', $client->email_1 ?? '') }}" 
-                                           placeholder="Enter primary email address">
-                                </div>
-                                @error('email_1')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                                <small class="form-text text-muted">Primary email address</small>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="email_2" class="form-label">Email 2</label>
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                    </div>
-                                    <input type="email" class="form-control @error('email_2') is-invalid @enderror" 
-                                           id="email_2" name="email_2" value="{{ old('email_2', $client->email_2 ?? '') }}" 
-                                           placeholder="Enter secondary email address">
-                                </div>
-                                @error('email_2')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                                <small class="form-text text-muted">Secondary email address</small>
                             </div>
                         </div>
                     </div>

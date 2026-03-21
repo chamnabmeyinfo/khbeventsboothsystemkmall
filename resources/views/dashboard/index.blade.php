@@ -17,7 +17,7 @@
 <link rel="stylesheet" href="{{ asset('vendor/chartjs/chart.min.css') }}">
 @endif
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.3">
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.1">
 @endpush
 
 @push('body-class', 'ios-dashboard-mode')

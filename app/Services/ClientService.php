@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Helpers\ActivityLogger;
 use App\Models\Client;
 use App\Repositories\ClientRepository;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
@@ -112,44 +114,207 @@ class ClientService
     }
 
     /**
+     * Text / scalar columns that support LIKE (or special handling) in list filters.
+     *
+     * @return list<string>
+     */
+    public static function clientListTextFilterColumns(): array
+    {
+        return [
+            'name', 'company', 'company_name_khmer', 'position',
+            'phone_number', 'phone_1',
+            'email',
+            'address', 'tax_id', 'website', 'notes',
+        ];
+    }
+
+    /**
+     * Columns available for ORDER BY (includes withCount aliases).
+     *
+     * @return list<string>
+     */
+    public static function clientListSortableColumns(): array
+    {
+        return array_values(array_unique(array_merge(
+            ['id', 'sex'],
+            self::clientListTextFilterColumns(),
+            ['booths_count', 'books_count']
+        )));
+    }
+
+    /**
+     * Sanitize column filter input from the request (whitelist keys only).
+     *
+     * @return array<string, string|int>
+     */
+    public static function sanitizeClientListFilters(mixed $raw): array
+    {
+        if (! is_array($raw)) {
+            return [];
+        }
+
+        $out = [];
+        $textCols = array_flip(self::clientListTextFilterColumns());
+
+        foreach ($raw as $key => $val) {
+            $key = is_string($key) ? $key : '';
+            if ($key === '') {
+                continue;
+            }
+            if (isset($textCols[$key])) {
+                $s = trim((string) $val);
+                if ($s !== '') {
+                    $out[$key] = $s;
+                }
+
+                continue;
+            }
+            if ($key === 'sex' && $val !== '' && $val !== null) {
+                $s = trim((string) $val);
+                if ($s !== '' && ctype_digit($s)) {
+                    $out['sex'] = (int) $s;
+                }
+            }
+            if ($key === 'id' && $val !== '' && $val !== null) {
+                $s = trim((string) $val);
+                if ($s !== '' && ctype_digit($s)) {
+                    $out['id'] = (int) $s;
+                }
+            }
+            if (($key === 'booths_count' || $key === 'books_count') && $val !== '' && $val !== null && is_numeric($val)) {
+                $out[$key] = max(0, (int) $val);
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Resolved sort column and direction after validation (for UI state).
+     *
+     * @return array{sortBy: string, sortDir: string}
+     */
+    public function resolveClientListSort(array $filters): array
+    {
+        return $this->normalizeClientListSort($filters);
+    }
+
+    private function normalizeClientListSort(array $filters): array
+    {
+        $sortBy = $filters['sort_by'] ?? 'company';
+        $sortDir = strtolower((string) ($filters['sort_dir'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
+        $allowed = self::clientListSortableColumns();
+        if (! in_array($sortBy, $allowed, true)) {
+            $sortBy = 'company';
+        }
+
+        return ['sortBy' => $sortBy, 'sortDir' => $sortDir];
+    }
+
+    private function likeTerm(string $value): string
+    {
+        $value = trim($value);
+
+        return '%'.addcslashes($value, '%_\\').'%';
+    }
+
+    private function applyClientGlobalSearch(Builder $query, string $search): void
+    {
+        $search = trim($search);
+        if ($search === '') {
+            return;
+        }
+
+        $term = $this->likeTerm($search);
+
+        $query->where(function ($q) use ($term, $search) {
+            foreach (self::clientListTextFilterColumns() as $col) {
+                $q->orWhere($col, 'like', $term);
+            }
+            if (ctype_digit($search)) {
+                $id = (int) $search;
+                $q->orWhere('id', $id)->orWhere('sex', $id);
+            }
+        });
+    }
+
+    /**
+     * @param  array<string, string|int>  $filter
+     */
+    private function applyClientColumnFilters(Builder $query, array $filter): void
+    {
+        foreach (self::clientListTextFilterColumns() as $col) {
+            if (empty($filter[$col]) || ! is_string($filter[$col])) {
+                continue;
+            }
+            $query->where($col, 'like', $this->likeTerm($filter[$col]));
+        }
+
+        if (isset($filter['id']) && is_int($filter['id'])) {
+            $query->where('id', $filter['id']);
+        }
+
+        if (isset($filter['sex']) && is_int($filter['sex'])) {
+            $query->where('sex', $filter['sex']);
+        }
+
+        if (isset($filter['booths_count']) && is_int($filter['booths_count']) && $filter['booths_count'] > 0) {
+            $query->has('booths', '>=', $filter['booths_count']);
+        }
+
+        if (isset($filter['books_count']) && is_int($filter['books_count']) && $filter['books_count'] > 0) {
+            $query->has('books', '>=', $filter['books_count']);
+        }
+    }
+
+    /**
+     * Base query for client listing (filters + sort).
+     */
+    public function clientsListQuery(array $filters): Builder
+    {
+        $query = Client::withCount(['booths', 'books']);
+
+        if (! empty($filters['search'])) {
+            $this->applyClientGlobalSearch($query, (string) $filters['search']);
+        }
+
+        $columnFilter = $filters['filter'] ?? [];
+        if (is_array($columnFilter) && $columnFilter !== []) {
+            $this->applyClientColumnFilters($query, self::sanitizeClientListFilters($columnFilter));
+        }
+
+        $normalized = $this->normalizeClientListSort($filters);
+
+        return $query->orderBy($normalized['sortBy'], $normalized['sortDir']);
+    }
+
+    /**
+     * Paginated clients for the admin list (filters preserved via withQueryString in caller).
+     */
+    public function paginateClients(array $filters, int $perPage): LengthAwarePaginator
+    {
+        $perPage = max(5, min(100, $perPage));
+
+        return $this->clientsListQuery($filters)->paginate($perPage)->withQueryString();
+    }
+
+    /**
      * Get clients with filters and pagination
      *
      * @return array{clients: \Illuminate\Database\Eloquent\Collection, total: int, sortBy: string, sortDir: string}
      */
     public function getClients(array $filters, int $perPage = 20, int $page = 1): array
     {
-        $query = Client::withCount(['booths', 'books']);
-
-        if (! empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('company', 'like', "%{$search}%")
-                    ->orWhere('phone_number', 'like', "%{$search}%")
-                    ->orWhere('position', 'like', "%{$search}%");
-            });
-        }
-
-        if (! empty($filters['company'])) {
-            $query->where('company', 'like', "%{$filters['company']}%");
-        }
-
-        $sortBy = $filters['sort_by'] ?? 'company';
-        $sortDir = $filters['sort_dir'] ?? 'asc';
-        if (in_array($sortBy, ['company', 'name', 'position', 'phone_number'])) {
-            $query->orderBy($sortBy, $sortDir);
-        } else {
-            $query->orderBy('company', 'asc');
-        }
-
-        $total = $query->count();
-        $clients = $query->offset(($page - 1) * $perPage)->limit($perPage)->get();
+        $query = $this->clientsListQuery($filters);
+        $normalized = $this->normalizeClientListSort($filters);
+        $total = (clone $query)->count();
+        $clients = (clone $query)->forPage($page, $perPage)->get();
 
         return [
             'clients' => $clients,
             'total' => $total,
-            'sortBy' => $sortBy,
-            'sortDir' => $sortDir,
+            'sortBy' => $normalized['sortBy'],
+            'sortDir' => $normalized['sortDir'],
         ];
     }
 

@@ -16,13 +16,14 @@
     <link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}?v=2.6">
     <link rel="stylesheet" href="{{ asset('css/global-ux-consistency.css') }}?v=2.6">
     
-    <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}?v=2.7">
-    <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=2.7">
+    <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}?v=3.2">
+    <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=3.0">
+    <link rel="stylesheet" href="{{ asset('css/app-shell-layout.css') }}?v=1.2">
     <link rel="stylesheet" href="{{ asset('css/sweetalert2-custom.css') }}?v=1">
     
     @stack('styles')
 </head>
-<body class="admin-body @stack('body-class')">
+<body class="admin-body app-shell @stack('body-class')">
     @include('partials.modern-header')
 
     <div class="layout-wrapper">
@@ -30,7 +31,7 @@
             @include('partials.modern-sidebar')
         @endauth
 
-        <main class="main-content-pushed container-fluid py-4" id="main-content" style="min-height: calc(100vh - 70px);">
+        <main class="main-content-pushed container-fluid py-4" id="main-content">
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
                     {{ session('success') }}

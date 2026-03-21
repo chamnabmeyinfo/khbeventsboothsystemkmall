@@ -167,26 +167,39 @@
     overflow: visible !important;
 }
 
+/* App shell (body.app-shell) lays out sidebar + main in a flex row — do not re-apply legacy margin-left here */
 @media (min-width: 992px) {
-    .main-content-pushed {
+    body:not(.app-shell) .main-content-pushed {
         margin-left: var(--sidebar-width, 280px) !important;
         width: calc(100% - var(--sidebar-width, 280px)) !important;
         transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1) !important;
         padding: 2.5rem !important;
     }
 
-    .modern-sidebar.collapsed ~ .main-content-pushed,
-    .main-content-pushed.expanded {
+    body:not(.app-shell) .modern-sidebar.collapsed ~ .main-content-pushed,
+    body:not(.app-shell) .main-content-pushed.expanded {
         margin-left: var(--sidebar-collapsed-width, 80px) !important;
         width: calc(100% - var(--sidebar-collapsed-width, 80px)) !important;
     }
 }
 
-/* On mobile, reset main content margin */
 @media (max-width: 991.98px) {
-    .main-content-pushed {
+    body:not(.app-shell) .main-content-pushed {
         margin-left: 0 !important;
         width: 100% !important;
+        padding: 1rem !important;
+    }
+}
+
+/* Same file: keep booth/dashboard padding when using app-shell (margin comes from flex layout) */
+@media (min-width: 992px) {
+    body.app-shell .main-content-pushed {
+        padding: 2.5rem !important;
+    }
+}
+
+@media (max-width: 991.98px) {
+    body.app-shell .main-content-pushed {
         padding: 1rem !important;
     }
 }

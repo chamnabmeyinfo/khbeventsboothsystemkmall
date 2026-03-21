@@ -5,7 +5,7 @@
 @section('breadcrumb', 'Booths')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.9">
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.1">
 <style>
 /* ================================================
    BOOTHS PAGE — Apple iOS/macOS Premium Theme

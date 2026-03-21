@@ -147,33 +147,40 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('mainSidebar');
+    const mainContent = document.getElementById('main-content');
+
+    function syncSidebarCollapsedBody() {
+        if (!sidebar) return;
+        document.body.classList.toggle('sidebar-collapsed', sidebar.classList.contains('collapsed'));
+    }
+
+    syncSidebarCollapsedBody();
+
     // Dropdown arrow rotation
     const dropdowns = document.querySelectorAll('.sidebar-nav-dropdown [data-bs-toggle="collapse"]');
     dropdowns.forEach(btn => {
         btn.addEventListener('click', function() {
             const icon = this.querySelector('.dropdown-toggle-icon');
             if (icon) {
-                // Rotation is handled by CSS based on aria-expanded, 
+                // Rotation is handled by CSS based on aria-expanded,
                 // but bootstrap 5 handles aria-expanded automatically.
             }
         });
     });
 
-    // Sidebar Toggling
+    // Sidebar toggling (desktop: collapse width; mobile: off-canvas drawer)
     const toggleBtns = document.querySelectorAll('#sidebarCollapseBtn, .sidebar-toggle-btn');
-    const sidebar = document.getElementById('mainSidebar');
-    const mainContent = document.getElementById('main-content');
-    
     toggleBtns.forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
+            if (window.innerWidth <= 991) {
+                if (sidebar) sidebar.classList.toggle('show');
+                return;
+            }
             if (sidebar) sidebar.classList.toggle('collapsed');
             if (mainContent) mainContent.classList.toggle('expanded');
-            
-            // Mobile support
-            if (window.innerWidth <= 991 && sidebar) {
-                sidebar.classList.toggle('show');
-            }
+            syncSidebarCollapsedBody();
         });
     });
 });

@@ -4,388 +4,286 @@
 @section('page-title', 'Clients Management')
 @section('breadcrumb', 'Clients')
 
-
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
-<style>
-    .looker-dashboard { padding: 0 !important; }
-    .glass-card {
-        background: rgba(255, 255, 255, 0.45);
-        backdrop-filter: blur(40px) saturate(180%);
-        -webkit-backdrop-filter: blur(40px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        border-radius: 24px;
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-        margin-bottom: 24px;
-        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        overflow: hidden;
-    }
-    .glass-card:hover {
-        transform: translateY(-5px);
-        background: rgba(255, 255, 255, 0.55);
-        box-shadow: 0 15px 45px rgba(31, 38, 135, 0.2);
-    }
-    .kpi-card-looker {
-        margin-bottom: 24px;
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.1">
+<link rel="stylesheet" href="{{ asset('css/clients-page.css') }}?v=1.4">
 @endpush
 
-@push('body-class', 'ios-dashboard-mode')
+@push('body-class', 'ios-dashboard-mode clients-page')
 
+@php
+    $clientsColumnDefs = [
+        ['key' => 'id', 'label' => 'ID'],
+        ['key' => 'company', 'label' => 'Company'],
+        ['key' => 'company_name_khmer', 'label' => 'Company (Khmer)'],
+        ['key' => 'name', 'label' => 'Name'],
+        ['key' => 'sex', 'label' => 'Gender'],
+        ['key' => 'position', 'label' => 'Position'],
+        ['key' => 'phone_number', 'label' => 'Phone'],
+        ['key' => 'phone_1', 'label' => 'Phone 1'],
+        ['key' => 'email', 'label' => 'Email'],
+        ['key' => 'address', 'label' => 'Address'],
+        ['key' => 'tax_id', 'label' => 'Tax ID'],
+        ['key' => 'website', 'label' => 'Website'],
+        ['key' => 'notes', 'label' => 'Notes'],
+        ['key' => 'booths_count', 'label' => 'Booths'],
+        ['key' => 'books_count', 'label' => 'Bookings'],
+    ];
+@endphp
 
 @section('content')
-<div class='looker-dashboard'>
-<div class="container-fluid">
-    <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6">
-            <div class="kpi-card-looker">
-                <div class="p-4" style="padding: 24px;">
-                    <div class="kpi-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="kpi-title">Total Clients</div>
-                    <div class="kpi-value-looker">{{ number_format($stats['total_clients'] ?? 0) }}</div>
-                </div>
+@php
+    $clientsSortUrl = function (string $column) use ($sortBy, $sortDir) {
+        $nextDir = ($sortBy === $column && $sortDir === 'asc') ? 'desc' : 'asc';
+        return request()->fullUrlWithQuery(['sort_by' => $column, 'sort_dir' => $nextDir, 'page' => 1]);
+    };
+    $clientsSortIcon = function (string $column) use ($sortBy, $sortDir) {
+        if ($sortBy !== $column) {
+            return '<i class="fas fa-sort text-muted opacity-50" style="font-size:.75rem" aria-hidden="true"></i>';
+        }
+        return $sortDir === 'desc'
+            ? '<i class="fas fa-sort-down" aria-hidden="true"></i>'
+            : '<i class="fas fa-sort-up" aria-hidden="true"></i>';
+    };
+@endphp
+
+<div class="looker-dashboard">
+    <header class="looker-header animate-slide-up delay-1">
+        <div class="looker-header-title">
+            <h1>Clients</h1>
+            <p>Filter per column in the table, sort from headers, and manage your client directory.</p>
+        </div>
+        <div class="looker-actions flex-wrap">
+            <button type="button" class="action-btn action-btn-primary" onclick="showCreateClientModal()">
+                <i class="fas fa-plus" aria-hidden="true"></i> New client
+            </button>
+            <a href="{{ route('export.clients', request()->query()) }}" class="action-btn action-btn-secondary">
+                <i class="fas fa-file-csv text-tertiary" aria-hidden="true"></i> Export
+            </a>
+            <button type="button" class="action-btn action-btn-secondary" onclick="refreshPage()">
+                <i class="fas fa-sync-alt text-tertiary" aria-hidden="true"></i> Refresh
+            </button>
+            <div class="dropdown">
+                <button class="action-btn action-btn-secondary dropdown-toggle clients-density-trigger" type="button" id="clientsDensityMenu" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">
+                    <i class="fas fa-compress-alt" aria-hidden="true"></i> Density
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 py-2" aria-labelledby="clientsDensityMenu">
+                    <li><button type="button" class="dropdown-item clients-density-option" data-density="compact">Compact</button></li>
+                    <li><button type="button" class="dropdown-item clients-density-option" data-density="default">Default</button></li>
+                    <li><button type="button" class="dropdown-item clients-density-option" data-density="comfort">Comfort</button></li>
+                </ul>
+            </div>
+            <div class="btn-group clients-view-toggle" role="group" aria-label="View mode">
+                <button type="button" class="btn active" onclick="switchView('table')" id="viewTable" title="Table view" aria-pressed="true">
+                    <i class="fas fa-table" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="btn" onclick="switchView('cards')" id="viewCards" title="Card view" aria-pressed="false">
+                    <i class="fas fa-th-large" aria-hidden="true"></i>
+                </button>
+            </div>
+            <button type="submit" form="clientsFilterToolbarForm" class="action-btn action-btn-primary">
+                <i class="fas fa-filter" aria-hidden="true"></i> Apply filters
+            </button>
+            <a href="{{ route('clients.index', ['per_page' => $perPage]) }}" class="action-btn action-btn-secondary">Reset all</a>
+        </div>
+    </header>
+
+    <div class="kpi-wrapper">
+        <div class="kpi-card-looker animate-slide-up delay-2">
+            <div class="kpi-top">
+                <div class="kpi-title">Total clients</div>
+                <div class="kpi-icon-wrapper primary-icon"><i class="fas fa-users" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format($stats['total_clients'] ?? 0) }}</div>
+            <div class="kpi-bottom trend-neutral">
+                <i class="fas fa-fw fa-circle" style="font-size: 6px;" aria-hidden="true"></i> All records in directory
             </div>
         </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="kpi-card-looker">
-                <div class="p-4" style="padding: 24px;">
-                    <div class="kpi-icon">
-                        <i class="fas fa-calendar-check"></i>
-                    </div>
-                    <div class="kpi-title">With Bookings</div>
-                    <div class="kpi-value-looker">{{ number_format($stats['clients_with_bookings'] ?? 0) }}</div>
-                </div>
+        <div class="kpi-card-looker success animate-slide-up delay-3">
+            <div class="kpi-top">
+                <div class="kpi-title">With bookings</div>
+                <div class="kpi-icon-wrapper success-icon"><i class="fas fa-calendar-check" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format($stats['clients_with_bookings'] ?? 0) }}</div>
+            <div class="kpi-bottom trend-positive">
+                <i class="fas fa-fw fa-link" aria-hidden="true"></i> Active booking history
             </div>
         </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="kpi-card-looker">
-                <div class="p-4" style="padding: 24px;">
-                    <div class="kpi-icon">
-                        <i class="fas fa-store"></i>
-                    </div>
-                    <div class="kpi-title">With Booths</div>
-                    <div class="kpi-value-looker">{{ number_format($stats['clients_with_booths'] ?? 0) }}</div>
-                </div>
+        <div class="kpi-card-looker warning animate-slide-up delay-4">
+            <div class="kpi-top">
+                <div class="kpi-title">With booths</div>
+                <div class="kpi-icon-wrapper warning-icon"><i class="fas fa-store" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format($stats['clients_with_booths'] ?? 0) }}</div>
+            <div class="kpi-bottom trend-warning">
+                <i class="fas fa-fw fa-map-pin" aria-hidden="true"></i> Linked to floor plan
             </div>
         </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="kpi-card-looker">
-                <div class="p-4" style="padding: 24px;">
-                    <div class="kpi-icon">
-                        <i class="fas fa-file-invoice"></i>
-                    </div>
-                    <div class="kpi-title">Total Bookings</div>
-                    <div class="kpi-value-looker">{{ number_format($stats['total_bookings'] ?? 0) }}</div>
-                </div>
+        <div class="kpi-card-looker purple animate-slide-up delay-5">
+            <div class="kpi-top">
+                <div class="kpi-title">Total bookings</div>
+                <div class="kpi-icon-wrapper purple-icon"><i class="fas fa-file-invoice" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format($stats['total_bookings'] ?? 0) }}</div>
+            <div class="kpi-bottom trend-neutral">
+                <i class="fas fa-fw fa-layer-group" aria-hidden="true"></i> Across all clients
             </div>
         </div>
     </div>
 
-    <!-- Action Bar -->
-    <div class="glass-card mb-4">
-        <div class="p-4">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-primary" onclick="showCreateClientModal()">
-                            <i class="fas fa-plus mr-1"></i>New Client
-                        </button>
-                        <a href="{{ route('export.clients') }}" class="btn btn-success">
-                            <i class="fas fa-file-csv mr-1"></i>Export CSV
-                        </a>
-                        <button type="button" class="btn btn-info" onclick="refreshPage()">
-                            <i class="fas fa-sync-alt mr-1"></i>Refresh
-                        </button>
-                    </div>
-                </div>
-                <div class="col-md-6 text-right">
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-sm btn-primary active" onclick="switchView('table')" id="viewTable">
-                            <i class="fas fa-table mr-1"></i>Table
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="switchView('cards')" id="viewCards">
-                            <i class="fas fa-th-large mr-1"></i>Cards
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+    @php
+        $filterQuery = request()->input('filter', []);
+        $activeColumnFilterCount = is_array($filterQuery)
+            ? collect($filterQuery)->filter(fn ($v) => $v !== null && trim((string) $v) !== '')->count()
+            : 0;
+    @endphp
+
+    {{-- GET form: sort + optional legacy search (preserved on paginate); column filters use form="clientsFilterToolbarForm" in the table --}}
+    <form method="GET" action="{{ route('clients.index') }}" id="clientsFilterToolbarForm" class="d-none" aria-hidden="true">
+        <input type="hidden" name="sort_by" value="{{ $sortBy }}">
+        <input type="hidden" name="sort_dir" value="{{ $sortDir }}">
+        @if(request()->filled('search'))
+            <input type="hidden" name="search" value="{{ request('search') }}">
+        @endif
+    </form>
+
+    @if($activeColumnFilterCount > 0)
+    <div class="clients-filter-chips mb-3 d-flex flex-wrap align-items-center gap-2">
+        <span class="clients-hint me-1">Active</span>
+        <span class="clients-chip clients-chip-meta">{{ $activeColumnFilterCount }} column filter(s)</span>
+        <a href="{{ route('clients.index', array_merge(request()->except('filter'), ['page' => 1, 'per_page' => $perPage])) }}" class="clients-chip">Clear column filters <i class="fas fa-times ms-1" aria-hidden="true"></i></a>
+    </div>
+    @endif
+
+    <div id="clientsBulkBar" class="clients-bulk-bar d-none mb-3 p-3" role="region" aria-label="Bulk actions">
+        <strong id="clientsBulkCount" class="me-2">0 selected</strong>
+        <button type="button" class="btn btn-sm btn-outline-light" id="clientsBulkMergeBtn" disabled>Merge selected</button>
+        <button type="button" class="btn btn-sm btn-outline-light" id="clientsBulkExportBtn">Export selected</button>
+        <button type="button" class="btn btn-sm btn-outline-danger" id="clientsBulkDeleteBtn">Delete selected</button>
+        <button type="button" class="btn btn-sm btn-link text-white text-decoration-none ms-auto" id="clientsBulkClearBtn">Clear selection</button>
     </div>
 
-    <!-- Advanced Search and Filter -->
-    <div class="filter-bar">
-        <form method="GET" action="{{ route('clients.index') }}" id="filterForm">
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label><i class="fas fa-search mr-1"></i>Search</label>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fas fa-search"></i></span>
-                        </div>
-                        <input type="text" name="search" class="form-control" 
-                               placeholder="Search by name, company, phone, or position..." 
-                               value="{{ request('search') }}">
-                    </div>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <label><i class="fas fa-building mr-1"></i>Company</label>
-                    <select name="company" class="form-control">
-                        <option value="">All Companies</option>
-                        @foreach($companies ?? [] as $company)
-                            <option value="{{ $company }}" {{ request('company') == $company ? 'selected' : '' }}>
-                                {{ $company }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2 mb-3">
-                    <label><i class="fas fa-sort mr-1"></i>Sort By</label>
-                    <select name="sort_by" class="form-control">
-                        <option value="company" {{ request('sort_by', 'company') == 'company' ? 'selected' : '' }}>Company</option>
-                        <option value="name" {{ request('sort_by') == 'name' ? 'selected' : '' }}>Name</option>
-                        <option value="position" {{ request('sort_by') == 'position' ? 'selected' : '' }}>Position</option>
-                        <option value="phone_number" {{ request('sort_by') == 'phone_number' ? 'selected' : '' }}>Phone</option>
-                    </select>
-                </div>
-                <div class="col-md-2 mb-3">
-                    <label><i class="fas fa-sort-amount-down mr-1"></i>Order</label>
-                    <select name="sort_dir" class="form-control">
-                        <option value="asc" {{ request('sort_dir', 'asc') == 'asc' ? 'selected' : '' }}>Ascending</option>
-                        <option value="desc" {{ request('sort_dir') == 'desc' ? 'selected' : '' }}>Descending</option>
-                    </select>
-                </div>
-                <div class="col-md-1 mb-3">
-                    <label>&nbsp;</label>
-                    <div>
-                        <button type="submit" class="btn btn-primary btn-block">
-                            <i class="fas fa-filter"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-12">
-                    <a href="{{ route('clients.index') }}" class="btn btn-secondary btn-sm">
-                        <i class="fas fa-times mr-1"></i>Clear Filters
-                    </a>
-                    @if(request()->hasAny(['search', 'company', 'sort_by', 'sort_dir']))
-                    <span class="badge badge-info ml-2">
-                        {{ $clients->total() }} result(s) found
-                    </span>
-                    @endif
-                </div>
-            </div>
-        </form>
-    </div>
-
-    <!-- Table View -->
     <div id="tableView" class="view-content">
-        <div class="glass-card">
-            <div class="p-4 border-bottom">
-                <h3 class="h5 fw-bold mb-0 text-dark"><i class="fas fa-list mr-2"></i>All Clients</h3>
-                <div class="card-tools">
-                    <span class="badge badge-primary">{{ $total ?? count($clients) }} Total</span>
+        <div class="canvas-panel clients-data-canvas">
+            <div class="clients-canvas-header">
+                <div>
+                    <h2 class="panel-title mb-1"><i class="fas fa-list" aria-hidden="true"></i> All clients</h2>
+                    <p class="clients-hint mb-0">Scroll horizontally on smaller screens to reach every column. Use Columns to show or hide fields (saved in this browser).</p>
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    @include('clients.partials.column-visibility-menu', ['clientsColumnDefs' => $clientsColumnDefs])
+                    <span class="status-badge status-badge-green">{{ $clients->total() }} total</span>
                 </div>
             </div>
-            <div class="card-body p-0">
-                <div class="looker-table-container">
-                    <table class="looker-table text-nowrap mb-0">
-                        <thead class="thead-light">
-                            <tr>
-                                <th style="width: 50px;">
-                                    <input type="checkbox" id="selectAllClients" class="form-check-input">
-                                </th>
-                                <th style="width: 80px;">ID</th>
-                                <th>Company</th>
-                                <th>Name</th>
-                                <th style="width: 150px;">Position</th>
-                                <th style="width: 150px;">Phone</th>
-                                <th style="width: 120px;">Activity</th>
-                                <th style="width: 150px;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableClientsBody">
-                            @forelse($clients as $client)
-                                @include('clients.partials.table-row', ['client' => $client])
-                            @empty
-                            <tr>
-                                <td colspan="8" class="text-center py-5">
-                                    <div class="text-muted">
-                                        <i class="fas fa-users-slash fa-3x mb-3"></i>
-                                        <p class="mb-0">No clients found</p>
-                                        <button type="button" class="btn btn-primary btn-sm mt-3" onclick="showCreateClientModal()">
-                                            <i class="fas fa-plus mr-1"></i>Create First Client
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                <!-- Lazy Loading Trigger -->
-                <div id="clientsLazyLoadTrigger" style="height: 20px; margin: 10px 0;"></div>
-                <!-- Lazy Loading Spinner -->
-                <div id="clientsLazyLoadSpinner" class="text-center py-3" style="display: none;">
-                    <div class="spinner-border spinner-border-sm text-primary" role="status">
-                        <span class="sr-only">Loading...</span>
-                    </div>
-                    <span class="ml-2 text-muted">Loading more clients...</span>
-                </div>
-                <!-- Lazy Loading End -->
-                <div id="clientsLazyLoadEnd" class="text-center py-3" style="display: none;">
-                    <span class="text-muted">No more clients to load</span>
-                </div>
+            <div class="clients-pagination-wrap">
+                @include('clients.partials.list-pagination')
+            </div>
+            <div class="clients-canvas-body">
+                @include('clients.partials.clients-data-table')
+            </div>
+            <div class="px-3 pb-3">
+                @include('clients.partials.list-pagination', ['showPerPage' => false])
             </div>
         </div>
     </div>
 
-    <!-- Card View -->
-    <div id="cardView" class="view-content" style="display: none;">
-        <div class="row">
+    <div id="cardView" class="view-content d-none">
+        <div class="canvas-panel mb-3">
+            <div class="p-3">
+                @include('clients.partials.list-pagination')
+            </div>
+        </div>
+        <div class="row g-4">
             @forelse($clients as $client)
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card client-card primary" onclick="window.location='{{ route('clients.show', $client) }}'">
-                    <div class="p-4 border-bottom">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0">
-                                <x-avatar 
-                                    :avatar="$client->avatar" 
-                                    :name="$client->name" 
-                                    :size="'xs'" 
+            <div class="col-md-6 col-xl-4">
+                <div class="clients-entity-card" role="link" tabindex="0" data-client-url="{{ route('clients.show', $client) }}" onclick="window.location=this.getAttribute('data-client-url')" onkeydown="if(event.key==='Enter'){ window.location=this.getAttribute('data-client-url'); }">
+                    <div class="clients-entity-head">
+                        <div class="d-flex justify-content-between align-items-center gap-2">
+                            <div class="d-flex align-items-center gap-2 min-w-0">
+                                <x-avatar
+                                    :avatar="$client->avatar"
+                                    :name="$client->name"
+                                    :size="'xs'"
                                     :type="'client'"
                                     :shape="'circle'"
                                 />
-                                <span class="ml-2">{{ $client->name }}</span>
-                            </h6>
-                            <span class="badge badge-primary">#{{ $client->id }}</span>
+                                <h3 class="h6 mb-0 text-truncate">{{ $client->name }}</h3>
+                            </div>
+                            <span class="status-badge status-badge-blue flex-shrink-0">#{{ $client->id }}</span>
                         </div>
                     </div>
-                    <div class="p-4">
-                        <div class="mb-3">
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="fas fa-building text-muted mr-2"></i>
-                                <strong>{{ $client->company ?? 'No Company' }}</strong>
-                            </div>
+                    <div class="clients-entity-body">
+                        <div class="d-flex align-items-start gap-2 mb-3">
+                            <i class="fas fa-building text-muted mt-1" aria-hidden="true"></i>
+                            <span class="fw-semibold">{{ ($client->company !== null && $client->company !== '') ? $client->company : '—' }}</span>
                         </div>
                         @if($client->position)
                         <div class="mb-3">
-                            <div class="d-flex align-items-center mb-1">
-                                <i class="fas fa-briefcase text-muted mr-2"></i>
-                                <span class="badge badge-info">{{ $client->position }}</span>
-                            </div>
+                            <span class="clients-position-badge text-wrap">{{ $client->position }}</span>
                         </div>
                         @endif
                         @if($client->phone_number)
                         <div class="mb-3">
-                            <div class="d-flex align-items-center mb-1">
-                                <i class="fas fa-phone text-muted mr-2"></i>
-                                <a href="tel:{{ $client->phone_number }}" class="text-primary" onclick="event.stopPropagation()">
-                                    {{ $client->phone_number }}
-                                </a>
-                            </div>
+                            <i class="fas fa-phone text-muted me-2" aria-hidden="true"></i>
+                            <a href="tel:{{ $client->phone_number }}" class="clients-link-tel" onclick="event.stopPropagation()">{{ $client->phone_number }}</a>
                         </div>
                         @endif
-                        <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted">
-                                <i class="fas fa-store mr-1"></i>{{ $client->booths_count ?? 0 }} booths
-                            </small>
-                            <small class="text-muted">
-                                <i class="fas fa-calendar mr-1"></i>{{ $client->books_count ?? 0 }} bookings
-                            </small>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="status-badge-muted">{{ (int) ($client->booths_count ?? 0) }} Booth{{ (int) ($client->booths_count ?? 0) === 1 ? '' : 's' }}</span>
+                            <span class="status-badge status-badge-green">{{ (int) ($client->books_count ?? 0) }} Booking{{ (int) ($client->books_count ?? 0) === 1 ? '' : 's' }}</span>
                         </div>
                     </div>
-                    <div class="card-footer bg-white">
+                    <div class="clients-entity-foot">
                         <div class="btn-group btn-group-sm w-100" role="group">
-                            <a href="{{ route('clients.show', $client) }}" class="btn btn-info" onclick="event.stopPropagation()">
-                                <i class="fas fa-eye mr-1"></i>View
-                            </a>
-                            <a href="{{ route('clients.edit', $client) }}" class="btn btn-warning" onclick="event.stopPropagation()">
-                                <i class="fas fa-edit mr-1"></i>Edit
-                            </a>
-                            <button type="button" class="btn btn-danger" onclick="event.stopPropagation(); deleteClient({{ $client->id }}, '{{ $client->name }}');">
-                                <i class="fas fa-trash mr-1"></i>Delete
-                            </button>
+                            <a href="{{ route('clients.show', $client) }}" class="btn btn-outline-secondary" onclick="event.stopPropagation()"><i class="fas fa-eye me-1" aria-hidden="true"></i>View</a>
+                            <a href="{{ route('clients.edit', $client) }}" class="btn btn-outline-secondary" onclick="event.stopPropagation()"><i class="fas fa-edit me-1" aria-hidden="true"></i>Edit</a>
+                            <button type="button" class="btn btn-outline-danger" onclick="event.stopPropagation(); deleteClient({{ $client->id }}, @json($client->name));"><i class="fas fa-trash me-1" aria-hidden="true"></i>Delete</button>
                         </div>
                     </div>
                 </div>
             </div>
             @empty
             <div class="col-12">
-                <div class="glass-card">
-                    <div class="card-body text-center py-5">
-                        <i class="fas fa-users-slash fa-3x text-muted mb-3"></i>
-                        <p class="text-muted mb-3">No clients found</p>
-                        <button type="button" class="btn btn-primary" onclick="showCreateClientModal()">
-                            <i class="fas fa-plus mr-1"></i>Create First Client
-                        </button>
-                    </div>
+                <div class="canvas-panel text-center py-5">
+                    <i class="fas fa-users-slash fa-3x mb-3 opacity-50" aria-hidden="true"></i>
+                    <p class="text-muted mb-3">No clients found</p>
+                    <button type="button" class="action-btn action-btn-primary" onclick="showCreateClientModal()"><i class="fas fa-plus" aria-hidden="true"></i> Create first client</button>
                 </div>
             </div>
             @endforelse
         </div>
-        @if(method_exists($clients, 'hasPages') && $clients->hasPages())
-        <div class="row mt-3">
-            <div class="col-12">
-                <div class="glass-card">
-                    <div class="card-footer">
-                        <div class="row align-items-center">
-                            <div class="col-md-6">
-                                <div class="text-muted">
-                                    @if($clients->firstItem())
-                                    Showing {{ $clients->firstItem() }} to {{ $clients->lastItem() }} of {{ $clients->total() }} clients
-                                    @else
-                                    {{ $clients->total() }} client(s) total
-                                    @endif
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="float-right">
-                                    {{ $clients->links() }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div class="canvas-panel mt-3">
+            <div class="p-3">
+                @include('clients.partials.list-pagination', ['showPerPage' => false])
             </div>
         </div>
-        @endif
     </div>
 </div>
 
-<!-- Create Client Modal -->
-<div class="modal fade" id="createClientModal" tabindex="-1" role="dialog" aria-labelledby="createClientModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-    <div class="modal-dialog modal-lg" role="document" style="max-width: 900px;">
-        <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);">
-            <div class="modal-header" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; border-radius: 20px 20px 0 0; padding: 24px 32px;">
-                <h5 class="modal-title" id="createClientModalLabel" style="font-size: 1.5rem; font-weight: 700;">
-                    <i class="fas fa-user-plus mr-2"></i>Create New Client
-                </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; opacity: 0.9; font-size: 1.5rem;">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+{{-- Create Client Modal (Bootstrap 5) --}}
+<div class="modal fade" id="createClientModal" tabindex="-1" aria-labelledby="createClientModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content clients-modal-content">
+            <div class="modal-header clients-modal-header">
+                <h5 class="modal-title" id="createClientModalLabel"><i class="fas fa-user-plus me-2" aria-hidden="true"></i>Create new client</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="createClientForm" method="POST" action="{{ route('clients.store') }}">
                 @csrf
-                <div class="modal-body" style="padding: 32px; max-height: calc(100vh - 200px); overflow-y: auto;">
-                    <div id="createClientError" class="alert alert-danger" style="display: none; border-radius: 12px;"></div>
-                    
-                    <!-- Basic Information -->
-                    <div class="form-group mb-4">
-                        <h6 style="font-weight: 600; margin-bottom: 16px; color: #495057;"><i class="fas fa-user mr-2 text-primary"></i>Basic Information</h6>
-                        <div class="row">
+                <div class="modal-body clients-modal-body">
+                    <div id="createClientError" class="alert alert-danger d-none rounded-3" role="alert"></div>
+
+                    <div class="mb-4">
+                        <div class="clients-modal-section-title"><i class="fas fa-user text-primary" aria-hidden="true"></i> Basic information</div>
+                        <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="modal_client_name" class="form-label">Full Name</label>
-                                <input type="text" class="form-control" id="modal_client_name" name="name" placeholder="Enter client full name" style="border-radius: 8px;">
+                                <label for="modal_client_name" class="form-label">Full name</label>
+                                <input type="text" class="form-control" id="modal_client_name" name="name" placeholder="Client full name" autocomplete="name">
                             </div>
                             <div class="col-md-6">
                                 <label for="modal_client_sex" class="form-label">Gender</label>
-                                <select class="form-control" id="modal_client_sex" name="sex" style="border-radius: 8px;">
-                                    <option value="">Select Gender...</option>
+                                <select class="form-select" id="modal_client_sex" name="sex">
+                                    <option value="">Select…</option>
                                     <option value="1">Male</option>
                                     <option value="2">Female</option>
                                     <option value="3">Other</option>
@@ -394,136 +292,351 @@
                         </div>
                     </div>
 
-                    <!-- Company Information -->
-                    <div class="form-group mb-4">
-                        <h6 style="font-weight: 600; margin-bottom: 16px; color: #495057;"><i class="fas fa-building mr-2 text-primary"></i>Company Information</h6>
-                        <div class="row">
+                    <div class="mb-4">
+                        <div class="clients-modal-section-title"><i class="fas fa-building text-primary" aria-hidden="true"></i> Company</div>
+                        <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="modal_client_company" class="form-label">Company Name</label>
-                                <input type="text" class="form-control" id="modal_client_company" name="company" placeholder="Enter company name" style="border-radius: 8px;">
+                                <label for="modal_client_company" class="form-label">Company name</label>
+                                <input type="text" class="form-control" id="modal_client_company" name="company" placeholder="Company" autocomplete="organization">
                             </div>
                             <div class="col-md-6">
-                                <label for="modal_client_company_name_khmer" class="form-label">Company Name (Khmer)</label>
-                                <input type="text" class="form-control" id="modal_client_company_name_khmer" name="company_name_khmer" placeholder="Enter company name in Khmer" style="border-radius: 8px;">
+                                <label for="modal_client_company_name_khmer" class="form-label">Company name (Khmer)</label>
+                                <input type="text" class="form-control" id="modal_client_company_name_khmer" name="company_name_khmer" placeholder="ឈ្មោះក្រុមហ៊ុន" autocomplete="off">
                             </div>
-                        </div>
-                        <div class="row mt-2">
                             <div class="col-md-6">
-                                <label for="modal_client_position" class="form-label">Position/Title</label>
-                                <input type="text" class="form-control" id="modal_client_position" name="position" placeholder="Enter position or title" style="border-radius: 8px;">
+                                <label for="modal_client_position" class="form-label">Position / title</label>
+                                <input type="text" class="form-control" id="modal_client_position" name="position" placeholder="Role" autocomplete="organization-title">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Contact Information -->
-                    <div class="form-group mb-4">
-                        <h6 style="font-weight: 600; margin-bottom: 16px; color: #495057;"><i class="fas fa-phone mr-2 text-primary"></i>Contact Information</h6>
-                        <div class="row">
+                    <div class="mb-4">
+                        <div class="clients-modal-section-title"><i class="fas fa-phone text-primary" aria-hidden="true"></i> Contact</div>
+                        <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="modal_client_phone" class="form-label">Phone Number</label>
-                                <input type="text" class="form-control" id="modal_client_phone" name="phone_number" placeholder="Enter phone number" style="border-radius: 8px;">
+                                <label for="modal_client_phone" class="form-label">Phone</label>
+                                <input type="text" class="form-control" id="modal_client_phone" name="phone_number" placeholder="Primary phone" autocomplete="tel">
                             </div>
                             <div class="col-md-6">
                                 <label for="modal_client_phone_1" class="form-label">Phone 1</label>
-                                <input type="text" class="form-control" id="modal_client_phone_1" name="phone_1" placeholder="Enter primary phone number" style="border-radius: 8px;">
-                            </div>
-                        </div>
-                        <div class="row mt-2">
-                            <div class="col-md-6">
-                                <label for="modal_client_phone_2" class="form-label">Phone 2</label>
-                                <input type="text" class="form-control" id="modal_client_phone_2" name="phone_2" placeholder="Enter secondary phone number" style="border-radius: 8px;">
+                                <input type="text" class="form-control" id="modal_client_phone_1" name="phone_1" placeholder="Alternate" autocomplete="tel">
                             </div>
                             <div class="col-md-6">
-                                <label for="modal_client_email" class="form-label">Email Address</label>
-                                <input type="email" class="form-control" id="modal_client_email" name="email" placeholder="Enter email address" style="border-radius: 8px;">
+                                <label for="modal_client_email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="modal_client_email" name="email" placeholder="email@example.com" autocomplete="email">
                             </div>
-                        </div>
-                        <div class="row mt-2">
-                            <div class="col-md-6">
-                                <label for="modal_client_email_1" class="form-label">Email 1</label>
-                                <input type="email" class="form-control" id="modal_client_email_1" name="email_1" placeholder="Enter primary email address" style="border-radius: 8px;">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="modal_client_email_2" class="form-label">Email 2</label>
-                                <input type="email" class="form-control" id="modal_client_email_2" name="email_2" placeholder="Enter secondary email address" style="border-radius: 8px;">
-                            </div>
-                        </div>
-                        <div class="row mt-2">
-                            <div class="col-md-12">
+                            <div class="col-12">
                                 <label for="modal_client_address" class="form-label">Address</label>
-                                <textarea class="form-control" id="modal_client_address" name="address" rows="2" placeholder="Enter complete address" style="border-radius: 8px;"></textarea>
+                                <textarea class="form-control" id="modal_client_address" name="address" rows="2" placeholder="Full address" autocomplete="street-address"></textarea>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Additional Information -->
-                    <div class="form-group mb-0">
-                        <h6 style="font-weight: 600; margin-bottom: 16px; color: #495057;"><i class="fas fa-info-circle mr-2 text-primary"></i>Additional Information (Optional)</h6>
-                        <div class="row">
+                    <div class="mb-0">
+                        <div class="clients-modal-section-title"><i class="fas fa-info-circle text-primary" aria-hidden="true"></i> Additional (optional)</div>
+                        <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="modal_client_tax_id" class="form-label">Tax ID / Business Registration Number</label>
-                                <input type="text" class="form-control" id="modal_client_tax_id" name="tax_id" placeholder="Enter tax ID" style="border-radius: 8px;">
+                                <label for="modal_client_tax_id" class="form-label">Tax ID</label>
+                                <input type="text" class="form-control" id="modal_client_tax_id" name="tax_id" autocomplete="off">
                             </div>
                             <div class="col-md-6">
                                 <label for="modal_client_website" class="form-label">Website</label>
-                                <input type="url" class="form-control" id="modal_client_website" name="website" placeholder="https://example.com" style="border-radius: 8px;">
+                                <input type="url" class="form-control" id="modal_client_website" name="website" placeholder="https://…" autocomplete="url">
                             </div>
-                        </div>
-                        <div class="row mt-2">
-                            <div class="col-md-12">
-                                <label for="modal_client_notes" class="form-label">Additional Notes</label>
-                                <textarea class="form-control" id="modal_client_notes" name="notes" rows="2" placeholder="Enter any additional information" style="border-radius: 8px;"></textarea>
+                            <div class="col-12">
+                                <label for="modal_client_notes" class="form-label">Notes</label>
+                                <textarea class="form-control" id="modal_client_notes" name="notes" rows="2" autocomplete="off"></textarea>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer" style="border-top: 1px solid #e2e8f0; padding: 20px 32px; border-radius: 0 0 20px 20px;">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" style="border-radius: 12px; padding: 10px 24px;">
-                        <i class="fas fa-times mr-1"></i>Cancel
-                    </button>
-                    <button type="submit" class="btn btn-success" id="createClientSubmitBtn" style="border-radius: 12px; padding: 10px 24px;">
-                        <i class="fas fa-save mr-1"></i>Create Client
+                <div class="modal-footer clients-modal-footer">
+                    <button type="button" class="action-btn action-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="action-btn action-btn-primary" id="createClientSubmitBtn">
+                        <i class="fas fa-save" aria-hidden="true"></i> Create client
                     </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-
-</div>
 @endsection
 
 @push('scripts')
 <script>
-// View Toggle
+const CLIENTS_EXPORT_BASE = @json(route('export.clients'));
+const CLIENTS_BULK_DELETE_URL = @json(route('bulk.clients.delete'));
+const CLIENTS_BULK_MERGE_URL = @json(route('bulk.clients.merge'));
+const CLIENTS_COLUMN_KEYS = @json(collect($clientsColumnDefs)->pluck('key')->values());
+const CLIENTS_TABLE_COL_STORAGE = 'clientsTableColumnVisibility';
+
+function clientsGetModal() {
+    const el = document.getElementById('createClientModal');
+    return el && window.bootstrap ? bootstrap.Modal.getOrCreateInstance(el) : null;
+}
+
 function switchView(view) {
+    const tableEl = document.getElementById('tableView');
+    const cardEl = document.getElementById('cardView');
+    const btnTable = document.getElementById('viewTable');
+    const btnCards = document.getElementById('viewCards');
     if (view === 'table') {
-        $('#tableView').show();
-        $('#cardView').hide();
-        $('#viewTable').addClass('active').removeClass('btn-outline-secondary').addClass('btn-primary');
-        $('#viewCards').removeClass('active').removeClass('btn-primary').addClass('btn-outline-secondary');
+        tableEl.classList.remove('d-none');
+        cardEl.classList.add('d-none');
+        btnTable.classList.add('active');
+        btnTable.setAttribute('aria-pressed', 'true');
+        btnCards.classList.remove('active');
+        btnCards.setAttribute('aria-pressed', 'false');
         localStorage.setItem('clientsView', 'table');
     } else {
-        $('#tableView').hide();
-        $('#cardView').show();
-        $('#viewTable').removeClass('active').removeClass('btn-primary').addClass('btn-outline-secondary');
-        $('#viewCards').addClass('active').removeClass('btn-outline-secondary').addClass('btn-primary');
+        tableEl.classList.add('d-none');
+        cardEl.classList.remove('d-none');
+        btnTable.classList.remove('active');
+        btnTable.setAttribute('aria-pressed', 'false');
+        btnCards.classList.add('active');
+        btnCards.setAttribute('aria-pressed', 'true');
         localStorage.setItem('clientsView', 'cards');
     }
 }
 
-// Load saved view preference
-$(document).ready(function() {
+function getSelectedClientIds() {
+    return $('.client-checkbox:checked').map(function () { return parseInt($(this).val(), 10); }).get().filter(Boolean);
+}
+
+function updateClientsBulkBar() {
+    const ids = getSelectedClientIds();
+    const n = ids.length;
+    const bar = document.getElementById('clientsBulkBar');
+    if (!bar) return;
+    if (n < 1) {
+        bar.classList.add('d-none');
+        return;
+    }
+    bar.classList.remove('d-none');
+    document.getElementById('clientsBulkCount').textContent = n + ' selected';
+    document.getElementById('clientsBulkMergeBtn').disabled = n < 2;
+}
+
+function applyClientsTableDensity(mode) {
+    const t = document.getElementById('clientsDataTable');
+    if (!t) return;
+    t.classList.remove('clients-density-compact', 'clients-density-default', 'clients-density-comfort');
+    const m = ['compact', 'default', 'comfort'].indexOf(mode) >= 0 ? mode : 'default';
+    t.classList.add('clients-density-' + m);
+    localStorage.setItem('clientsTableDensity', m);
+}
+
+function clientsDefaultColumnVisibility() {
+    const o = {};
+    CLIENTS_COLUMN_KEYS.forEach(function (k) { o[k] = true; });
+    return o;
+}
+
+function clientsLoadColumnVisibility() {
+    try {
+        const raw = localStorage.getItem(CLIENTS_TABLE_COL_STORAGE);
+        const def = clientsDefaultColumnVisibility();
+        if (!raw) return def;
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') return def;
+        CLIENTS_COLUMN_KEYS.forEach(function (k) {
+            if (typeof parsed[k] === 'boolean') {
+                def[k] = parsed[k];
+            }
+        });
+        return def;
+    } catch (e) {
+        return clientsDefaultColumnVisibility();
+    }
+}
+
+function clientsSaveColumnVisibility(state) {
+    try {
+        localStorage.setItem(CLIENTS_TABLE_COL_STORAGE, JSON.stringify(state));
+    } catch (e) { /* ignore */ }
+}
+
+function clientsApplyColumnVisibility(state) {
+    const table = document.getElementById('clientsDataTable');
+    if (!table) return;
+    CLIENTS_COLUMN_KEYS.forEach(function (key) {
+        const show = state[key] !== false;
+        table.querySelectorAll('[data-clients-col="' + key + '"]').forEach(function (el) {
+            el.classList.toggle('clients-col-hidden', !show);
+        });
+    });
+}
+
+function clientsInitColumnVisibility() {
+    const state = clientsLoadColumnVisibility();
+    CLIENTS_COLUMN_KEYS.forEach(function (key) {
+        const cb = document.getElementById('clients-col-toggle-' + key);
+        if (cb) {
+            cb.checked = state[key] !== false;
+        }
+    });
+    clientsApplyColumnVisibility(state);
+
+    document.querySelectorAll('.clients-col-checkbox').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+            const key = cb.getAttribute('data-clients-col-key');
+            if (!key) return;
+            const s = clientsLoadColumnVisibility();
+            s[key] = cb.checked;
+            clientsSaveColumnVisibility(s);
+            clientsApplyColumnVisibility(s);
+        });
+    });
+
+    const showAll = document.getElementById('clientsColsShowAll');
+    if (showAll) {
+        showAll.addEventListener('click', function (e) {
+            e.preventDefault();
+            const s = clientsDefaultColumnVisibility();
+            clientsSaveColumnVisibility(s);
+            CLIENTS_COLUMN_KEYS.forEach(function (key) {
+                const c = document.getElementById('clients-col-toggle-' + key);
+                if (c) c.checked = true;
+            });
+            clientsApplyColumnVisibility(s);
+        });
+    }
+}
+
+$(document).ready(function () {
     const savedView = localStorage.getItem('clientsView') || 'table';
     switchView(savedView);
+
+    if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+            new bootstrap.Tooltip(el);
+        });
+    }
+
+    applyClientsTableDensity(localStorage.getItem('clientsTableDensity') || 'default');
+
+    clientsInitColumnVisibility();
+
+    $('.clients-density-option').on('click', function () {
+        applyClientsTableDensity($(this).data('density'));
+    });
+
+    $('#selectAllClients').on('change', function () {
+        const checked = $(this).prop('checked');
+        $('#tableClientsBody .client-checkbox').prop('checked', checked);
+        updateClientsBulkBar();
+    });
+
+    $(document).on('change', '.client-checkbox', function () {
+        const $rows = $('#tableClientsBody .client-checkbox');
+        const total = $rows.length;
+        const checked = $rows.filter(':checked').length;
+        const $all = $('#selectAllClients');
+        $all.prop('checked', total > 0 && checked === total);
+        $all.prop('indeterminate', checked > 0 && checked < total);
+        updateClientsBulkBar();
+    });
+
+    $(document).on('click', '.btn-client-delete-row', function () {
+        const id = $(this).data('client-id');
+        const name = $(this).data('client-name') || '';
+        deleteClient(id, name);
+    });
+
+    $('#clientsBulkClearBtn').on('click', function () {
+        $('.client-checkbox, #selectAllClients').prop('checked', false);
+        $('#selectAllClients').prop('indeterminate', false);
+        updateClientsBulkBar();
+    });
+
+    $('#clientsBulkDeleteBtn').on('click', function () {
+        const ids = getSelectedClientIds();
+        if (!ids.length) return;
+        Swal.fire({
+            title: 'Delete selected clients?',
+            text: 'This will remove ' + ids.length + ' client record(s). This cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete',
+            cancelButtonText: 'Cancel'
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
+            showLoading();
+            fetch(CLIENTS_BULK_DELETE_URL, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ ids: ids })
+            })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    hideLoading();
+                    if (data && data.success) {
+                        Swal.fire('Deleted', data.message || 'Clients removed.', 'success').then(function () { location.reload(); });
+                    } else {
+                        Swal.fire('Error', (data && data.message) || 'Bulk delete failed.', 'error');
+                    }
+                })
+                .catch(function () {
+                    hideLoading();
+                    Swal.fire('Error', 'Bulk delete failed.', 'error');
+                });
+        });
+    });
+
+    $('#clientsBulkExportBtn').on('click', function () {
+        const ids = getSelectedClientIds();
+        if (!ids.length) return;
+        const q = ids.map(function (id) { return 'ids[]=' + encodeURIComponent(id); }).join('&');
+        window.location.href = CLIENTS_EXPORT_BASE + (CLIENTS_EXPORT_BASE.indexOf('?') >= 0 ? '&' : '?') + q;
+    });
+
+    $('#clientsBulkMergeBtn').on('click', function () {
+        const ids = getSelectedClientIds();
+        if (ids.length < 2) return;
+        Swal.fire({
+            title: 'Merge selected clients?',
+            html: 'Records will be merged into the client with the <strong>lowest ID</strong>. Booths and bookings move to that record. This cannot be undone.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#007aff',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Merge',
+            cancelButtonText: 'Cancel'
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
+            showLoading();
+            fetch(CLIENTS_BULK_MERGE_URL, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ ids: ids })
+            })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    hideLoading();
+                    if (data && data.success) {
+                        Swal.fire('Merged', data.message || 'Clients merged.', 'success').then(function () { location.reload(); });
+                    } else {
+                        Swal.fire('Error', (data && data.message) || 'Merge failed.', 'error');
+                    }
+                })
+                .catch(function () {
+                    hideLoading();
+                    Swal.fire('Error', 'Merge failed.', 'error');
+                });
+        });
+    });
 });
 
-// Select All Checkboxes
-$('#selectAllClients').on('change', function() {
-    $('.client-checkbox').prop('checked', $(this).prop('checked'));
-});
-
-// Delete Client
 function deleteClient(id, name) {
     Swal.fire({
         title: 'Delete Client?',
@@ -550,9 +663,7 @@ function deleteClient(id, name) {
                 hideLoading();
                 if (response.redirected) {
                     Swal.fire('Deleted!', 'Client has been deleted.', 'success')
-                        .then(() => {
-                            window.location.href = response.url;
-                        });
+                        .then(() => { window.location.href = response.url; });
                 } else {
                     return response.json();
                 }
@@ -560,9 +671,7 @@ function deleteClient(id, name) {
             .then(data => {
                 if (data && data.success) {
                     Swal.fire('Deleted!', data.message || 'Client has been deleted.', 'success')
-                        .then(() => {
-                            location.reload();
-                        });
+                        .then(() => { location.reload(); });
                 }
             })
             .catch(error => {
@@ -574,42 +683,30 @@ function deleteClient(id, name) {
     });
 }
 
-// Refresh Page
 function refreshPage() {
     showLoading();
-    setTimeout(() => {
-        location.reload();
-    }, 500);
+    setTimeout(() => { location.reload(); }, 400);
 }
 
-// Show Create Client Modal
 function showCreateClientModal() {
-    $('#createClientModal').modal('show');
-    $('#createClientForm')[0].reset();
-    $('#createClientError').hide();
+    const form = document.getElementById('createClientForm');
+    const err = document.getElementById('createClientError');
+    if (form) form.reset();
+    if (err) { err.classList.add('d-none'); err.innerHTML = ''; }
+    const m = clientsGetModal();
+    if (m) m.show();
 }
 
-// Handle Create Client Form Submission
 $(document).ready(function() {
     $('#createClientForm').on('submit', function(e) {
         e.preventDefault();
-        
         const form = $(this);
         const submitBtn = $('#createClientSubmitBtn');
         const errorDiv = $('#createClientError');
         const originalText = submitBtn.html();
-        
-        errorDiv.hide();
-        
-        // Remove HTML5 validation since all fields are optional
-        // if (!form[0].checkValidity()) {
-        //     form[0].reportValidity();
-        //     return;
-        // }
-        
+        errorDiv.addClass('d-none').empty();
         submitBtn.prop('disabled', true);
-        submitBtn.html('<i class="fas fa-spinner fa-spin mr-1"></i>Creating...');
-        
+        submitBtn.html('<i class="fas fa-spinner fa-spin me-1" aria-hidden="true"></i>Creating…');
         $.ajax({
             url: form.attr('action'),
             method: 'POST',
@@ -620,63 +717,41 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if (response.status === 'success' && response.client) {
-                    $('#createClientModal').modal('hide');
+                    const m = clientsGetModal();
+                    if (m) m.hide();
                     form[0].reset();
-                    errorDiv.hide();
-                    
+                    errorDiv.addClass('d-none');
                     if (typeof toastr !== 'undefined') {
                         toastr.success(response.message || 'Client created successfully');
                     } else if (typeof Swal !== 'undefined') {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success!',
-                            text: response.message || 'Client created successfully',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
+                        Swal.fire({ icon: 'success', title: 'Success!', text: response.message || 'Client created successfully', timer: 2000, showConfirmButton: false });
                     } else {
                         alert(response.message || 'Client created successfully');
                     }
-                    
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1500);
+                    setTimeout(() => { location.reload(); }, 1500);
                 }
             },
             error: function(xhr) {
                 let errorMessage = 'An error occurred while creating the client.';
                 if (xhr.responseJSON && xhr.responseJSON.errors) {
                     const errors = xhr.responseJSON.errors;
-                    // Collect all error messages
                     const errorMessages = [];
                     Object.keys(errors).forEach(function(key) {
                         const fieldErrors = errors[key];
                         if (Array.isArray(fieldErrors)) {
-                            fieldErrors.forEach(function(err) {
-                                errorMessages.push('<div>' + err + '</div>');
-                            });
+                            fieldErrors.forEach(function(err) { errorMessages.push('<div>' + err + '</div>'); });
                         } else {
                             errorMessages.push('<div>' + fieldErrors + '</div>');
                         }
                     });
-                    if (errorMessages.length > 0) {
-                        errorMessage = errorMessages.join('');
-                    }
+                    if (errorMessages.length > 0) errorMessage = errorMessages.join('');
                 } else if (xhr.responseJSON && xhr.responseJSON.message) {
                     errorMessage = xhr.responseJSON.message;
                 }
-                errorDiv.html('<i class="fas fa-exclamation-triangle mr-1"></i><strong>Validation Error:</strong><br>' + errorMessage).show();
-                // Safely scroll to error div if it exists
-                if (errorDiv.length > 0 && errorDiv[0]) {
-                    try {
-                        errorDiv[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                    } catch (e) {
-                        // Fallback: scroll to top of modal body
-                        const modalBody = errorDiv.closest('.modal-body');
-                        if (modalBody.length > 0 && modalBody[0]) {
-                            modalBody[0].scrollTop = 0;
-                        }
-                    }
+                errorDiv.html('<i class="fas fa-exclamation-triangle me-1" aria-hidden="true"></i><strong>Validation</strong><br>' + errorMessage).removeClass('d-none');
+                const el = errorDiv[0];
+                if (el) {
+                    try { el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
                 }
             },
             complete: function() {
@@ -685,130 +760,16 @@ $(document).ready(function() {
             }
         });
     });
-    
-    // Reset form when modal is closed
-    $('#createClientModal').on('hidden.bs.modal', function() {
-        $('#createClientForm')[0].reset();
-        $('#createClientError').hide();
-    });
-    
-    // Lazy Loading Variables
-    let clientsCurrentPage = 1;
-    let clientsIsLoading = false;
-    let clientsHasMoreData = {{ $total > count($clients) ? 'true' : 'false' }};
-    let clientsFilterParams = {
-        search: '{{ request('search') }}',
-        company: '{{ request('company') }}',
-        sort_by: '{{ request('sort_by', 'company') }}',
-        sort_dir: '{{ request('sort_dir', 'asc') }}'
-    };
-    
-    // Lazy Loading Observer
-    let clientsLazyLoadObserver = null;
-    
-    // Initialize Lazy Loading
-    function initClientsLazyLoading() {
-        // Disconnect existing observer if any
-        if (clientsLazyLoadObserver) {
-            clientsLazyLoadObserver.disconnect();
-        }
-        
-        // Use Intersection Observer API for better performance
-        const trigger = document.getElementById('clientsLazyLoadTrigger');
-        
-        if (!trigger) return;
-        
-        const observerOptions = {
-            root: null,
-            rootMargin: '200px',
-            threshold: 0.1
-        };
-        
-        clientsLazyLoadObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting && clientsHasMoreData && !clientsIsLoading) {
-                    loadMoreClients();
-                }
-            });
-        }, observerOptions);
-        
-        clientsLazyLoadObserver.observe(trigger);
-    }
-    
-    // Load More Clients
-    function loadMoreClients() {
-        if (clientsIsLoading || !clientsHasMoreData) return;
-        
-        clientsIsLoading = true;
-        clientsCurrentPage++;
-        
-        $('#clientsLazyLoadSpinner').show();
-        
-        // Build params exactly like initial load
-        const params = new URLSearchParams({
-            page: clientsCurrentPage
-        });
-        
-        // Add filter params if they exist
-        if (clientsFilterParams.search) params.append('search', clientsFilterParams.search);
-        if (clientsFilterParams.company) params.append('company', clientsFilterParams.company);
-        if (clientsFilterParams.sort_by) params.append('sort_by', clientsFilterParams.sort_by);
-        if (clientsFilterParams.sort_dir) params.append('sort_dir', clientsFilterParams.sort_dir);
-        
-        fetch('{{ route("clients.index") }}?' + params.toString(), {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success && data.html) {
-                // Append new rows to table body
-                $('#tableClientsBody').append(data.html);
-                
-                clientsHasMoreData = data.hasMore !== false;
-                
-                if (!data.hasMore) {
-                    $('#clientsLazyLoadEnd').show();
-                    $('#clientsLazyLoadSpinner').hide();
-                } else {
-                    // Re-initialize lazy loading observer for new content after a brief delay
-                    setTimeout(function() {
-                        initClientsLazyLoading();
-                    }, 100);
-                }
-            } else {
-                clientsHasMoreData = false;
-                $('#clientsLazyLoadSpinner').hide();
-            }
-        })
-        .catch(error => {
-            console.error('Error loading more clients:', error);
-            clientsHasMoreData = false;
-            $('#clientsLazyLoadSpinner').hide();
-            if (typeof toastr !== 'undefined') {
-                toastr.error('Failed to load more clients. Please try again.');
-            }
-        })
-        .finally(() => {
-            clientsIsLoading = false;
-            $('#clientsLazyLoadSpinner').hide();
+
+    const modalEl = document.getElementById('createClientModal');
+    if (modalEl) {
+        modalEl.addEventListener('hidden.bs.modal', function () {
+            const f = document.getElementById('createClientForm');
+            const e = document.getElementById('createClientError');
+            if (f) f.reset();
+            if (e) { e.classList.add('d-none'); e.innerHTML = ''; }
         });
     }
-    
-    // Initialize lazy loading on page load
-    $(document).ready(function() {
-        initClientsLazyLoading();
-    });
 });
 </script>
 @endpush
-

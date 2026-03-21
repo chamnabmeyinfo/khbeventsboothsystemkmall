@@ -89,13 +89,14 @@
     <script src="{{ asset('js/performance-optimizer.js') }}" defer></script>
     @endif
     
-    <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}?v=2.6">
-    <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=2.6">
+    <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}?v=3.2">
+    <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=3.0">
+    <link rel="stylesheet" href="{{ asset('css/app-shell-layout.css') }}?v=1.2">
     <link rel="stylesheet" href="{{ asset('css/sweetalert2-custom.css') }}?v=1">
     
     @stack('styles')
 </head>
-<body class="@stack('body-class')">
+<body class="app-shell @stack('body-class')">
 <script>
 // Viewport-based responsiveness: no redirects or URL params. Layout is driven by CSS
 // media queries and, where server chooses a template, by User-Agent only.
@@ -112,7 +113,7 @@
             @include('partials.modern-sidebar')
         @endauth
 
-        <main class="main-content-pushed container-fluid py-4" id="main-content" style="min-height: calc(100vh - 70px);">
+        <main class="main-content-pushed container-fluid py-4" id="main-content">
             @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ session('success') }}
@@ -441,7 +442,6 @@
         .main-content-pushed {
             margin-left: 0 !important;
             width: 100% !important;
-            padding-top: 80px !important;
         }
     }
     

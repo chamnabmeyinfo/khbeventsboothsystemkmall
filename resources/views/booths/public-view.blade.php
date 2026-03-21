@@ -1504,12 +1504,7 @@
                                         <div class="bf-field"><label>Phone 1</label><input type="text" name="phone_1" id="newClientPhone1" placeholder="Primary phone"></div>
                                     </div>
                                     <div class="bf-form-row">
-                                        <div class="bf-field"><label>Phone 2</label><input type="text" name="phone_2" id="newClientPhone2" placeholder="Secondary phone"></div>
                                         <div class="bf-field"><label>Email</label><input type="email" name="email" id="newClientEmail" placeholder="Email"></div>
-                                    </div>
-                                    <div class="bf-form-row">
-                                        <div class="bf-field"><label>Email 1</label><input type="email" name="email_1" id="newClientEmail1" placeholder="Primary email"></div>
-                                        <div class="bf-field"><label>Email 2</label><input type="email" name="email_2" id="newClientEmail2" placeholder="Secondary email"></div>
                                     </div>
                                     <div class="bf-field"><label>Address</label><textarea name="address" id="newClientAddress" rows="2" placeholder="Street, city, country"></textarea></div>
                                 </div>
@@ -1791,7 +1786,7 @@
         });
 
         function clearPublicNewClientForm() {
-            var ids = ['newClientName', 'newClientSex', 'newClientCompany', 'newClientCompanyKhmer', 'newClientPosition', 'newClientPhone', 'newClientPhone1', 'newClientPhone2', 'newClientEmail', 'newClientEmail1', 'newClientEmail2', 'newClientAddress', 'newClientTaxId', 'newClientWebsite', 'newClientNotes'];
+            var ids = ['newClientName', 'newClientSex', 'newClientCompany', 'newClientCompanyKhmer', 'newClientPosition', 'newClientPhone', 'newClientPhone1', 'newClientEmail', 'newClientAddress', 'newClientTaxId', 'newClientWebsite', 'newClientNotes'];
             ids.forEach(function(id) {
                 var el = document.getElementById(id);
                 if (el) el.value = '';
@@ -1836,8 +1831,8 @@
             var fields = [
                 { id: 'newClientName', key: 'name' }, { id: 'newClientSex', key: 'sex' }, { id: 'newClientCompany', key: 'company' },
                 { id: 'newClientCompanyKhmer', key: 'company_name_khmer' }, { id: 'newClientPosition', key: 'position' },
-                { id: 'newClientPhone', key: 'phone_number' }, { id: 'newClientPhone1', key: 'phone_1' }, { id: 'newClientPhone2', key: 'phone_2' },
-                { id: 'newClientEmail', key: 'email' }, { id: 'newClientEmail1', key: 'email_1' }, { id: 'newClientEmail2', key: 'email_2' },
+                { id: 'newClientPhone', key: 'phone_number' }, { id: 'newClientPhone1', key: 'phone_1' },
+                { id: 'newClientEmail', key: 'email' },
                 { id: 'newClientAddress', key: 'address' }, { id: 'newClientTaxId', key: 'tax_id' }, { id: 'newClientWebsite', key: 'website' }, { id: 'newClientNotes', key: 'notes' }
             ];
             fields.forEach(function(f) {

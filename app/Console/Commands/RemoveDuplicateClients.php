@@ -14,7 +14,7 @@ class RemoveDuplicateClients extends Command
      * @var string
      */
     protected $signature = 'clients:remove-duplicates 
-                            {--field= : Field to check for duplicates (phone_2, email_1, email_2, all)}
+                            {--field= : Field to check for duplicates (email, phone_number, phone_1, all)}
                             {--dry-run : Preview changes without deleting}
                             {--keep-oldest : Keep the oldest record (by ID), otherwise keeps newest}';
 
@@ -23,7 +23,7 @@ class RemoveDuplicateClients extends Command
      *
      * @var string
      */
-    protected $description = 'Remove duplicate clients based on phone_2, email_1, or email_2 fields';
+    protected $description = 'Remove duplicate clients based on email, phone_number, or phone_1';
 
     /**
      * Execute the console command.
@@ -34,12 +34,19 @@ class RemoveDuplicateClients extends Command
         $dryRun = $this->option('dry-run');
         $keepOldest = $this->option('keep-oldest');
 
+        $allowed = ['email', 'phone_number', 'phone_1', 'all'];
+        if ($field !== 'all' && ! in_array($field, $allowed, true)) {
+            $this->error('Invalid field. Use: email, phone_number, phone_1, or all');
+
+            return 1;
+        }
+
         $this->info('🔍 Searching for duplicate clients...');
         $this->newLine();
 
         $fieldsToCheck = [];
         if ($field === 'all') {
-            $fieldsToCheck = ['phone_2', 'email_1', 'email_2'];
+            $fieldsToCheck = ['email', 'phone_number', 'phone_1'];
         } else {
             $fieldsToCheck = [$field];
         }
@@ -125,8 +132,8 @@ class RemoveDuplicateClients extends Command
     {
         $fieldsToMerge = [
             'name', 'sex', 'position', 'company', 'company_name_khmer',
-            'phone_number', 'phone_1', 'phone_2',
-            'email', 'email_1', 'email_2',
+            'phone_number', 'phone_1',
+            'email',
             'address', 'tax_id', 'website', 'notes',
         ];
 

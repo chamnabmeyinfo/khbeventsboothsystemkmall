@@ -6,32 +6,11 @@
 
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=2.6">
-<style>
-    .looker-dashboard { padding: 0 !important; }
-    .glass-card {
-        background: rgba(255, 255, 255, 0.45);
-        backdrop-filter: blur(40px) saturate(180%);
-        -webkit-backdrop-filter: blur(40px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        border-radius: 24px;
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-        margin-bottom: 24px;
-        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        overflow: hidden;
-    }
-    .glass-card:hover {
-        transform: translateY(-5px);
-        background: rgba(255, 255, 255, 0.55);
-        box-shadow: 0 15px 45px rgba(31, 38, 135, 0.2);
-    }
-    .kpi-card-looker {
-        margin-bottom: 24px;
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.1">
+<link rel="stylesheet" href="{{ asset('css/clients-page.css') }}?v=1.0">
 @endpush
 
-@push('body-class', 'ios-dashboard-mode')
+@push('body-class', 'ios-dashboard-mode clients-page')
 
 
 @section('content')
