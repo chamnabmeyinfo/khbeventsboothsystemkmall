@@ -8,6 +8,7 @@ use App\Http\Controllers\BookController;
 use App\Http\Controllers\BoothController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ClientProfileDashboardDemoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\FloorPlanController;
@@ -60,6 +61,9 @@ Route::get('/floor-plans', [FloorPlanController::class, 'index'])->name('floor-p
 Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/demo/client-profile-dashboard', ClientProfileDashboardDemoController::class)
+        ->name('demo.client-profile-dashboard');
 
     // Floor Plans (Floor Plan Management - Create, Edit, Delete require auth)
     // IMPORTANT: Define specific routes (like /create) BEFORE parameterized routes to avoid route conflicts

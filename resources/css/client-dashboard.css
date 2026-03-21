@@ -1,0 +1,13 @@
+/**
+ * Client profile dashboard (React + Tailwind) — single responsive shell.
+ * Breakpoints: Tailwind defaults (sm 640, md 768, lg 1024).
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    html {
+        @apply antialiased;
+    }
+}
