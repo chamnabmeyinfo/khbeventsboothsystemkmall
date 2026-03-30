@@ -2604,8 +2604,8 @@
                     <i class="fas fa-expand"></i> Expand
                 </button>
             </div>
-            <button type="button" class="action-btn action-btn-secondary" onclick="openStatusSettingsModal()">
-                <i class="fas fa-tags"></i> Status Settings
+            <button type="button" class="action-btn action-btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8rem;" onclick="openStatusSettingsModal()" aria-haspopup="dialog" aria-controls="statusSettingsModal">
+                <i class="fas fa-tags me-1" aria-hidden="true"></i>Status Settings
             </button>
             <a href="{{ url('/booths?view=canvas') }}" class="action-btn action-btn-primary">
                 <i class="fas fa-map"></i> Canvas View
@@ -2622,8 +2622,8 @@
                 <p style="margin: 8px 0 0 0; opacity: 0.95; font-size: 18px;">Manage and organize all your booth listings</p>
             </div>
             <div class="d-flex gap-2">
-                <button type="button" class="btn" onclick="openStatusSettingsModal()">
-                    <i class="fas fa-tags me-2"></i>Status Settings
+                <button type="button" class="btn" onclick="openStatusSettingsModal()" aria-haspopup="dialog" aria-controls="statusSettingsModal">
+                    <i class="fas fa-tags me-2" aria-hidden="true"></i>Status Settings
                 </button>
                 <a href="{{ url('/booths?view=canvas') }}" class="btn">
                     <i class="fas fa-map me-2"></i>Canvas View
@@ -2640,8 +2640,8 @@
                 <div class="mobile-app-subtitle">Manage all your booths</div>
             </div>
             <div class="mobile-header-actions">
-                <button type="button" class="mobile-header-btn" onclick="openStatusSettingsModal()" title="Status Settings">
-                    <i class="fas fa-tags"></i>
+                <button type="button" class="mobile-header-btn" onclick="openStatusSettingsModal()" title="Status Settings" aria-label="Status settings" aria-haspopup="dialog" aria-controls="statusSettingsModal">
+                    <i class="fas fa-tags" aria-hidden="true"></i>
                 </button>
                 <a href="{{ url('/booths?view=canvas') }}" class="mobile-header-btn" title="Canvas View">
                     <i class="fas fa-map"></i>
@@ -3651,9 +3651,7 @@
                 <h5 class="modal-title" id="statusSettingsModalLabel">
                     <i class="fas fa-tags me-2"></i>Booth Status Settings
                 </h5>
-                <button type="button" class="close text-dark-gray-gray" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="alert alert-info">
@@ -4595,10 +4593,13 @@ if (imageUploadArea) {
     }, false);
 }
 
-// Status Settings Modal
+// Status Settings Modal (Bootstrap 5: use native Modal API — jQuery .modal() is not available)
 function openStatusSettingsModal() {
     loadStatusSettings();
-    $('#statusSettingsModal').modal('show');
+    const statusModalEl = document.getElementById('statusSettingsModal');
+    if (statusModalEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+        bootstrap.Modal.getOrCreateInstance(statusModalEl).show();
+    }
 }
 
 function loadStatusSettings() {
