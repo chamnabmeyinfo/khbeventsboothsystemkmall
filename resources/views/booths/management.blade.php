@@ -2,7 +2,7 @@
 @push('body-class', 'booths-management-mode booths-ios-mode')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/booths-premium-glamor.css') }}?v=1.3">
+<link rel="stylesheet" href="{{ asset('css/booths-premium-glamor.css') }}?v=1.4">
 <link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.1">
 <style>
     
@@ -314,7 +314,7 @@
 @section('breadcrumb', 'Booths / Management')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/booths-premium-glamor.css') }}?v=1.3">
+<link rel="stylesheet" href="{{ asset('css/booths-premium-glamor.css') }}?v=1.4">
 <link rel="stylesheet" href="{{ asset('vendor/datatables/css/dataTables.bootstrap5.min.css') }}">
 <link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}?v=2.7">
 <style>
@@ -3346,7 +3346,7 @@
 </div>
 
 <!-- Create/Edit Booth Modal -->
-<div class="modal fade" id="boothModal" tabindex="-1" role="dialog" aria-labelledby="boothModalLabel" aria-hidden="true">
+<div class="modal fade" id="boothModal" tabindex="-1" role="dialog" aria-labelledby="boothModalLabel" aria-hidden="true" data-bs-backdrop="false">
     <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
         <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
             <div class="modal-header" style="background: rgba(255, 255, 255, 0.4); border-radius: 12px 12px 0 0; padding: 20px 30px; border-bottom: none;">
@@ -3627,7 +3627,7 @@
 </div>
 
 <!-- Image View Modal -->
-<div class="modal fade" id="imageViewModal" tabindex="-1">
+<div class="modal fade" id="imageViewModal" tabindex="-1" data-bs-backdrop="false">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -3644,7 +3644,7 @@
 </div>
 
 <!-- Status Settings Modal -->
-<div class="modal fade" id="statusSettingsModal" tabindex="-1" role="dialog" aria-labelledby="statusSettingsModalLabel" aria-hidden="true">
+<div class="modal fade" id="statusSettingsModal" tabindex="-1" role="dialog" aria-labelledby="statusSettingsModalLabel" aria-hidden="true" data-bs-backdrop="false">
     <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header" style="background: rgba(255, 255, 255, 0.4); color: #1d1d1f;">
@@ -4598,7 +4598,7 @@ function openStatusSettingsModal() {
     loadStatusSettings();
     const statusModalEl = document.getElementById('statusSettingsModal');
     if (statusModalEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-        bootstrap.Modal.getOrCreateInstance(statusModalEl).show();
+        bootstrap.Modal.getOrCreateInstance(statusModalEl, { backdrop: false }).show();
     }
 }
 

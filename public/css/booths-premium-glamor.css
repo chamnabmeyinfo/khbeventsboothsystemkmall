@@ -296,3 +296,13 @@ body.ios-dashboard-mode .kpi-card-looker,
 body.ios-dashboard-mode [class*="kpi-"] {
     font-family: var(--ios-font) !important;
 }
+
+/*
+ * Booth management: modals live inside <main>. .modern-sidebar is z-index:1040 and
+ * <main> was auto; the whole main subtree stacked below the sidebar, so fixed
+ * .modal dialogs appeared behind the nav. Raise main above the sidebar only here.
+ */
+body.app-shell.booths-management-mode .layout-wrapper > main#main-content.main-content-pushed {
+    position: relative;
+    z-index: 1050;
+}
