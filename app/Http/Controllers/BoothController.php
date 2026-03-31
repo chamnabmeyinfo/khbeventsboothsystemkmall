@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\DebugLogger;
+use App\Helpers\UploadSettingsHelper;
 use App\Http\Requests\BookBoothRequest;
 use App\Http\Requests\CheckBoothsBookingsRequest;
 use App\Http\Requests\CreateBoothRequest;
@@ -1887,7 +1888,15 @@ class BoothController extends Controller
      */
     public function boothsList(Request $request)
     {
-        $query = Booth::with(['client', 'boothType', 'floorPlan', 'book']);
+        $query = Booth::with([
+            'client',
+            'boothType',
+            'floorPlan',
+            'book',
+            'images' => static function ($q) {
+                $q->orderByDesc('is_primary')->orderBy('sort_order');
+            },
+        ]);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -1918,7 +1927,23 @@ class BoothController extends Controller
             'booked'    => Booth::whereIn('status', [Booth::STATUS_CONFIRMED, Booth::STATUS_PAID])->count(),
         ];
 
-        return view('booths.index', compact('booths', 'stats'));
+        $masterBoothImageUrl = Setting::getMasterBoothImageUrl();
+        $masterBoothUploadHint = UploadSettingsHelper::getHint(UploadSettingsHelper::CONTEXT_BOOTH);
+
+        $boothsModuleNav = Setting::getModuleDisplaySettings()['booths'] ?? ['mobile' => true, 'tablet' => true];
+        $boothsUploadContext = [
+            'max_mb' => Setting::getValue('uploads_booth_max_size_mb', '') ?: '',
+            'extensions' => Setting::getValue('uploads_booth_allowed_extensions', '') ?: '',
+        ];
+
+        return view('booths.index', compact(
+            'booths',
+            'stats',
+            'masterBoothImageUrl',
+            'masterBoothUploadHint',
+            'boothsModuleNav',
+            'boothsUploadContext'
+        ));
     }
 
     /**

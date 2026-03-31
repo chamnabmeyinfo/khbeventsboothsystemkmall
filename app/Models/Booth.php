@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\AssetHelper;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
@@ -166,6 +167,32 @@ class Booth extends Model
     public function primaryImage()
     {
         return $this->hasOne(BoothImage::class)->where('is_primary', true);
+    }
+
+    /**
+     * Resolved image URL for list/card UIs: gallery primary, else first gallery image, else legacy booth_image, else master image from settings.
+     */
+    public function getDisplayImageUrl(): ?string
+    {
+        $url = null;
+
+        if ($this->relationLoaded('images') && $this->images->isNotEmpty()) {
+            $primary = $this->images->firstWhere('is_primary', true);
+            $img = $primary ?: $this->images->first();
+            if ($img && $img->image_path) {
+                $url = AssetHelper::imageUrl($img->image_path);
+            }
+        }
+
+        if ($url === null) {
+            $url = AssetHelper::imageUrl($this->booth_image);
+        }
+
+        if ($url !== null) {
+            return $url;
+        }
+
+        return Setting::getMasterBoothImageUrl();
     }
 
     /**

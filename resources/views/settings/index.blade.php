@@ -132,7 +132,7 @@
 </div>
 
 <!-- Upload Control -->
-<div class="row mt-4">
+<div class="row mt-4" id="settings-upload-control">
     <div class="col-md-12">
         <div class="glass-card">
             <div class="p-4 border-bottom">
@@ -201,7 +201,7 @@
 </div>
 
 <!-- Public view actions (logged-in users on public floor plan) -->
-<div class="row mt-4">
+<div class="row mt-4" id="settings-public-view">
     <div class="col-md-12">
         <div class="glass-card">
             <div class="p-4 border-bottom">

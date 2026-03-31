@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\UploadSettingsHelper;
 use App\Models\BoothStatusSetting;
 use App\Models\CanvasSetting;
 use App\Models\FloorPlan;
@@ -292,6 +293,199 @@ class SettingsController extends Controller
             return response()->json([
                 'status' => 500,
                 'message' => 'Error saving booth defaults: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Master booth card image (JSON) — default image when booths have no photo.
+     */
+    public function getMasterBoothImage(Request $request)
+    {
+        try {
+            $path = Setting::getValue('booth_master_image_path', '') ?: '';
+            $url = Setting::getMasterBoothImageUrl();
+
+            return response()->json([
+                'status' => 200,
+                'data' => [
+                    'path' => $path !== '' ? $path : null,
+                    'url' => $url,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error fetching master booth image: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Upload master booth card image (stored under public/images/booths/master).
+     */
+    public function uploadMasterBoothImage(Request $request)
+    {
+        try {
+            if (! Setting::getUploadsEnabled()) {
+                return response()->json([
+                    'status' => 403,
+                    'message' => 'File uploads are disabled in Upload Control.',
+                ], 403);
+            }
+
+            $request->validate(UploadSettingsHelper::getRules(UploadSettingsHelper::CONTEXT_BOOTH, 'master_image', true));
+
+            $file = $request->file('master_image');
+
+            $directory = public_path('images/booths/master');
+            if (! File::exists($directory)) {
+                File::makeDirectory($directory, 0755, true);
+            }
+
+            $filename = 'booth_master_'.time().'.'.$file->getClientOriginalExtension();
+            $file->move($directory, $filename);
+
+            $relativePath = 'images/booths/master/'.$filename;
+
+            $oldPath = Setting::getValue('booth_master_image_path', '');
+            if ($oldPath && File::exists(public_path($oldPath))) {
+                File::delete(public_path($oldPath));
+            }
+
+            Setting::setValue('booth_master_image_path', $relativePath, 'string', 'Master default booth image path (list/cards when booth has no photo)');
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Master booth image uploaded successfully.',
+                'path' => $relativePath,
+                'url' => asset($relativePath),
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error uploading master booth image: '.$e->getMessage());
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error uploading master booth image: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove master booth card image.
+     */
+    public function removeMasterBoothImage(Request $request)
+    {
+        try {
+            $path = Setting::getValue('booth_master_image_path', '');
+            if ($path && File::exists(public_path($path))) {
+                File::delete(public_path($path));
+            }
+
+            Setting::setValue('booth_master_image_path', '', 'string', 'Master default booth image path (list/cards when booth has no photo)');
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Master booth image removed.',
+                'path' => null,
+                'url' => null,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error removing master booth image: '.$e->getMessage());
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error removing master booth image: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Save only booth-image upload limits (max MB + extensions). Does not change other upload contexts.
+     */
+    public function saveBoothUploadContext(Request $request)
+    {
+        try {
+            $request->validate([
+                'uploads_booth_max_size_mb' => 'nullable|numeric|min:0|max:100',
+                'uploads_booth_allowed_extensions' => 'nullable|string|max:200',
+            ]);
+
+            $mb = $request->input('uploads_booth_max_size_mb');
+            Setting::setValue(
+                'uploads_booth_max_size_mb',
+                ($mb !== null && $mb !== '' && (float) $mb > 0) ? (string) $mb : '',
+                'string',
+                'Max size MB for booth'
+            );
+            Setting::setValue(
+                'uploads_booth_allowed_extensions',
+                trim((string) $request->input('uploads_booth_allowed_extensions', '')),
+                'string',
+                'Allowed extensions for booth'
+            );
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Booth image upload limits saved.',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error saving booth upload context: '.$e->getMessage());
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error saving booth upload limits: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Save only the Booths module visibility (mobile/tablet). Other modules unchanged.
+     */
+    public function saveBoothsModuleDisplay(Request $request)
+    {
+        try {
+            $request->validate([
+                'mobile' => 'nullable|boolean',
+                'tablet' => 'nullable|boolean',
+            ]);
+
+            $settings = Setting::getModuleDisplaySettings();
+            $settings['booths'] = [
+                'mobile' => $request->boolean('mobile'),
+                'tablet' => $request->boolean('tablet'),
+            ];
+            Setting::saveModuleDisplaySettings($settings);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Booths menu visibility saved.',
+                'data' => $settings['booths'],
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error saving booths module display: '.$e->getMessage());
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error saving module display: '.$e->getMessage(),
             ], 500);
         }
     }

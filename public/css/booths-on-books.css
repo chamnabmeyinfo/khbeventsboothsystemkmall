@@ -157,3 +157,243 @@
 .books-page .books-card-view-inner .books-card-view-empty {
     grid-column: 1 / -1;
 }
+
+/* Mid block: groups floor plan + client (default card column stack). */
+.books-page .books-booking-card__mid.booths-card-mid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.books-page .books-booking-card__mid.booths-card-mid .books-booking-card__field {
+    margin-bottom: 0;
+}
+
+/* —— Card grid density (Booths card view only) —— */
+.books-page .books-card-view-inner#boothsCardViewInner {
+    padding: 1rem 1.25rem 1.5rem;
+    display: grid;
+    align-items: stretch;
+}
+
+.books-page .books-card-view-inner.booths-card-density--small {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+    gap: 0.85rem 1rem;
+}
+
+.books-page .books-card-view-inner.booths-card-density--medium {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: 1rem 1.25rem;
+}
+
+.books-page .books-card-view-inner.booths-card-density--large {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+    gap: 1.25rem 1.5rem;
+}
+
+.books-page .books-card-view-inner.booths-card-density--large .booking-card.books-booking-card {
+    padding: 1.35rem 1.5rem 1.4rem 1.55rem;
+}
+
+.books-page .books-card-view-inner.booths-card-density--large .books-booking-card__title {
+    font-size: 1.2rem;
+}
+
+/* Booth photo on card view */
+.books-page .booths-card-media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--accent-blue-light);
+    margin-bottom: 0.75rem;
+    flex-shrink: 0;
+}
+
+.books-page .booths-card-media__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.books-page .booths-card-media__placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-blue);
+    font-size: 1.75rem;
+    background: linear-gradient(145deg, rgba(0, 122, 255, 0.1), rgba(175, 82, 222, 0.07));
+}
+
+.books-page .books-card-view-inner.booths-card-density--small .booths-card-media {
+    aspect-ratio: 4 / 3;
+}
+
+.books-page .books-card-view-inner.booths-card-density--large .booths-card-media {
+    aspect-ratio: 4 / 3;
+    max-height: 240px;
+}
+
+/* Tiny = dense single-column list rows */
+.books-page .books-card-view-inner.booths-card-density--tiny {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+    padding: 0.5rem 0.75rem 1rem;
+}
+
+.books-page .books-card-view-inner.booths-card-density--tiny .booking-card.books-booking-card {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
+    padding: 0.4rem 0.65rem;
+    min-height: 0;
+}
+
+.books-page .books-card-view-inner.booths-card-density--tiny .books-booking-card::before {
+    width: 3px;
+}
+
+.books-page .books-card-view-inner.booths-card-density--tiny .books-booking-card::after {
+    display: none;
+}
+
+.books-page .books-card-view-inner.booths-card-density--tiny .booths-card-media {
+    width: 56px;
+    height: 56px;
+    aspect-ratio: 1;
+    margin-bottom: 0;
+    margin-right: 0.5rem;
+    border-radius: 10px;
+    flex: 0 0 56px;
+}
+
+.books-page .books-card-view-inner.booths-card-density--tiny .booths-card-media__placeholder {
+    min-height: 0;
+    font-size: 1rem;
+}
+
+.books-page .books-card-view-inner.booths-card-density--tiny .books-booking-card__head {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0.2rem 0.35rem 0.2rem 0;
+    border-bottom: none;
+    background: transparent;
+}
+
+.books-page .books-card-view-inner.booths-card-density--tiny .books-booking-card__row {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+}
+
+.books-page .books-card-view-inner.booths-card-density--tiny .books-booking-card__title {
+    font-size: 0.95rem;
+    margin: 0 0 0.15rem;
+}
+
+.books-page .books-card-view-inner.booths-card-density--tiny .books-booking-card__actions .books-table-btn {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    min-height: 34px;
+}
+
+.books-page .books-card-view-inner.booths-card-density--tiny .books-booking-card__mid.booths-card-mid {
+    flex: 1 1 auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.75rem;
+}
+
+.books-page .books-card-view-inner.booths-card-density--tiny .books-booking-card__field,
+.books-page .books-card-view-inner.booths-card-density--tiny .books-booking-card__client {
+    margin-bottom: 0;
+}
+
+.books-page .books-card-view-inner.booths-card-density--tiny .books-booking-card__label {
+    display: none;
+}
+
+.books-page .books-card-view-inner.booths-card-density--tiny .books-booking-card__value {
+    font-size: 0.8rem;
+}
+
+.books-page .books-card-view-inner.booths-card-density--tiny .books-booking-card__client-name {
+    font-size: 0.85rem;
+}
+
+.books-page .books-card-view-inner.booths-card-density--tiny .books-booking-card__client-meta {
+    font-size: 0.7rem;
+}
+
+.books-page .books-card-view-inner.booths-card-density--tiny .books-booking-card__footer {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+    flex: 0 0 auto;
+}
+
+.books-page .books-card-view-inner.booths-card-density--tiny .books-booking-card__amount {
+    font-size: 0.95rem;
+}
+
+.books-page .booths-density-toggle button {
+    font-size: 0.8rem;
+    padding: 0.45rem 0.7rem;
+    min-height: 44px;
+}
+
+@media (max-width: 575.98px) {
+    .books-page .booths-density-toggle button {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.5rem;
+    }
+}
+
+/* Booth list settings panel (offcanvas): Table/Cards stay in toolbar; density + master image live here */
+.books-page .booths-list-settings-btn {
+    min-height: 44px;
+}
+
+.books-page .booths-list-settings-offcanvas {
+    --bs-offcanvas-width: min(22rem, 100vw - 1rem);
+    background: var(--bg-card, #fff);
+}
+
+.books-page .booths-density-toggle--settings {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-start;
+}
+
+.books-page .booths-density-toggle--settings button {
+    flex: 1 1 calc(50% - 4px);
+    min-width: min(100%, 5.5rem);
+}
+
+@media (min-width: 400px) {
+    .books-page .booths-density-toggle--settings button {
+        flex: 1 1 auto;
+        min-width: 4.5rem;
+    }
+}
+
+.books-page .booths-settings-more__list a {
+    color: var(--accent-blue, #0d6efd);
+    text-decoration: none;
+}
+
+.books-page .booths-settings-more__list a:hover {
+    text-decoration: underline;
+}

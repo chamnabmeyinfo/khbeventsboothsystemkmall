@@ -372,6 +372,11 @@ Route::middleware(['auth'])->group(function () {
         // Booth Default Settings API
         Route::get('/settings/booth-defaults', [SettingsController::class, 'getBoothDefaults'])->name('settings.booth-defaults');
         Route::post('/settings/booth-defaults', [SettingsController::class, 'saveBoothDefaults'])->name('settings.booth-defaults.save');
+        Route::get('/settings/booth-master-image', [SettingsController::class, 'getMasterBoothImage'])->name('settings.booth-master-image');
+        Route::post('/settings/booth-master-image', [SettingsController::class, 'uploadMasterBoothImage'])->name('settings.booth-master-image.upload');
+        Route::post('/settings/booth-master-image/remove', [SettingsController::class, 'removeMasterBoothImage'])->name('settings.booth-master-image.remove');
+        Route::post('/settings/booth-upload-context', [SettingsController::class, 'saveBoothUploadContext'])->name('settings.booth-upload-context.save');
+        Route::post('/settings/booths-module-display', [SettingsController::class, 'saveBoothsModuleDisplay'])->name('settings.booths-module-display.save');
 
         // Canvas Settings API
         Route::get('/settings/canvas', [SettingsController::class, 'getCanvasSettings'])->name('settings.canvas');

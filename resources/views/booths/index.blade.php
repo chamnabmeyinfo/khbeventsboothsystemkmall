@@ -5,7 +5,7 @@
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.6">
 <link rel="stylesheet" href="{{ asset('css/books-page-index.css') }}?v=1.0">
-<link rel="stylesheet" href="{{ asset('css/booths-on-books.css') }}?v=1.0">
+<link rel="stylesheet" href="{{ asset('css/booths-on-books.css') }}?v=1.7">
 @endpush
 
 @push('body-class', 'ios-dashboard-mode')
@@ -100,6 +100,20 @@
         </div>
     </div>
 
+    <div class="books-toolbar booths-toolbar d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div class="books-view-toggle booths-table-cards-toggle" role="group" aria-label="Booth list layout">
+            <button type="button" class="active plastic-btn-press" onclick="switchBoothsView('table')" id="boothsViewTable">
+                <i class="fas fa-table me-1" aria-hidden="true"></i>Table
+            </button>
+            <button type="button" class="plastic-btn-press" onclick="switchBoothsView('cards')" id="boothsViewCards" title="Card view — adjust size in Settings">
+                <i class="fas fa-th-large me-1" aria-hidden="true"></i>Cards
+            </button>
+        </div>
+        <button type="button" class="action-btn action-btn-secondary booths-list-settings-btn" data-bs-toggle="offcanvas" data-bs-target="#boothsListSettingsOffcanvas" aria-controls="boothsListSettingsOffcanvas" id="boothsListSettingsOpen">
+            <i class="fas fa-cog me-1" aria-hidden="true"></i>Booth settings
+        </button>
+    </div>
+
     <div class="filter-bar">
         <form method="GET" action="{{ route('booths.index') }}" id="boothFilterForm">
             <div class="filter-header">
@@ -159,8 +173,8 @@
     </div>
     @endif
 
-    <div class="canvas-panel books-data-panel">
-        <div class="table-view d-none d-md-block">
+    <div class="canvas-panel books-data-panel" id="boothsContainer">
+        <div class="table-view">
             <div class="looker-table-wrapper">
                 <table class="looker-table books-looker-table mb-0">
                     <thead>
@@ -283,11 +297,30 @@
             </div>
         </div>
 
-        <div class="card-view d-md-none">
-            <div class="books-card-view-inner">
+        <div class="card-view" style="display: none;">
+            <div class="books-card-view-inner booths-card-density--medium" id="boothsCardViewInner">
                 @forelse($booths as $booth)
+                @php
+                    $boothCardImageUrl = $booth->getDisplayImageUrl();
+                @endphp
                 <div class="booking-card books-booking-card books-booking-card--type-1"
                      onclick="window.location='{{ route('booths.show', $booth) }}'">
+                    <div class="booths-card-media">
+                        @if($boothCardImageUrl)
+                            <img
+                                src="{{ $boothCardImageUrl }}"
+                                alt="Booth {{ $booth->booth_number }} photo"
+                                class="booths-card-media__img"
+                                loading="lazy"
+                                decoding="async"
+                            >
+                        @else
+                            <div class="booths-card-media__placeholder">
+                                <i class="fas fa-image" aria-hidden="true"></i>
+                                <span class="visually-hidden">No booth photo</span>
+                            </div>
+                        @endif
+                    </div>
                     <div class="books-booking-card__head">
                         <div class="books-booking-card__head-text">
                             <span class="books-booking-card__row">Booth</span>
@@ -305,14 +338,16 @@
                             </div>
                         </div>
                     </div>
-                    <div class="books-booking-card__field">
-                        <span class="books-booking-card__label">Floor plan</span>
-                        <div class="books-booking-card__value">{{ $booth->floorPlan?->name ?? '—' }}</div>
-                    </div>
-                    <div class="books-booking-card__client">
-                        <div class="books-booking-card__client-text">
-                            <div class="books-booking-card__client-name">{{ $booth->client?->company ?? 'No client' }}</div>
-                            <div class="books-booking-card__client-meta">{{ $booth->boothType?->name ?? 'Standard type' }}</div>
+                    <div class="books-booking-card__mid booths-card-mid">
+                        <div class="books-booking-card__field">
+                            <span class="books-booking-card__label">Floor plan</span>
+                            <div class="books-booking-card__value">{{ $booth->floorPlan?->name ?? '—' }}</div>
+                        </div>
+                        <div class="books-booking-card__client">
+                            <div class="books-booking-card__client-text">
+                                <div class="books-booking-card__client-name">{{ $booth->client?->company ?? 'No client' }}</div>
+                                <div class="books-booking-card__client-meta">{{ $booth->boothType?->name ?? 'Standard type' }}</div>
+                            </div>
                         </div>
                     </div>
                     <div class="books-booking-card__footer">
@@ -381,43 +416,377 @@
         @endif
     </div>
 
+    {{-- Booth list settings: card size + (admins) default card image --}}
+    <div class="offcanvas offcanvas-end booths-list-settings-offcanvas text-body" tabindex="-1" id="boothsListSettingsOffcanvas" aria-labelledby="boothsListSettingsLabel">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title d-flex align-items-center gap-2" id="boothsListSettingsLabel">
+                <i class="fas fa-sliders-h text-primary" aria-hidden="true"></i>Booth list settings
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <section class="mb-4">
+                <h6 class="fw-bold mb-2">Card layout</h6>
+                <p class="text-muted small mb-3">Used when <strong>Cards</strong> view is on. This preference is saved in your browser.</p>
+                <div class="books-view-toggle booths-density-toggle booths-density-toggle--settings w-100 flex-wrap" role="group" aria-label="Card size">
+                    <button type="button" class="plastic-btn-press" onclick="setBoothsCardDensity('tiny')" id="boothsDensityTiny" title="Tiny list — compact rows">
+                        <i class="fas fa-list me-1" aria-hidden="true"></i>Tiny
+                    </button>
+                    <button type="button" class="plastic-btn-press" onclick="setBoothsCardDensity('small')" id="boothsDensitySmall">Small</button>
+                    <button type="button" class="active plastic-btn-press" onclick="setBoothsCardDensity('medium')" id="boothsDensityMedium">Medium</button>
+                    <button type="button" class="plastic-btn-press" onclick="setBoothsCardDensity('large')" id="boothsDensityLarge">Large</button>
+                </div>
+            </section>
+
+            @if(auth()->user()->isAdmin())
+            <hr class="my-4">
+            <section class="booths-settings-master-image" role="region" aria-label="Default booth card image">
+                <h6 class="fw-bold mb-2">Default card image</h6>
+                <p class="text-muted small mb-3">Shown when a booth has no photo. Per-booth images always override this.</p>
+                <div class="d-flex flex-wrap align-items-start gap-3 mb-3">
+                    <div class="booths-settings-master-image__preview flex-shrink-0">
+                        <img id="boothsPageMasterImagePreview" src="{{ $masterBoothImageUrl ?? '' }}" alt="" class="rounded border bg-light" width="120" height="120" style="object-fit: cover; {{ $masterBoothImageUrl ? '' : 'display: none;' }}">
+                        <p id="boothsPageMasterImagePlaceholder" class="text-muted small mb-0 mt-2 {{ $masterBoothImageUrl ? 'd-none' : '' }}" style="width: 120px;">No image set</p>
+                    </div>
+                    <div class="flex-grow-1" style="min-width: 200px;">
+                        <label class="form-label small" for="boothsPageMasterImageFile">Upload</label>
+                        <input type="file" class="form-control form-control-sm" id="boothsPageMasterImageFile" accept="image/jpeg,image/png,image/gif" aria-label="Choose default card image file">
+                        <small class="text-muted d-block mt-2">{{ $masterBoothUploadHint ?? '' }}</small>
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-primary btn-sm" id="boothsPageMasterImageSave" disabled>
+                        <i class="fas fa-save me-1"></i>Save
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" id="boothsPageMasterImageRemove" {{ ($masterBoothImageUrl ?? null) ? '' : 'disabled' }}>
+                        <i class="fas fa-times me-1"></i>Remove
+                    </button>
+                </div>
+            </section>
+
+            <hr class="my-4">
+            <section class="booths-settings-upload" aria-labelledby="boothsSettingsUploadHeading">
+                <h6 class="fw-bold mb-2" id="boothsSettingsUploadHeading">Booth photo uploads</h6>
+                <p class="text-muted small mb-3">Max size and allowed extensions for <strong>booth images</strong> (gallery and legacy field). Other upload types (floor plan, avatar, …) stay in System Settings.</p>
+                <div class="row g-2 mb-2">
+                    <div class="col-auto" style="min-width: 7rem;">
+                        <label class="form-label small mb-0" for="boothsUploadContextMaxMb">Max size (MB)</label>
+                        <input type="number" class="form-control form-control-sm" id="boothsUploadContextMaxMb" name="uploads_booth_max_size_mb" value="{{ old('uploads_booth_max_size_mb', $boothsUploadContext['max_mb'] ?? '') }}" min="0" max="100" step="0.5" placeholder="—">
+                    </div>
+                    <div class="col">
+                        <label class="form-label small mb-0" for="boothsUploadContextExts">Allowed extensions</label>
+                        <input type="text" class="form-control form-control-sm" id="boothsUploadContextExts" name="uploads_booth_allowed_extensions" value="{{ old('uploads_booth_allowed_extensions', $boothsUploadContext['extensions'] ?? '') }}" placeholder="e.g. jpg, png, gif" autocomplete="off">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm" id="boothsPageUploadLimitsSave">
+                    <i class="fas fa-save me-1"></i>Save upload limits
+                </button>
+            </section>
+
+            <hr class="my-4">
+            <section class="booths-settings-module-nav" aria-labelledby="boothsSettingsModuleHeading">
+                <h6 class="fw-bold mb-2" id="boothsSettingsModuleHeading">Booths in menu</h6>
+                <p class="text-muted small mb-3">Show the Booths item in the sidebar on smaller screens (desktop is unchanged).</p>
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="boothsModuleNavMobile" value="1" {{ ($boothsModuleNav['mobile'] ?? true) ? 'checked' : '' }}>
+                    <label class="form-check-label" for="boothsModuleNavMobile">Mobile (≤768px)</label>
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="boothsModuleNavTablet" value="1" {{ ($boothsModuleNav['tablet'] ?? true) ? 'checked' : '' }}>
+                    <label class="form-check-label" for="boothsModuleNavTablet">Tablet (769px–1024px)</label>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm" id="boothsPageModuleNavSave">
+                    <i class="fas fa-save me-1"></i>Save menu visibility
+                </button>
+            </section>
+
+            <hr class="my-4">
+            <section class="booths-settings-more" aria-labelledby="boothsSettingsMoreHeading">
+                <h6 class="fw-bold mb-2" id="boothsSettingsMoreHeading">More in System Settings</h6>
+                <p class="text-muted small mb-2">These pages still live under <strong>Settings</strong> (full forms, all modules).</p>
+                <ul class="mb-0 small ps-3 booths-settings-more__list">
+                    <li><a href="{{ route('settings.index') }}#settings-upload-control">Upload control</a> — all file types and global limits</li>
+                    <li><a href="{{ route('settings.index') }}#settings-public-view">Public floor plan &amp; booked tick</a> — canvas and public view</li>
+                    <li><a href="{{ route('settings.index') }}#module-display">Module display</a> — all modules on mobile/tablet</li>
+                </ul>
+            </section>
+            @endif
+        </div>
+    </div>
+
 </div>
 @endsection
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    var searchInput = document.getElementById('boothSearch');
-    if (searchInput) {
-        searchInput.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                this.closest('form').submit();
-            }
+(function () {
+    'use strict';
+
+    function staggerTableRows() {
+        var rows = document.querySelectorAll('#boothsContainer .books-looker-table tbody tr.books-table-row--booths');
+        rows.forEach(function (row, i) {
+            row.style.opacity = '0';
+            row.style.transform = 'translateY(8px)';
+            row.style.transition = 'opacity 0.3s ease ' + (i * 0.03) + 's, transform 0.3s ease ' + (i * 0.03) + 's';
+            requestAnimationFrame(function () {
+                row.style.opacity = '1';
+                row.style.transform = 'translateY(0)';
+            });
         });
     }
 
-    var rows = document.querySelectorAll('.books-page .books-looker-table tbody tr.books-table-row--booths');
-    rows.forEach(function (row, i) {
-        row.style.opacity = '0';
-        row.style.transform = 'translateY(8px)';
-        row.style.transition = 'opacity 0.3s ease ' + (i * 0.03) + 's, transform 0.3s ease ' + (i * 0.03) + 's';
-        requestAnimationFrame(function () {
-            row.style.opacity = '1';
-            row.style.transform = 'translateY(0)';
+    function staggerCards() {
+        var cards = document.querySelectorAll('#boothsContainer .books-booking-card');
+        cards.forEach(function (card, i) {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(10px)';
+            card.style.transition = 'opacity 0.35s ease ' + (i * 0.05) + 's, transform 0.35s ease ' + (i * 0.05) + 's';
+            requestAnimationFrame(function () {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            });
         });
-    });
+    }
 
-    var cards = document.querySelectorAll('.books-page .books-booking-card');
-    cards.forEach(function (card, i) {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(10px)';
-        card.style.transition = 'opacity 0.35s ease ' + (i * 0.05) + 's, transform 0.35s ease ' + (i * 0.05) + 's';
-        requestAnimationFrame(function () {
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
+    window.setBoothsCardDensity = function (size) {
+        var allowed = { tiny: 1, small: 1, medium: 1, large: 1 };
+        if (!allowed[size]) {
+            size = 'medium';
+        }
+        var inner = document.getElementById('boothsCardViewInner');
+        if (!inner) return;
+
+        inner.classList.remove(
+            'booths-card-density--tiny',
+            'booths-card-density--small',
+            'booths-card-density--medium',
+            'booths-card-density--large'
+        );
+        inner.classList.add('booths-card-density--' + size);
+
+        var idSuffix = { tiny: 'Tiny', small: 'Small', medium: 'Medium', large: 'Large' };
+        document.querySelectorAll('.booths-density-toggle button').forEach(function (btn) {
+            btn.classList.remove('active');
         });
+        var activeBtn = document.getElementById('boothsDensity' + idSuffix[size]);
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+        }
+
+        try {
+            localStorage.setItem('boothsCardDensity', size);
+        } catch (e) {}
+
+        var cardsBtn = document.getElementById('boothsViewCards');
+        if (cardsBtn && cardsBtn.classList.contains('active')) {
+            staggerCards();
+        }
+    };
+
+    window.switchBoothsView = function (view) {
+        var tableBtn = document.getElementById('boothsViewTable');
+        var cardsBtn = document.getElementById('boothsViewCards');
+        if (!tableBtn || !cardsBtn) return;
+
+        document.querySelectorAll('.booths-table-cards-toggle button').forEach(function (btn) {
+            btn.classList.remove('active');
+        });
+        if (view === 'cards') {
+            cardsBtn.classList.add('active');
+        } else {
+            tableBtn.classList.add('active');
+            view = 'table';
+        }
+
+        document.querySelectorAll('#boothsContainer .table-view').forEach(function (el) {
+            el.style.display = view === 'table' ? 'block' : 'none';
+        });
+        document.querySelectorAll('#boothsContainer .card-view').forEach(function (el) {
+            el.style.display = view === 'cards' ? 'block' : 'none';
+        });
+
+        try {
+            localStorage.setItem('boothsListView', view);
+        } catch (e) {}
+
+        if (view === 'table') {
+            staggerTableRows();
+        } else {
+            staggerCards();
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var searchInput = document.getElementById('boothSearch');
+        if (searchInput) {
+            searchInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.closest('form').submit();
+                }
+            });
+        }
+
+        var savedDensity = 'medium';
+        try {
+            savedDensity = localStorage.getItem('boothsCardDensity') || 'medium';
+        } catch (e) {}
+        setBoothsCardDensity(savedDensity);
+
+        var saved = null;
+        try {
+            saved = localStorage.getItem('boothsListView');
+        } catch (e) {}
+        if (saved === 'cards' || saved === 'table') {
+            switchBoothsView(saved);
+        } else {
+            staggerTableRows();
+        }
+
+        @if(auth()->user()->isAdmin())
+        (function initBoothsAdminSettings() {
+            function notify(msg, type) {
+                if (typeof window.showNotification === 'function') {
+                    window.showNotification(msg, type || 'info');
+                } else {
+                    alert(msg);
+                }
+            }
+            function updatePreview(url) {
+                var img = document.getElementById('boothsPageMasterImagePreview');
+                var ph = document.getElementById('boothsPageMasterImagePlaceholder');
+                var rm = document.getElementById('boothsPageMasterImageRemove');
+                if (!img || !ph) {
+                    return;
+                }
+                if (url) {
+                    img.src = url;
+                    img.style.display = '';
+                    ph.classList.add('d-none');
+                    if (rm) {
+                        rm.disabled = false;
+                    }
+                } else {
+                    img.style.display = 'none';
+                    img.removeAttribute('src');
+                    ph.classList.remove('d-none');
+                    if (rm) {
+                        rm.disabled = true;
+                    }
+                }
+            }
+            if (typeof jQuery === 'undefined') {
+                return;
+            }
+            var $file = document.getElementById('boothsPageMasterImageFile');
+            var $save = document.getElementById('boothsPageMasterImageSave');
+            if ($file && $save) {
+                jQuery($file).on('change', function () {
+                    jQuery($save).prop('disabled', !this.files[0]);
+                });
+                jQuery($save).on('click', function () {
+                    var input = document.getElementById('boothsPageMasterImageFile');
+                    var file = input && input.files[0];
+                    if (!file) {
+                        notify('Choose an image file first.', 'warning');
+                        return;
+                    }
+                    var formData = new FormData();
+                    formData.append('master_image', file);
+                    formData.append('_token', '{{ csrf_token() }}');
+                    var $btn = jQuery(this);
+                    $btn.prop('disabled', true);
+                    jQuery.ajax({
+                        url: "{{ route('settings.booth-master-image.upload') }}",
+                        method: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (response) {
+                            if (response.status === 200) {
+                                updatePreview(response.url);
+                                notify(response.message || 'Default card image saved', 'success');
+                                if (input) {
+                                    input.value = '';
+                                }
+                                $btn.prop('disabled', true);
+                            }
+                        },
+                        error: function (xhr) {
+                            var msg = (xhr.responseJSON && (xhr.responseJSON.message || (xhr.responseJSON.errors && xhr.responseJSON.errors.master_image && xhr.responseJSON.errors.master_image[0]))) || 'Failed to save';
+                            notify(msg, 'error');
+                            $btn.prop('disabled', false);
+                        }
+                    });
+                });
+                jQuery('#boothsPageMasterImageRemove').on('click', function () {
+                    jQuery.ajax({
+                        url: "{{ route('settings.booth-master-image.remove') }}",
+                        method: 'POST',
+                        data: { _token: '{{ csrf_token() }}' },
+                        success: function (response) {
+                            if (response.status === 200) {
+                                updatePreview(null);
+                                notify(response.message || 'Default card image removed', 'success');
+                            }
+                        },
+                        error: function (xhr) {
+                            notify((xhr.responseJSON && xhr.responseJSON.message) || 'Failed to remove', 'error');
+                        }
+                    });
+                });
+            }
+            jQuery('#boothsPageUploadLimitsSave').on('click', function () {
+                var $btn = jQuery(this);
+                $btn.prop('disabled', true);
+                jQuery.ajax({
+                    url: "{{ route('settings.booth-upload-context.save') }}",
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        uploads_booth_max_size_mb: jQuery('#boothsUploadContextMaxMb').val(),
+                        uploads_booth_allowed_extensions: jQuery('#boothsUploadContextExts').val()
+                    },
+                    success: function (response) {
+                        if (response.status === 200) {
+                            notify(response.message || 'Upload limits saved', 'success');
+                        }
+                    },
+                    error: function (xhr) {
+                        notify((xhr.responseJSON && xhr.responseJSON.message) || 'Failed to save', 'error');
+                    },
+                    complete: function () {
+                        $btn.prop('disabled', false);
+                    }
+                });
+            });
+            jQuery('#boothsPageModuleNavSave').on('click', function () {
+                var $btn = jQuery(this);
+                $btn.prop('disabled', true);
+                jQuery.ajax({
+                    url: "{{ route('settings.booths-module-display.save') }}",
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        mobile: jQuery('#boothsModuleNavMobile').is(':checked') ? 1 : 0,
+                        tablet: jQuery('#boothsModuleNavTablet').is(':checked') ? 1 : 0
+                    },
+                    success: function (response) {
+                        if (response.status === 200) {
+                            notify(response.message || 'Menu visibility saved', 'success');
+                        }
+                    },
+                    error: function (xhr) {
+                        notify((xhr.responseJSON && xhr.responseJSON.message) || 'Failed to save', 'error');
+                    },
+                    complete: function () {
+                        $btn.prop('disabled', false);
+                    }
+                });
+            });
+        })();
+        @endif
     });
-});
+})();
 </script>
 @endpush

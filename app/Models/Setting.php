@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\AssetHelper;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -69,6 +70,16 @@ class Setting extends Model
             default:
                 return $value;
         }
+    }
+
+    /**
+     * Master booth image URL (fallback when a booth has no gallery or legacy booth_image).
+     */
+    public static function getMasterBoothImageUrl(): ?string
+    {
+        $path = self::getValue('booth_master_image_path', '');
+
+        return AssetHelper::imageUrl($path);
     }
 
     /**
