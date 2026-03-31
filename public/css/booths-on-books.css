@@ -370,6 +370,14 @@
     backdrop-filter: blur(4px);
 }
 
+/* Wide Booth settings modal: up to 1400px (project content max) with viewport padding on small screens */
+.books-page .booths-settings-modal-dialog {
+    max-width: min(96vw, 1400px);
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .books-page .booths-settings-modal__shell {
     overflow: hidden;
     border: 1px solid var(--border-light, rgba(0, 0, 0, 0.08));
@@ -418,9 +426,9 @@
 }
 
 .books-page .booths-settings-modal__body {
-    padding: 1rem 1.25rem 1.25rem;
+    padding: 1.25rem 1.5rem 1.5rem;
     background: linear-gradient(180deg, rgba(248, 249, 252, 0.85) 0%, rgba(255, 255, 255, 0.5) 100%);
-    max-height: min(72vh, 640px);
+    max-height: min(82vh, 860px);
 }
 
 .books-page .booths-settings-block {
