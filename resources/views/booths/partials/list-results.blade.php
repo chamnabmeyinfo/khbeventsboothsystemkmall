@@ -115,7 +115,7 @@
                                     <i class="fas fa-store-slash empty-state-icon" aria-hidden="true"></i>
                                     <h3>No booths found</h3>
                                     <p class="text-muted">
-                                        @if(request('search'))Try clearing filters or add a booth for "{{ request('search') }}".@else Add booths from the floor plan or full management view.@endif
+                                        @if(request('search'))Try clearing filters or add a booth for "{{ request('search') }}".@else Add booths from the floor plan.@endif
                                     </p>
                                     <a href="{{ route('booths.index', ['view' => 'canvas', 'create' => 1]) }}" class="action-btn action-btn-primary mt-3">
                                         <i class="fas fa-plus"></i> Add your first booth
