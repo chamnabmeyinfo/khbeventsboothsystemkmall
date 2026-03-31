@@ -8082,7 +8082,7 @@ $(document).ready(function() {
     @endif
     
     @if(($moduleSettings['booths']['mobile'] ?? true) || ($moduleSettings['booths']['tablet'] ?? true))
-    <a href="{{ route('booths.index', ['view' => 'table']) }}" class="modern-mobile-nav-item" data-route="booths">
+    <a href="{{ route('booths.index', ['view' => 'management']) }}" class="modern-mobile-nav-item" data-route="booths">
         <i class="fas fa-store"></i>
         <span>Booths</span>
     </a>

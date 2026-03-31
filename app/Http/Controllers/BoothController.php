@@ -57,17 +57,19 @@ class BoothController extends Controller
         DebugLogger::log(['request_method' => $request->method(), 'user_authenticated' => auth()->check()], 'BoothController.php:22', 'BoothController::index() called');
         // #endregion
 
-        $view = $request->input('view', 'management');
+        $view = $request->input('view', 'overview');
 
         // Canvas / floor-plan designer — its own dedicated view
         if ($view === 'canvas') {
             // falls through to canvas block below
         } elseif ($view === 'list' || $view === 'table') {
-            // Legacy ?view=table / ?view=list → redirect to management (new default)
+            // Legacy ?view=table / ?view=list → full management table
             return redirect()->route('booths.index', ['view' => 'management'] + $request->except('view'));
-        } else {
-            // /booths, ?view=management (and any unknown values) → management table
+        } elseif ($view === 'management') {
             return $this->managementTable($request);
+        } else {
+            // Default overview (Looker Design 01 list) and other non-canvas views
+            return $this->boothsList($request);
         }
 
 
@@ -463,7 +465,7 @@ class BoothController extends Controller
             }
 
             // Preserve floor_plan_id in redirect if specified
-            $redirectUrl = route('booths.index', ['view' => 'table']);
+            $redirectUrl = route('booths.index', ['view' => 'management']);
             if (! empty($booth->floor_plan_id)) {
                 $redirectUrl .= '&floor_plan_id='.$booth->floor_plan_id;
             }
@@ -598,7 +600,7 @@ class BoothController extends Controller
             }
 
             return redirect()
-                ->route('booths.index', ['view' => 'table'])
+                ->route('booths.index', ['view' => 'management'])
                 ->with('success', 'Booth updated successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Return JSON if requested (for AJAX)

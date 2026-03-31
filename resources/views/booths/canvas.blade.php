@@ -136,7 +136,7 @@
                 @endif
             </div>
             <div class="looker-actions d-flex gap-2">
-                <a href="{{ route('booths.index', ['view' => 'table']) }}" class="btn btn-sm btn-glass-primary" title="Booth Management" style="border-radius: 8px; padding: 0.4rem 1rem;">
+                <a href="{{ route('booths.index', ['view' => 'management']) }}" class="btn btn-sm btn-glass-primary" title="Booth Management" style="border-radius: 8px; padding: 0.4rem 1rem;">
                     <i class="fas fa-table me-1"></i> Management
                 </a>
                 <a href="{{ route('floor-plans.index') }}" class="btn btn-sm btn-glass-secondary" title="Manage Floor Plans" style="border-radius: 8px; padding: 0.4rem 1rem;">

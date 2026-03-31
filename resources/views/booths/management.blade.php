@@ -2771,7 +2771,7 @@
 
     <!-- Mobile Search Bar -->
     <div class="mobile-search-container d-md-none">
-        <form method="GET" action="{{ route('booths.index', ['view' => 'table']) }}" id="mobileSearchForm">
+        <form method="GET" action="{{ route('booths.index', ['view' => 'management']) }}" id="mobileSearchForm">
             <div class="mobile-search-bar">
                 <i class="fas fa-search mobile-search-icon"></i>
                 <input type="text" name="search" class="mobile-search-input" placeholder="Search booths..." value="{{ request('search') }}" autocomplete="off">
@@ -2869,7 +2869,7 @@
                 <i class="fas fa-times-circle"></i> Clear All
             </button>
         </div>
-        <form method="GET" action="{{ route('booths.index', ['view' => 'table']) }}" id="filterForm">
+        <form method="GET" action="{{ route('booths.index', ['view' => 'management']) }}" id="filterForm">
             <div class="row g-3">
                 <div class="col-12 col-md-3">
                     <label class="form-label fw-semibold" style="color: var(--text-secondary); margin-bottom: 8px;">
@@ -2972,7 +2972,7 @@
                         <option value="200" {{ (request('per_page', $perPage ?? 50) == 200) ? 'selected' : '' }}>200</option>
                     </select>
                 </div>
-                <a href="{{ route('booths.index', ['view' => 'table', 'export' => 'csv']) }}" class="action-btn action-btn-secondary">
+                <a href="{{ route('booths.index', ['view' => 'management', 'export' => 'csv']) }}" class="action-btn action-btn-secondary">
                     <i class="fas fa-download"></i>Export CSV
                 </a>
             </div>
@@ -5070,7 +5070,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Reload page with new per-page setting
         const currentUrl = new URL(window.location.href);
         currentUrl.searchParams.set('per_page', perPage);
-        currentUrl.searchParams.set('view', 'table');
+        currentUrl.searchParams.set('view', 'management');
         // Reset to page 1 when changing per-page
         currentUrl.searchParams.set('page', '1');
         
@@ -5122,7 +5122,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function reloadWithPagination() {
         // Build URL with current filters and pagination mode
         const currentUrl = new URL(window.location.href);
-        currentUrl.searchParams.set('view', 'table');
+        currentUrl.searchParams.set('view', 'management');
         currentUrl.searchParams.set('load_mode', 'pagination');
         currentUrl.searchParams.set('per_page', boothsPerPage);
         // Remove page param to start from page 1
@@ -5252,7 +5252,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Build params exactly like initial load
         const params = new URLSearchParams({
             page: boothsCurrentPage,
-            view: 'table'
+            view: 'management'
         });
         
         // Add filter params if they exist
