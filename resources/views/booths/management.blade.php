@@ -3,7 +3,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/booths-premium-glamor.css') }}?v=1.4">
-<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.4">
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.6">
 <style>
     
 

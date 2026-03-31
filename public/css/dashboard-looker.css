@@ -816,3 +816,44 @@ body.ios-dashboard-mode .looker-table tr {
 body.ios-dashboard-mode .looker-table tr:hover td {
     background-color: rgba(0, 122, 255, 0.06) !important;
 }
+
+/*
+ * Table row — plastic press on pointer down (all dashboard tables).
+ * Inset on <td> (avoid transform on <tr> in table layout).
+ * Opt out: add class .table-row-no-press on <tr>.
+ */
+body.ios-dashboard-mode .looker-table tbody tr:not(.table-row-no-press),
+body.ios-dashboard-mode .looker-table-container table tbody tr:not(.table-row-no-press),
+body.ios-dashboard-mode .looker-table-wrapper table tbody tr:not(.table-row-no-press),
+body.ios-dashboard-mode .main-content-pushed table.table tbody tr:not(.table-row-no-press) {
+    -webkit-tap-highlight-color: transparent;
+}
+
+body.ios-dashboard-mode .looker-table tbody tr:not(.table-row-no-press) td,
+body.ios-dashboard-mode .looker-table-container table tbody tr:not(.table-row-no-press) td,
+body.ios-dashboard-mode .looker-table-wrapper table tbody tr:not(.table-row-no-press) td,
+body.ios-dashboard-mode .main-content-pushed table.table tbody tr:not(.table-row-no-press) td {
+    transition:
+        box-shadow 0.1s cubic-bezier(0.4, 0, 0.2, 1),
+        background-color 0.1s ease,
+        filter 0.08s ease;
+}
+
+body.ios-dashboard-mode .looker-table tbody tr:not(.table-row-no-press):active td,
+body.ios-dashboard-mode .looker-table-container table tbody tr:not(.table-row-no-press):active td,
+body.ios-dashboard-mode .looker-table-wrapper table tbody tr:not(.table-row-no-press):active td,
+body.ios-dashboard-mode .main-content-pushed table.table tbody tr:not(.table-row-no-press):active td {
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.09);
+    background-color: rgba(0, 122, 255, 0.12) !important;
+    filter: brightness(0.96);
+    transition-duration: 0.05s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.ios-dashboard-mode .looker-table tbody tr:not(.table-row-no-press):active td,
+    body.ios-dashboard-mode .looker-table-container table tbody tr:not(.table-row-no-press):active td,
+    body.ios-dashboard-mode .looker-table-wrapper table tbody tr:not(.table-row-no-press):active td,
+    body.ios-dashboard-mode .main-content-pushed table.table tbody tr:not(.table-row-no-press):active td {
+        box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.06);
+    }
+}

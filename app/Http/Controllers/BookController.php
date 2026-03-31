@@ -286,20 +286,7 @@ class BookController extends Controller
                 $book->load('user');
             }
 
-            // Calculate booth count (same logic as main view)
             $boothIds = json_decode($book->boothid, true) ?? [];
-            $boothCount = count($boothIds);
-
-            // Determine type class and badge
-            $typeClass = 'regular';
-            $typeBadge = 'badge-modern-primary';
-            if ($book->type == 2) {
-                $typeClass = 'special';
-                $typeBadge = 'badge-modern-warning';
-            } elseif ($book->type == 3) {
-                $typeClass = 'temporary';
-                $typeBadge = 'badge-modern-danger';
-            }
 
             try {
                 $statusSetting = $book->statusSetting ?? \App\Models\BookingStatusSetting::getByCode($book->status ?? 1);
@@ -317,10 +304,9 @@ class BookController extends Controller
             $balanceAmount = $book->balance_amount ?? ($totalAmount - $paidAmount);
 
             if ($view === 'table') {
-                $html .= view('books.partials.table-row', compact('book', 'rowNumber', 'boothCount', 'statusColor', 'statusTextColor', 'statusName', 'totalAmount', 'balanceAmount', 'boothsByBookId'))->render();
+                $html .= view('books.partials.table-row', compact('book', 'rowNumber', 'statusColor', 'statusTextColor', 'statusName', 'totalAmount', 'balanceAmount', 'boothsByBookId'))->render();
             } else {
-                // Card HTML
-                $html .= view('books.partials.card-item', compact('book', 'boothCount', 'typeBadge', 'typeClass', 'boothsByBookId'))->render();
+                $html .= view('books.partials.card', compact('book', 'boothsByBookId', 'rowNumber'))->render();
             }
         }
 

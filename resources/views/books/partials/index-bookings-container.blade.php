@@ -44,8 +44,9 @@
                     <!-- Card View -->
                     <div class="card-view" style="display: none;">
                         <div class="books-card-view-inner">
+                            @php $groupCardRowStart = $booksRowCounter - count($groupBooks) + 1; @endphp
                             @foreach($groupBooks as $book)
-                                @include('books.partials.card', ['book' => $book])
+                                @include('books.partials.card', ['book' => $book, 'rowNumber' => $groupCardRowStart + $loop->index])
                             @endforeach
                         </div>
                     </div>
@@ -98,9 +99,9 @@
             <div class="card-view" style="display: none;">
                 <div class="books-card-view-inner">
                     @forelse($books as $book)
-                        @include('books.partials.card', ['book' => $book])
+                        @include('books.partials.card', ['book' => $book, 'rowNumber' => $loop->iteration])
                     @empty
-                        <div class="empty-state">
+                        <div class="empty-state books-card-view-empty">
                             <i class="fas fa-inbox empty-state-icon"></i>
                             <h3>No bookings found</h3>
                             <p class="text-muted">Try adjusting your filters or create a new booking.</p>

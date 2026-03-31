@@ -4,7 +4,7 @@
 
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.4">
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.6">
 <style>
     /* Bookings index — single responsive layout; breakpoints align with Bootstrap sm/md/lg */
     .books-page .books-toolbar {
@@ -72,10 +72,16 @@
         z-index: 5;
         background: transparent;
         touch-action: none;
+        transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), filter 0.08s ease, background 0.1s ease;
+        -webkit-tap-highlight-color: transparent;
     }
     .books-page .books-col-resize-handle:hover,
     .books-page .books-col-resize-handle:focus {
         background: linear-gradient(90deg, transparent, rgba(0, 122, 255, 0.22));
+    }
+    .books-page .books-col-resize-handle:active {
+        transform: scaleX(1.12) scaleY(0.9);
+        filter: brightness(0.88);
     }
     body.books-table-resizing {
         cursor: col-resize !important;
@@ -221,6 +227,293 @@
     }
     .books-page .books-card-view-inner {
         padding: 1rem 1.25rem 1.5rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+        gap: 1rem 1.25rem;
+        align-items: stretch;
+    }
+    .books-page .books-card-view-empty {
+        grid-column: 1 / -1;
+        max-width: 32rem;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    /* Bookings — card view: higher contrast, type accent, depth */
+    .books-page .books-booking-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-height: 100%;
+        padding: 1.1rem 1.2rem 1.15rem 1.35rem;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        background:
+            linear-gradient(165deg, rgba(255, 255, 255, 0.97) 0%, rgba(255, 255, 255, 0.88) 45%, rgba(248, 250, 252, 0.92) 100%);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        box-shadow:
+            0 2px 4px rgba(0, 0, 0, 0.04),
+            0 12px 28px rgba(31, 38, 135, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px) saturate(165%);
+        -webkit-backdrop-filter: blur(20px) saturate(165%);
+        transition:
+            transform 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+            box-shadow 0.18s ease,
+            border-color 0.18s ease,
+            filter 0.1s ease;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+        touch-action: manipulation;
+    }
+    .books-page .books-booking-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 5px;
+        border-radius: var(--radius-md) 0 0 var(--radius-md);
+        background: var(--accent-blue);
+        box-shadow: 2px 0 12px rgba(0, 122, 255, 0.35);
+    }
+    .books-page .books-booking-card--type-1::before {
+        background: linear-gradient(180deg, #0a84ff 0%, var(--accent-blue) 50%, #0066cc 100%);
+    }
+    .books-page .books-booking-card--type-2::before {
+        background: linear-gradient(180deg, #ffb340 0%, var(--accent-orange) 55%, #e08600 100%);
+        box-shadow: 2px 0 12px rgba(255, 149, 0, 0.4);
+    }
+    .books-page .books-booking-card--type-3::before {
+        background: linear-gradient(180deg, #c77dff 0%, var(--accent-purple) 55%, #8e44ad 100%);
+        box-shadow: 2px 0 12px rgba(175, 82, 222, 0.4);
+    }
+    .books-page .books-booking-card::after {
+        content: '';
+        position: absolute;
+        right: -20%;
+        top: -30%;
+        width: 70%;
+        height: 55%;
+        border-radius: 50%;
+        background: radial-gradient(ellipse at center, rgba(0, 122, 255, 0.09) 0%, transparent 68%);
+        pointer-events: none;
+    }
+    .books-page .books-booking-card--type-2::after {
+        background: radial-gradient(ellipse at center, rgba(255, 149, 0, 0.11) 0%, transparent 68%);
+    }
+    .books-page .books-booking-card--type-3::after {
+        background: radial-gradient(ellipse at center, rgba(175, 82, 222, 0.11) 0%, transparent 68%);
+    }
+    .books-page .books-booking-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(0, 122, 255, 0.28);
+        box-shadow:
+            0 4px 8px rgba(0, 0, 0, 0.06),
+            0 20px 40px rgba(31, 38, 135, 0.16),
+            0 0 0 1px rgba(255, 255, 255, 0.4) inset,
+            0 0 0 3px rgba(0, 122, 255, 0.12);
+    }
+    .books-page .books-booking-card--type-2:hover {
+        box-shadow:
+            0 4px 8px rgba(0, 0, 0, 0.06),
+            0 20px 40px rgba(255, 149, 0, 0.15),
+            0 0 0 1px rgba(255, 255, 255, 0.4) inset,
+            0 0 0 3px rgba(255, 149, 0, 0.15);
+    }
+    .books-page .books-booking-card--type-3:hover {
+        box-shadow:
+            0 4px 8px rgba(0, 0, 0, 0.06),
+            0 20px 40px rgba(175, 82, 222, 0.15),
+            0 0 0 1px rgba(255, 255, 255, 0.4) inset,
+            0 0 0 3px rgba(175, 82, 222, 0.14);
+    }
+    /* Cards view — plastic press on pointer down (match table row + buttons) */
+    .books-page .books-booking-card:active,
+    .books-page .books-booking-card:hover:active {
+        transform: translateY(2px) scale(0.988);
+        filter: brightness(0.94);
+        transition-duration: 0.06s;
+        box-shadow:
+            0 1px 3px rgba(0, 0, 0, 0.07),
+            0 6px 16px rgba(31, 38, 135, 0.12),
+            inset 0 3px 14px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.45);
+        border-color: rgba(0, 122, 255, 0.2);
+    }
+    .books-page .books-booking-card--type-2:active,
+    .books-page .books-booking-card--type-2:hover:active {
+        box-shadow:
+            0 1px 3px rgba(0, 0, 0, 0.07),
+            0 6px 16px rgba(255, 149, 0, 0.12),
+            inset 0 3px 14px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.45);
+        border-color: rgba(255, 149, 0, 0.28);
+    }
+    .books-page .books-booking-card--type-3:active,
+    .books-page .books-booking-card--type-3:hover:active {
+        box-shadow:
+            0 1px 3px rgba(0, 0, 0, 0.07),
+            0 6px 16px rgba(175, 82, 222, 0.14),
+            inset 0 3px 14px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.45);
+        border-color: rgba(175, 82, 222, 0.26);
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .books-page .books-booking-card:active {
+            transform: translateY(1px) scale(0.995);
+        }
+    }
+    .books-page .books-booking-card__head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin: -0.25rem -0.25rem 1rem -0.1rem;
+        padding: 0.5rem 0.5rem 0.85rem 0.25rem;
+        border-radius: 12px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.65) 0%, rgba(248, 250, 252, 0.45) 100%);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        position: relative;
+        z-index: 1;
+    }
+    .books-page .books-booking-card__head-text {
+        min-width: 0;
+        flex: 1;
+    }
+    .books-page .books-booking-card__client,
+    .books-page .books-booking-card__field,
+    .books-page .books-booking-card__grid,
+    .books-page .books-booking-card__footer,
+    .books-page .books-booking-card__by {
+        position: relative;
+        z-index: 1;
+    }
+    .books-page .books-booking-card__row {
+        display: inline-block;
+        font-size: 0.6875rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        margin-bottom: 0.35rem;
+    }
+    .books-page .books-booking-card__title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #0d0d0f;
+        margin: 0 0 0.5rem;
+        line-height: 1.25;
+    }
+    .books-page .books-booking-card__badges {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .books-page .books-booking-card .books-type-badge {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+    .books-page .books-booking-card .books-status-pill {
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+        font-weight: 800;
+    }
+    .books-page .books-booking-card__actions .books-table-actions {
+        flex-shrink: 0;
+    }
+    .books-page .books-booking-card__client {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    .books-page .books-booking-card__avatar {
+        flex-shrink: 0;
+    }
+    .books-page .books-booking-card__client-name {
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--text-primary);
+        line-height: 1.3;
+    }
+    .books-page .books-booking-card__client-meta {
+        font-size: 0.8125rem;
+        color: var(--text-tertiary);
+        margin-top: 0.2rem;
+    }
+    .books-page .books-booking-card__field {
+        margin-bottom: 0.75rem;
+    }
+    .books-page .books-booking-card__grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem 1rem;
+        margin-bottom: 1rem;
+        padding: 0.75rem 0.85rem;
+        border-radius: 12px;
+        background: linear-gradient(180deg, rgba(0, 82, 180, 0.06) 0%, rgba(0, 0, 0, 0.03) 100%);
+        border: 1px solid rgba(0, 0, 0, 0.07);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    }
+    .books-page .books-booking-card__label {
+        display: block;
+        font-size: 0.6875rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        margin-bottom: 0.25rem;
+    }
+    .books-page .books-booking-card__value {
+        font-weight: 700;
+        font-size: 0.925rem;
+        color: #0d0d0f;
+    }
+    .books-page .books-booking-card__sub {
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+        margin-top: 0.15rem;
+    }
+    .books-page .books-booking-card__footer {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-top: auto;
+        padding-top: 0.95rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        position: relative;
+        z-index: 1;
+    }
+    .books-page .books-booking-card__amount {
+        font-size: 1.12rem;
+        filter: contrast(1.05);
+    }
+    .books-page .books-booking-card__balance {
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        color: var(--accent-orange);
+    }
+    .books-page .books-booking-card__by {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin-top: 0.85rem;
+        padding-top: 0.85rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    .books-page .books-booking-card__by-name {
+        font-size: 0.8125rem;
+        color: var(--text-secondary);
+    }
+    @media (max-width: 575.98px) {
+        .books-page .books-card-view-inner {
+            grid-template-columns: 1fr;
+        }
     }
     .books-page .group-section .group-header {
         margin-bottom: 0.75rem;

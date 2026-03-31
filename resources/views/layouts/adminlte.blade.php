@@ -959,37 +959,7 @@
             }
         }
         
-        /* Loading Overlay */
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .loading-overlay.active {
-            display: flex;
-        }
-        
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        /* Loading overlay: see public/css/app-loading-overlay.css */
         
         /* Navbar - Clean Modern Design */
         .main-header {
@@ -1617,6 +1587,7 @@
     
     <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}?v=3.2">
     <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/app-loading-overlay.css') }}?v=2">
     
     @stack('styles')
 
@@ -1747,11 +1718,6 @@
             </div>
         </div>
         <!-- /.content-header -->
-
-        <!-- Loading Overlay -->
-        <div id="loadingOverlay" class="loading-overlay">
-            <div class="loading-spinner"></div>
-        </div>
 
         <!-- Main content -->
         <section class="content">
@@ -1990,14 +1956,7 @@ toastr.options = {
     "hideMethod": "fadeOut"
 };
 
-// Loading Overlay Functions
-window.showLoading = function() {
-    document.getElementById('loadingOverlay').classList.add('active');
-};
-
-window.hideLoading = function() {
-    document.getElementById('loadingOverlay').classList.remove('active');
-};
+// Loading overlay: window.showLoading / hideLoading from app-loading-overlay partial at end of body
 
 // Auto-hide alerts after 5 seconds
 setTimeout(function() {
@@ -2654,7 +2613,7 @@ $.widget.bridge('uibutton', $.ui.button);
     }
 })();
 </script>
-
+@include('partials.app-loading-overlay')
 </body>
 </html>
 

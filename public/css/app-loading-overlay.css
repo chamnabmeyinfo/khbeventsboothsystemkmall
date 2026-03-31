@@ -1,0 +1,157 @@
+/**
+ * Global loading overlay — frosted panel + gradient orb spinner.
+ * Orb pattern inspired by Uiverse.io (terenceodonoghue): layered blurred gradients + inner cutout.
+ * Scoped to .loading-overlay — never use generic .container here (Bootstrap conflict).
+ */
+:root {
+    --app-loading-surface: rgba(255, 255, 255, 0.92);
+    /* Tricolor glow — aligned with dashboard accents */
+    --app-loading-g1: #af52de;
+    --app-loading-g2: #007aff;
+    --app-loading-g3: #5ad1cd;
+}
+
+.loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: rgba(15, 23, 42, 0.38);
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.28s ease, visibility 0.28s ease;
+}
+
+.loading-overlay.active {
+    display: flex;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.loading-overlay__card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.1rem;
+    padding: 1.75rem 2rem 1.5rem;
+    min-width: 200px;
+    max-width: min(92vw, 320px);
+    border-radius: 20px;
+    background: var(--app-loading-surface);
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    box-shadow:
+        0 4px 6px rgba(0, 0, 0, 0.05),
+        0 24px 48px rgba(31, 38, 135, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    transform: scale(0.94) translateY(8px);
+    transition: transform 0.32s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+.loading-overlay.active .loading-overlay__card {
+    transform: scale(1) translateY(0);
+}
+
+/* --- Gradient orb (Uiverse-style) --- */
+.loading-overlay__orb {
+    position: relative;
+    width: 88px;
+    height: 88px;
+    flex-shrink: 0;
+}
+
+.loading-overlay__orb-spin {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 88px;
+    height: 88px;
+    margin: -44px 0 0 -44px;
+    border-radius: 50%;
+    animation: app-loading-orb-rotate 1.2s linear infinite;
+    background-color: var(--app-loading-g1);
+    background-image: linear-gradient(var(--app-loading-g1), var(--app-loading-g2), var(--app-loading-g3));
+}
+
+.loading-overlay__orb-spin span {
+    position: absolute;
+    border-radius: 50%;
+    height: 100%;
+    width: 100%;
+    background-color: var(--app-loading-g1);
+    background-image: linear-gradient(var(--app-loading-g1), var(--app-loading-g2), var(--app-loading-g3));
+}
+
+.loading-overlay__orb-spin span:nth-of-type(1) {
+    filter: blur(5px);
+}
+
+.loading-overlay__orb-spin span:nth-of-type(2) {
+    filter: blur(10px);
+}
+
+.loading-overlay__orb-spin span:nth-of-type(3) {
+    filter: blur(18px);
+}
+
+.loading-overlay__orb-spin span:nth-of-type(4) {
+    filter: blur(28px);
+}
+
+.loading-overlay__orb-spin::after {
+    content: '';
+    position: absolute;
+    z-index: 2;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    background-color: #fff;
+    border: solid 4px #fff;
+    border-radius: 50%;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.loading-overlay__label {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: #1d1d1f;
+    text-align: center;
+}
+
+.loading-overlay__hint {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #86868b;
+    text-align: center;
+}
+
+@keyframes app-loading-orb-rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .loading-overlay__orb-spin {
+        animation-duration: 2.4s;
+    }
+    .loading-overlay__orb-spin span:nth-of-type(n) {
+        filter: blur(4px);
+    }
+    .loading-overlay__card {
+        transition: none;
+    }
+}

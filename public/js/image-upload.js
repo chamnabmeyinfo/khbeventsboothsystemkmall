@@ -265,18 +265,21 @@
         });
     }
 
-    // Global helper functions
-    window.showLoading = function() {
-        const overlay = document.getElementById('loadingOverlay');
-        if (overlay) {
-            overlay.classList.add('active');
-        }
-    };
-
-    window.hideLoading = function() {
-        const overlay = document.getElementById('loadingOverlay');
-        if (overlay) {
-            overlay.classList.remove('active');
-        }
-    };
+    // Fallback only if layouts did not define showLoading (see partials.app-loading-overlay)
+    if (typeof window.showLoading !== 'function') {
+        window.showLoading = function () {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.classList.add('active');
+            }
+        };
+    }
+    if (typeof window.hideLoading !== 'function') {
+        window.hideLoading = function () {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+        };
+    }
 })();

@@ -95,6 +95,7 @@
     <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=3.0">
     <link rel="stylesheet" href="{{ asset('css/app-shell-layout.css') }}?v=1.2">
     <link rel="stylesheet" href="{{ asset('css/sweetalert2-custom.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/app-loading-overlay.css') }}?v=2">
     
     @stack('styles')
 </head>
@@ -457,6 +458,7 @@
         justify-content: center !important;
     }
     </style>
+    @include('partials.app-loading-overlay')
 </body>
 </html>
 

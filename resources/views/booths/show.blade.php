@@ -299,7 +299,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/booths-premium-glamor.css') }}?v=1.0">
-<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.4">
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.6">
 <link rel="stylesheet" href="{{ asset('css/booths-ios-style.css') }}?v=1.0">
 <style>
     .kpi-card-looker { margin-bottom: 24px; }

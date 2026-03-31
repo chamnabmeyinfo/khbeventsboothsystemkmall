@@ -3,7 +3,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/booths-premium-glamor.css') }}?v=1.3">
-<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.4">
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.6">
 {{-- SweetAlert2 CSS – must be in <head> --}}
 <link rel="stylesheet" href="{{ asset('vendor/sweetalert2/css/sweetalert2.min.css') }}">
 <link rel="stylesheet" href="{{ asset('css/sweetalert2-custom.css') }}?v={{ config('app.asset_version') ?? '1' }}">
