@@ -359,6 +359,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/settings/clear-all', [SettingsController::class, 'clearAll'])->name('settings.clear-all');
         Route::post('/settings/optimize', [SettingsController::class, 'optimize'])->name('settings.optimize');
         Route::get('/settings/public-view', [SettingsController::class, 'getPublicViewSettings'])->name('settings.public-view');
+        Route::get('/settings/tick-settings', [SettingsController::class, 'getTickSettingsJson'])->name('settings.tick-settings');
         Route::post('/settings/public-view', [SettingsController::class, 'savePublicViewSettings'])->name('settings.public-view.save');
         Route::get('/settings/push-notifications', [SettingsController::class, 'getPushNotificationSettings'])->name('settings.push-notifications');
         Route::post('/settings/push-notifications', [SettingsController::class, 'savePushNotificationSettings'])->name('settings.push-notifications.save');

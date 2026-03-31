@@ -1917,13 +1917,57 @@ class BoothController extends Controller
             'extensions' => Setting::getValue('uploads_booth_allowed_extensions', '') ?: '',
         ];
 
+        // Global settings forms embedded in Booth list settings modal (same data as SettingsController@index)
+        $publicViewAllowCreate = Setting::getValue('public_view_allow_create_booking', true);
+        $publicViewRestrictOwn = Setting::getValue('public_view_restrict_crud_to_own_booking', true);
+        try {
+            $floorPlans = FloorPlan::where('is_active', true)
+                ->orderBy('is_default', 'desc')
+                ->orderBy('name', 'asc')
+                ->get(['id', 'name', 'is_default']);
+        } catch (\Throwable $e) {
+            $floorPlans = collect([]);
+        }
+        $tickFloorPlanId = $request->input('tick_floor_plan_id', $request->old('tick_floor_plan_id'));
+        $tickSettings = FloorPlanTickSetting::getForFloorPlan($tickFloorPlanId ? (int) $tickFloorPlanId : null);
+        $showBookedTick = $tickSettings['show_tick'];
+        $bookedTickColor = $tickSettings['color'];
+        $bookedTickSize = $tickSettings['size'];
+        $bookedTickShape = $tickSettings['shape'];
+        $bookedTickPosition = $tickSettings['position'];
+        $bookedTickAnimation = $tickSettings['animation'];
+        $bookedTickBgColor = $tickSettings['bg_color'];
+        $bookedTickBorderWidth = $tickSettings['border_width'];
+        $bookedTickBorderColor = $tickSettings['border_color'];
+        $bookedTickFontSize = $tickSettings['font_size'];
+        $bookedTickSizeMode = $tickSettings['size_mode'];
+        $bookedTickRelativePercent = $tickSettings['relative_percent'];
+        $uploadSettings = Setting::getUploadSettings();
+
         return view('booths.index', compact(
             'booths',
             'stats',
             'masterBoothImageUrl',
             'masterBoothUploadHint',
             'boothsModuleNav',
-            'boothsUploadContext'
+            'boothsUploadContext',
+            'publicViewAllowCreate',
+            'publicViewRestrictOwn',
+            'floorPlans',
+            'tickFloorPlanId',
+            'showBookedTick',
+            'bookedTickColor',
+            'bookedTickSize',
+            'bookedTickShape',
+            'bookedTickPosition',
+            'bookedTickAnimation',
+            'bookedTickBgColor',
+            'bookedTickBorderWidth',
+            'bookedTickBorderColor',
+            'bookedTickFontSize',
+            'bookedTickSizeMode',
+            'bookedTickRelativePercent',
+            'uploadSettings'
         ));
     }
 

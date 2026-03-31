@@ -1302,6 +1302,33 @@ class SettingsController extends Controller
     }
 
     /**
+     * Booked-tick appearance for the settings form (per floor plan or global), without full page reload.
+     */
+    public function getTickSettingsJson(Request $request)
+    {
+        $floorPlanId = $request->filled('floor_plan_id') ? (int) $request->input('floor_plan_id') : null;
+        $tick = FloorPlanTickSetting::getForFloorPlan($floorPlanId);
+
+        return response()->json([
+            'status' => 200,
+            'data' => [
+                'show_tick' => (bool) ($tick['show_tick'] ?? true),
+                'color' => $tick['color'] ?? '#28a745',
+                'size' => $tick['size'] ?? 'medium',
+                'shape' => $tick['shape'] ?? 'round',
+                'position' => $tick['position'] ?? 'top-right',
+                'animation' => $tick['animation'] ?? 'pulse',
+                'bg_color' => $tick['bg_color'] ?? '',
+                'border_width' => (string) ($tick['border_width'] ?? '0'),
+                'border_color' => $tick['border_color'] ?? '#ffffff',
+                'font_size' => $tick['font_size'] ?? 'medium',
+                'size_mode' => $tick['size_mode'] ?? 'fixed',
+                'relative_percent' => (string) ($tick['relative_percent'] ?? '12'),
+            ],
+        ]);
+    }
+
+    /**
      * Save public view action settings.
      */
     public function savePublicViewSettings(Request $request)

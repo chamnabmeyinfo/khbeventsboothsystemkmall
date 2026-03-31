@@ -27,7 +27,7 @@
                                     <i class="fas fa-database me-2 text-primary"></i>Application Cache
                                 </h6>
                                 <p class="card-text text-muted small">Clear the application cache (stored data, queries, etc.)</p>
-                                <form action="{{ route('settings.cache.clear') }}" method="POST" class="d-inline">
+                                <form action="{{ route('settings.cache.clear') }}" method="POST" class="d-inline settings-form-ajax">
                                     @csrf
                                     <button type="submit" class="btn btn-sm btn-primary">
                                         <i class="fas fa-trash me-1"></i>Clear Cache
@@ -44,7 +44,7 @@
                                     <i class="fas fa-file-code me-2 text-info"></i>Configuration Cache
                                 </h6>
                                 <p class="card-text text-muted small">Clear the configuration cache (config files)</p>
-                                <form action="{{ route('settings.config.clear') }}" method="POST" class="d-inline">
+                                <form action="{{ route('settings.config.clear') }}" method="POST" class="d-inline settings-form-ajax">
                                     @csrf
                                     <button type="submit" class="btn btn-sm btn-info">
                                         <i class="fas fa-trash me-1"></i>Clear Config
@@ -61,7 +61,7 @@
                                     <i class="fas fa-route me-2 text-success"></i>Route Cache
                                 </h6>
                                 <p class="card-text text-muted small">Clear the route cache (route definitions)</p>
-                                <form action="{{ route('settings.route.clear') }}" method="POST" class="d-inline">
+                                <form action="{{ route('settings.route.clear') }}" method="POST" class="d-inline settings-form-ajax">
                                     @csrf
                                     <button type="submit" class="btn btn-sm btn-success">
                                         <i class="fas fa-trash me-1"></i>Clear Routes
@@ -78,7 +78,7 @@
                                     <i class="fas fa-eye me-2 text-warning"></i>View Cache
                                 </h6>
                                 <p class="card-text text-muted small">Clear the compiled view cache (Blade templates)</p>
-                                <form action="{{ route('settings.view.clear') }}" method="POST" class="d-inline">
+                                <form action="{{ route('settings.view.clear') }}" method="POST" class="d-inline settings-form-ajax">
                                     @csrf
                                     <button type="submit" class="btn btn-sm btn-warning">
                                         <i class="fas fa-trash me-1"></i>Clear Views
@@ -99,7 +99,7 @@
                                     <i class="fas fa-broom me-2"></i>Clear All Caches
                                 </h6>
                                 <p class="card-text text-muted small">Clear all caches at once (Application, Config, Route, View)</p>
-                                <form action="{{ route('settings.clear-all') }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to clear all caches?')">
+                                <form action="{{ route('settings.clear-all') }}" method="POST" class="d-inline settings-form-ajax" data-confirm="Are you sure you want to clear all caches?">
                                     @csrf
                                     <button type="submit" class="btn btn-sm btn-danger">
                                         <i class="fas fa-trash-alt me-1"></i>Clear All
@@ -116,7 +116,7 @@
                                     <i class="fas fa-rocket me-2"></i>Optimize Application
                                 </h6>
                                 <p class="card-text text-muted small">Clear all caches and optimize the application for better performance</p>
-                                <form action="{{ route('settings.optimize') }}" method="POST" class="d-inline" onsubmit="return confirm('This will clear all caches and optimize the application. Continue?')">
+                                <form action="{{ route('settings.optimize') }}" method="POST" class="d-inline settings-form-ajax" data-confirm="This will clear all caches and optimize the application. Continue?">
                                     @csrf
                                     <button type="submit" class="btn btn-sm btn-primary">
                                         <i class="fas fa-magic me-1"></i>Optimize
@@ -140,61 +140,11 @@
             </div>
             <div class="p-4">
                 <p class="text-muted">Control file uploads across the system. Set global defaults or per-context limits (floor plan, booth, avatar, etc.).</p>
-                <form action="{{ route('settings.upload-control.save') }}" method="POST">
-                    @csrf
-                    <div class="mb-4">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" name="uploads_enabled" id="uploads_enabled" value="1" {{ ($uploadSettings['uploads_enabled'] ?? true) ? 'checked' : '' }}>
-                            <label class="form-check-label" for="uploads_enabled">
-                                <strong>Allow file uploads</strong>
-                            </label>
-                        </div>
-                        <small class="text-muted d-block mt-1">When disabled, all users cannot upload files.</small>
-                    </div>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label" for="uploads_max_size_mb">Global max size (MB)</label>
-                            <input type="number" class="form-control" name="uploads_max_size_mb" id="uploads_max_size_mb" value="{{ old('uploads_max_size_mb', $uploadSettings['uploads_max_size_mb'] ?? '') }}" min="0" max="100" step="0.5" placeholder="10">
-                            <small class="text-muted">Default for all uploads. Override per context below.</small>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label" for="uploads_allowed_extensions">Global allowed extensions</label>
-                            <input type="text" class="form-control" name="uploads_allowed_extensions" id="uploads_allowed_extensions" value="{{ old('uploads_allowed_extensions', $uploadSettings['uploads_allowed_extensions'] ?? '') }}" placeholder="jpg, png, gif, pdf">
-                            <small class="text-muted">Comma-separated. Empty = use context defaults.</small>
-                        </div>
-                    </div>
-                    <hr class="my-4">
-                    <h6 class="mb-3">Per-context limits (override global)</h6>
-                    <div class="looker-table-container">
-                        <table class="table table-sm table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Context</th>
-                                    <th style="width: 140px;">Max size (MB)</th>
-                                    <th>Allowed extensions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach(['floor_plan' => 'Floor plan images', 'booth' => 'Booth images', 'avatar' => 'Avatars', 'cover' => 'Cover images', 'document' => 'HR documents', 'training_certificate' => 'Training certificates', 'company_logo' => 'Company logo/favicon'] as $ctx => $label)
-                                <tr>
-                                    <td>{{ $label }}</td>
-                                    <td>
-                                        <input type="number" class="form-control form-control-sm" name="uploads_{{ $ctx }}_max_size_mb" value="{{ old("uploads_{$ctx}_max_size_mb", $uploadSettings["uploads_{$ctx}_max_size_mb"] ?? '') }}" min="0" max="100" step="0.5" placeholder="—">
-                                    </td>
-                                    <td>
-                                        <input type="text" class="form-control form-control-sm" name="uploads_{{ $ctx }}_allowed_extensions" value="{{ old("uploads_{$ctx}_allowed_extensions", $uploadSettings["uploads_{$ctx}_allowed_extensions"] ?? '') }}" placeholder="e.g. jpg, png, gif">
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-3">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-1"></i>Save
-                        </button>
-                    </div>
-                </form>
+                @include('settings.partials.upload-control-form', [
+                    'formId' => 'uploadControlForm',
+                    'idPrefix' => '',
+                    'uploadSettings' => $uploadSettings,
+                ])
             </div>
         </div>
     </div>
@@ -209,149 +159,10 @@
             </div>
             <div class="p-4">
                 <p class="text-muted">Control what logged-in users can do on the public floor plan view (<code>/floor-plans/{id}/public</code>).</p>
-                <form id="publicViewSettingsForm" action="{{ url('settings/public-view') }}" method="POST">
-                    @csrf
-                    <div class="mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" name="public_view_allow_create_booking" id="public_view_allow_create_booking" value="1" {{ ($publicViewAllowCreate ?? true) ? 'checked' : '' }}>
-                            <label class="form-check-label" for="public_view_allow_create_booking">
-                                <strong>Allow create booking on public view</strong>
-                            </label>
-                        </div>
-                        <small class="text-muted d-block mt-1">When enabled, logged-in users with &quot;Create Bookings&quot; permission can create a booking from the public floor plan page (e.g. Sales can book a booth from the public link).</small>
-                    </div>
-                    <div class="mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" name="public_view_restrict_crud_to_own_booking" id="public_view_restrict_crud_to_own_booking" value="1" {{ ($publicViewRestrictOwn ?? true) ? 'checked' : '' }}>
-                            <label class="form-check-label" for="public_view_restrict_crud_to_own_booking">
-                                <strong>Restrict booking CRUD to own bookings (non-admin)</strong>
-                            </label>
-                        </div>
-                        <small class="text-muted d-block mt-1">When enabled, users who are not Administrators can only view, edit, update, and delete <strong>their own</strong> bookings (bookings they created). Sales can only manage their own; they cannot edit or delete other sales&#39; bookings. Administrators can always manage all bookings.</small>
-                    </div>
-                    <div class="mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" name="booth_booked_show_tick" id="booth_booked_show_tick" value="1" {{ ($showBookedTick ?? true) ? 'checked' : '' }}>
-                            <label class="form-check-label" for="booth_booked_show_tick">
-                                <strong>Show tick sign on booked booths (canvas and public view)</strong>
-                            </label>
-                        </div>
-                        <small class="text-muted d-block mt-1">When enabled, a check (✓) appears on booked booths on the canvas designer and on the public floor plan view.</small>
-                    </div>
-                    <div class="mb-3 ps-3 border-start border-2 border-secondary">
-                        <h6 class="mb-2">Booked tick appearance</h6>
-                        <div class="mb-3">
-                            <label class="form-label" for="tick_floor_plan_id">Apply to floor plan</label>
-                            <select class="form-select" name="tick_floor_plan_id" id="tick_floor_plan_id" style="max-width: 320px;">
-                                <option value="">Default (all floor plans)</option>
-                                @foreach($floorPlans ?? [] as $fp)
-                                    <option value="{{ $fp->id }}" {{ (isset($tickFloorPlanId) && (string)$tickFloorPlanId === (string)$fp->id) ? 'selected' : '' }}>{{ $fp->name }}{{ $fp->is_default ? ' (default)' : '' }}</option>
-                                @endforeach
-                            </select>
-                            <small class="text-muted d-block mt-1">Choose &quot;Default&quot; to set global tick style (used when a floor plan has no own settings). Choose a floor plan to set tick style for that floor plan only.</small>
-                        </div>
-                        <div class="row g-3">
-                            <div class="col-md-6 col-lg-4">
-                                <label class="form-label" for="booth_booked_tick_color">Tick color (font)</label>
-                                <div class="input-group">
-                                    <input type="color" class="form-control form-control-color" name="booth_booked_tick_color" id="booth_booked_tick_color" value="{{ old('booth_booked_tick_color', $bookedTickColor ?? '#28a745') }}" title="Tick color">
-                                    <input type="text" class="form-control" value="{{ old('booth_booked_tick_color', $bookedTickColor ?? '#28a745') }}" id="booth_booked_tick_color_hex" maxlength="7" pattern="#[0-9A-Fa-f]{6}" placeholder="#28a745" aria-label="Hex color">
-                                </div>
-                            </div>
-                            <div class="col-md-6 col-lg-4">
-                                <label class="form-label" for="booth_booked_tick_font_size">Font size</label>
-                                <select class="form-select" name="booth_booked_tick_font_size" id="booth_booked_tick_font_size">
-                                    <option value="small" {{ ($bookedTickFontSize ?? 'medium') === 'small' ? 'selected' : '' }}>Small</option>
-                                    <option value="medium" {{ ($bookedTickFontSize ?? 'medium') === 'medium' ? 'selected' : '' }}>Medium</option>
-                                    <option value="large" {{ ($bookedTickFontSize ?? 'medium') === 'large' ? 'selected' : '' }}>Large</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 col-lg-4">
-                                <label class="form-label" for="booth_booked_tick_size_mode">Overall size</label>
-                                <select class="form-select" name="booth_booked_tick_size_mode" id="booth_booked_tick_size_mode">
-                                    <option value="fixed" {{ ($bookedTickSizeMode ?? 'fixed') === 'fixed' ? 'selected' : '' }}>Fixed (use Box size / Font size below)</option>
-                                    <option value="relative" {{ ($bookedTickSizeMode ?? 'fixed') === 'relative' ? 'selected' : '' }}>Relative (% of booth width &amp; height)</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 col-lg-4" id="booth_booked_tick_relative_wrap">
-                                <label class="form-label" for="booth_booked_tick_relative_percent">Tick size (% of booth width &amp; height)</label>
-                                <select class="form-select" name="booth_booked_tick_relative_percent" id="booth_booked_tick_relative_percent">
-                                    <option value="8" {{ ($bookedTickRelativePercent ?? '12') === '8' ? 'selected' : '' }}>8%</option>
-                                    <option value="10" {{ ($bookedTickRelativePercent ?? '12') === '10' ? 'selected' : '' }}>10%</option>
-                                    <option value="12" {{ ($bookedTickRelativePercent ?? '12') === '12' ? 'selected' : '' }}>12%</option>
-                                    <option value="15" {{ ($bookedTickRelativePercent ?? '12') === '15' ? 'selected' : '' }}>15%</option>
-                                    <option value="20" {{ ($bookedTickRelativePercent ?? '12') === '20' ? 'selected' : '' }}>20%</option>
-                                </select>
-                                <small class="text-muted">Tick box is this % of booth width and % of booth height.</small>
-                            </div>
-                            <div class="col-md-6 col-lg-4" id="booth_booked_tick_fixed_wrap">
-                                <label class="form-label" for="booth_booked_tick_size">Box size</label>
-                                <select class="form-select" name="booth_booked_tick_size" id="booth_booked_tick_size">
-                                    <option value="small" {{ ($bookedTickSize ?? 'medium') === 'small' ? 'selected' : '' }}>Small</option>
-                                    <option value="medium" {{ ($bookedTickSize ?? 'medium') === 'medium' ? 'selected' : '' }}>Medium</option>
-                                    <option value="large" {{ ($bookedTickSize ?? 'medium') === 'large' ? 'selected' : '' }}>Large</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 col-lg-4">
-                                <label class="form-label" for="booth_booked_tick_shape">Shape</label>
-                                <select class="form-select" name="booth_booked_tick_shape" id="booth_booked_tick_shape">
-                                    <option value="round" {{ ($bookedTickShape ?? 'round') === 'round' ? 'selected' : '' }}>Round</option>
-                                    <option value="square" {{ ($bookedTickShape ?? 'round') === 'square' ? 'selected' : '' }}>Square</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 col-lg-4">
-                                <label class="form-label" for="booth_booked_tick_position">Position</label>
-                                <select class="form-select" name="booth_booked_tick_position" id="booth_booked_tick_position">
-                                    <option value="top-right" {{ ($bookedTickPosition ?? 'top-right') === 'top-right' ? 'selected' : '' }}>Top right (outside)</option>
-                                    <option value="top-left" {{ ($bookedTickPosition ?? 'top-right') === 'top-left' ? 'selected' : '' }}>Top left (outside)</option>
-                                    <option value="bottom-right" {{ ($bookedTickPosition ?? 'top-right') === 'bottom-right' ? 'selected' : '' }}>Bottom right (outside)</option>
-                                    <option value="bottom-left" {{ ($bookedTickPosition ?? 'top-right') === 'bottom-left' ? 'selected' : '' }}>Bottom left (outside)</option>
-                                    <option value="inside" {{ ($bookedTickPosition ?? 'top-right') === 'inside' ? 'selected' : '' }}>Inside booth (top-right)</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 col-lg-4">
-                                <label class="form-label" for="booth_booked_tick_animation">Animation</label>
-                                <select class="form-select" name="booth_booked_tick_animation" id="booth_booked_tick_animation">
-                                    <option value="pulse" {{ ($bookedTickAnimation ?? 'pulse') === 'pulse' ? 'selected' : '' }}>Pulse</option>
-                                    <option value="none" {{ ($bookedTickAnimation ?? 'pulse') === 'none' ? 'selected' : '' }}>None</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 col-lg-4">
-                                <label class="form-label">Background</label>
-                                <div class="mb-2">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="booth_booked_tick_bg_none" id="booth_booked_tick_bg_none" value="1" {{ empty($bookedTickBgColor ?? '') ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="booth_booked_tick_bg_none">No background (transparent)</label>
-                                    </div>
-                                </div>
-                                <div class="input-group" id="booth_booked_tick_bg_wrap">
-                                    <input type="color" class="form-control form-control-color" name="booth_booked_tick_bg_color" id="booth_booked_tick_bg_color" value="{{ old('booth_booked_tick_bg_color', !empty($bookedTickBgColor) ? $bookedTickBgColor : '#ffffff') }}" title="Tick background">
-                                    <input type="text" class="form-control" value="{{ old('booth_booked_tick_bg_color', !empty($bookedTickBgColor) ? $bookedTickBgColor : '#ffffff') }}" id="booth_booked_tick_bg_color_hex" maxlength="7" pattern="#[0-9A-Fa-f]{6}" placeholder="#ffffff" aria-label="Background hex">
-                                </div>
-                            </div>
-                            <div class="col-md-6 col-lg-4">
-                                <label class="form-label" for="booth_booked_tick_border_width">Border width</label>
-                                <select class="form-select" name="booth_booked_tick_border_width" id="booth_booked_tick_border_width">
-                                    <option value="0" {{ ($bookedTickBorderWidth ?? '0') === '0' ? 'selected' : '' }}>None</option>
-                                    <option value="1" {{ ($bookedTickBorderWidth ?? '0') === '1' ? 'selected' : '' }}>1px</option>
-                                    <option value="2" {{ ($bookedTickBorderWidth ?? '0') === '2' ? 'selected' : '' }}>2px</option>
-                                    <option value="3" {{ ($bookedTickBorderWidth ?? '0') === '3' ? 'selected' : '' }}>3px</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 col-lg-4">
-                                <label class="form-label" for="booth_booked_tick_border_color">Border color</label>
-                                <div class="input-group">
-                                    <input type="color" class="form-control form-control-color" name="booth_booked_tick_border_color" id="booth_booked_tick_border_color" value="{{ old('booth_booked_tick_border_color', $bookedTickBorderColor ?? '#ffffff') }}" title="Border color">
-                                    <input type="text" class="form-control" value="{{ old('booth_booked_tick_border_color', $bookedTickBorderColor ?? '#ffffff') }}" id="booth_booked_tick_border_color_hex" maxlength="7" pattern="#[0-9A-Fa-f]{6}" placeholder="#ffffff" aria-label="Border hex">
-                                </div>
-                            </div>
-                        </div>
-                        <small class="text-muted d-block mt-1">Customize how the booked tick looks on canvas and public view. Colors must be hex (e.g. #28a745).</small>
-                    </div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-1"></i>Save Public View Settings
-                    </button>
-                </form>
+                @include('settings.partials.public-view-form', [
+                    'formId' => 'publicViewSettingsForm',
+                    'idPrefix' => '',
+                ])
             </div>
         </div>
     </div>
@@ -366,7 +177,7 @@
             </div>
             <div class="p-4">
                 <p class="text-muted">Enable browser push notifications so users receive alerts (e.g. new bookings, booth updates) even when the tab is in the background. Uses Web Push (VAPID).</p>
-                <form id="pushNotificationSettingsForm" action="{{ route('settings.push-notifications.save') }}" method="POST">
+                <form id="pushNotificationSettingsForm" action="{{ route('settings.push-notifications.save') }}" method="POST" class="settings-form-ajax">
                     @csrf
                     <div class="mb-3">
                         <div class="form-check form-switch">
@@ -703,7 +514,7 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-save me-2"></i>Save CDN Settings
                                 </button>
-                                <button type="button" class="btn btn-secondary ms-2" onclick="location.reload()">
+                                <button type="button" class="btn btn-secondary ms-2" id="cdnRefreshPageHintBtn">
                                     <i class="fas fa-sync-alt me-2"></i>Refresh Page
                                 </button>
                             </div>
@@ -729,27 +540,11 @@
                             </ul>
                         </div>
 
-                        <form id="moduleDisplayForm">
-                            @csrf
-                            <div class="row g-3" id="moduleDisplayContainer">
-                                <!-- Modules will be loaded here -->
-                                <div class="col-12 text-center py-5">
-                                    <div class="spinner-border text-primary" role="status">
-                                        <span class="visually-hidden">Loading...</span>
-                                    </div>
-                                    <p class="mt-3 text-muted">Loading module settings...</p>
-                                </div>
-                            </div>
-
-                            <div class="mt-4">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save me-2"></i>Save Module Display Settings
-                                </button>
-                                <button type="button" class="btn btn-secondary ms-2" onclick="loadModuleDisplaySettings()">
-                                    <i class="fas fa-sync-alt me-2"></i>Reset to Defaults
-                                </button>
-                            </div>
-                        </form>
+                        @include('settings.partials.module-display-form', [
+                            'moduleDisplayFormId' => 'moduleDisplayForm',
+                            'moduleDisplayContainerId' => 'moduleDisplayContainer',
+                            'useGlobalResetOnclick' => true,
+                        ])
                     </div>
                 </div>
             </div>
@@ -855,15 +650,6 @@
                 if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) borderColorEl.value = this.value;
             });
         }
-        // Apply to floor plan: reload to load that floor plan's tick settings
-        var tickFpEl = document.getElementById('tick_floor_plan_id');
-        if (tickFpEl) {
-            tickFpEl.addEventListener('change', function() {
-                var base = '{{ route("settings.index") }}';
-                var q = this.value ? '?tick_floor_plan_id=' + encodeURIComponent(this.value) : '';
-                window.location = base + q;
-            });
-        }
         // Toggle overall size: fixed vs relative to booth
         var sizeModeEl = document.getElementById('booth_booked_tick_size_mode');
         var relativeWrap = document.getElementById('booth_booked_tick_relative_wrap');
@@ -884,6 +670,83 @@
     setTimeout(function() {
         $('.alert').fadeOut('slow');
     }, 5000);
+
+    // Cache, upload, public view, push — submit via AJAX (no full page reload)
+    $(document).on('submit', 'form.settings-form-ajax', function(e) {
+        e.preventDefault();
+        var $form = $(this);
+        var confirmMsg = $form.data('confirm');
+        if (confirmMsg && !window.confirm(confirmMsg)) {
+            return;
+        }
+        var $btn = $form.find('button[type="submit"], input[type="submit"]');
+        $btn.prop('disabled', true);
+        $.ajax({
+            url: $form.attr('action'),
+            method: 'POST',
+            data: $form.serialize(),
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+            success: function(res) {
+                if (res.status === 200) {
+                    toastr.success(res.message || 'Saved.');
+                } else {
+                    toastr.error(res.message || 'Something went wrong.');
+                }
+            },
+            error: function(xhr) {
+                var r = xhr.responseJSON || {};
+                var msg = r.message || 'Request failed.';
+                if (r.errors) {
+                    msg += ' ' + Object.values(r.errors).flat().join(' ');
+                }
+                toastr.error(msg);
+            },
+            complete: function() {
+                $btn.prop('disabled', false);
+            }
+        });
+    });
+
+    function applyTickSettingsToForm(d) {
+        $('#booth_booked_show_tick').prop('checked', !!d.show_tick);
+        $('#booth_booked_tick_color').val(d.color);
+        $('#booth_booked_tick_color_hex').val(d.color);
+        $('#booth_booked_tick_size').val(d.size);
+        $('#booth_booked_tick_shape').val(d.shape);
+        $('#booth_booked_tick_position').val(d.position);
+        $('#booth_booked_tick_animation').val(d.animation);
+        $('#booth_booked_tick_font_size').val(d.font_size);
+        $('#booth_booked_tick_relative_percent').val(String(d.relative_percent));
+        $('#booth_booked_tick_border_width').val(String(d.border_width));
+        $('#booth_booked_tick_border_color').val(d.border_color);
+        $('#booth_booked_tick_border_color_hex').val(d.border_color);
+        var bgEmpty = !d.bg_color || d.bg_color === '';
+        $('#booth_booked_tick_bg_none').prop('checked', bgEmpty);
+        if (!bgEmpty) {
+            $('#booth_booked_tick_bg_color').val(d.bg_color);
+            $('#booth_booked_tick_bg_color_hex').val(d.bg_color);
+        }
+        $('#booth_booked_tick_size_mode').val(d.size_mode).trigger('change');
+        $('#booth_booked_tick_bg_none').trigger('change');
+    }
+
+    $('#tick_floor_plan_id').on('change', function() {
+        var id = $(this).val();
+        $.get('{{ route("settings.tick-settings") }}', { floor_plan_id: id || '' })
+            .done(function(res) {
+                if (res.status !== 200 || !res.data) {
+                    return;
+                }
+                applyTickSettingsToForm(res.data);
+            })
+            .fail(function() {
+                toastr.error('Could not load tick settings for this floor plan.');
+            });
+    });
+
+    $('#cdnRefreshPageHintBtn').on('click', function() {
+        toastr.info('Refresh this page when you want assets to reload with the saved CDN option.', 'Optional refresh', { timeOut: 6000 });
+    });
 
     // Load company settings
     function loadCompanySettings() {
@@ -1097,11 +960,7 @@
             data: data,
             success: function(response) {
                 if (response.status === 200) {
-                    toastr.success(response.message || 'Appearance settings saved successfully');
-                    // Reload page to apply changes
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 1500);
+                    toastr.success((response.message || 'Appearance settings saved successfully') + ' Refresh the page when you want the layout to use the new colors.');
                 }
             },
             error: function(xhr) {
@@ -1144,14 +1003,7 @@
                 if (response.status === 200) {
                     toastr.success(response.message || 'CDN settings saved successfully');
                     updateCDNStatus(data.use_cdn === 1);
-                    // Show message to refresh page
-                    setTimeout(function() {
-                        toastr.info('Please refresh the page to apply CDN changes', 'Refresh Required', {
-                            timeOut: 0,
-                            extendedTimeOut: 0,
-                            closeButton: true
-                        });
-                    }, 1000);
+                    toastr.info('Open other pages in a new tab or refresh them to pick up CDN changes; refresh this page only if you need scripts reloaded here.', 'CDN note', { timeOut: 8000 });
                 } else {
                     toastr.error(response.message || 'Failed to save CDN settings');
                 }
@@ -1276,11 +1128,7 @@
             data: data,
             success: function(response) {
                 if (response.status === 200) {
-                    toastr.success(response.message || 'Module display settings saved successfully');
-                    // Reload to apply changes
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 1500);
+                    toastr.success((response.message || 'Module display settings saved successfully') + ' Open another page or refresh to see menu changes on mobile/tablet.');
                 } else {
                     toastr.error(response.message || 'Failed to save module display settings');
                 }
