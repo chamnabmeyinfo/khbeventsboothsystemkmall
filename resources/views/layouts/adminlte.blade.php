@@ -1626,7 +1626,7 @@
         @endif
         
         @if(($moduleSettings['booths']['mobile'] ?? true) || ($moduleSettings['booths']['tablet'] ?? true))
-        <a href="{{ route('booths.index', ['view' => 'management']) }}" class="modern-aside-item" data-route="booths">
+        <a href="{{ route('booths.index') }}" class="modern-aside-item" data-route="booths">
             <i class="fas fa-store"></i>
             <span>Booths</span>
         </a>
@@ -2362,7 +2362,7 @@ $.widget.bridge('uibutton', $.ui.button);
         @endif
         
         @if(($moduleSettings['booths']['mobile'] ?? true) || ($moduleSettings['booths']['tablet'] ?? true))
-        <a href="{{ route('booths.index', ['view' => 'management']) }}" class="modern-mobile-nav-item" data-route="booths">
+        <a href="{{ route('booths.index') }}" class="modern-mobile-nav-item" data-route="booths">
             <i class="fas fa-store"></i>
             <span>Booths</span>
         </a>

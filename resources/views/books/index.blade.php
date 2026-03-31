@@ -258,7 +258,7 @@
 @php
     $lazyLoadMoreAvailable = ($groupBy === 'none' && isset($total, $books) && $total > $books->count());
 @endphp
-<script src="{{ asset('js/books-table-column-resize.js') }}?v=1"></script>
+<script src="{{ asset('js/books-table-column-resize.js') }}?v=2"></script>
 <script>
 (function() {
     'use strict';

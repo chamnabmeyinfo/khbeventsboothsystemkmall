@@ -3364,22 +3364,22 @@
                     <!-- Tab Navigation -->
                     <ul class="nav nav-pills nav-fill mb-4" id="boothFormTabs" role="tablist" style="border-bottom: 2px solid #e9ecef; padding-bottom: 15px;">
                         <li class="nav-item">
-                            <a class="nav-link active" id="basic-tab" data-toggle="tab" href="#basic-info" role="tab" aria-controls="basic-info" aria-selected="true">
+                            <a class="nav-link active" id="basic-tab" data-toggle="tab" data-target="#basic-info" href="javascript:void(0)" role="tab" aria-controls="basic-info" aria-selected="true">
                                 <i class="fas fa-info-circle mr-2"></i>Basic Information
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="details-tab" data-toggle="tab" href="#details-info" role="tab" aria-controls="details-info" aria-selected="false">
+                            <a class="nav-link" id="details-tab" data-toggle="tab" data-target="#details-info" href="javascript:void(0)" role="tab" aria-controls="details-info" aria-selected="false">
                                 <i class="fas fa-clipboard-list mr-2"></i>Details & Specifications
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="content-tab" data-toggle="tab" href="#content-info" role="tab" aria-controls="content-info" aria-selected="false">
+                            <a class="nav-link" id="content-tab" data-toggle="tab" data-target="#content-info" href="javascript:void(0)" role="tab" aria-controls="content-info" aria-selected="false">
                                 <i class="fas fa-align-left mr-2"></i>Content & Description
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="media-tab" data-toggle="tab" href="#media-info" role="tab" aria-controls="media-info" aria-selected="false">
+                            <a class="nav-link" id="media-tab" data-toggle="tab" data-target="#media-info" href="javascript:void(0)" role="tab" aria-controls="media-info" aria-selected="false">
                                 <i class="fas fa-image mr-2"></i>Media
                             </a>
                         </li>
@@ -3782,6 +3782,13 @@ let currentBoothId = null;
 
 // Initialize DataTable
 $(document).ready(function() {
+    // Booth modal tabs used to use href="#basic-info" etc., which appended hashes to the page URL.
+    if (/^#(basic-info|details-info|content-info|media-info)$/.test(window.location.hash)) {
+        try {
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        } catch (e) {}
+    }
+
     $('#boothsTable').DataTable({
         pageLength: 50,
         lengthChange: false, // Hide the length/rows per page selector

@@ -23,7 +23,7 @@
             <h1 class="mb-0" style="font-size: var(--font-size-2xl, 1.5rem); font-weight: 700; color: var(--text-primary, #1d1d1f);">Booths</h1>
         </div>
         <div class="looker-actions">
-            <a href="{{ route('booths.index', ['view' => 'management', 'create' => 1]) }}" class="action-btn action-btn-primary" style="box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.1));">
+            <a href="{{ route('booths.index', ['view' => 'canvas', 'create' => 1]) }}" class="action-btn action-btn-primary" style="box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.1));">
                 <i class="fas fa-plus"></i> New Booth
             </a>
         </div>
@@ -46,8 +46,7 @@
                     elseif ($activeFilter === '3') $activeFilter = 'reserved';
                     elseif (in_array($activeFilter, ['2','4'])) $activeFilter = 'booked';
                 @endphp
-                <input type="hidden" name="view" value="table">
-                <a href="{{ route('booths.index', ['view' => 'management', 'search' => request('search')]) }}" class="filter-chip text-decoration-none {{ $activeFilter === 'all' ? 'active' : '' }}" style="padding: 0.5rem 1rem; border-radius: var(--radius-lg); font-size: var(--font-size-sm); font-weight: 500; background: {{ $activeFilter === 'all' ? 'var(--color-primary)' : 'var(--color-gray-100)' }}; color: {{ $activeFilter === 'all' ? 'white' : 'var(--color-gray-700)' }};">All</a>
+                <a href="{{ route('booths.index', array_filter(['search' => request('search')]))) }}" class="filter-chip text-decoration-none {{ $activeFilter === 'all' ? 'active' : '' }}" style="padding: 0.5rem 1rem; border-radius: var(--radius-lg); font-size: var(--font-size-sm); font-weight: 500; background: {{ $activeFilter === 'all' ? 'var(--color-primary)' : 'var(--color-gray-100)' }}; color: {{ $activeFilter === 'all' ? 'white' : 'var(--color-gray-700)' }};">All</a>
                 <button type="submit" name="status" value="1" class="filter-chip border-0 {{ $activeFilter === 'available' ? 'active' : '' }}" style="padding: 0.5rem 1rem; border-radius: var(--radius-lg); font-size: var(--font-size-sm); font-weight: 500; background: {{ $activeFilter === 'available' ? 'var(--color-primary)' : 'var(--color-gray-100)' }}; color: {{ $activeFilter === 'available' ? 'white' : 'var(--color-gray-700)' }};">Available</button>
                 <button type="submit" name="status" value="3" class="filter-chip border-0 {{ $activeFilter === 'reserved' ? 'active' : '' }}" style="padding: 0.5rem 1rem; border-radius: var(--radius-lg); font-size: var(--font-size-sm); font-weight: 500; background: {{ $activeFilter === 'reserved' ? 'var(--color-primary)' : 'var(--color-gray-100)' }}; color: {{ $activeFilter === 'reserved' ? 'white' : 'var(--color-gray-700)' }};">Reserved</button>
                 <button type="submit" name="status" value="2" class="filter-chip border-0 {{ $activeFilter === 'booked' ? 'active' : '' }}" style="padding: 0.5rem 1rem; border-radius: var(--radius-lg); font-size: var(--font-size-sm); font-weight: 500; background: {{ $activeFilter === 'booked' ? 'var(--color-primary)' : 'var(--color-gray-100)' }}; color: {{ $activeFilter === 'booked' ? 'white' : 'var(--color-gray-700)' }};">Booked</button>

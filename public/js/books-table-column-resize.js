@@ -1,13 +1,25 @@
 /**
- * Drag-to-resize columns for .books-looker-table on /books.
- * Persists widths in localStorage (booksTableColumnWidths_v1).
+ * Drag-to-resize columns for .books-looker-table (e.g. /books, /booths).
+ * Persists widths in localStorage. Default key: booksTableColumnWidths_v1.
+ * Set data-books-column-resize-key="booths" (or any id) on the table for a separate key.
  */
 (function () {
     'use strict';
 
-    var STORAGE_KEY = 'booksTableColumnWidths_v1';
+    var DEFAULT_STORAGE_KEY = 'booksTableColumnWidths_v1';
     var MIN_W = 48;
     var MAX_W = 640;
+
+    function getStorageKey(table) {
+        if (!table || !table.getAttribute) {
+            return DEFAULT_STORAGE_KEY;
+        }
+        var k = table.getAttribute('data-books-column-resize-key');
+        if (k) {
+            return 'booksLookerTableColumnWidths_' + k + '_v1';
+        }
+        return DEFAULT_STORAGE_KEY;
+    }
 
     function clamp(n, a, b) {
         return Math.max(a, Math.min(b, n));
@@ -26,7 +38,7 @@
 
     function applySavedWidths(table) {
         try {
-            var raw = localStorage.getItem(STORAGE_KEY);
+            var raw = localStorage.getItem(getStorageKey(table));
             if (!raw) return;
             var widths = JSON.parse(raw);
             if (!Array.isArray(widths)) return;
@@ -46,7 +58,7 @@
             out.push(ths[i].getBoundingClientRect().width);
         }
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(out));
+            localStorage.setItem(getStorageKey(table), JSON.stringify(out));
         } catch (e) {}
     }
 

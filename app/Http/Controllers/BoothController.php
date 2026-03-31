@@ -64,10 +64,21 @@ class BoothController extends Controller
         if ($view === 'canvas') {
             // falls through to canvas block below
         } elseif ($view === 'list' || $view === 'table') {
-            // Legacy ?view=table / ?view=list → full management table
-            return redirect()->route('booths.index', ['view' => 'management'] + $request->except('view'));
+            // Legacy ?view=table / ?view=list → default booth directory
+            return redirect()->route('booths.index', $request->except('view'));
         } elseif ($view === 'management') {
-            return $this->managementTable($request);
+            // Retired: full management table + floor_plan_id filter — send users to overview or export
+            if ($request->query('export') === 'csv') {
+                return redirect()->route('export.booths');
+            }
+            if ($request->filled('edit')) {
+                $editBooth = Booth::find($request->query('edit'));
+                if ($editBooth) {
+                    return redirect()->route('booths.edit', $editBooth);
+                }
+            }
+
+            return redirect()->route('booths.index', $request->except(['view', 'floor_plan_id']));
         } else {
             // Default overview (Looker Design 01 list) and other non-canvas views
             return $this->boothsList($request);
@@ -465,13 +476,8 @@ class BoothController extends Controller
                 ]);
             }
 
-            // Preserve floor_plan_id in redirect if specified
-            $redirectUrl = route('booths.index', ['view' => 'management']);
-            if (! empty($booth->floor_plan_id)) {
-                $redirectUrl .= '&floor_plan_id='.$booth->floor_plan_id;
-            }
-
-            return redirect($redirectUrl)
+            return redirect()
+                ->route('booths.index')
                 ->with('success', 'Booth created successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Return JSON if requested (for AJAX)
@@ -566,18 +572,18 @@ class BoothController extends Controller
 
     /**
      * Show the form for editing the specified booth
-     * Redirects to management table with edit parameter to auto-open modal
+     * Redirects to floor plan canvas when a floor plan is set; otherwise booth detail.
      */
     public function edit(Booth $booth, Request $request)
     {
-        // Redirect to management view with edit parameter (modal opens there)
-        $queryParams = ['view' => 'management', 'edit' => $booth->id];
-
         if ($booth->floor_plan_id) {
-            $queryParams['floor_plan_id'] = $booth->floor_plan_id;
+            return redirect()->route('booths.index', [
+                'view' => 'canvas',
+                'floor_plan_id' => $booth->floor_plan_id,
+            ]);
         }
 
-        return redirect()->route('booths.index', $queryParams);
+        return redirect()->route('booths.index');
     }
 
     /**
@@ -601,7 +607,7 @@ class BoothController extends Controller
             }
 
             return redirect()
-                ->route('booths.index', ['view' => 'management'])
+                ->route('booths.index')
                 ->with('success', 'Booth updated successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Return JSON if requested (for AJAX)
@@ -1888,6 +1894,44 @@ class BoothController extends Controller
      */
     public function boothsList(Request $request)
     {
+        if ($request->wantsJson() && $request->boolean('booths_list_partial')) {
+            return $this->boothsListPartialJson($request);
+        }
+
+        $booths = $this->paginateBoothsDirectoryQuery($request);
+
+        // Global stats (across all booths, not just current page/filter)
+        $stats = [
+            'total'     => Booth::count(),
+            'available' => Booth::where('status', Booth::STATUS_AVAILABLE)->count(),
+            'reserved'  => Booth::where('status', Booth::STATUS_RESERVED)->count(),
+            'booked'    => Booth::whereIn('status', [Booth::STATUS_CONFIRMED, Booth::STATUS_PAID])->count(),
+        ];
+
+        $masterBoothImageUrl = Setting::getMasterBoothImageUrl();
+        $masterBoothUploadHint = UploadSettingsHelper::getHint(UploadSettingsHelper::CONTEXT_BOOTH);
+
+        $boothsModuleNav = Setting::getModuleDisplaySettings()['booths'] ?? ['mobile' => true, 'tablet' => true];
+        $boothsUploadContext = [
+            'max_mb' => Setting::getValue('uploads_booth_max_size_mb', '') ?: '',
+            'extensions' => Setting::getValue('uploads_booth_allowed_extensions', '') ?: '',
+        ];
+
+        return view('booths.index', compact(
+            'booths',
+            'stats',
+            'masterBoothImageUrl',
+            'masterBoothUploadHint',
+            'boothsModuleNav',
+            'boothsUploadContext'
+        ));
+    }
+
+    /**
+     * Paginated booths query for the directory list (search + status).
+     */
+    private function paginateBoothsDirectoryQuery(Request $request)
+    {
         $query = Booth::with([
             'client',
             'boothType',
@@ -1917,33 +1961,48 @@ class BoothController extends Controller
         }
 
         $query->orderBy('booth_number', 'asc');
-        $booths = $query->paginate(25)->withQueryString();
 
-        // Global stats (across all booths, not just current page/filter)
-        $stats = [
-            'total'     => Booth::count(),
-            'available' => Booth::where('status', Booth::STATUS_AVAILABLE)->count(),
-            'reserved'  => Booth::where('status', Booth::STATUS_RESERVED)->count(),
-            'booked'    => Booth::whereIn('status', [Booth::STATUS_CONFIRMED, Booth::STATUS_PAID])->count(),
-        ];
+        return $query->paginate(25)->withQueryString();
+    }
 
-        $masterBoothImageUrl = Setting::getMasterBoothImageUrl();
-        $masterBoothUploadHint = UploadSettingsHelper::getHint(UploadSettingsHelper::CONTEXT_BOOTH);
+    /**
+     * JSON fragment for #boothsListAjaxRoot when filters change (no full page reload).
+     */
+    private function boothsListPartialJson(Request $request)
+    {
+        $booths = $this->paginateBoothsDirectoryQuery($request);
+        $html = view('booths.partials.list-results', compact('booths'))->render();
 
-        $boothsModuleNav = Setting::getModuleDisplaySettings()['booths'] ?? ['mobile' => true, 'tablet' => true];
-        $boothsUploadContext = [
-            'max_mb' => Setting::getValue('uploads_booth_max_size_mb', '') ?: '',
-            'extensions' => Setting::getValue('uploads_booth_allowed_extensions', '') ?: '',
-        ];
+        return response()->json([
+            'success' => true,
+            'html' => $html,
+            'activeFilter' => $this->boothsDirectoryActiveFilterKey($request),
+            'activeFilterCount' => $this->countBoothDirectoryFilters($request),
+        ], 200, [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    }
 
-        return view('booths.index', compact(
-            'booths',
-            'stats',
-            'masterBoothImageUrl',
-            'masterBoothUploadHint',
-            'boothsModuleNav',
-            'boothsUploadContext'
-        ));
+    /**
+     * @return string 'all'|'available'|'reserved'|'booked'
+     */
+    private function boothsDirectoryActiveFilterKey(Request $request): string
+    {
+        $activeFilter = $request->input('status', 'all');
+        if ($activeFilter === '1') {
+            return 'available';
+        }
+        if ($activeFilter === '3') {
+            return 'reserved';
+        }
+        if (in_array((string) $activeFilter, ['2', '4', '5'], true)) {
+            return 'booked';
+        }
+
+        return 'all';
+    }
+
+    private function countBoothDirectoryFilters(Request $request): int
+    {
+        return (int) $request->filled('search') + (int) $request->filled('status');
     }
 
     /**
