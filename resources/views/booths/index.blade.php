@@ -5,7 +5,7 @@
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.6">
 <link rel="stylesheet" href="{{ asset('css/books-page-index.css') }}?v=1.0">
-<link rel="stylesheet" href="{{ asset('css/booths-on-books.css') }}?v=1.7">
+<link rel="stylesheet" href="{{ asset('css/booths-on-books.css') }}?v=1.9">
 @endpush
 
 @push('body-class', 'ios-dashboard-mode')
@@ -109,7 +109,7 @@
                 <i class="fas fa-th-large me-1" aria-hidden="true"></i>Cards
             </button>
         </div>
-        <button type="button" class="action-btn action-btn-secondary booths-list-settings-btn" data-bs-toggle="offcanvas" data-bs-target="#boothsListSettingsOffcanvas" aria-controls="boothsListSettingsOffcanvas" id="boothsListSettingsOpen">
+        <button type="button" class="action-btn action-btn-secondary booths-list-settings-btn" data-bs-toggle="modal" data-bs-target="#boothsListSettingsModal" aria-controls="boothsListSettingsModal" id="boothsListSettingsOpen">
             <i class="fas fa-cog me-1" aria-hidden="true"></i>Booth settings
         </button>
     </div>
@@ -416,101 +416,142 @@
         @endif
     </div>
 
-    {{-- Booth list settings: card size + (admins) default card image --}}
-    <div class="offcanvas offcanvas-end booths-list-settings-offcanvas text-body" tabindex="-1" id="boothsListSettingsOffcanvas" aria-labelledby="boothsListSettingsLabel">
-        <div class="offcanvas-header border-bottom">
-            <h5 class="offcanvas-title d-flex align-items-center gap-2" id="boothsListSettingsLabel">
-                <i class="fas fa-sliders-h text-primary" aria-hidden="true"></i>Booth list settings
-            </h5>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body">
-            <section class="mb-4">
-                <h6 class="fw-bold mb-2">Card layout</h6>
-                <p class="text-muted small mb-3">Used when <strong>Cards</strong> view is on. This preference is saved in your browser.</p>
-                <div class="books-view-toggle booths-density-toggle booths-density-toggle--settings w-100 flex-wrap" role="group" aria-label="Card size">
-                    <button type="button" class="plastic-btn-press" onclick="setBoothsCardDensity('tiny')" id="boothsDensityTiny" title="Tiny list — compact rows">
-                        <i class="fas fa-list me-1" aria-hidden="true"></i>Tiny
-                    </button>
-                    <button type="button" class="plastic-btn-press" onclick="setBoothsCardDensity('small')" id="boothsDensitySmall">Small</button>
-                    <button type="button" class="active plastic-btn-press" onclick="setBoothsCardDensity('medium')" id="boothsDensityMedium">Medium</button>
-                    <button type="button" class="plastic-btn-press" onclick="setBoothsCardDensity('large')" id="boothsDensityLarge">Large</button>
-                </div>
-            </section>
-
-            @if(auth()->user()->isAdmin())
-            <hr class="my-4">
-            <section class="booths-settings-master-image" role="region" aria-label="Default booth card image">
-                <h6 class="fw-bold mb-2">Default card image</h6>
-                <p class="text-muted small mb-3">Shown when a booth has no photo. Per-booth images always override this.</p>
-                <div class="d-flex flex-wrap align-items-start gap-3 mb-3">
-                    <div class="booths-settings-master-image__preview flex-shrink-0">
-                        <img id="boothsPageMasterImagePreview" src="{{ $masterBoothImageUrl ?? '' }}" alt="" class="rounded border bg-light" width="120" height="120" style="object-fit: cover; {{ $masterBoothImageUrl ? '' : 'display: none;' }}">
-                        <p id="boothsPageMasterImagePlaceholder" class="text-muted small mb-0 mt-2 {{ $masterBoothImageUrl ? 'd-none' : '' }}" style="width: 120px;">No image set</p>
+    {{-- Booth list settings: centered modal (Looker-style) --}}
+    <div class="modal fade booths-list-settings-modal text-body" id="boothsListSettingsModal" tabindex="-1" aria-labelledby="boothsListSettingsLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content booths-settings-modal__shell">
+                <div class="modal-header booths-settings-modal__header border-0">
+                    <div class="d-flex align-items-start gap-3 flex-grow-1 min-w-0">
+                        <div class="booths-settings-modal__icon-wrap" aria-hidden="true">
+                            <i class="fas fa-sliders-h"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h5 class="modal-title mb-1" id="boothsListSettingsLabel">Booth list settings</h5>
+                            <p class="booths-settings-modal__subtitle mb-0">Cards layout, defaults, and booth-related system options.</p>
+                        </div>
                     </div>
-                    <div class="flex-grow-1" style="min-width: 200px;">
-                        <label class="form-label small" for="boothsPageMasterImageFile">Upload</label>
-                        <input type="file" class="form-control form-control-sm" id="boothsPageMasterImageFile" accept="image/jpeg,image/png,image/gif" aria-label="Choose default card image file">
-                        <small class="text-muted d-block mt-2">{{ $masterBoothUploadHint ?? '' }}</small>
+                    <button type="button" class="btn-close booths-settings-modal__close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body booths-settings-modal__body">
+                    <div class="booths-settings-block">
+                        <div class="booths-settings-block__head">
+                            <span class="booths-settings-block__icon booths-settings-block__icon--blue"><i class="fas fa-th-large" aria-hidden="true"></i></span>
+                            <div>
+                                <h6 class="booths-settings-block__title">Card layout</h6>
+                                <p class="booths-settings-block__desc">Used when <strong>Cards</strong> is selected. Stored in this browser only.</p>
+                            </div>
+                        </div>
+                        <div class="books-view-toggle booths-density-toggle booths-density-toggle--settings w-100 flex-wrap" role="group" aria-label="Card size">
+                            <button type="button" class="plastic-btn-press" onclick="setBoothsCardDensity('tiny')" id="boothsDensityTiny" title="Tiny list — compact rows">
+                                <i class="fas fa-list me-1" aria-hidden="true"></i>Tiny
+                            </button>
+                            <button type="button" class="plastic-btn-press" onclick="setBoothsCardDensity('small')" id="boothsDensitySmall">Small</button>
+                            <button type="button" class="active plastic-btn-press" onclick="setBoothsCardDensity('medium')" id="boothsDensityMedium">Medium</button>
+                            <button type="button" class="plastic-btn-press" onclick="setBoothsCardDensity('large')" id="boothsDensityLarge">Large</button>
+                        </div>
                     </div>
-                </div>
-                <div class="d-flex flex-wrap gap-2">
-                    <button type="button" class="btn btn-primary btn-sm" id="boothsPageMasterImageSave" disabled>
-                        <i class="fas fa-save me-1"></i>Save
-                    </button>
-                    <button type="button" class="btn btn-outline-danger btn-sm" id="boothsPageMasterImageRemove" {{ ($masterBoothImageUrl ?? null) ? '' : 'disabled' }}>
-                        <i class="fas fa-times me-1"></i>Remove
-                    </button>
-                </div>
-            </section>
 
-            <hr class="my-4">
-            <section class="booths-settings-upload" aria-labelledby="boothsSettingsUploadHeading">
-                <h6 class="fw-bold mb-2" id="boothsSettingsUploadHeading">Booth photo uploads</h6>
-                <p class="text-muted small mb-3">Max size and allowed extensions for <strong>booth images</strong> (gallery and legacy field). Other upload types (floor plan, avatar, …) stay in System Settings.</p>
-                <div class="row g-2 mb-2">
-                    <div class="col-auto" style="min-width: 7rem;">
-                        <label class="form-label small mb-0" for="boothsUploadContextMaxMb">Max size (MB)</label>
-                        <input type="number" class="form-control form-control-sm" id="boothsUploadContextMaxMb" name="uploads_booth_max_size_mb" value="{{ old('uploads_booth_max_size_mb', $boothsUploadContext['max_mb'] ?? '') }}" min="0" max="100" step="0.5" placeholder="—">
+                    @if(auth()->user()->isAdmin())
+                    <div class="booths-settings-block" role="region" aria-label="Default booth card image">
+                        <div class="booths-settings-block__head">
+                            <span class="booths-settings-block__icon booths-settings-block__icon--purple"><i class="fas fa-image" aria-hidden="true"></i></span>
+                            <div>
+                                <h6 class="booths-settings-block__title" id="boothsSettingsMasterHeading">Default card image</h6>
+                                <p class="booths-settings-block__desc">Fallback when a booth has no photo. Per-booth images override this.</p>
+                            </div>
+                        </div>
+                        <div class="row g-3 align-items-start">
+                            <div class="col-auto">
+                                <div class="booths-settings-master-frame">
+                                    <img id="boothsPageMasterImagePreview" src="{{ $masterBoothImageUrl ?? '' }}" alt="" class="booths-settings-master-frame__img {{ $masterBoothImageUrl ? '' : 'd-none' }}" width="120" height="120">
+                                    <div id="boothsPageMasterImagePlaceholder" class="booths-settings-master-frame__empty {{ $masterBoothImageUrl ? 'd-none' : '' }}">
+                                        <i class="fas fa-image"></i>
+                                        <span>No image</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col min-w-0">
+                                <label class="form-label small fw-semibold" for="boothsPageMasterImageFile">Upload file</label>
+                                <input type="file" class="form-control form-control-sm" id="boothsPageMasterImageFile" accept="image/jpeg,image/png,image/gif" aria-label="Choose default card image file">
+                                <small class="text-muted d-block mt-2">{{ $masterBoothUploadHint ?? '' }}</small>
+                                <div class="d-flex flex-wrap gap-2 mt-3">
+                                    <button type="button" class="btn btn-primary btn-sm px-3" id="boothsPageMasterImageSave" disabled>
+                                        <i class="fas fa-save me-1"></i>Save
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm px-3" id="boothsPageMasterImageRemove" {{ ($masterBoothImageUrl ?? null) ? '' : 'disabled' }}>
+                                        <i class="fas fa-times me-1"></i>Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col">
-                        <label class="form-label small mb-0" for="boothsUploadContextExts">Allowed extensions</label>
-                        <input type="text" class="form-control form-control-sm" id="boothsUploadContextExts" name="uploads_booth_allowed_extensions" value="{{ old('uploads_booth_allowed_extensions', $boothsUploadContext['extensions'] ?? '') }}" placeholder="e.g. jpg, png, gif" autocomplete="off">
+
+                    <div class="booths-settings-block" aria-labelledby="boothsSettingsUploadHeading">
+                        <div class="booths-settings-block__head">
+                            <span class="booths-settings-block__icon booths-settings-block__icon--orange"><i class="fas fa-cloud-upload-alt" aria-hidden="true"></i></span>
+                            <div>
+                                <h6 class="booths-settings-block__title" id="boothsSettingsUploadHeading">Booth photo uploads</h6>
+                                <p class="booths-settings-block__desc">Limits for booth gallery and legacy booth image fields.</p>
+                            </div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-sm-4">
+                                <label class="form-label small fw-semibold mb-1" for="boothsUploadContextMaxMb">Max size (MB)</label>
+                                <input type="number" class="form-control" id="boothsUploadContextMaxMb" name="uploads_booth_max_size_mb" value="{{ old('uploads_booth_max_size_mb', $boothsUploadContext['max_mb'] ?? '') }}" min="0" max="100" step="0.5" placeholder="—">
+                            </div>
+                            <div class="col-sm-8">
+                                <label class="form-label small fw-semibold mb-1" for="boothsUploadContextExts">Allowed extensions</label>
+                                <input type="text" class="form-control" id="boothsUploadContextExts" name="uploads_booth_allowed_extensions" value="{{ old('uploads_booth_allowed_extensions', $boothsUploadContext['extensions'] ?? '') }}" placeholder="e.g. jpg, png, gif" autocomplete="off">
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm mt-3 px-3" id="boothsPageUploadLimitsSave">
+                            <i class="fas fa-save me-1"></i>Save upload limits
+                        </button>
                     </div>
-                </div>
-                <button type="button" class="btn btn-primary btn-sm" id="boothsPageUploadLimitsSave">
-                    <i class="fas fa-save me-1"></i>Save upload limits
-                </button>
-            </section>
 
-            <hr class="my-4">
-            <section class="booths-settings-module-nav" aria-labelledby="boothsSettingsModuleHeading">
-                <h6 class="fw-bold mb-2" id="boothsSettingsModuleHeading">Booths in menu</h6>
-                <p class="text-muted small mb-3">Show the Booths item in the sidebar on smaller screens (desktop is unchanged).</p>
-                <div class="form-check form-switch mb-2">
-                    <input class="form-check-input" type="checkbox" id="boothsModuleNavMobile" value="1" {{ ($boothsModuleNav['mobile'] ?? true) ? 'checked' : '' }}>
-                    <label class="form-check-label" for="boothsModuleNavMobile">Mobile (≤768px)</label>
-                </div>
-                <div class="form-check form-switch mb-3">
-                    <input class="form-check-input" type="checkbox" id="boothsModuleNavTablet" value="1" {{ ($boothsModuleNav['tablet'] ?? true) ? 'checked' : '' }}>
-                    <label class="form-check-label" for="boothsModuleNavTablet">Tablet (769px–1024px)</label>
-                </div>
-                <button type="button" class="btn btn-primary btn-sm" id="boothsPageModuleNavSave">
-                    <i class="fas fa-save me-1"></i>Save menu visibility
-                </button>
-            </section>
+                    <div class="booths-settings-block" aria-labelledby="boothsSettingsModuleHeading">
+                        <div class="booths-settings-block__head">
+                            <span class="booths-settings-block__icon booths-settings-block__icon--green"><i class="fas fa-bars" aria-hidden="true"></i></span>
+                            <div>
+                                <h6 class="booths-settings-block__title" id="boothsSettingsModuleHeading">Booths in sidebar menu</h6>
+                                <p class="booths-settings-block__desc">Visibility on smaller screens; desktop navigation is unchanged.</p>
+                            </div>
+                        </div>
+                        <div class="booths-settings-switches">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="boothsModuleNavMobile" value="1" {{ ($boothsModuleNav['mobile'] ?? true) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="boothsModuleNavMobile">Show on mobile (≤768px)</label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="boothsModuleNavTablet" value="1" {{ ($boothsModuleNav['tablet'] ?? true) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="boothsModuleNavTablet">Show on tablet (769px–1024px)</label>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm mt-3 px-3" id="boothsPageModuleNavSave">
+                            <i class="fas fa-save me-1"></i>Save menu visibility
+                        </button>
+                    </div>
 
-            <hr class="my-4">
-            <section class="booths-settings-more" aria-labelledby="boothsSettingsMoreHeading">
-                <h6 class="fw-bold mb-2" id="boothsSettingsMoreHeading">More in System Settings</h6>
-                <p class="text-muted small mb-2">These pages still live under <strong>Settings</strong> (full forms, all modules).</p>
-                <ul class="mb-0 small ps-3 booths-settings-more__list">
-                    <li><a href="{{ route('settings.index') }}#settings-upload-control">Upload control</a> — all file types and global limits</li>
-                    <li><a href="{{ route('settings.index') }}#settings-public-view">Public floor plan &amp; booked tick</a> — canvas and public view</li>
-                    <li><a href="{{ route('settings.index') }}#module-display">Module display</a> — all modules on mobile/tablet</li>
-                </ul>
-            </section>
-            @endif
+                    <div class="booths-settings-block booths-settings-block--muted" aria-labelledby="boothsSettingsMoreHeading">
+                        <div class="booths-settings-block__head">
+                            <span class="booths-settings-block__icon booths-settings-block__icon--muted"><i class="fas fa-external-link-alt" aria-hidden="true"></i></span>
+                            <div>
+                                <h6 class="booths-settings-block__title" id="boothsSettingsMoreHeading">More in System Settings</h6>
+                                <p class="booths-settings-block__desc">Full forms for all modules and the public floor plan.</p>
+                            </div>
+                        </div>
+                        <ul class="list-unstyled mb-0 booths-settings-more__list">
+                            <li><a href="{{ route('settings.index') }}#settings-upload-control"><i class="fas fa-chevron-right me-2" aria-hidden="true"></i>Upload control — global &amp; all contexts</a></li>
+                            <li><a href="{{ route('settings.index') }}#settings-public-view"><i class="fas fa-chevron-right me-2" aria-hidden="true"></i>Public floor plan &amp; booked tick</a></li>
+                            <li><a href="{{ route('settings.index') }}#module-display"><i class="fas fa-chevron-right me-2" aria-hidden="true"></i>Module display — all modules</a></li>
+                        </ul>
+                    </div>
+                    @endif
+                </div>
+                <div class="modal-footer booths-settings-modal__footer border-0">
+                    <button type="button" class="btn btn-light border booths-settings-modal__btn-done" data-bs-dismiss="modal">Done</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -661,13 +702,13 @@
                 }
                 if (url) {
                     img.src = url;
-                    img.style.display = '';
+                    img.classList.remove('d-none');
                     ph.classList.add('d-none');
                     if (rm) {
                         rm.disabled = false;
                     }
                 } else {
-                    img.style.display = 'none';
+                    img.classList.add('d-none');
                     img.removeAttribute('src');
                     ph.classList.remove('d-none');
                     if (rm) {
