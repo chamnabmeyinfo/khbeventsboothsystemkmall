@@ -61,7 +61,12 @@ class BoothStatusSetting extends Model
             $query->whereNull('floor_plan_id');
         }
 
-        return $query->orderBy('sort_order')->get();
+        // Global rows first, floor-plan-specific rows last so the same status_code resolves to
+        // the floor-specific definition when both exist (getStatusColors / CSS / dropdowns).
+        return $query
+            ->orderByRaw('CASE WHEN floor_plan_id IS NOT NULL THEN 1 ELSE 0 END')
+            ->orderBy('sort_order')
+            ->get();
     }
 
     /**

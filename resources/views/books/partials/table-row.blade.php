@@ -5,14 +5,11 @@
     $boothNumbers = $boothsForBook->pluck('booth_number')->join(', ') ?: '—';
     $floorPlanName = $book->floorPlan->name ?? '—';
     $eventName = optional($book->floorPlan)->event?->title;
-    $typeClass = 'regular';
-    $typeBadge = 'badge-modern-primary';
+    $typeBadgeClass = 'books-type-regular';
     if ($book->type == 2) {
-        $typeClass = 'special';
-        $typeBadge = 'badge-modern-warning';
+        $typeBadgeClass = 'books-type-special';
     } elseif ($book->type == 3) {
-        $typeClass = 'temporary';
-        $typeBadge = 'badge-modern-danger';
+        $typeBadgeClass = 'books-type-temporary';
     }
     $totalAmount = $book->total_amount ?? 0;
     $paidAmount = $book->paid_amount ?? 0;
@@ -28,12 +25,16 @@
         $statusName = 'Pending';
     }
 @endphp
-<tr onclick="window.location='{{ route('books.show', $book) }}'" style="cursor: pointer;">
-    <td><strong>#{{ $book->id }}</strong></td>
+<tr class="books-table-row" onclick="window.location='{{ route('books.show', $book) }}'">
+    <td class="books-col-rownum">{{ $rowNumber ?? '—' }}</td>
+    <td class="books-col-id"><strong>#{{ $book->id }}</strong></td>
     <td>
-        <strong>{{ $book->client ? ($book->client->company ?? $book->client->name) : 'N/A' }}</strong>
-        @if($book->client && $book->client->name && $book->client->company)
-        <br><small class="text-muted">{{ $book->client->name }}</small>
+        @if($book->client)
+            @php $c = $book->client; @endphp
+            <strong>{{ $c->company ?? $c->name }}</strong>
+            <br><small class="text-muted">Contact Name: {{ $c->name ?? $c->company ?? '—' }} · ID {{ $c->id }}</small>
+        @else
+            <span class="text-muted">N/A</span>
         @endif
     </td>
     <td>
@@ -51,7 +52,7 @@
         <br><small class="text-muted" title="{{ $boothNumbers }}">{{ Str::limit($boothNumbers, 30) ?: '—' }}</small>
     </td>
     <td>
-        <span class="{{ $typeBadge }}">
+        <span class="books-type-badge {{ $typeBadgeClass }}">
             @if($book->type == 1) Regular
             @elseif($book->type == 2) Special
             @elseif($book->type == 3) Temporary
@@ -60,19 +61,19 @@
         </span>
     </td>
     <td>
-        <span class="badge" style="background-color: {{ $statusColor }}; color: {{ $statusTextColor }};">
+        <span class="books-status-pill" style="background-color: {{ $statusColor }}; color: {{ $statusTextColor }};">
             {{ $statusName }}
         </span>
     </td>
-    <td><strong style="color: #10b981;">${{ number_format($totalAmount, 2) }}</strong></td>
-    <td onclick="event.stopPropagation()">
-        <div class="btn-group btn-group-sm">
-            <button type="button" class="btn btn-info" onclick="showBookingInfo({{ $book->id }})" title="View">
-                <i class="fas fa-eye"></i>
+    <td><strong class="books-amount-cell">${{ number_format($totalAmount, 2) }}</strong></td>
+    <td class="books-col-actions" onclick="event.stopPropagation()">
+        <div class="books-table-actions" role="group" aria-label="Row actions">
+            <button type="button" class="books-table-btn plastic-btn-press" onclick="showBookingInfo({{ $book->id }})" title="Quick view">
+                <i class="fas fa-eye" aria-hidden="true"></i>
             </button>
             @if(auth()->user()->isAdmin())
-            <button type="button" class="btn btn-danger" onclick="deleteBooking({{ $book->id }})" title="Delete">
-                <i class="fas fa-trash"></i>
+            <button type="button" class="books-table-btn books-table-btn-danger plastic-btn-press" onclick="deleteBooking({{ $book->id }})" title="Delete booking">
+                <i class="fas fa-trash" aria-hidden="true"></i>
             </button>
             @endif
         </div>

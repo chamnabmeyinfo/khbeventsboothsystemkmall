@@ -3,7 +3,7 @@
 @section('title', 'Admin Settings Dashboard')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.1">
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.4">
 @endpush
 
 @push('body-class', 'ios-dashboard-mode')

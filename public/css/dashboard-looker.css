@@ -107,38 +107,366 @@ body.ios-dashboard-mode {
     border-radius: var(--radius-md);
     font-weight: 600;
     font-size: 0.875rem;
-    transition: var(--transition-all);
+    transition:
+        transform 0.14s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.14s cubic-bezier(0.4, 0, 0.2, 1),
+        filter 0.12s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
     border: 1px solid transparent;
     cursor: pointer;
     text-decoration: none;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    backface-visibility: hidden;
+}
+
+.action-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    transform: none;
+    filter: none;
 }
 
 .action-btn-primary {
     background-color: var(--accent-blue);
     color: white;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    box-shadow:
+        0 4px 0 0 rgba(15, 60, 140, 0.35),
+        0 5px 14px rgba(37, 99, 235, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .action-btn-primary:hover {
     background-color: #1d4ed8;
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+    box-shadow:
+        0 5px 0 0 rgba(15, 60, 140, 0.38),
+        0 8px 18px rgba(37, 99, 235, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.28);
     color: white;
 }
 
+/* Plastic “snap-in” press: inset shadow + move down like a molded key */
+.action-btn-primary:active,
+.action-btn-primary:hover:active {
+    transform: translateY(3px) scale(0.985);
+    background-color: #1760c9;
+    box-shadow:
+        0 1px 0 0 rgba(10, 40, 100, 0.45),
+        inset 0 4px 10px rgba(0, 0, 0, 0.22),
+        inset 0 2px 3px rgba(0, 0, 0, 0.12);
+    filter: brightness(0.93);
+    transition-duration: 0.06s;
+}
+
 .action-btn-secondary {
-    background-color: white;
+    background: linear-gradient(180deg, #ffffff 0%, #f3f5f7 100%);
     color: var(--text-primary);
-    border-color: var(--border-light);
-    box-shadow: var(--shadow-sm);
+    border-color: rgba(0, 0, 0, 0.06);
+    box-shadow:
+        0 3px 0 0 rgba(0, 0, 0, 0.06),
+        0 4px 12px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
 .action-btn-secondary:hover {
-    background-color: var(--bg-app);
+    background: linear-gradient(180deg, #ffffff 0%, #eef1f4 100%);
     border-color: var(--border-hover);
     transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    box-shadow:
+        0 4px 0 0 rgba(0, 0, 0, 0.07),
+        0 6px 16px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 1);
     color: var(--text-primary);
+}
+
+.action-btn-secondary:active,
+.action-btn-secondary:hover:active {
+    transform: translateY(3px) scale(0.985);
+    background: linear-gradient(180deg, #e8eaed 0%, #e2e5e9 100%);
+    box-shadow:
+        0 1px 0 0 rgba(255, 255, 255, 0.7),
+        inset 0 3px 8px rgba(0, 0, 0, 0.1),
+        inset 0 1px 2px rgba(0, 0, 0, 0.06);
+    filter: brightness(0.97);
+    transition-duration: 0.06s;
+}
+
+/* Reusable plastic press — compact controls, toggles, or add class to any clickable */
+.plastic-btn-press,
+.plastic-click {
+    transition:
+        transform 0.12s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.12s ease,
+        filter 0.1s ease;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+.plastic-btn-press:active,
+.plastic-btn-press:hover:active,
+.plastic-click:active,
+.plastic-click:hover:active {
+    transform: translateY(2px) scale(0.96);
+    transition-duration: 0.05s;
+    filter: brightness(0.94);
+}
+
+/* Deeper inset for small frosted icon buttons (bookings table, etc.) */
+.books-table-btn.plastic-btn-press:active,
+.books-table-btn.plastic-btn-press:hover:active {
+    box-shadow:
+        inset 0 2px 6px rgba(0, 0, 0, 0.14),
+        inset 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.action-btn:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+.action-btn:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/*
+ * Plastic tactile fields — same “key cap” feel as buttons (dashboard / ios-dashboard-mode).
+ * Applies to common Bootstrap text fields, selects, textareas; excludes checkboxes, radios, files, etc.
+ */
+body.ios-dashboard-mode input.form-control:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="range"]):not([type="file"]):not([type="image"]):not([type="color"]),
+body.ios-dashboard-mode select.form-control,
+body.ios-dashboard-mode select.form-select,
+body.ios-dashboard-mode textarea.form-control,
+body.ios-dashboard-mode textarea.form-control-sm {
+    transition:
+        transform 0.11s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.12s ease,
+        border-color 0.15s ease,
+        filter 0.1s ease;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow:
+        0 1px 0 rgba(0, 0, 0, 0.05),
+        0 2px 6px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+body.ios-dashboard-mode input.form-control:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="range"]):not([type="file"]):not([type="image"]):not([type="color"]):hover:not(:disabled):not(:focus):not(:read-only),
+body.ios-dashboard-mode select.form-control:hover:not(:disabled):not(:focus),
+body.ios-dashboard-mode select.form-select:hover:not(:disabled):not(:focus),
+body.ios-dashboard-mode textarea.form-control:hover:not(:disabled):not(:focus):not(:read-only),
+body.ios-dashboard-mode textarea.form-control-sm:hover:not(:disabled):not(:focus):not(:read-only) {
+    transform: translateY(-1px);
+    box-shadow:
+        0 2px 0 rgba(0, 0, 0, 0.06),
+        0 4px 10px rgba(0, 0, 0, 0.07),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    filter: brightness(1.01);
+}
+
+body.ios-dashboard-mode input.form-control:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="range"]):not([type="file"]):not([type="image"]):not([type="color"]):active:not(:disabled):not(:read-only),
+body.ios-dashboard-mode select.form-control:active:not(:disabled),
+body.ios-dashboard-mode select.form-select:active:not(:disabled),
+body.ios-dashboard-mode textarea.form-control:active:not(:disabled):not(:read-only),
+body.ios-dashboard-mode textarea.form-control-sm:active:not(:disabled):not(:read-only) {
+    transform: translateY(2px) scale(0.997);
+    box-shadow:
+        inset 0 2px 6px rgba(0, 0, 0, 0.09),
+        inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    filter: brightness(0.98);
+    transition-duration: 0.05s;
+}
+
+body.ios-dashboard-mode input.form-control:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="range"]):not([type="file"]):not([type="image"]):not([type="color"]):focus,
+body.ios-dashboard-mode select.form-control:focus,
+body.ios-dashboard-mode select.form-select:focus,
+body.ios-dashboard-mode textarea.form-control:focus,
+body.ios-dashboard-mode textarea.form-control-sm:focus {
+    transform: translateY(0);
+    filter: none;
+    box-shadow:
+        0 0 0 3px var(--accent-blue-light),
+        0 2px 8px rgba(0, 122, 255, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 122, 255, 0.45);
+}
+
+body.ios-dashboard-mode input.form-control:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="range"]):not([type="file"]):not([type="image"]):not([type="color"]):focus:active:not(:read-only),
+body.ios-dashboard-mode select.form-control:focus:active,
+body.ios-dashboard-mode select.form-select:focus:active,
+body.ios-dashboard-mode textarea.form-control:focus:active:not(:read-only),
+body.ios-dashboard-mode textarea.form-control-sm:focus:active:not(:read-only) {
+    transform: translateY(1px) scale(0.997);
+    box-shadow:
+        0 0 0 3px var(--accent-blue-light),
+        inset 0 2px 5px rgba(0, 0, 0, 0.08),
+        inset 0 1px 2px rgba(0, 0, 0, 0.04);
+    filter: brightness(0.99);
+}
+
+body.ios-dashboard-mode input.form-control:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="range"]):not([type="file"]):not([type="image"]):not([type="color"]):disabled,
+body.ios-dashboard-mode select.form-control:disabled,
+body.ios-dashboard-mode select.form-select:disabled,
+body.ios-dashboard-mode textarea.form-control:disabled,
+body.ios-dashboard-mode textarea.form-control-sm:disabled {
+    transform: none;
+    filter: none;
+    box-shadow: none;
+}
+
+/*
+ * Plastic press — Bootstrap & shell clickables (same motion as .plastic-btn-press)
+ */
+body.ios-dashboard-mode .btn:not(:disabled):not(.disabled):not(.btn-link),
+body.ios-dashboard-mode a.btn:not(:disabled):not(.disabled):not(.btn-link) {
+    transition:
+        transform 0.12s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.12s ease,
+        filter 0.1s ease,
+        background-color 0.15s ease,
+        border-color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    backface-visibility: hidden;
+}
+
+body.ios-dashboard-mode .btn:not(:disabled):not(.disabled):not(.btn-link):active,
+body.ios-dashboard-mode .btn:not(:disabled):not(.disabled):not(.btn-link):hover:active,
+body.ios-dashboard-mode a.btn:not(:disabled):not(.disabled):not(.btn-link):active,
+body.ios-dashboard-mode a.btn:not(:disabled):not(.disabled):not(.btn-link):hover:active {
+    transform: translateY(2px) scale(0.985);
+    box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.15), inset 0 1px 2px rgba(0, 0, 0, 0.08);
+    filter: brightness(0.94);
+    transition-duration: 0.05s;
+}
+
+body.ios-dashboard-mode .btn-close {
+    transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), filter 0.1s ease, opacity 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body.ios-dashboard-mode .btn-close:active {
+    transform: translateY(1px) scale(0.92);
+    filter: brightness(0.9);
+    transition-duration: 0.05s;
+}
+
+body.ios-dashboard-mode .page-link {
+    transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.12s ease, filter 0.1s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body.ios-dashboard-mode .page-link:not(.disabled):active,
+body.ios-dashboard-mode .page-link:not(.disabled):hover:active {
+    transform: translateY(2px) scale(0.96);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+    filter: brightness(0.95);
+    transition-duration: 0.05s;
+}
+
+body.ios-dashboard-mode .filter-bar .filter-chip,
+body.ios-dashboard-mode .filter-chip {
+    transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.12s ease, filter 0.1s ease;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+body.ios-dashboard-mode .filter-bar .filter-chip:active,
+body.ios-dashboard-mode .filter-bar .filter-chip:hover:active,
+body.ios-dashboard-mode .filter-chip:active,
+body.ios-dashboard-mode .filter-chip:hover:active {
+    transform: translateY(2px) scale(0.96);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.12);
+    filter: brightness(0.94);
+    transition-duration: 0.05s;
+}
+
+body.ios-dashboard-mode .sidebar-nav-link {
+    transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), filter 0.1s ease, background-color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body.ios-dashboard-mode .sidebar-nav-link:active,
+body.ios-dashboard-mode .sidebar-nav-link:hover:active {
+    transform: translateY(1px) scale(0.99);
+    filter: brightness(0.96);
+    transition-duration: 0.05s;
+}
+
+body.ios-dashboard-mode .header-action-btn,
+body.ios-dashboard-mode .sidebar-toggle-btn {
+    transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.12s ease, filter 0.1s ease;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+body.ios-dashboard-mode .header-action-btn:active,
+body.ios-dashboard-mode .header-action-btn:hover:active,
+body.ios-dashboard-mode .sidebar-toggle-btn:active,
+body.ios-dashboard-mode .sidebar-toggle-btn:hover:active {
+    transform: translateY(2px) scale(0.95);
+    filter: brightness(0.93);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.12);
+    transition-duration: 0.05s;
+}
+
+body.ios-dashboard-mode .nav-tabs .nav-link,
+body.ios-dashboard-mode .nav-pills .nav-link {
+    transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), filter 0.1s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body.ios-dashboard-mode .nav-tabs .nav-link:active:not(.disabled),
+body.ios-dashboard-mode .nav-pills .nav-link:active:not(.disabled) {
+    transform: translateY(1px) scale(0.98);
+    filter: brightness(0.95);
+    transition-duration: 0.05s;
+}
+
+body.ios-dashboard-mode .dropdown-item {
+    transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), filter 0.1s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body.ios-dashboard-mode .dropdown-item:active,
+body.ios-dashboard-mode .dropdown-item:hover:active {
+    transform: translateX(2px) scale(0.995);
+    filter: brightness(0.96);
+    transition-duration: 0.05s;
+}
+
+body.ios-dashboard-mode .list-group-item-action:not(.disabled):active {
+    transform: translateY(1px) scale(0.995);
+    filter: brightness(0.97);
+    transition: transform 0.08s ease, filter 0.08s ease;
+}
+
+body.ios-dashboard-mode .alert .btn-close:active {
+    transform: translateY(1px) scale(0.9);
+}
+
+body.ios-dashboard-mode .accordion-button {
+    transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), filter 0.1s ease, box-shadow 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body.ios-dashboard-mode .accordion-button:active:not(:disabled) {
+    transform: translateY(1px) scale(0.995);
+    filter: brightness(0.97);
+    transition-duration: 0.05s;
+}
+
+body.ios-dashboard-mode .breadcrumb-item a {
+    display: inline-block;
+    transition: transform 0.1s ease, filter 0.1s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body.ios-dashboard-mode .breadcrumb-item a:active {
+    transform: translateY(1px);
+    filter: brightness(0.92);
 }
 
 /* Looker KPI Scorecards */
@@ -478,11 +806,6 @@ body.ios-dashboard-mode .canvas-panel:hover {
     transform: translateY(-4px) !important;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
     background: rgba(255, 255, 255, 0.75) !important;
-}
-
-/* Button press */
-body.ios-dashboard-mode .action-btn:active {
-    transform: scale(0.98);
 }
 
 /* Table row – subtle highlight */

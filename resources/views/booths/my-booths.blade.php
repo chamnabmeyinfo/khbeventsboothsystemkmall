@@ -2,7 +2,7 @@
 @push('body-class', 'ios-dashboard-mode')
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/booths-premium-glamor.css') }}?v=1.0">
-<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.1">
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.4">
 <style>
     .looker-dashboard {
         max-width: 100% !important;

@@ -1923,6 +1923,16 @@
         
         // Load booths from database
         const booths = @json($boothsForJS);
+        /** Full status palette for this floor plan (from BoothStatusSetting::getStatusColors). */
+        const statusColorsFull = @json($statusColors ?? []);
+        function pickStatusStyle(code) {
+            if (!statusColorsFull || typeof statusColorsFull !== 'object') return null;
+            const n = parseInt(code, 10);
+            if (!isNaN(n) && statusColorsFull[n]) return statusColorsFull[n];
+            if (statusColorsFull[code] != null) return statusColorsFull[code];
+            var k = String(code);
+            return statusColorsFull[k] != null ? statusColorsFull[k] : null;
+        }
         const canvasWidth = {{ $canvasWidth }};
         const canvasHeight = {{ $canvasHeight }};
         
@@ -1979,11 +1989,15 @@
                     boothElement.classList.add('has-custom-colors');
                 }
                 
-                // Always set background/border/color so status-1 CSS (green) cannot show through
+                // Apply colors: DB status settings for this floor plan, then booth custom (Available only), then defaults
+                const styleFromDb = pickStatusStyle(boothStatus);
                 if (isAvailable) {
-                    // Available: white by default, or booth's custom colors
                     if (booth.background_color) {
                         boothElement.style.setProperty('background-color', booth.background_color, 'important');
+                    } else if (styleFromDb && styleFromDb.background) {
+                        boothElement.style.setProperty('background-color', styleFromDb.background, 'important');
+                        boothElement.style.setProperty('border-color', styleFromDb.border || styleFromDb.background, 'important');
+                        boothElement.style.setProperty('color', styleFromDb.text || '#333333', 'important');
                     } else {
                         boothElement.style.setProperty('background-color', '#ffffff', 'important');
                         boothElement.style.setProperty('border-color', '#dee2e6', 'important');
@@ -1991,8 +2005,14 @@
                     }
                     if (booth.border_color) boothElement.style.setProperty('border-color', booth.border_color, 'important');
                     if (booth.text_color) boothElement.style.setProperty('color', booth.text_color, 'important');
+                } else if (styleFromDb && styleFromDb.background) {
+                    boothElement.style.setProperty('background-color', styleFromDb.background, 'important');
+                    boothElement.style.setProperty('border-color', styleFromDb.border || styleFromDb.background, 'important');
+                    boothElement.style.setProperty('color', styleFromDb.text || '#ffffff', 'important');
+                    if (styleFromDb.border_width != null) boothElement.style.setProperty('border-width', styleFromDb.border_width + 'px', 'important');
+                    if (styleFromDb.border_style) boothElement.style.setProperty('border-style', styleFromDb.border_style, 'important');
+                    if (styleFromDb.border_radius != null) boothElement.style.setProperty('border-radius', styleFromDb.border_radius + 'px', 'important');
                 } else {
-                    // Booked (status 2, 3, 4, 5): green so it's clear the booth is taken
                     boothElement.style.setProperty('background-color', '#28a745', 'important');
                     boothElement.style.setProperty('border-color', '#28a745', 'important');
                     boothElement.style.setProperty('color', '#ffffff', 'important');

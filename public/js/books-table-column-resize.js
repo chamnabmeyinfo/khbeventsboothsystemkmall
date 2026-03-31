@@ -1,0 +1,139 @@
+/**
+ * Drag-to-resize columns for .books-looker-table on /books.
+ * Persists widths in localStorage (booksTableColumnWidths_v1).
+ */
+(function () {
+    'use strict';
+
+    var STORAGE_KEY = 'booksTableColumnWidths_v1';
+    var MIN_W = 48;
+    var MAX_W = 640;
+
+    function clamp(n, a, b) {
+        return Math.max(a, Math.min(b, n));
+    }
+
+    function applyColumnWidth(table, colIndex, widthPx) {
+        var w = clamp(Math.round(widthPx), MIN_W, MAX_W) + 'px';
+        var ths = table.querySelectorAll('thead tr th');
+        var th = ths[colIndex];
+        if (!th) return;
+        th.style.width = w;
+        th.style.minWidth = w;
+        th.style.maxWidth = w;
+        /* table-layout: fixed — column width applies to all rows including lazy-loaded tbody */
+    }
+
+    function applySavedWidths(table) {
+        try {
+            var raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return;
+            var widths = JSON.parse(raw);
+            if (!Array.isArray(widths)) return;
+            var n = table.querySelectorAll('thead tr th').length;
+            for (var i = 0; i < n && i < widths.length; i++) {
+                if (typeof widths[i] === 'number' && widths[i] > 0) {
+                    applyColumnWidth(table, i, widths[i]);
+                }
+            }
+        } catch (e) {}
+    }
+
+    function saveWidths(table) {
+        var ths = table.querySelectorAll('thead tr th');
+        var out = [];
+        for (var i = 0; i < ths.length; i++) {
+            out.push(ths[i].getBoundingClientRect().width);
+        }
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(out));
+        } catch (e) {}
+    }
+
+    function pageXFromEvent(e) {
+        if (e.pageX != null) return e.pageX;
+        if (e.touches && e.touches[0]) return e.touches[0].pageX;
+        if (e.changedTouches && e.changedTouches[0]) return e.changedTouches[0].pageX;
+        return 0;
+    }
+
+    function beginResize(table, colIndex, th, startPageX) {
+        var startW = th.getBoundingClientRect().width;
+
+        function onMove(e) {
+            var x = pageXFromEvent(e);
+            var dx = x - startPageX;
+            applyColumnWidth(table, colIndex, startW + dx);
+        }
+
+        function onUp() {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            document.removeEventListener('touchmove', onMove);
+            document.removeEventListener('touchend', onUp);
+            document.removeEventListener('touchcancel', onUp);
+            document.body.classList.remove('books-table-resizing');
+            saveWidths(table);
+        }
+
+        document.body.classList.add('books-table-resizing');
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+        document.addEventListener('touchmove', onMove, { passive: false });
+        document.addEventListener('touchend', onUp);
+        document.addEventListener('touchcancel', onUp);
+    }
+
+    function initBooksTableColumnResize(table) {
+        if (!table || table.tagName !== 'TABLE' || table.dataset.booksColumnResizeInit === '1') {
+            return;
+        }
+        table.dataset.booksColumnResizeInit = '1';
+
+        var theadRow = table.querySelector('thead tr');
+        if (!theadRow) return;
+
+        var ths = theadRow.querySelectorAll('th');
+        if (!ths.length) return;
+
+        applySavedWidths(table);
+
+        ths.forEach(function (th, colIndex) {
+            if (th.querySelector('.books-col-resize-handle')) return;
+
+            th.style.position = 'relative';
+
+            var grip = document.createElement('span');
+            grip.className = 'books-col-resize-handle';
+            grip.setAttribute('aria-hidden', 'true');
+            grip.title = 'Drag to resize column';
+
+            grip.addEventListener('mousedown', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                beginResize(table, colIndex, th, e.pageX);
+            });
+
+            grip.addEventListener('touchstart', function (e) {
+                e.stopPropagation();
+                if (!e.touches || !e.touches[0]) return;
+                e.preventDefault();
+                beginResize(table, colIndex, th, e.touches[0].pageX);
+            }, { passive: false });
+
+            th.appendChild(grip);
+        });
+    }
+
+    function boot() {
+        document.querySelectorAll('table.books-looker-table').forEach(initBooksTableColumnResize);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+    } else {
+        boot();
+    }
+
+    window.initBooksTableColumnResize = initBooksTableColumnResize;
+})();

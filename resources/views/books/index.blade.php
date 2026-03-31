@@ -4,27 +4,267 @@
 
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.1">
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.4">
 <style>
-    .looker-dashboard { padding: 0 !important; }
-    .glass-card {
-        background: rgba(255, 255, 255, 0.45);
-        backdrop-filter: blur(40px) saturate(180%);
-        -webkit-backdrop-filter: blur(40px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        border-radius: 24px;
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-        margin-bottom: 24px;
-        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    /* Bookings index — single responsive layout; breakpoints align with Bootstrap sm/md/lg */
+    .books-page .books-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+    .books-page .action-btn-secondary > i:first-child {
+        color: var(--text-tertiary);
+    }
+    .books-page .books-view-toggle {
+        display: inline-flex;
+        background: var(--bg-card);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        padding: 4px;
+        gap: 4px;
+        box-shadow: var(--shadow-sm);
+    }
+    .books-page .books-view-toggle button {
+        border: none;
+        background: transparent;
+        padding: 0.5rem 1rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        min-height: 44px;
+        transition: var(--transition-all, 0.2s ease);
+    }
+    .books-page .books-view-toggle button:hover {
+        color: var(--text-primary);
+    }
+    .books-page .books-view-toggle button.active {
+        background: #fff;
+        color: var(--accent-blue);
+        box-shadow: var(--shadow-sm);
+    }
+    .books-page .books-data-panel {
+        padding: 0;
         overflow: hidden;
     }
-    .glass-card:hover {
-        transform: translateY(-5px);
-        background: rgba(255, 255, 255, 0.55);
-        box-shadow: 0 15px 45px rgba(31, 38, 135, 0.2);
+    .books-page .books-data-panel .looker-table-wrapper {
+        margin: 0;
+        -webkit-overflow-scrolling: touch;
     }
-    .kpi-card-looker {
-        margin-bottom: 24px;
+    /* Bookings list table — header bar, zebra rows, action chips */
+    .books-page .books-looker-table {
+        border-collapse: separate;
+        border-spacing: 0;
+        table-layout: fixed;
+        width: 100%;
+    }
+    .books-page .books-col-resize-handle {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 10px;
+        margin-right: -5px;
+        cursor: col-resize;
+        z-index: 5;
+        background: transparent;
+        touch-action: none;
+    }
+    .books-page .books-col-resize-handle:hover,
+    .books-page .books-col-resize-handle:focus {
+        background: linear-gradient(90deg, transparent, rgba(0, 122, 255, 0.22));
+    }
+    body.books-table-resizing {
+        cursor: col-resize !important;
+        user-select: none;
+    }
+    .books-page .books-looker-table thead th {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(248, 250, 252, 0.88) 100%) !important;
+        backdrop-filter: blur(16px) saturate(160%);
+        -webkit-backdrop-filter: blur(16px) saturate(160%);
+        border-top: none !important;
+        border-bottom: 2px solid rgba(0, 122, 255, 0.14) !important;
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--text-secondary) !important;
+        padding: 0.9rem 1rem !important;
+        white-space: nowrap;
+    }
+    .books-page .books-looker-table thead th:first-child,
+    .books-page .books-looker-table thead th:last-child {
+        border-radius: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+    }
+    .books-page .books-looker-table tbody tr.books-table-row {
+        cursor: pointer;
+        transition: background-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .books-page .books-looker-table tbody tr.books-table-row:nth-child(even) td {
+        background-color: rgba(255, 255, 255, 0.35);
+    }
+    .books-page .books-looker-table tbody tr.books-table-row:nth-child(odd) td {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+    .books-page .books-looker-table tbody tr.books-table-row:hover td {
+        background-color: rgba(0, 122, 255, 0.07) !important;
+        box-shadow: inset 3px 0 0 var(--accent-blue);
+    }
+    .books-page .books-looker-table tbody td {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+        vertical-align: middle;
+        padding: 0.85rem 1rem !important;
+        font-size: 0.9rem;
+    }
+    .books-page .books-looker-table tbody tr:last-child td {
+        border-bottom: none !important;
+    }
+    .books-page .books-looker-table .books-col-rownum {
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        color: var(--text-tertiary);
+        width: 3rem;
+        text-align: center;
+    }
+    .books-page .books-looker-table .books-col-id {
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+        color: var(--text-secondary);
+        width: 4.5rem;
+    }
+    .books-page .books-looker-table .books-col-actions {
+        width: 1%;
+        white-space: nowrap;
+    }
+    .books-page .books-amount-cell {
+        color: var(--accent-green);
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+    }
+    .books-page .books-type-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.28rem 0.65rem;
+        border-radius: var(--radius-pill);
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+    .books-page .books-type-regular {
+        background: var(--accent-blue-light);
+        color: var(--accent-blue);
+    }
+    .books-page .books-type-special {
+        background: var(--accent-orange-light);
+        color: var(--accent-orange);
+    }
+    .books-page .books-type-temporary {
+        background: rgba(175, 82, 222, 0.18);
+        color: var(--accent-purple);
+    }
+    .books-page .books-status-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.3rem 0.7rem;
+        border-radius: var(--radius-pill);
+        font-size: 0.75rem;
+        font-weight: 700;
+        line-height: 1.2;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .books-page .books-table-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .books-page .books-table-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        min-height: 38px;
+        padding: 0;
+        border: 1px solid var(--border-light);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.85);
+        color: var(--accent-blue);
+        box-shadow: var(--shadow-sm);
+        transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+    }
+    .books-page .books-table-btn:hover {
+        background: #fff;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+        color: var(--accent-blue);
+    }
+    .books-page .books-table-btn-danger {
+        color: #dc2626;
+        border-color: rgba(220, 38, 38, 0.35);
+    }
+    .books-page .books-table-btn-danger:hover {
+        background: rgba(220, 38, 38, 0.08);
+        color: #b91c1c;
+    }
+    .books-page .books-card-view-inner {
+        padding: 1rem 1.25rem 1.5rem;
+    }
+    .books-page .group-section .group-header {
+        margin-bottom: 0.75rem;
+    }
+    .books-page .group-section .group-header h5 {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+    }
+    .books-page .empty-state {
+        text-align: center;
+        padding: 2.5rem 1rem;
+    }
+    .books-page .empty-state-icon {
+        font-size: 3rem;
+        color: var(--text-tertiary);
+        margin-bottom: 1rem;
+    }
+    /* Modal is rendered outside .books-page wrapper; keep class name page-specific */
+    .booking-info-modal-header {
+        background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+        color: #fff;
+    }
+    .books-page .filter-actions .books-filter-apply,
+    .books-page .filter-actions .books-filter-clear {
+        padding: 0.45rem 0.95rem;
+        font-size: 0.8125rem;
+        min-height: 40px;
+    }
+    @media (max-width: 767.98px) {
+        .books-page .looker-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .books-page .looker-actions {
+            width: 100%;
+            flex-wrap: wrap;
+        }
     }
 </style>
 @endpush
@@ -33,99 +273,88 @@
 
 
 @section('content')
-<div class='looker-dashboard'>
-<div class="container-fluid">
+<div class="looker-dashboard books-page">
     @if(!empty($restrictToOwnBookings))
         <div class="alert alert-info mb-3" role="alert">
             <i class="fas fa-info-circle me-2"></i>
             <strong>You are viewing only your own bookings.</strong> You can create, edit, update, and delete only the bookings you created. You cannot view or manage other users&#39; bookings. This is controlled in <a href="{{ route('settings.index') }}">Settings &rarr; Public View Actions</a>.
         </div>
     @endif
-    <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="kpi-card-looker">
-                <div class="p-4" style="padding: 24px;">
-                    <div class="kpi-icon">
-                        <i class="fas fa-calendar-check"></i>
-                    </div>
-                    <div class="kpi-title">Total Bookings</div>
-                    <div class="kpi-value-looker">{{ number_format(\App\Models\Book::count()) }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="kpi-card-looker">
-                <div class="p-4" style="padding: 24px;">
-                    <div class="kpi-icon">
-                        <i class="fas fa-calendar-day"></i>
-                    </div>
-                    <div class="kpi-title">Today's Bookings</div>
-                    <div class="kpi-value-looker">{{ number_format(\App\Models\Book::whereDate('date_book', today())->count()) }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="kpi-card-looker">
-                <div class="p-4" style="padding: 24px;">
-                    <div class="kpi-icon">
-                        <i class="fas fa-calendar-alt"></i>
-                    </div>
-                    <div class="kpi-title">This Month</div>
-                    <div class="kpi-value-looker">
-                        {{ number_format(\App\Models\Book::whereMonth('date_book', now()->month)->whereYear('date_book', now()->year)->count()) }}
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="kpi-card-looker">
-                <div class="p-4" style="padding: 24px;">
-                    <div class="kpi-icon">
-                        <i class="fas fa-cube"></i>
-                    </div>
-                    <div class="kpi-title">Total Booths</div>
-                    <div class="kpi-value-looker">
-                        @php
-                            try {
-                                $totalBooths = \App\Models\Book::get()->sum(function($book) {
-                                    $boothIds = json_decode($book->boothid, true);
-                                    return is_array($boothIds) ? count($boothIds) : 0;
-                                });
-                            } catch (\Exception $e) {
-                                $totalBooths = 0;
-                            }
-                        @endphp
-                        {{ number_format($totalBooths) }}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Action Bar -->
-    <div class="action-bar">
-        <div class="d-flex flex-wrap gap-3">
-            <a href="{{ route('books.create') }}" class="btn btn-modern btn-modern-primary">
-                <i class="fas fa-plus me-2"></i>New Booking
+    <header class="looker-header">
+        <div class="looker-header-title">
+            <h1>Bookings</h1>
+            <p>Create, filter, and manage booth bookings from one place.</p>
+        </div>
+        <div class="looker-actions">
+            <a href="{{ route('books.create') }}" class="action-btn action-btn-primary">
+                <i class="fas fa-plus"></i> New booking
             </a>
-            <a href="{{ route('export.bookings') }}" class="btn btn-modern btn-modern-success">
-                <i class="fas fa-file-csv me-2"></i>Export CSV
+            <a href="{{ route('export.bookings') }}" class="action-btn action-btn-secondary">
+                <i class="fas fa-file-csv"></i> Export CSV
             </a>
-            <button type="button" class="btn btn-modern btn-modern-info" onclick="refreshPage()">
-                <i class="fas fa-sync-alt me-2"></i>Refresh
+            <button type="button" class="action-btn action-btn-secondary" onclick="refreshPage()">
+                <i class="fas fa-sync-alt"></i> Refresh
             </button>
             @if(auth()->user()->isAdmin())
-            <button type="button" class="btn btn-modern" style="background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%); color: white;" onclick="showDeleteAllModal()">
-                <i class="fas fa-trash-alt me-2"></i>Delete All Records
+            <button type="button" class="action-btn action-btn-secondary" style="border-color: rgba(229, 62, 62, 0.35); color: #c53030;" onclick="showDeleteAllModal()">
+                <i class="fas fa-trash-alt"></i> Delete all
             </button>
             @endif
         </div>
-        <div class="view-toggle">
-            <button type="button" class="active" onclick="switchView('table')" id="viewTable">
+    </header>
+
+    @php
+        try {
+            $totalBoothsKpi = \App\Models\Book::get()->sum(function ($book) {
+                $boothIds = json_decode($book->boothid, true);
+                return is_array($boothIds) ? count($boothIds) : 0;
+            });
+        } catch (\Exception $e) {
+            $totalBoothsKpi = 0;
+        }
+    @endphp
+    <div class="kpi-wrapper">
+        <div class="kpi-card-looker">
+            <div class="kpi-top">
+                <div class="kpi-title">Total bookings</div>
+                <div class="kpi-icon-wrapper primary-icon"><i class="fas fa-calendar-check"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format(\App\Models\Book::count()) }}</div>
+            <div class="kpi-bottom trend-neutral"><i class="fas fa-layer-group fa-fw"></i> All time</div>
+        </div>
+        <div class="kpi-card-looker success">
+            <div class="kpi-top">
+                <div class="kpi-title">Today</div>
+                <div class="kpi-icon-wrapper success-icon"><i class="fas fa-calendar-day"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format(\App\Models\Book::whereDate('date_book', today())->count()) }}</div>
+            <div class="kpi-bottom trend-positive"><i class="fas fa-sun fa-fw"></i> Scheduled for today</div>
+        </div>
+        <div class="kpi-card-looker warning">
+            <div class="kpi-top">
+                <div class="kpi-title">This month</div>
+                <div class="kpi-icon-wrapper warning-icon"><i class="fas fa-calendar-alt"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format(\App\Models\Book::whereMonth('date_book', now()->month)->whereYear('date_book', now()->year)->count()) }}</div>
+            <div class="kpi-bottom trend-warning"><i class="fas fa-calendar-week fa-fw"></i> {{ now()->format('F Y') }}</div>
+        </div>
+        <div class="kpi-card-looker purple">
+            <div class="kpi-top">
+                <div class="kpi-title">Booth slots (booked)</div>
+                <div class="kpi-icon-wrapper purple-icon"><i class="fas fa-cube"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format($totalBoothsKpi) }}</div>
+            <div class="kpi-bottom trend-neutral"><i class="fas fa-th fa-fw"></i> Sum across bookings</div>
+        </div>
+    </div>
+
+    <div class="books-toolbar">
+        <div class="books-view-toggle" role="group" aria-label="List layout">
+            <button type="button" class="active plastic-btn-press" onclick="switchView('table')" id="viewTable">
                 <i class="fas fa-table me-1"></i>Table
             </button>
-            <button type="button" onclick="switchView('cards')" id="viewCards">
+            <button type="button" class="plastic-btn-press" onclick="switchView('cards')" id="viewCards">
                 <i class="fas fa-th-large me-1"></i>Cards
             </button>
         </div>
@@ -149,9 +378,7 @@
             <div class="filter-header">
                 <h6>
                     <i class="fas fa-filter"></i> Filters
-                    @if($activeFilterCount > 0)
-                    <span class="filter-badge">{{ $activeFilterCount }} active</span>
-                    @endif
+                    <span class="filter-badge {{ $activeFilterCount > 0 ? '' : 'd-none' }}" id="booksFilterBadge">{{ $activeFilterCount }} active</span>
                 </h6>
                 <span class="filter-toggle" onclick="document.getElementById('filterAdvanced').classList.toggle('d-none'); this.querySelector('i').classList.toggle('fa-chevron-down'); this.querySelector('i').classList.toggle('fa-chevron-up');">
                     <i class="fas fa-chevron-down"></i> <span>Advanced</span>
@@ -209,7 +436,7 @@
                 </div>
                 <div>
                     <label class="form-label small mb-1">Group By</label>
-                    <select name="group_by" class="form-control form-control-modern form-control-sm" onchange="this.form.submit()">
+                    <select name="group_by" class="form-control form-control-modern form-control-sm books-filter-ajax-trigger">
                         <option value="none" {{ request('group_by', 'none') == 'none' ? 'selected' : '' }}>No Grouping</option>
                         <option value="name" {{ request('group_by') == 'name' ? 'selected' : '' }}>By Client</option>
                         <option value="date" {{ request('group_by') == 'date' ? 'selected' : '' }}>By Date</option>
@@ -248,11 +475,11 @@
 
             <!-- Quick date presets (chips) -->
             <div class="filter-actions">
-                <button type="submit" class="btn btn-modern btn-modern-primary btn-sm">
+                <button type="submit" class="action-btn action-btn-primary books-filter-apply">
                     <i class="fas fa-filter me-1"></i>Apply
                 </button>
-                <a href="{{ route('books.index') }}" class="btn btn-modern btn-sm" style="background: #f3f4f6; color: #6b7280;">
-                    <i class="fas fa-times me-1"></i>Clear All
+                <a href="{{ route('books.index') }}" class="action-btn action-btn-secondary books-filter-clear" id="booksFilterClearLink">
+                    <i class="fas fa-times me-1"></i>Clear all
                 </a>
                 <div class="d-flex flex-wrap gap-2 ms-2 align-items-center">
                     <span class="text-muted small me-1">Quick:</span>
@@ -267,129 +494,7 @@
 
     <!-- Bookings Content -->
     <div id="bookingsContainer">
-        @if($groupBy !== 'none' && !empty($groupedBooks))
-            <!-- Grouped View -->
-            @foreach($groupedBooks as $groupKey => $groupBooks)
-                <div class="group-section">
-                    <div class="group-header">
-                        <h5>
-                            <span>
-                                <i class="fas fa-layer-group me-2"></i>
-                                {{ $groupBy === 'name' ? $groupKey : \Carbon\Carbon::parse($groupKey)->format('F d, Y') }}
-                            </span>
-                            <span class="badge">{{ count($groupBooks) }} bookings</span>
-                        </h5>
-                    </div>
-                    <div class="glass-card">
-                        <div class="card-body p-0">
-                            <!-- Table View -->
-                            <div class="table-view">
-                                <table class="table table-modern mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Client</th>
-                                            <th>Floor Plan</th>
-                                            <th>Date</th>
-                                            <th>Booths</th>
-                                            <th>Type</th>
-                                            <th>Status</th>
-                                            <th>Amount</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($groupBooks as $book)
-                                            @include('books.partials.table-row', ['book' => $book])
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                            <!-- Card View -->
-                            <div class="card-view" style="display: none;">
-                                <div class="p-3">
-                                    @foreach($groupBooks as $book)
-                                        @include('books.partials.card', ['book' => $book])
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @endforeach
-        @else
-            <!-- Regular View -->
-            <div class="glass-card">
-                <div class="card-body p-0">
-                    <!-- Table View -->
-                    <div class="table-view">
-                        <table class="table table-modern mb-0" id="bookingsTable">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Client</th>
-                                    <th>Floor Plan</th>
-                                    <th>Date</th>
-                                    <th>Booths</th>
-                                    <th>Type</th>
-                                    <th>Status</th>
-                                    <th>Amount</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="bookingsTableBody">
-                                @forelse($books as $book)
-                                    @include('books.partials.table-row', ['book' => $book])
-                                @empty
-                                    <tr>
-                                        <td colspan="9" class="text-center py-5">
-                                            <div class="empty-state">
-                                                <i class="fas fa-inbox empty-state-icon"></i>
-                                                <h3>No bookings found</h3>
-                                                <p class="text-muted">Try adjusting your filters or create a new booking.</p>
-                                                <a href="{{ route('books.create') }}" class="btn btn-modern btn-modern-primary mt-3">
-                                                    <i class="fas fa-plus me-2"></i>Create Booking
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    <!-- Card View -->
-                    <div class="card-view" style="display: none;">
-                        <div class="p-3">
-                            @forelse($books as $book)
-                                @include('books.partials.card', ['book' => $book])
-                            @empty
-                                <div class="empty-state">
-                                    <i class="fas fa-inbox empty-state-icon"></i>
-                                    <h3>No bookings found</h3>
-                                    <p class="text-muted">Try adjusting your filters or create a new booking.</p>
-                                    <a href="{{ route('books.create') }}" class="btn btn-modern btn-modern-primary mt-3">
-                                        <i class="fas fa-plus me-2"></i>Create Booking
-                                    </a>
-                                </div>
-                            @endforelse
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @endif
-
-        <!-- Lazy Loading Spinner -->
-        <div class="lazy-load-spinner" id="lazyLoadSpinner">
-            <i class="fas fa-spinner"></i>
-        </div>
-
-        <!-- Lazy Loading End -->
-        <div class="lazy-load-end" id="lazyLoadEnd" style="display: none;">
-            <i class="fas fa-check-circle me-2"></i>All bookings loaded
-        </div>
-
-        <!-- Lazy Load Trigger -->
-        <div class="lazy-load-trigger" id="lazyLoadTrigger"></div>
+        @include('books.partials.index-bookings-container', ['books' => $books, 'groupBy' => $groupBy, 'groupedBooks' => $groupedBooks, 'boothsByBookId' => $boothsByBookId])
     </div>
 </div>
 
@@ -397,7 +502,7 @@
 <div class="modal fade" id="bookingInfoModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <div class="modal-header booking-info-modal-header">
                 <h5 class="modal-title">
                     <i class="fas fa-calendar-check me-2"></i>Booking Details
                 </h5>
@@ -411,19 +516,23 @@
 </div>
 
 @push('scripts')
+@php
+    $lazyLoadMoreAvailable = ($groupBy === 'none' && isset($total, $books) && $total > $books->count());
+@endphp
+<script src="{{ asset('js/books-table-column-resize.js') }}?v=1"></script>
 <script>
 (function() {
     'use strict';
     
     let currentPage = 1;
     let isLoading = false;
-    let hasMore = true;
+    let hasMore = @json($lazyLoadMoreAvailable);
     let currentView = 'table';
     
     // Switch View
     window.switchView = function(view) {
         currentView = view;
-        document.querySelectorAll('.view-toggle button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.books-view-toggle button').forEach(btn => btn.classList.remove('active'));
         document.getElementById('view' + view.charAt(0).toUpperCase() + view.slice(1)).classList.add('active');
         
         document.querySelectorAll('.table-view').forEach(el => {
@@ -443,22 +552,135 @@
         switchView(savedView);
     }
     
-    // Lazy Loading
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting && hasMore && !isLoading) {
-                loadMoreBookings();
-            }
-        });
-    }, { threshold: 0.1 });
-    
-    const trigger = document.getElementById('lazyLoadTrigger');
-    if (trigger) {
-        observer.observe(trigger);
+    // Lazy loading — GET must use query string (request body is ignored for GET in fetch)
+    const lazyLoadIndexUrl = @json(route('books.index'));
+    let lazyLoadGroupBy = @json($groupBy);
+    let lazyObserver = null;
+
+    function updateFilterBadge(count) {
+        const badge = document.getElementById('booksFilterBadge');
+        if (!badge) return;
+        if (count > 0) {
+            badge.classList.remove('d-none');
+            badge.textContent = count + ' active';
+        } else {
+            badge.classList.add('d-none');
+        }
     }
+
+    function setupLazyLoadObserver() {
+        if (lazyObserver) {
+            lazyObserver.disconnect();
+            lazyObserver = null;
+        }
+        const trigger = document.getElementById('lazyLoadTrigger');
+        const bookingsTableBody = document.getElementById('bookingsTableBody');
+        if (!trigger || !bookingsTableBody || !hasMore) {
+            return;
+        }
+        lazyObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting && hasMore && !isLoading) {
+                    loadMoreBookings();
+                }
+            });
+        }, { threshold: 0.1 });
+        lazyObserver.observe(trigger);
+    }
+
+    function reinitBooksTableResize() {
+        if (typeof window.initBooksTableColumnResize !== 'function') return;
+        document.querySelectorAll('table.books-looker-table').forEach(function(table) {
+            delete table.dataset.booksColumnResizeInit;
+            window.initBooksTableColumnResize(table);
+        });
+    }
+
+    function applyFiltersAjax() {
+        const form = document.getElementById('filterForm');
+        if (!form) return;
+        const params = new URLSearchParams(new FormData(form));
+        params.set('books_list_partial', '1');
+        const url = lazyLoadIndexUrl + '?' + params.toString();
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin'
+        })
+        .then(function(response) {
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            return response.json();
+        })
+        .then(function(data) {
+            const container = document.getElementById('bookingsContainer');
+            if (container && data.html) {
+                container.innerHTML = data.html;
+            }
+            if (typeof data.groupBy === 'string') {
+                lazyLoadGroupBy = data.groupBy;
+            }
+            hasMore = !!data.hasMore;
+            currentPage = 1;
+            if (typeof data.activeFilterCount === 'number') {
+                updateFilterBadge(data.activeFilterCount);
+            }
+            const cleanParams = new URLSearchParams(new FormData(form));
+            const cleanQs = cleanParams.toString();
+            history.replaceState(null, '', lazyLoadIndexUrl + (cleanQs ? '?' + cleanQs : ''));
+            switchView(currentView);
+            setupLazyLoadObserver();
+            reinitBooksTableResize();
+        })
+        .catch(function() {
+            const fallback = new URLSearchParams(new FormData(form)).toString();
+            window.location.href = lazyLoadIndexUrl + (fallback ? '?' + fallback : '');
+        });
+    }
+
+    const filterForm = document.getElementById('filterForm');
+    if (filterForm) {
+        filterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            applyFiltersAjax();
+        });
+    }
+
+    const groupBySelect = document.querySelector('select[name="group_by"]');
+    if (groupBySelect) {
+        groupBySelect.addEventListener('change', function() {
+            applyFiltersAjax();
+        });
+    }
+
+    const clearLink = document.getElementById('booksFilterClearLink');
+    if (clearLink) {
+        clearLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            const form = document.getElementById('filterForm');
+            if (!form) return;
+            form.querySelectorAll('input, select').forEach(function(el) {
+                if (el.name === 'group_by') {
+                    el.value = 'none';
+                } else if (el.name === 'date_range') {
+                    el.value = 'all';
+                } else if (el.type === 'text' || el.type === 'date' || el.type === 'number' || el.type === 'search') {
+                    el.value = '';
+                } else if (el.tagName === 'SELECT' && el.name !== 'group_by') {
+                    el.selectedIndex = 0;
+                }
+            });
+            applyFiltersAjax();
+        });
+    }
+
+    setupLazyLoadObserver();
     
     function loadMoreBookings() {
         if (isLoading || !hasMore) return;
+        if (!document.getElementById('bookingsTableBody')) return;
         
         isLoading = true;
         currentPage++;
@@ -466,21 +688,29 @@
         const spinner = document.getElementById('lazyLoadSpinner');
         if (spinner) spinner.classList.add('active');
         
-        const formData = new FormData(document.getElementById('filterForm'));
-        formData.append('page', currentPage);
-        formData.append('view', currentView);
-        formData.append('group_by', '{{ $groupBy }}');
+        const form = document.getElementById('filterForm');
+        const params = new URLSearchParams(form ? new FormData(form) : undefined);
+        params.set('page', String(currentPage));
+        params.set('view', currentView);
+        params.set('group_by', lazyLoadGroupBy);
         
-        fetch('{{ route("books.index") }}', {
+        const url = lazyLoadIndexUrl + (params.toString() ? '?' + params.toString() : '');
+        
+        fetch(url, {
             method: 'GET',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
             },
-            body: new URLSearchParams(formData)
+            credentials: 'same-origin'
         })
-        .then(response => response.json())
-        .then(data => {
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+            return response.json();
+        })
+        .then(function(data) {
             if (data.html) {
                 if (currentView === 'table') {
                     const tbody = document.getElementById('bookingsTableBody');
@@ -488,23 +718,24 @@
                         tbody.insertAdjacentHTML('beforeend', data.html);
                     }
                 } else {
-                    const cardView = document.querySelector('.card-view .p-3');
+                    const cardView = document.querySelector('#bookingsContainer > .canvas-panel .card-view .books-card-view-inner');
                     if (cardView) {
                         cardView.insertAdjacentHTML('beforeend', data.html);
                     }
                 }
             }
             
-            hasMore = data.hasMore || false;
+            hasMore = !!data.hasMore;
             if (!hasMore) {
                 const end = document.getElementById('lazyLoadEnd');
                 if (end) end.style.display = 'block';
             }
         })
-        .catch(error => {
+        .catch(function(error) {
             console.error('Error loading bookings:', error);
+            currentPage--;
         })
-        .finally(() => {
+        .finally(function() {
             isLoading = false;
             if (spinner) spinner.classList.remove('active');
         });
@@ -650,7 +881,7 @@
             if (fromInput) fromInput.value = py + '-' + pm + '-' + pd;
             if (toInput) toInput.value = todayStr;
         }
-        form.submit();
+        applyFiltersAjax();
     };
 
     // Instant Search (debounced)
@@ -659,13 +890,12 @@
     if (searchInput) {
         searchInput.addEventListener('input', function() {
             clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                document.getElementById('filterForm').submit();
+            searchTimeout = setTimeout(function() {
+                applyFiltersAjax();
             }, 500);
         });
     }
 })();
 </script>
 @endpush
-</div>
 @endsection

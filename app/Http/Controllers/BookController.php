@@ -30,6 +30,11 @@ class BookController extends Controller
      */
     public function index(Request $request)
     {
+        // AJAX: replace bookings list only (filters) — must run before lazy-load (page) branch
+        if ($request->wantsJson() && $request->boolean('books_list_partial')) {
+            return $this->bookListPartialJson($request);
+        }
+
         // If AJAX request for lazy loading (check for page parameter or X-Requested-With header)
         if (($request->ajax() || $request->wantsJson() || $request->hasHeader('X-Requested-With')) && $request->has('page')) {
             return $this->lazyLoad($request);
@@ -76,6 +81,89 @@ class BookController extends Controller
         $dateRange = $filters['date_range'];
 
         return view('books.index', compact('books', 'total', 'groupBy', 'dateRange', 'groupedBooks', 'restrictToOwnBookings', 'boothsByBookId', 'floorPlans', 'statusSettings'));
+    }
+
+    /**
+     * JSON fragment for #bookingsContainer when filters change (no full page reload).
+     */
+    private function bookListPartialJson(Request $request)
+    {
+        $filters = [
+            'search' => $request->input('search'),
+            'date_from' => $request->input('date_from'),
+            'date_to' => $request->input('date_to'),
+            'type' => $request->input('type'),
+            'floor_plan_id' => $request->input('floor_plan_id'),
+            'status' => $request->input('status'),
+            'amount_min' => $request->input('amount_min'),
+            'amount_max' => $request->input('amount_max'),
+            'booth_count_min' => $request->input('booth_count_min'),
+            'date_range' => $request->input('date_range', 'all'),
+        ];
+
+        $groupBy = $request->input('group_by', 'none');
+
+        if ($groupBy !== 'none') {
+            $result = $this->bookService->getGroupedBookings($filters, $groupBy);
+            $books = $result['books'];
+            $groupedBooks = $result['groupedBooks'];
+            $boothsByBookId = $result['boothsByBookId'];
+            $total = $books->count();
+        } else {
+            $result = $this->bookService->getBookings($filters, 20, 1);
+            $books = $result['books'];
+            $total = $result['total'];
+            $boothsByBookId = $result['boothsByBookId'];
+            $groupedBooks = [];
+        }
+
+        $html = view('books.partials.index-bookings-container', compact(
+            'books',
+            'groupBy',
+            'groupedBooks',
+            'boothsByBookId'
+        ))->render();
+
+        $lazyLoadMoreAvailable = ($groupBy === 'none' && $total > $books->count());
+
+        return response()->json([
+            'success' => true,
+            'html' => $html,
+            'activeFilterCount' => $this->countActiveBookFilters($request),
+            'groupBy' => $groupBy,
+            'hasMore' => $lazyLoadMoreAvailable,
+        ], 200, [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    }
+
+    private function countActiveBookFilters(Request $request): int
+    {
+        $n = 0;
+        if ($request->filled('search')) {
+            $n++;
+        }
+        if ($request->filled('date_from') || $request->filled('date_to')) {
+            $n++;
+        }
+        if ($request->filled('type')) {
+            $n++;
+        }
+        if ($request->filled('floor_plan_id')) {
+            $n++;
+        }
+        if ($request->filled('status')) {
+            $n++;
+        }
+        if ($request->filled('amount_min') || $request->filled('amount_max')) {
+            $n++;
+        }
+        if ($request->filled('booth_count_min')) {
+            $n++;
+        }
+        if ($request->input('date_range') && $request->input('date_range') !== 'all') {
+            $n++;
+        }
+
+        return $n;
     }
 
     /**
@@ -188,7 +276,8 @@ class BookController extends Controller
         $groupBy = $request->input('group_by', 'none');
         $html = '';
 
-        foreach ($books as $book) {
+        foreach ($books as $i => $book) {
+            $rowNumber = $offset + $i + 1;
             // Ensure relationships are loaded (same as initial load)
             if (! $book->relationLoaded('client')) {
                 $book->load('client');
@@ -228,7 +317,7 @@ class BookController extends Controller
             $balanceAmount = $book->balance_amount ?? ($totalAmount - $paidAmount);
 
             if ($view === 'table') {
-                $html .= view('books.partials.table-row', compact('book', 'boothCount', 'statusColor', 'statusTextColor', 'statusName', 'totalAmount', 'balanceAmount', 'boothsByBookId'))->render();
+                $html .= view('books.partials.table-row', compact('book', 'rowNumber', 'boothCount', 'statusColor', 'statusTextColor', 'statusName', 'totalAmount', 'balanceAmount', 'boothsByBookId'))->render();
             } else {
                 // Card HTML
                 $html .= view('books.partials.card-item', compact('book', 'boothCount', 'typeBadge', 'typeClass', 'boothsByBookId'))->render();

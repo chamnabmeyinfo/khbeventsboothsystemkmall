@@ -564,6 +564,21 @@ function hideCanvasLoader() {
 window.floorPlanIdForCanvas = FPD.floorPlanId;
 window.canvasTextItems = FPD.canvasTextItems;
 
+/** Resolve status palette entry (PHP/JSON may use string or number keys). */
+function resolveStatusColorEntry(statusColors, statusCode) {
+    if (!statusColors) {
+        return null;
+    }
+    const n = parseInt(statusCode, 10);
+    if (!isNaN(n) && statusColors[n] != null) {
+        return statusColors[n];
+    }
+    if (statusColors[statusCode] != null) {
+        return statusColors[statusCode];
+    }
+    return statusColors[String(statusCode)] != null ? statusColors[String(statusCode)] : null;
+}
+
 const FloorPlanDesigner = {
     // State
     draggedElement: null,
@@ -824,6 +839,8 @@ const FloorPlanDesigner = {
     
     // Status colors cache (loaded from database)
     statusColorsCache: null,
+    /** Matches statusColorsCache to current floor plan (avoids wrong colors after switch). */
+    _statusColorsFpId: undefined,
     
     // Helper: Get cached DOM element (with lazy initialization)
     getElement: function(id) {
@@ -6639,7 +6656,7 @@ const FloorPlanDesigner = {
         
         // Get status-based colors (these will override custom colors)
         // boothStatus already declared at the top of createBoothElement function
-        const statusColor = statusColors[boothStatus] || statusColors[1] || { bg: '#ffffff', border: '#007bff', text: '#000000', border_width: 2, border_style: 'solid', border_radius: 4 };
+        const statusColor = resolveStatusColorEntry(statusColors, boothStatus) || resolveStatusColorEntry(statusColors, 1) || { bg: '#ffffff', border: '#007bff', text: '#000000', border_width: 2, border_style: 'solid', border_radius: 4 };
         
         // Check if booth has custom colors (individual booth colors override status colors)
         // Custom colors are stored in boothData or will be loaded from database
@@ -10597,13 +10614,18 @@ const FloorPlanDesigner = {
     // Load status colors from database
     loadStatusColors: function() {
         const self = this;
-        
-        // Return cached if available
-        if (self.statusColorsCache) {
+        const fpId = (typeof FPD !== 'undefined' && FPD.floorPlanId) ? FPD.floorPlanId : null;
+        if (self.statusColorsCache && self._statusColorsFpId === fpId) {
             return Promise.resolve(self.statusColorsCache);
         }
-        
-        return fetch('/settings/booth-statuses/colors', {
+        self.statusColorsCache = null;
+
+        let colorsUrl = '/settings/booth-statuses/colors';
+        if (fpId) {
+            colorsUrl += '?floor_plan_id=' + encodeURIComponent(fpId);
+        }
+
+        return fetch(colorsUrl, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -10630,27 +10652,33 @@ const FloorPlanDesigner = {
                     };
                 });
                 self.statusColorsCache = colors;
+                self._statusColorsFpId = fpId;
                 return colors;
             }
-            // Fallback to defaults
-            return {
+            // Fallback to defaults (still cache so lookups stay consistent for this floor plan)
+            const fallback = {
                 1: { background: '#ffffff', bg: '#ffffff', border: '#007bff', text: '#000000', border_width: 2, border_style: 'solid', border_radius: 4 },
                 2: { background: '#0dcaf0', bg: '#0dcaf0', border: '#0dcaf0', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 },
                 3: { background: '#ffc107', bg: '#ffc107', border: '#ffc107', text: '#333333', border_width: 2, border_style: 'solid', border_radius: 4 },
                 4: { background: '#6c757d', bg: '#6c757d', border: '#6c757d', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 },
                 5: { background: '#212529', bg: '#212529', border: '#212529', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 }
             };
+            self.statusColorsCache = fallback;
+            self._statusColorsFpId = fpId;
+            return fallback;
         })
         .catch(function(error) {
             console.error('Error loading status colors:', error);
-            // Return defaults on error
-            return {
-                1: { bg: '#ffffff', border: '#007bff', text: '#000000' },
-                2: { bg: '#0dcaf0', border: '#0dcaf0', text: '#ffffff' },
-                3: { bg: '#ffc107', border: '#ffc107', text: '#333333' },
-                4: { bg: '#6c757d', border: '#6c757d', text: '#ffffff' },
-                5: { bg: '#212529', border: '#212529', text: '#ffffff' }
+            const fallback = {
+                1: { background: '#ffffff', bg: '#ffffff', border: '#007bff', text: '#000000', border_width: 2, border_style: 'solid', border_radius: 4 },
+                2: { background: '#0dcaf0', bg: '#0dcaf0', border: '#0dcaf0', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 },
+                3: { background: '#ffc107', bg: '#ffc107', border: '#ffc107', text: '#333333', border_width: 2, border_style: 'solid', border_radius: 4 },
+                4: { background: '#6c757d', bg: '#6c757d', border: '#6c757d', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 },
+                5: { background: '#212529', bg: '#212529', border: '#212529', text: '#ffffff', border_width: 2, border_style: 'solid', border_radius: 4 }
             };
+            self.statusColorsCache = fallback;
+            self._statusColorsFpId = fpId;
+            return fallback;
         });
     },
     
@@ -10674,6 +10702,7 @@ const FloorPlanDesigner = {
     refreshStatusColors: function() {
         const self = this;
         self.statusColorsCache = null;
+        self._statusColorsFpId = undefined;
         return self.loadStatusColors();
     },
     
@@ -11368,7 +11397,7 @@ const FloorPlanDesigner = {
                     const statusColors = self.getStatusColors();
                     
                     // Apply status-based colors (custom booth colors override status colors)
-                    const statusColor = statusColors[boothStatus] || statusColors[1] || { background: '#ffffff', border: '#007bff', text: '#000000', border_width: 2, border_style: 'solid', border_radius: 4 };
+                    const statusColor = resolveStatusColorEntry(statusColors, boothStatus) || resolveStatusColorEntry(statusColors, 1) || { background: '#ffffff', border: '#007bff', text: '#000000', border_width: 2, border_style: 'solid', border_radius: 4 };
                     
                     // Check if booth has custom colors (individual booth colors override status colors)
                     const customBgColor = booth.background_color;
@@ -11565,7 +11594,7 @@ const FloorPlanDesigner = {
                 
                 // Apply status-based colors (these override custom background/border colors)
                 // boothStatus already declared at the top of the forEach loop
-                const statusColor = statusColors[boothStatus] || statusColors[1] || { background: '#ffffff', border: '#007bff', text: '#000000', border_width: 2, border_style: 'solid', border_radius: 4 };
+                const statusColor = resolveStatusColorEntry(statusColors, boothStatus) || resolveStatusColorEntry(statusColors, 1) || { background: '#ffffff', border: '#007bff', text: '#000000', border_width: 2, border_style: 'solid', border_radius: 4 };
                 
                 // Check if booth has custom colors (individual booth colors override status colors)
                 // IMPORTANT: Custom colors ONLY apply when status is "Available" (status code 1)
