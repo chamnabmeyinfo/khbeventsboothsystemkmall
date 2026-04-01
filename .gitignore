@@ -59,6 +59,9 @@ sftp.json
 # -----------------------------------------------------------------------------
 # User-uploaded client avatars (keep server uploads out of repo)
 /public/images/*
+# Shipped static assets (language switcher flags on landing pages)
+!/public/images/landing-flags/
+!/public/images/landing-flags/**
 
 # Personal / internal notes and documents
 /chamnab_note/my note.txt
