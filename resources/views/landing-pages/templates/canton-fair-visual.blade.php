@@ -99,18 +99,36 @@
     .lv-hero:before{content:"";position:absolute;inset:0;background:linear-gradient(165deg,rgba(15,23,42,.9) 0%,rgba(30,27,75,.68) 42%,rgba(196,30,30,.42) 100%)}
     .lv-hero:after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 85% 55% at 50% 18%,rgba(0,0,0,.35),transparent 58%);pointer-events:none}
     .lv-content{position:relative;z-index:2;color:#fff;text-align:center;padding:clamp(48px,12vw,100px) 0}
-    .lv-logo{height:clamp(72px,14vw,100px);max-width:min(92vw,320px);object-fit:contain;filter:drop-shadow(0 4px 20px rgba(0,0,0,.45))}
+    .lv-logo{
+        display:inline-block;
+        padding:12px 20px;
+        border-radius:22px;
+        background:linear-gradient(165deg,#fff 0%,rgba(255,255,255,.92) 40%,rgba(248,250,252,.88) 100%);
+        box-shadow:0 10px 36px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.95);
+        line-height:0;
+    }
+    .lv-logo img{
+        height:clamp(72px,14vw,100px);
+        max-width:min(92vw,300px);
+        width:auto;
+        object-fit:contain;
+        vertical-align:middle;
+        filter:drop-shadow(0 2px 12px rgba(0,0,0,.22));
+    }
     .lv-hero h1{font-size:clamp(1.75rem,5vw,3.25rem);margin:16px 0 12px;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.55),0 4px 28px rgba(0,0,0,.45)}
     .lv-hero h2{font-size:clamp(1.05rem,2.8vw,1.4rem);font-family:"Roboto","Hanuman",sans-serif;font-weight:500;color:rgba(255,255,255,.98);margin:0 0 28px;max-width:52ch;margin-left:auto;margin-right:auto;line-height:1.55;text-shadow:0 1px 3px rgba(0,0,0,.65),0 2px 14px rgba(0,0,0,.4)}
-    .lv-btn{
+    /* Buttons do not inherit .lv-wrap fonts from UA styles; set stack so Khmer (Hanuman) applies to hero_cta_text etc. */
+    .lv-wrap .lv-btn{
         min-height:48px;border:0;border-radius:999px;padding:14px 28px;
+        font-family:"Roboto","Hanuman",sans-serif;
         background:linear-gradient(135deg,var(--lv-primary) 0%,#8b1414 100%);
         color:#fff;font-weight:700;font-size:1rem;cursor:pointer;
         box-shadow:0 8px 28px rgba(196,30,30,.45),inset 0 1px 0 rgba(255,255,255,.15);
         transition:transform .2s ease,box-shadow .2s ease,background .2s ease;
     }
-    .lv-btn:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(196,30,30,.5)}
-    .lv-btn:focus{outline:3px solid var(--lv-accent);outline-offset:3px}
+    .lv-wrap .lv-btn [data-lv-key]{font-family:inherit}
+    .lv-wrap .lv-btn:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(196,30,30,.5)}
+    .lv-wrap .lv-btn:focus{outline:3px solid var(--lv-accent);outline-offset:3px}
     .lv-section{padding:clamp(48px,8vw,80px) 0}
     .lv-section--about{background:var(--lv-surface)}
     .lv-section--package{background:linear-gradient(180deg,var(--lv-accent-soft) 0%,#fff 100%)}
@@ -250,8 +268,8 @@
         .lv-lang-switch__links{justify-content:center}
     }
     @media (prefers-reduced-motion:reduce){
-        .lv-btn,.lv-card{transition:none !important}
-        .lv-btn:hover{transform:none}
+        .lv-wrap .lv-btn,.lv-card{transition:none !important}
+        .lv-wrap .lv-btn:hover{transform:none}
     }
 </style>
 
@@ -291,7 +309,7 @@
     @endif
     <section class="lv-hero" data-lv-image-key="hero_background_image" data-lv-image-current="{{ $heroBg }}" style="background-image:url('{{ $heroBg }}')">
         <div class="lv-content lv-container">
-            @if($logo)<img src="{{ $logo }}" alt="Logo" class="lv-logo" data-lv-image-key="logo_image" data-lv-image-current="{{ $logo }}">@endif
+            @if($logo)<span class="lv-logo"><img src="{{ $logo }}" alt="Logo" data-lv-image-key="logo_image" data-lv-image-current="{{ $logo }}"></span>@endif
             <h1 data-lv-key="hero_title">{{ $heroTitle }}</h1>
             <h2 data-lv-key="hero_subtitle">{!! nl2br(e($heroSubtitle)) !!}</h2>
             <button class="lv-btn" onclick="trackLandingEvent('cta_click',{cta_label:'VisualHeroCTA',source:'hero'});landingContinue('{{ $heroCtaTarget }}')"><span data-lv-key="hero_cta_text">{{ $heroCtaText }}</span></button>
