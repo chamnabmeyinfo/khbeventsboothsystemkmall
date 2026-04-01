@@ -44,11 +44,66 @@ class LandingTextTranslationService
         }
 
         return match ($fieldKey) {
-            'hero_stats_text', 'trip_dates_text', 'faq_items_text' => $this->translatePipeDelimitedMultiline($text, $sourceLocale, $targetLocale),
-            'package_items_text' => $this->translateLineByLinePlain($text, $sourceLocale, $targetLocale),
+            'hero_stats_text' => $this->translateHeroStatsPipeLines($text, $sourceLocale, $targetLocale),
+            'trip_dates_text', 'faq_items_text' => $this->translatePipeDelimitedMultiline($text, $sourceLocale, $targetLocale),
+            'package_items_text' => $this->translatePackageItemsLines($text, $sourceLocale, $targetLocale),
             'contact_phones_text' => $this->translateContactPhones($text, $sourceLocale, $targetLocale),
             default => $this->translatePlain($text, $sourceLocale, $targetLocale),
         };
+    }
+
+    /**
+     * Translate value|label|icon — icon key (3rd column) is never translated.
+     */
+    private function translateHeroStatsPipeLines(string $text, string $source, string $target): string
+    {
+        $lines = preg_split("/\r\n|\r|\n/", $text) ?: [];
+        $out = [];
+        foreach ($lines as $line) {
+            $line = rtrim((string) $line);
+            if ($line === '') {
+                $out[] = '';
+
+                continue;
+            }
+            $parts = explode('|', $line);
+            $value = trim((string) ($parts[0] ?? ''));
+            $label = trim((string) ($parts[1] ?? ''));
+            $icon = trim((string) ($parts[2] ?? ''));
+            $tv = $this->translateSegment($value, $source, $target);
+            $tl = $this->translateSegment($label, $source, $target);
+            $out[] = $icon !== '' ? $tv.'|'.$tl.'|'.$icon : $tv.'|'.$tl;
+        }
+
+        return implode("\n", $out);
+    }
+
+    /**
+     * Translate text|icon lines — icon key after first pipe is preserved.
+     */
+    private function translatePackageItemsLines(string $text, string $source, string $target): string
+    {
+        $lines = preg_split("/\r\n|\r|\n/", $text) ?: [];
+        $out = [];
+        foreach ($lines as $line) {
+            $line = trim((string) $line);
+            if ($line === '') {
+                $out[] = '';
+
+                continue;
+            }
+            if (! str_contains($line, '|')) {
+                $out[] = $this->translateSegment($line, $source, $target);
+
+                continue;
+            }
+            [$textPart, $icon] = explode('|', $line, 2);
+            $tt = $this->translateSegment(trim($textPart), $source, $target);
+            $ic = trim(strip_tags((string) $icon));
+            $out[] = $ic !== '' ? $tt.'|'.$ic : $tt;
+        }
+
+        return implode("\n", $out);
     }
 
     private function translatePipeDelimitedMultiline(string $text, string $source, string $target): string
@@ -99,10 +154,12 @@ class LandingTextTranslationService
             $trim = trim((string) $line);
             if ($trim === '') {
                 $out[] = '';
+
                 continue;
             }
             if (preg_match('/^[\d\s\+\-\(\)]+$/u', $trim)) {
                 $out[] = $line;
+
                 continue;
             }
             $out[] = $this->translateSegment((string) $line, $source, $target);
@@ -121,6 +178,7 @@ class LandingTextTranslationService
         foreach ($lines as $line) {
             if ($line === '') {
                 $out[] = '';
+
                 continue;
             }
             $out[] = $this->translateLongLine((string) $line, $source, $target);

@@ -261,6 +261,7 @@ class LandingPageController extends Controller
                 $text = trim((string) $value);
                 $text = strip_tags($text);
                 $visual['hero_cta_target'] = mb_substr($text, 0, 1024);
+
                 continue;
             }
 
@@ -272,6 +273,7 @@ class LandingPageController extends Controller
                     $visual['i18n'][$locale] = [];
                 }
                 $visual['i18n'][$locale][$key] = mb_substr($text, 0, $max);
+
                 continue;
             }
 
@@ -279,6 +281,7 @@ class LandingPageController extends Controller
                 $url = trim((string) $value);
                 if ($url === '') {
                     $visual[$key] = '';
+
                     continue;
                 }
                 if (Str::startsWith($url, ['javascript:', 'data:text/html'])) {
@@ -601,12 +604,12 @@ class LandingPageController extends Controller
         $heroRaw = array_key_exists('hero_stats_text', $locIn) ? (string) $locIn['hero_stats_text'] : null;
         $block['hero_stats'] = $this->parsePipeList(
             $heroRaw,
-            ['value', 'label'],
+            ['value', 'label', 'icon'],
             is_array($prevBlock['hero_stats'] ?? null) ? $prevBlock['hero_stats'] : []
         );
 
         $pkgRaw = array_key_exists('package_items_text', $locIn) ? (string) $locIn['package_items_text'] : null;
-        $block['package_items'] = $this->parseSimpleList(
+        $block['package_items'] = $this->parsePackageItemsList(
             $pkgRaw,
             is_array($prevBlock['package_items'] ?? null) ? $prevBlock['package_items'] : []
         );
@@ -653,6 +656,50 @@ class LandingPageController extends Controller
      * @param  array<int, mixed>  $fallback
      * @return array<int, string>
      */
+    /**
+     * One line: "Description text|icon_key" (icon_key is optional, e.g. plane, hotel).
+     *
+     * @param  array<int, mixed>  $fallback
+     * @return array<int, array{text: string, icon: string}>
+     */
+    private function parsePackageItemsList(?string $raw, array $fallback = []): array
+    {
+        if ($raw === null) {
+            $out = [];
+            foreach ($fallback as $row) {
+                if (is_string($row)) {
+                    $out[] = ['text' => trim($row), 'icon' => ''];
+                } elseif (is_array($row)) {
+                    $out[] = [
+                        'text' => trim((string) ($row['text'] ?? '')),
+                        'icon' => trim((string) ($row['icon'] ?? '')),
+                    ];
+                }
+            }
+
+            return $out;
+        }
+        $lines = preg_split('/\r\n|\r|\n/', $raw) ?: [];
+        $items = [];
+        foreach ($lines as $line) {
+            $line = trim((string) $line);
+            if ($line === '') {
+                continue;
+            }
+            if (str_contains($line, '|')) {
+                [$textPart, $icon] = explode('|', $line, 2);
+                $items[] = [
+                    'text' => strip_tags(trim((string) $textPart)),
+                    'icon' => strip_tags(trim((string) $icon)),
+                ];
+            } else {
+                $items[] = ['text' => strip_tags($line), 'icon' => ''];
+            }
+        }
+
+        return $items;
+    }
+
     private function parseSimpleList(?string $raw, array $fallback = []): array
     {
         if ($raw === null) {

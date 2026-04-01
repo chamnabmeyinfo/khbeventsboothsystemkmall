@@ -192,8 +192,19 @@
             @foreach($adminLocales as $i => $loc)
                 @php
                     $vloc = $visualForm['i18n'][$loc] ?? [];
-                    $heroStatsText = old('visual.i18n.'.$loc.'.hero_stats_text', collect($vloc['hero_stats'] ?? [])->map(fn ($row) => trim(($row['value'] ?? '').'|'.($row['label'] ?? '')))->implode("\n"));
-                    $packageItemsText = old('visual.i18n.'.$loc.'.package_items_text', collect($vloc['package_items'] ?? [])->implode("\n"));
+                    $heroStatsText = old('visual.i18n.'.$loc.'.hero_stats_text', collect($vloc['hero_stats'] ?? [])->map(fn ($row) => trim(($row['value'] ?? '').'|'.($row['label'] ?? '').'|'.($row['icon'] ?? '')))->implode("\n"));
+                    $packageItemsText = old('visual.i18n.'.$loc.'.package_items_text', collect($vloc['package_items'] ?? [])->map(function ($row) {
+                        if (is_string($row)) {
+                            return $row;
+                        }
+                        if (! is_array($row)) {
+                            return '';
+                        }
+                        $t = trim((string) ($row['text'] ?? ''));
+                        $i = trim((string) ($row['icon'] ?? ''));
+
+                        return $i !== '' ? $t.'|'.$i : $t;
+                    })->implode("\n"));
                     $tripDatesText = old('visual.i18n.'.$loc.'.trip_dates_text', collect($vloc['trip_dates'] ?? [])->map(fn ($row) => trim(($row['date'] ?? '').'|'.($row['status'] ?? '').'|'.($row['seats_left'] ?? '')))->implode("\n"));
                     $faqItemsText = old('visual.i18n.'.$loc.'.faq_items_text', collect($vloc['faq_items'] ?? [])->map(fn ($row) => trim(($row['question'] ?? '').'|'.($row['answer'] ?? '')))->implode("\n"));
                     $contactPhonesText = old('visual.i18n.'.$loc.'.contact_phones_text', collect($vloc['contact_phones'] ?? [])->implode("\n"));
@@ -324,14 +335,16 @@
                             <label class="mb-0">Hero Stats (one per line: value|label)</label>
                             @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'hero_stats_text', 'canAutoTranslate' => $canAutoTranslate])
                         </div>
-                        <textarea name="{{ $pfx }}[hero_stats_text]" class="form-control" rows="3" placeholder="70,000+|Booths & Exhibitors&#10;200+|Countries Participating&#10;25|Seats Available">{{ $heroStatsText }}</textarea>
+                        <textarea name="{{ $pfx }}[hero_stats_text]" class="form-control" rows="4" placeholder="200+|Countries|globe&#10;70,000+|Exhibition Booths|store&#10;500,000+|Annual Visitors|users">{{ $heroStatsText }}</textarea>
+                        <small class="text-muted d-block mt-1">Format per line: <code>value|label|icon</code> (icon keys: globe, store, users, plane, hotel, etc.).</small>
                     </div>
                     <div class="form-group">
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
                             <label class="mb-0">Package Items (one per line)</label>
                             @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'package_items_text', 'canAutoTranslate' => $canAutoTranslate])
                         </div>
-                        <textarea name="{{ $pfx }}[package_items_text]" class="form-control" rows="5" placeholder="Round-trip flight tickets&#10;3 nights / 4 days hotel accommodation">{{ $packageItemsText }}</textarea>
+                        <textarea name="{{ $pfx }}[package_items_text]" class="form-control" rows="10" placeholder="Round-trip flight tickets|plane&#10;3 nights / 4 days hotel accommodation|hotel">{{ $packageItemsText }}</textarea>
+                        <small class="text-muted d-block mt-1">One benefit per line. Optional: <code>text|icon</code> (e.g. <code>|plane</code>).</small>
                     </div>
                     <div class="form-group">
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">

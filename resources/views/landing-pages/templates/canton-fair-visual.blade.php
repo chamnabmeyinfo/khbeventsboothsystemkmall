@@ -38,16 +38,71 @@
         'km' => 'Khmer',
         'zh' => 'Chinese',
     ];
-    $heroStats = is_array($visual['hero_stats'] ?? null) ? $visual['hero_stats'] : [
-        ['value' => '70,000+', 'label' => 'Booths & Exhibitors'],
-        ['value' => '200+', 'label' => 'Countries Participating'],
-        ['value' => '25', 'label' => 'Seats Available'],
+    /** Font Awesome 6 class by short key (admin: value|label|icon or text|icon). */
+    $lvFaIcons = [
+        'globe' => 'fa-solid fa-globe',
+        'store' => 'fa-solid fa-store',
+        'users' => 'fa-solid fa-users',
+        'plane' => 'fa-solid fa-plane',
+        'hotel' => 'fa-solid fa-hotel',
+        'mug-hot' => 'fa-solid fa-mug-hot',
+        'bus' => 'fa-solid fa-bus',
+        'gift' => 'fa-solid fa-gift',
+        'id-card' => 'fa-solid fa-id-card',
+        'user-tie' => 'fa-solid fa-user-tie',
+        'language' => 'fa-solid fa-language',
+        'circle-check' => 'fa-solid fa-circle-check',
     ];
-    $packageItems = is_array($visual['package_items'] ?? null) ? $visual['package_items'] : [
-        'Round-trip flight tickets',
-        '3 nights / 4 days hotel accommodation',
-        'Local transport and support',
+    $heroStatsDefault = [
+        ['value' => '200+', 'label' => 'Countries', 'icon' => 'globe'],
+        ['value' => '70,000+', 'label' => 'Exhibition Booths', 'icon' => 'store'],
+        ['value' => '500,000+', 'label' => 'Annual Visitors', 'icon' => 'users'],
     ];
+    $heroStats = is_array($visual['hero_stats'] ?? null) ? $visual['hero_stats'] : $heroStatsDefault;
+    $heroIconFallback = ['globe', 'store', 'users'];
+    foreach ($heroStats as $i => $row) {
+        if (! is_array($heroStats[$i])) {
+            unset($heroStats[$i]);
+            continue;
+        }
+        $ic = trim((string) ($heroStats[$i]['icon'] ?? ''));
+        $heroStats[$i]['icon'] = $ic !== '' ? $ic : ($heroIconFallback[$i] ?? 'circle-check');
+    }
+    $heroStats = array_values($heroStats);
+    if ($heroStats === []) {
+        $heroStats = $heroStatsDefault;
+    }
+    $packageItemsDefault = [
+        ['text' => 'Round-trip flight tickets', 'icon' => 'plane'],
+        ['text' => '3 nights / 4 days hotel accommodation', 'icon' => 'hotel'],
+        ['text' => 'Free breakfast at the hotel', 'icon' => 'mug-hot'],
+        ['text' => 'Local transportation in Guangzhou', 'icon' => 'bus'],
+        ['text' => 'Exclusive souvenirs from KHB Events', 'icon' => 'gift'],
+        ['text' => 'Fair registration assistance', 'icon' => 'id-card'],
+        ['text' => 'Professional tour guide (Khmer + English support)', 'icon' => 'language'],
+    ];
+    $packageItems = is_array($visual['package_items'] ?? null) ? $visual['package_items'] : $packageItemsDefault;
+    $pkgIconFallback = ['plane', 'hotel', 'mug-hot', 'bus', 'gift', 'id-card', 'language'];
+    foreach ($packageItems as $i => $row) {
+        if (is_string($row)) {
+            $packageItems[$i] = [
+                'text' => $row,
+                'icon' => $pkgIconFallback[$i] ?? 'circle-check',
+            ];
+        } elseif (is_array($row)) {
+            $t = trim((string) ($row['icon'] ?? ''));
+            $packageItems[$i] = [
+                'text' => $row['text'] ?? '',
+                'icon' => $t !== '' ? $t : ($pkgIconFallback[$i] ?? 'circle-check'),
+            ];
+        } else {
+            unset($packageItems[$i]);
+        }
+    }
+    $packageItems = array_values($packageItems);
+    if ($packageItems === []) {
+        $packageItems = $packageItemsDefault;
+    }
     $tripDates = is_array($visual['trip_dates'] ?? null) ? $visual['trip_dates'] : [
         ['date' => '17 - 20 October 2025', 'status' => 'Available', 'seats_left' => '18'],
         ['date' => '25 - 28 October 2025', 'status' => 'Almost Full', 'seats_left' => '7'],
@@ -129,17 +184,47 @@
     .lv-wrap .lv-btn [data-lv-key]{font-family:inherit}
     .lv-wrap .lv-btn:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(196,30,30,.5)}
     .lv-wrap .lv-btn:focus{outline:3px solid var(--lv-accent);outline-offset:3px}
-    /* Hero primary CTA: gentle pulse + glow to draw attention (booking submit unchanged) */
-    @keyframes lvHeroCtaGlow{
-        0%,100%{box-shadow:0 8px 28px rgba(196,30,30,.45),inset 0 1px 0 rgba(255,255,255,.15),0 0 0 0 rgba(201,162,39,0)}
-        50%{box-shadow:0 14px 40px rgba(196,30,30,.58),inset 0 1px 0 rgba(255,255,255,.22),0 0 36px 10px rgba(201,162,39,.42)}
+    /* Hero primary CTA: eye-catching pulse (scale + glow ring); pauses on hover/focus; booking submit unchanged */
+    @keyframes lvHeroCtaPulse{
+        0%,100%{
+            transform:translateY(0) scale(1);
+            box-shadow:
+                0 8px 28px rgba(196,30,30,.48),
+                inset 0 1px 0 rgba(255,255,255,.14),
+                0 0 0 0 rgba(201,162,39,0),
+                0 0 20px rgba(255,80,80,.15);
+        }
+        40%{
+            transform:translateY(-3px) scale(1.055);
+            box-shadow:
+                0 18px 48px rgba(196,30,30,.62),
+                inset 0 1px 0 rgba(255,255,255,.28),
+                0 0 0 5px rgba(201,162,39,.55),
+                0 0 40px 14px rgba(201,162,39,.45);
+        }
+        70%{
+            transform:translateY(-1px) scale(1.03);
+            box-shadow:
+                0 12px 38px rgba(196,30,30,.55),
+                inset 0 1px 0 rgba(255,255,255,.2),
+                0 0 0 3px rgba(255,255,255,.35),
+                0 0 32px 18px rgba(255,220,120,.3);
+        }
     }
     @keyframes lvHeroCtaText{
-        0%,100%{text-shadow:0 1px 2px rgba(0,0,0,.35);filter:brightness(1)}
-        50%{text-shadow:0 0 16px rgba(255,255,255,.45),0 1px 3px rgba(0,0,0,.25);filter:brightness(1.08)}
+        0%,100%{transform:scale(1);text-shadow:0 1px 3px rgba(0,0,0,.4);filter:brightness(1)}
+        45%{transform:scale(1.06);text-shadow:0 0 22px rgba(255,255,255,.65),0 0 8px rgba(201,162,39,.5);filter:brightness(1.12)}
+        70%{transform:scale(1.02);text-shadow:0 0 12px rgba(255,255,255,.4);filter:brightness(1.05)}
     }
-    .lv-hero .lv-btn--hero-cta{animation:lvHeroCtaGlow 2.3s ease-in-out infinite}
-    .lv-hero .lv-btn--hero-cta [data-lv-key]{display:inline-block;animation:lvHeroCtaText 2.3s ease-in-out infinite}
+    .lv-hero .lv-btn--hero-cta{
+        transform:translateZ(0);
+        animation:lvHeroCtaPulse 1.85s ease-in-out infinite;
+    }
+    .lv-hero .lv-btn--hero-cta [data-lv-key]{
+        display:inline-block;
+        transform-origin:center;
+        animation:lvHeroCtaText 1.85s ease-in-out infinite;
+    }
     .lv-hero .lv-btn--hero-cta:hover,.lv-hero .lv-btn--hero-cta:focus-visible{animation-play-state:paused}
     .lv-hero .lv-btn--hero-cta:hover [data-lv-key],.lv-hero .lv-btn--hero-cta:focus-visible [data-lv-key]{animation-play-state:paused}
     .lv-section{padding:clamp(48px,8vw,80px) 0}
@@ -157,9 +242,16 @@
     }
     /* Dark translucent panels so stats never wash out against the hero image */
     .lv-hero .lv-card{background:rgba(15,23,42,.78);border:1px solid rgba(255,255,255,.32);backdrop-filter:blur(10px);color:#fff;box-shadow:0 8px 32px rgba(0,0,0,.25)}
-    .lv-hero .lv-card div:last-child{color:rgba(255,255,255,.95);font-size:.95rem;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+    .lv-stat-card{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 14px;text-align:center}
+    .lv-stat__icon{font-size:clamp(1.35rem,3.5vw,1.75rem);color:rgba(255,255,255,.98);line-height:1}
+    .lv-stat__icon i{filter:drop-shadow(0 2px 8px rgba(0,0,0,.25))}
+    .lv-stat__label{color:rgba(255,255,255,.95);font-size:.95rem;line-height:1.35;text-shadow:0 1px 2px rgba(0,0,0,.35)}
     .lv-stat-num{font-size:clamp(1.5rem,4vw,1.85rem);font-weight:800;font-family:"Roboto","Hanuman",sans-serif;letter-spacing:-0.03em;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.45)}
     .lv-three{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px}
+    .lv-package-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:14px;margin-top:8px}
+    .lv-package-item{display:flex;align-items:flex-start;gap:14px;text-align:left;padding:16px 18px}
+    .lv-package-item__icon{flex-shrink:0;width:44px;height:44px;border-radius:50%;background:rgba(196,30,30,.1);color:var(--lv-primary);display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+    .lv-package-item__text{line-height:1.45;color:var(--lv-body);font-size:1rem;flex:1;min-width:0}
     .lv-section h2{font-size:clamp(1.5rem,3.5vw,2rem);margin:0 0 24px}
     .lv-section--package h2,.lv-section--trip h2{text-align:center;max-width:40ch;margin-left:auto;margin-right:auto;margin-bottom:28px}
     .lv-price-panel{
@@ -306,9 +398,11 @@
                     </span>
                     <div class="lv-lang-switch__links" role="group" aria-label="Available languages">
                         @foreach($enabledLocales as $loc)
-                            @php($label = $localeLabels[$loc] ?? ($localeSwitcherNames[$loc] ?? $loc))
-                            @php($switcherTitle = $localeSwitcherNames[$loc] ?? (is_string($label) ? strip_tags($label) : $loc))
-                            @php($flagFile = $localeFlagImages[$loc] ?? null)
+                            @php
+                                $label = $localeLabels[$loc] ?? ($localeSwitcherNames[$loc] ?? $loc);
+                                $switcherTitle = $localeSwitcherNames[$loc] ?? (is_string($label) ? strip_tags($label) : $loc);
+                                $flagFile = $localeFlagImages[$loc] ?? null;
+                            @endphp
                             @if(($langSwitcherUrls[$loc] ?? null))
                                 <a href="{{ $langSwitcherUrls[$loc] }}" class="lv-lang-switch-link {{ $loc === $currentLocale ? 'is-active' : '' }}" hreflang="{{ $loc }}" data-lv-lang-link="1" aria-label="{{ $switcherTitle }}" title="{{ $switcherTitle }}" onclick="if(typeof trackLandingEvent==='function'){trackLandingEvent('lang_switch',{lang:'{{ $loc }}',source:'lang-switcher'});}">@if($flagFile)<span class="lv-lang-switch__flag" aria-hidden="true"><img class="lv-lang-switch__flag-img" src="{{ asset('images/landing-flags/'.$flagFile) }}" width="32" height="24" alt="" loading="lazy" decoding="async"></span>@else<span class="lv-lang-switch__text">{{ $label }}</span>@endif</a>
                             @else
@@ -337,9 +431,14 @@
             <button type="button" class="lv-btn lv-btn--hero-cta" onclick="trackLandingEvent('cta_click',{cta_label:'VisualHeroCTA',source:'hero'});landingContinue('{{ $heroCtaTarget }}')"><span data-lv-key="hero_cta_text">{{ $heroCtaText }}</span></button>
             <div class="lv-three" style="margin-top:14px;">
                 @foreach($heroStats as $stat)
-                    <div class="lv-card">
+                    @php
+                        $ik = trim((string) ($stat['icon'] ?? ''));
+                        $faClass = $lvFaIcons[$ik] ?? 'fa-solid fa-circle-check';
+                    @endphp
+                    <div class="lv-card lv-stat-card">
+                        <span class="lv-stat__icon" aria-hidden="true"><i class="{{ $faClass }}"></i></span>
                         <div class="lv-stat-num">{{ $stat['value'] ?? '' }}</div>
-                        <div>{{ $stat['label'] ?? '' }}</div>
+                        <div class="lv-stat__label">{{ $stat['label'] ?? '' }}</div>
                     </div>
                 @endforeach
             </div>
@@ -360,9 +459,17 @@
     <section class="lv-section lv-section--package">
         <div class="lv-container">
             <h2 data-lv-key="package_title">{{ $packageTitle }}</h2>
-            <div class="lv-three">
+            <div class="lv-package-grid">
                 @foreach($packageItems as $item)
-                    <div class="lv-card">{{ $item }}</div>
+                    @php
+                        $pkgText = $item['text'] ?? '';
+                        $ik = trim((string) ($item['icon'] ?? ''));
+                        $faClass = $lvFaIcons[$ik] ?? 'fa-solid fa-circle-check';
+                    @endphp
+                    <div class="lv-card lv-package-item">
+                        <span class="lv-package-item__icon" aria-hidden="true"><i class="{{ $faClass }}"></i></span>
+                        <div class="lv-package-item__text">{{ $pkgText }}</div>
+                    </div>
                 @endforeach
             </div>
             <div
