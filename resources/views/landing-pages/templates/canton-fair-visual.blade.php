@@ -129,6 +129,19 @@
     .lv-wrap .lv-btn [data-lv-key]{font-family:inherit}
     .lv-wrap .lv-btn:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(196,30,30,.5)}
     .lv-wrap .lv-btn:focus{outline:3px solid var(--lv-accent);outline-offset:3px}
+    /* Hero primary CTA: gentle pulse + glow to draw attention (booking submit unchanged) */
+    @keyframes lvHeroCtaGlow{
+        0%,100%{box-shadow:0 8px 28px rgba(196,30,30,.45),inset 0 1px 0 rgba(255,255,255,.15),0 0 0 0 rgba(201,162,39,0)}
+        50%{box-shadow:0 14px 40px rgba(196,30,30,.58),inset 0 1px 0 rgba(255,255,255,.22),0 0 36px 10px rgba(201,162,39,.42)}
+    }
+    @keyframes lvHeroCtaText{
+        0%,100%{text-shadow:0 1px 2px rgba(0,0,0,.35);filter:brightness(1)}
+        50%{text-shadow:0 0 16px rgba(255,255,255,.45),0 1px 3px rgba(0,0,0,.25);filter:brightness(1.08)}
+    }
+    .lv-hero .lv-btn--hero-cta{animation:lvHeroCtaGlow 2.3s ease-in-out infinite}
+    .lv-hero .lv-btn--hero-cta [data-lv-key]{display:inline-block;animation:lvHeroCtaText 2.3s ease-in-out infinite}
+    .lv-hero .lv-btn--hero-cta:hover,.lv-hero .lv-btn--hero-cta:focus-visible{animation-play-state:paused}
+    .lv-hero .lv-btn--hero-cta:hover [data-lv-key],.lv-hero .lv-btn--hero-cta:focus-visible [data-lv-key]{animation-play-state:paused}
     .lv-section{padding:clamp(48px,8vw,80px) 0}
     .lv-section--about{background:var(--lv-surface)}
     .lv-section--package{background:linear-gradient(180deg,var(--lv-accent-soft) 0%,#fff 100%)}
@@ -278,6 +291,7 @@
     @media (prefers-reduced-motion:reduce){
         .lv-wrap .lv-btn,.lv-card{transition:none !important}
         .lv-wrap .lv-btn:hover{transform:none}
+        .lv-hero .lv-btn--hero-cta,.lv-hero .lv-btn--hero-cta [data-lv-key]{animation:none !important}
     }
 </style>
 
@@ -320,7 +334,7 @@
             @if($logo)<span class="lv-logo"><img src="{{ $logo }}" alt="Logo" data-lv-image-key="logo_image" data-lv-image-current="{{ $logo }}"></span>@endif
             <h1 data-lv-key="hero_title">{{ $heroTitle }}</h1>
             <h2 data-lv-key="hero_subtitle">{!! nl2br(e($heroSubtitle)) !!}</h2>
-            <button class="lv-btn" onclick="trackLandingEvent('cta_click',{cta_label:'VisualHeroCTA',source:'hero'});landingContinue('{{ $heroCtaTarget }}')"><span data-lv-key="hero_cta_text">{{ $heroCtaText }}</span></button>
+            <button type="button" class="lv-btn lv-btn--hero-cta" onclick="trackLandingEvent('cta_click',{cta_label:'VisualHeroCTA',source:'hero'});landingContinue('{{ $heroCtaTarget }}')"><span data-lv-key="hero_cta_text">{{ $heroCtaText }}</span></button>
             <div class="lv-three" style="margin-top:14px;">
                 @foreach($heroStats as $stat)
                     <div class="lv-card">
