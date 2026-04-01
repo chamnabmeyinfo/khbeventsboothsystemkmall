@@ -99,21 +99,21 @@
     .lv-hero:before{content:"";position:absolute;inset:0;background:linear-gradient(165deg,rgba(15,23,42,.9) 0%,rgba(30,27,75,.68) 42%,rgba(196,30,30,.42) 100%)}
     .lv-hero:after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 85% 55% at 50% 18%,rgba(0,0,0,.35),transparent 58%);pointer-events:none}
     .lv-content{position:relative;z-index:2;color:#fff;text-align:center;padding:clamp(48px,12vw,100px) 0}
-    .lv-logo{
-        display:inline-block;
-        padding:12px 20px;
-        border-radius:22px;
-        background:linear-gradient(165deg,#fff 0%,rgba(255,255,255,.92) 40%,rgba(248,250,252,.88) 100%);
-        box-shadow:0 10px 36px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.95);
-        line-height:0;
-    }
+    /* Logo: soft white glow + light depth (mostly white) */
+    .lv-logo{display:inline-block;line-height:0}
     .lv-logo img{
         height:clamp(72px,14vw,100px);
         max-width:min(92vw,300px);
         width:auto;
         object-fit:contain;
         vertical-align:middle;
-        filter:drop-shadow(0 2px 12px rgba(0,0,0,.22));
+        filter:
+            drop-shadow(0 1px 2px rgba(0,0,0,.22))
+            drop-shadow(0 3px 10px rgba(0,0,0,.14))
+            drop-shadow(0 0 12px rgba(255,255,255,.85))
+            drop-shadow(0 0 24px rgba(255,255,255,.7))
+            drop-shadow(0 0 40px rgba(255,255,255,.45))
+            drop-shadow(0 0 56px rgba(255,255,255,.22));
     }
     .lv-hero h1{font-size:clamp(1.75rem,5vw,3.25rem);margin:16px 0 12px;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.55),0 4px 28px rgba(0,0,0,.45)}
     .lv-hero h2{font-size:clamp(1.05rem,2.8vw,1.4rem);font-family:"Roboto","Hanuman",sans-serif;font-weight:500;color:rgba(255,255,255,.98);margin:0 0 28px;max-width:52ch;margin-left:auto;margin-right:auto;line-height:1.55;text-shadow:0 1px 3px rgba(0,0,0,.65),0 2px 14px rgba(0,0,0,.4)}
