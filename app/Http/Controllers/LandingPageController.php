@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\LandingPage;
 use App\Models\LandingPageEvent;
+use App\Services\LandingTextTranslationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
@@ -74,6 +75,7 @@ class LandingPageController extends Controller
     {
         $validated = $this->validateLandingPage($request);
         $validated['slug'] = Str::slug($validated['slug']);
+        $validated = $this->forceMarketingVisualMode($validated);
         $validated = $this->prepareVisualBuilderData($request, $validated);
         $validated = $this->applyContentSafety($validated);
         $validated['is_active'] = $request->boolean('is_active');
@@ -84,9 +86,9 @@ class LandingPageController extends Controller
             $this->deactivateOtherPages();
         }
 
-        LandingPage::create($validated);
+        $page = LandingPage::create($validated);
 
-        return redirect()->route('landing-pages.index')
+        return redirect()->route('landing-pages.edit', $page)
             ->with('success', 'Landing page created successfully.');
     }
 
@@ -95,10 +97,79 @@ class LandingPageController extends Controller
         return view('landing-pages.edit', compact('landingPage'));
     }
 
+    /**
+     * Machine-translate all visual fields from English into multiple target locales (admin).
+     */
+    public function translateFromEnglish(Request $request, LandingPage $landingPage)
+    {
+        set_time_limit(0);
+
+        $allowedLocales = LandingPage::allowedLocaleCodes();
+        $allowedFieldKeys = LandingTextTranslationService::visualI18nFieldKeys();
+
+        $validated = $request->validate([
+            'fields' => ['required', 'array'],
+            'fields.*' => ['nullable', 'string', 'max:50000'],
+            'target_locales' => ['required', 'array', 'min:1'],
+            'target_locales.*' => ['required', 'string', Rule::in($allowedLocales)],
+        ]);
+
+        $fields = $validated['fields'];
+        foreach (array_keys($fields) as $key) {
+            if (! in_array($key, $allowedFieldKeys, true)) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => 'Invalid field key: '.$key,
+                ], 422);
+            }
+        }
+
+        $targets = array_values(array_unique($validated['target_locales']));
+        foreach ($targets as $loc) {
+            if ($loc === 'en') {
+                return response()->json([
+                    'ok' => false,
+                    'message' => 'Remove English from target languages. English is the source.',
+                ], 422);
+            }
+        }
+
+        $service = app(LandingTextTranslationService::class);
+        $locales = [];
+
+        try {
+            foreach ($targets as $target) {
+                $locales[$target] = [];
+                foreach ($allowedFieldKeys as $key) {
+                    if (! array_key_exists($key, $fields)) {
+                        continue;
+                    }
+                    $text = (string) ($fields[$key] ?? '');
+                    $locales[$target][$key] = $service->translateVisualField(
+                        $text,
+                        $key,
+                        'en',
+                        $target
+                    );
+                }
+            }
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'ok' => false,
+                'message' => 'Translation is temporarily unavailable. Please try again with fewer languages or shorter text.',
+            ], 503);
+        }
+
+        return response()->json(['ok' => true, 'locales' => $locales]);
+    }
+
     public function update(Request $request, LandingPage $landingPage)
     {
         $validated = $this->validateLandingPage($request, $landingPage->id);
         $validated['slug'] = Str::slug($validated['slug']);
+        $validated = $this->forceMarketingVisualMode($validated);
         $validated = $this->prepareVisualBuilderData($request, $validated, $landingPage);
         $validated = $this->applyContentSafety($validated);
         $validated['is_active'] = $request->boolean('is_active');
@@ -115,7 +186,7 @@ class LandingPageController extends Controller
 
         $landingPage->update($validated);
 
-        return redirect()->route('landing-pages.index')
+        return redirect()->route('landing-pages.edit', $landingPage->fresh())
             ->with('success', 'Landing page updated successfully.');
     }
 
@@ -143,13 +214,13 @@ class LandingPageController extends Controller
 
         $validated = $request->validate([
             'fields' => 'required|array',
+            'locale' => 'nullable|string|max:12',
         ]);
 
         $allowedText = [
             'hero_title' => 255,
             'hero_subtitle' => 2000,
             'hero_cta_text' => 120,
-            'hero_cta_target' => 1024,
             'about_title' => 255,
             'about_text_en' => 4000,
             'about_text_kh' => 4000,
@@ -157,6 +228,14 @@ class LandingPageController extends Controller
             'package_price' => 120,
             'booking_title' => 255,
             'faq_title' => 255,
+            'trip_section_title' => 255,
+            'per_person_label' => 120,
+            'seats_left_suffix' => 120,
+            'booking_name_placeholder' => 120,
+            'booking_email_placeholder' => 120,
+            'booking_phone_placeholder' => 120,
+            'booking_trip_placeholder' => 120,
+            'booking_submit_text' => 120,
         ];
         $allowedImage = [
             'logo_image',
@@ -165,13 +244,34 @@ class LandingPageController extends Controller
             'why_image',
         ];
 
+        $locale = strtolower(trim((string) ($validated['locale'] ?? '')));
+        $enabled = $landingPage->enabledLocaleList();
+        if ($locale === '' || ! in_array($locale, $enabled, true)) {
+            $locale = strtolower(trim((string) ($landingPage->default_locale ?: 'en')));
+            if (! in_array($locale, $enabled, true)) {
+                $locale = $enabled[0];
+            }
+        }
+
         $visual = is_array($landingPage->visual_content) ? $landingPage->visual_content : [];
+        $visual = LandingPage::ensureStructuredVisualContent($visual);
+
         foreach ($validated['fields'] as $key => $value) {
+            if ($key === 'hero_cta_target') {
+                $text = trim((string) $value);
+                $text = strip_tags($text);
+                $visual['hero_cta_target'] = mb_substr($text, 0, 1024);
+                continue;
+            }
+
             if (array_key_exists($key, $allowedText)) {
                 $max = $allowedText[$key];
                 $text = trim((string) $value);
                 $text = strip_tags($text);
-                $visual[$key] = mb_substr($text, 0, $max);
+                if (! isset($visual['i18n'][$locale]) || ! is_array($visual['i18n'][$locale])) {
+                    $visual['i18n'][$locale] = [];
+                }
+                $visual['i18n'][$locale][$key] = mb_substr($text, 0, $max);
                 continue;
             }
 
@@ -246,30 +346,44 @@ class LandingPageController extends Controller
             ],
             'industry' => 'nullable|string|max:255',
             'headline' => 'nullable|string|max:255',
-            'html_content' => [
-                Rule::requiredIf(! $request->boolean('use_visual_builder')),
-                'nullable',
-                'string',
-            ],
+            'html_content' => 'nullable|string',
             'css_content' => 'nullable|string',
             'js_content' => 'nullable|string',
             'redirect_url' => 'required|string|max:1024',
             'show_once_mode' => 'required|in:cookie_once,session_once,entry_url_once',
+            'default_locale' => ['required', 'string', 'max:12', Rule::in(LandingPage::allowedLocaleCodes())],
+            'enabled_locales' => ['required', 'array', 'min:1'],
+            'enabled_locales.*' => ['string', 'max:12', Rule::in(LandingPage::allowedLocaleCodes())],
             'allow_inline_scripts' => 'nullable|boolean',
             'use_visual_builder' => 'nullable|boolean',
             'template_key' => 'nullable|in:canton_fair_visual',
             'visual' => 'nullable|array',
-            'visual.hero_title' => 'nullable|string|max:255',
-            'visual.hero_subtitle' => 'nullable|string|max:2000',
-            'visual.hero_cta_text' => 'nullable|string|max:120',
             'visual.hero_cta_target' => 'nullable|string|max:1024',
-            'visual.about_title' => 'nullable|string|max:255',
-            'visual.about_text_en' => 'nullable|string|max:4000',
-            'visual.about_text_kh' => 'nullable|string|max:4000',
-            'visual.package_title' => 'nullable|string|max:255',
-            'visual.package_price' => 'nullable|string|max:120',
-            'visual.booking_title' => 'nullable|string|max:255',
-            'visual.faq_title' => 'nullable|string|max:255',
+            'visual.i18n' => 'nullable|array',
+            'visual.i18n.*' => 'nullable|array',
+            'visual.i18n.*.hero_title' => 'nullable|string|max:255',
+            'visual.i18n.*.hero_subtitle' => 'nullable|string|max:2000',
+            'visual.i18n.*.hero_cta_text' => 'nullable|string|max:120',
+            'visual.i18n.*.about_title' => 'nullable|string|max:255',
+            'visual.i18n.*.about_text_en' => 'nullable|string|max:4000',
+            'visual.i18n.*.about_text_kh' => 'nullable|string|max:4000',
+            'visual.i18n.*.package_title' => 'nullable|string|max:255',
+            'visual.i18n.*.package_price' => 'nullable|string|max:120',
+            'visual.i18n.*.booking_title' => 'nullable|string|max:255',
+            'visual.i18n.*.faq_title' => 'nullable|string|max:255',
+            'visual.i18n.*.trip_section_title' => 'nullable|string|max:255',
+            'visual.i18n.*.per_person_label' => 'nullable|string|max:120',
+            'visual.i18n.*.seats_left_suffix' => 'nullable|string|max:120',
+            'visual.i18n.*.booking_name_placeholder' => 'nullable|string|max:120',
+            'visual.i18n.*.booking_email_placeholder' => 'nullable|string|max:120',
+            'visual.i18n.*.booking_phone_placeholder' => 'nullable|string|max:120',
+            'visual.i18n.*.booking_trip_placeholder' => 'nullable|string|max:120',
+            'visual.i18n.*.booking_submit_text' => 'nullable|string|max:120',
+            'visual.i18n.*.hero_stats_text' => 'nullable|string|max:8000',
+            'visual.i18n.*.package_items_text' => 'nullable|string|max:12000',
+            'visual.i18n.*.trip_dates_text' => 'nullable|string|max:12000',
+            'visual.i18n.*.faq_items_text' => 'nullable|string|max:16000',
+            'visual.i18n.*.contact_phones_text' => 'nullable|string|max:4000',
             'visual_logo_image' => 'nullable|image|max:8192',
             'visual_hero_background_image' => 'nullable|image|max:8192',
             'visual_about_image' => 'nullable|image|max:8192',
@@ -282,11 +396,37 @@ class LandingPageController extends Controller
         ]);
     }
 
+    /**
+     * Marketing workflow: visual template only (no raw HTML/CSS/JS in admin).
+     */
+    private function forceMarketingVisualMode(array $validated): array
+    {
+        $validated['use_visual_builder'] = true;
+        $validated['allow_inline_scripts'] = true;
+        $validated['template_key'] = $validated['template_key'] ?? 'canton_fair_visual';
+
+        return $validated;
+    }
+
     private function applyContentSafety(array $validated): array
     {
         $validated['allow_inline_scripts'] = (bool) ($validated['allow_inline_scripts'] ?? false);
         $validated['use_visual_builder'] = (bool) ($validated['use_visual_builder'] ?? false);
         $validated['priority'] = (int) ($validated['priority'] ?? 100);
+        $allowedLocaleCodes = LandingPage::allowedLocaleCodes();
+        $enabled = array_values(array_unique(array_filter(
+            array_map(static fn ($v) => strtolower(trim((string) $v)), $validated['enabled_locales'] ?? []),
+            static fn ($v) => in_array($v, $allowedLocaleCodes, true)
+        )));
+        if ($enabled === []) {
+            $enabled = ['en'];
+        }
+        $validated['enabled_locales'] = $enabled;
+        $def = strtolower(trim((string) ($validated['default_locale'] ?? 'en')));
+        if (! in_array($def, $enabled, true)) {
+            $def = $enabled[0];
+        }
+        $validated['default_locale'] = $def;
         $validated['redirect_url'] = $this->normalizeRedirectUrl((string) $validated['redirect_url']);
         $validated['template_key'] = $validated['use_visual_builder']
             ? ($validated['template_key'] ?? 'canton_fair_visual')
@@ -344,11 +484,12 @@ class LandingPageController extends Controller
 
     private function prepareVisualBuilderData(Request $request, array $validated, ?LandingPage $landingPage = null): array
     {
-        $visual = is_array($validated['visual'] ?? null)
-            ? $validated['visual']
-            : (is_array($landingPage?->visual_content) ? $landingPage->visual_content : []);
-
+        $existing = is_array($landingPage?->visual_content) ? $landingPage->visual_content : [];
+        $incoming = is_array($validated['visual'] ?? null) ? $validated['visual'] : [];
         $slug = (string) ($validated['slug'] ?? $landingPage?->slug ?? Str::random(8));
+
+        $visual = $existing;
+
         $uploads = [
             'logo_image' => $request->file('visual_logo_image'),
             'hero_background_image' => $request->file('visual_hero_background_image'),
@@ -359,17 +500,62 @@ class LandingPageController extends Controller
         foreach ($uploads as $key => $file) {
             if ($file instanceof UploadedFile) {
                 $visual[$key] = $this->storeVisualImage($file, $slug, $key);
-            } elseif (! empty($landingPage?->visual_content[$key]) && empty($visual[$key])) {
-                $visual[$key] = $landingPage->visual_content[$key];
+            } elseif (! empty($existing[$key])) {
+                $visual[$key] = $existing[$key];
             }
+        }
+
+        if (array_key_exists('hero_cta_target', $incoming)) {
+            $visual['hero_cta_target'] = trim((string) $incoming['hero_cta_target']);
+        } elseif (! isset($visual['hero_cta_target']) || $visual['hero_cta_target'] === '') {
+            $visual['hero_cta_target'] = $existing['hero_cta_target'] ?? $this->normalizeRedirectUrl((string) ($validated['redirect_url'] ?? '/login'));
+        }
+
+        $adminLocales = LandingPage::allowedLocaleCodes();
+        $reqI18n = isset($incoming['i18n']) && is_array($incoming['i18n']) ? $incoming['i18n'] : [];
+
+        $prevI18n = [];
+        if (isset($existing['i18n']) && is_array($existing['i18n'])) {
+            $prevI18n = $existing['i18n'];
+        } else {
+            $legacyTextual = [];
+            foreach ($existing as $k => $val) {
+                if ($k === 'i18n') {
+                    continue;
+                }
+                if (in_array($k, LandingPage::VISUAL_SHARED_KEYS, true)) {
+                    continue;
+                }
+                $legacyTextual[$k] = $val;
+            }
+            if ($legacyTextual !== []) {
+                $prevI18n['en'] = $legacyTextual;
+            }
+        }
+
+        $visual['i18n'] = [];
+        foreach ($adminLocales as $loc) {
+            $locIn = is_array($reqI18n[$loc] ?? null) ? $reqI18n[$loc] : [];
+            $prevBlock = is_array($prevI18n[$loc] ?? null) ? $prevI18n[$loc] : [];
+            $visual['i18n'][$loc] = $this->buildLocaleVisualBlock($locIn, $prevBlock);
+        }
+
+        foreach (array_keys($visual) as $k) {
+            if ($k === 'i18n' || in_array($k, LandingPage::VISUAL_SHARED_KEYS, true)) {
+                continue;
+            }
+            unset($visual[$k]);
         }
 
         $validated['visual_content'] = $visual;
 
         if ((bool) ($validated['use_visual_builder'] ?? false)) {
-            $validated['html_content'] = $validated['html_content'] ?? '<div></div>';
-            $validated['css_content'] = $validated['css_content'] ?? '';
-            $validated['js_content'] = $validated['js_content'] ?? '';
+            $html = trim((string) ($validated['html_content'] ?? ''));
+            $validated['html_content'] = $html !== '' ? $html : ($landingPage?->html_content ?? '<div></div>');
+            $css = trim((string) ($validated['css_content'] ?? ''));
+            $validated['css_content'] = $css !== '' ? $css : ($landingPage?->css_content ?? '');
+            $js = trim((string) ($validated['js_content'] ?? ''));
+            $validated['js_content'] = $js !== '' ? $js : ($landingPage?->js_content ?? '');
             $validated['allow_inline_scripts'] = true;
             $validated['template_key'] = $validated['template_key'] ?? 'canton_fair_visual';
         }
@@ -385,6 +571,69 @@ class LandingPageController extends Controller
         return $validated;
     }
 
+    /**
+     * @param  array<string, mixed>  $locIn
+     * @param  array<string, mixed>  $prevBlock
+     * @return array<string, mixed>
+     */
+    private function buildLocaleVisualBlock(array $locIn, array $prevBlock): array
+    {
+        $block = $prevBlock;
+
+        $multiline = ['hero_subtitle', 'about_text_en', 'about_text_kh'];
+        $stringFields = [
+            'hero_title', 'hero_subtitle', 'hero_cta_text',
+            'about_title', 'about_text_en', 'about_text_kh',
+            'package_title', 'package_price', 'booking_title', 'faq_title',
+            'trip_section_title', 'per_person_label', 'seats_left_suffix',
+            'booking_name_placeholder', 'booking_email_placeholder', 'booking_phone_placeholder',
+            'booking_trip_placeholder', 'booking_submit_text',
+        ];
+
+        foreach ($stringFields as $f) {
+            if (! array_key_exists($f, $locIn)) {
+                continue;
+            }
+            $val = trim((string) $locIn[$f]);
+            $block[$f] = in_array($f, $multiline, true) ? $val : strip_tags($val);
+        }
+
+        $heroRaw = array_key_exists('hero_stats_text', $locIn) ? (string) $locIn['hero_stats_text'] : null;
+        $block['hero_stats'] = $this->parsePipeList(
+            $heroRaw,
+            ['value', 'label'],
+            is_array($prevBlock['hero_stats'] ?? null) ? $prevBlock['hero_stats'] : []
+        );
+
+        $pkgRaw = array_key_exists('package_items_text', $locIn) ? (string) $locIn['package_items_text'] : null;
+        $block['package_items'] = $this->parseSimpleList(
+            $pkgRaw,
+            is_array($prevBlock['package_items'] ?? null) ? $prevBlock['package_items'] : []
+        );
+
+        $tripRaw = array_key_exists('trip_dates_text', $locIn) ? (string) $locIn['trip_dates_text'] : null;
+        $block['trip_dates'] = $this->parsePipeList(
+            $tripRaw,
+            ['date', 'status', 'seats_left'],
+            is_array($prevBlock['trip_dates'] ?? null) ? $prevBlock['trip_dates'] : []
+        );
+
+        $faqRaw = array_key_exists('faq_items_text', $locIn) ? (string) $locIn['faq_items_text'] : null;
+        $block['faq_items'] = $this->parsePipeList(
+            $faqRaw,
+            ['question', 'answer'],
+            is_array($prevBlock['faq_items'] ?? null) ? $prevBlock['faq_items'] : []
+        );
+
+        $phonesRaw = array_key_exists('contact_phones_text', $locIn) ? (string) $locIn['contact_phones_text'] : null;
+        $block['contact_phones'] = $this->parseSimpleList(
+            $phonesRaw,
+            is_array($prevBlock['contact_phones'] ?? null) ? $prevBlock['contact_phones'] : []
+        );
+
+        return $block;
+    }
+
     private function storeVisualImage(UploadedFile $file, string $slug, string $key): string
     {
         $safeSlug = Str::slug($slug);
@@ -398,5 +647,70 @@ class LandingPageController extends Controller
         $file->move($dir, $filename);
 
         return 'images/landing-pages/'.$safeSlug.'/'.$filename;
+    }
+
+    /**
+     * @param  array<int, mixed>  $fallback
+     * @return array<int, string>
+     */
+    private function parseSimpleList(?string $raw, array $fallback = []): array
+    {
+        if ($raw === null) {
+            return array_values(array_filter(array_map(fn ($v) => trim((string) $v), $fallback)));
+        }
+        $lines = preg_split('/\r\n|\r|\n/', $raw) ?: [];
+        $items = [];
+        foreach ($lines as $line) {
+            $line = trim((string) $line);
+            if ($line === '') {
+                continue;
+            }
+            $items[] = strip_tags($line);
+        }
+
+        return $items;
+    }
+
+    /**
+     * Parse "a|b|c" rows into structured arrays.
+     *
+     * @param  array<int, string>  $columns
+     * @param  array<int, mixed>  $fallback
+     * @return array<int, array<string, string>>
+     */
+    private function parsePipeList(?string $raw, array $columns, array $fallback = []): array
+    {
+        if ($raw === null) {
+            $normalized = [];
+            foreach ($fallback as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                $item = [];
+                foreach ($columns as $col) {
+                    $item[$col] = trim((string) ($row[$col] ?? ''));
+                }
+                $normalized[] = $item;
+            }
+
+            return $normalized;
+        }
+
+        $lines = preg_split('/\r\n|\r|\n/', $raw) ?: [];
+        $items = [];
+        foreach ($lines as $line) {
+            $line = trim((string) $line);
+            if ($line === '') {
+                continue;
+            }
+            $parts = array_map(fn ($v) => trim(strip_tags((string) $v)), explode('|', $line));
+            $item = [];
+            foreach ($columns as $idx => $col) {
+                $item[$col] = $parts[$idx] ?? '';
+            }
+            $items[] = $item;
+        }
+
+        return $items;
     }
 }

@@ -16,7 +16,32 @@ class LandingPagePublicController extends Controller
     {
         abort_unless($landingPage->is_published, 404);
 
-        $response = response()->view('landing-pages.public-show', compact('landingPage'));
+        $currentLocale = $landingPage->resolveLocaleForRequest($request);
+        $visual = $landingPage->visualForLocale($currentLocale);
+        $enabledLocales = $landingPage->enabledLocaleList();
+        $localeLabels = config('landing_locales.allowed');
+        if (! is_array($localeLabels) || $localeLabels === []) {
+            $localeLabels = [
+                'en' => 'English',
+                'km' => 'ខ្មែរ (Khmer)',
+                'zh' => '中文 (Chinese)',
+            ];
+        }
+        $langSwitcherUrls = [];
+        foreach ($enabledLocales as $loc) {
+            $langSwitcherUrls[$loc] = $request->fullUrlWithQuery(['lang' => $loc]);
+        }
+        $documentTitle = $landingPage->headline ?: ($visual['hero_title'] ?? $landingPage->name);
+
+        $response = response()->view('landing-pages.public-show', compact(
+            'landingPage',
+            'visual',
+            'currentLocale',
+            'enabledLocales',
+            'localeLabels',
+            'langSwitcherUrls',
+            'documentTitle'
+        ));
 
         if ($landingPage->show_once_mode === 'session_once') {
             $request->session()->put('landing_page_seen', true);
@@ -36,6 +61,18 @@ class LandingPagePublicController extends Controller
         foreach ($capture['cookies'] as $cookie) {
             $response->withCookie($cookie);
         }
+
+        $response->withCookie(Cookie::make(
+            $landingPage->langCookieName(),
+            $currentLocale,
+            60 * 24 * 365,
+            null,
+            null,
+            false,
+            true,
+            false,
+            'Lax'
+        ));
 
         return $response;
     }

@@ -15,17 +15,22 @@ class LandingPageTrackingController extends Controller
         abort_unless($landingPage->is_published, 404);
 
         $validated = $request->validate([
-            'event_type' => 'required|in:cta_click,form_view,lead_submit',
+            'event_type' => 'required|in:cta_click,form_view,lead_submit,lang_switch,lang_welcome_shown,lang_welcome_dismiss',
             'cta_label' => 'nullable|string|max:255',
             'source' => 'nullable|string|max:255',
+            'lang' => 'nullable|string|max:32',
             'meta' => 'nullable|array',
         ]);
+
+        $meta = array_merge($validated['meta'] ?? [], array_filter([
+            'lang' => $validated['lang'] ?? null,
+        ]));
 
         $capture = $this->tracking->capture($landingPage, $request, $validated['event_type'], [
             'event_category' => 'engagement',
             'cta_label' => $validated['cta_label'] ?? null,
             'source' => $validated['source'] ?? null,
-            'meta' => $validated['meta'] ?? [],
+            'meta' => $meta,
         ]);
 
         $response = response()->json(['ok' => true]);

@@ -25,7 +25,7 @@
             </p>
             <div class="border rounded" style="height: 75vh; min-height: 500px;">
                 <iframe
-                    src="{{ route('landing-pages.public.show', [$landingPage, 'editor' => 1]) }}"
+                    src="{{ route('landing-pages.public.show', [$landingPage, 'editor' => 1, 'lang' => $landingPage->default_locale ?? 'en']) }}"
                     title="Landing preview"
                     style="width: 100%; height: 100%; border: 0;"
                     loading="lazy"></iframe>

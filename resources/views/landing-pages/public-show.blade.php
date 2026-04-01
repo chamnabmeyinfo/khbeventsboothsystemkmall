@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ $currentLocale ?? 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $landingPage->headline ?: $landingPage->name }}</title>
+    <title>{{ $documentTitle ?? ($landingPage->headline ?: $landingPage->name) }}</title>
     @if(!empty($landingPage->css_content))
         <style>{!! $landingPage->css_content !!}</style>
     @endif
@@ -14,7 +14,15 @@
     $canInlineEdit = request()->boolean('editor') && auth()->check() && method_exists(auth()->user(), 'isAdmin') && auth()->user()->isAdmin();
 @endphp
 @if($landingPage->use_visual_builder && $landingPage->template_key === 'canton_fair_visual')
-    @include('landing-pages.templates.canton-fair-visual', ['landingPage' => $landingPage, 'visual' => (array) ($landingPage->visual_content ?? [])])
+    @include('landing-pages.templates.canton-fair-visual', [
+        'landingPage' => $landingPage,
+        'visual' => isset($visual) ? (array) $visual : (array) ($landingPage->visual_content ?? []),
+        'enabledLocales' => $enabledLocales ?? [],
+        'localeLabels' => $localeLabels ?? [],
+        'langSwitcherUrls' => $langSwitcherUrls ?? [],
+        'currentLocale' => $currentLocale ?? 'en',
+    ])
+    @include('landing-pages.partials.continue-modal', ['visual' => isset($visual) ? (array) $visual : []])
 @else
     {!! $landingPage->html_content !!}
 @endif
@@ -33,7 +41,10 @@ window.LandingPageConfig = {
     inlineEditEnabled: @json($canInlineEdit),
     inlineUpdateUrl: @json($canInlineEdit ? route('landing-pages.visual-inline', $landingPage) : null),
     publishUrl: @json($canInlineEdit ? route('landing-pages.publish', $landingPage) : null),
-    setActiveUrl: @json($canInlineEdit ? route('landing-pages.set-active', $landingPage) : null)
+    setActiveUrl: @json($canInlineEdit ? route('landing-pages.set-active', $landingPage) : null),
+    inlineLocale: @json($canInlineEdit ? ($currentLocale ?? 'en') : null),
+    useContinueModal: @json($landingPage->use_visual_builder && $landingPage->template_key === 'canton_fair_visual'),
+    continueDefaultTarget: @json($landingPage->redirect_url ?? '/login')
 };
 
 window.trackLandingEvent = function(eventType, payload) {
@@ -62,14 +73,108 @@ window.submitLandingLead = function(payload) {
     }).catch(function() { return null; });
 };
 
+window._lpContinueTarget = null;
+
+function openLpContinueModal() {
+    var el = document.getElementById('lpContinueModal');
+    if (!el) return;
+    el.removeAttribute('hidden');
+    el.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    var n = document.getElementById('lpContinueName');
+    if (n) {
+        setTimeout(function() { n.focus(); }, 50);
+    }
+}
+
+function closeLpContinueModal() {
+    var el = document.getElementById('lpContinueModal');
+    if (!el) return;
+    el.setAttribute('hidden', '');
+    el.classList.remove('is-open');
+    document.body.style.overflow = '';
+}
+
 window.landingContinue = function(targetUrl) {
     var form = document.getElementById('landingContinueForm');
     if (!form) return;
-    if (targetUrl) {
-        form.querySelector('input[name="target"]').value = targetUrl;
+    var fallback = (window.LandingPageConfig && window.LandingPageConfig.continueDefaultTarget) ? window.LandingPageConfig.continueDefaultTarget : '/login';
+    var finalTarget = targetUrl || fallback;
+    if (window.LandingPageConfig && window.LandingPageConfig.inlineEditEnabled) {
+        form.querySelector('input[name="target"]').value = finalTarget;
+        form.submit();
+        return;
     }
+    if (window.LandingPageConfig && window.LandingPageConfig.useContinueModal && document.getElementById('lpContinueModal')) {
+        window._lpContinueTarget = finalTarget;
+        form.querySelector('input[name="target"]').value = finalTarget;
+        openLpContinueModal();
+        return;
+    }
+    form.querySelector('input[name="target"]').value = finalTarget;
     form.submit();
 };
+
+(function() {
+    var modal = document.getElementById('lpContinueModal');
+    if (!modal) return;
+    var modalForm = document.getElementById('lpContinueModalForm');
+    var cancelBtn = document.getElementById('lpContinueModalCancel');
+    var closeBtn = document.getElementById('lpContinueModalClose');
+    modal.addEventListener('click', function(ev) {
+        if (ev.target === modal) {
+            closeLpContinueModal();
+        }
+    });
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() { closeLpContinueModal(); });
+    }
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() { closeLpContinueModal(); });
+    }
+    document.addEventListener('keydown', function(ev) {
+        if (ev.key === 'Escape' && modal.classList.contains('is-open')) {
+            closeLpContinueModal();
+        }
+    });
+    if (modalForm) {
+        modalForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!modalForm.checkValidity()) {
+                modalForm.reportValidity();
+                return;
+            }
+            var submitBtn = document.getElementById('lpContinueModalSubmit');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+            }
+            var payload = {
+                lead_name: (modalForm.name && modalForm.name.value) ? modalForm.name.value.trim() : '',
+                lead_email: (modalForm.email && modalForm.email.value) ? modalForm.email.value.trim() : '',
+                lead_phone: (modalForm.phone && modalForm.phone.value) ? modalForm.phone.value.trim() : '',
+                source: 'continue-modal',
+                meta: { tripDate: (modalForm.tripDate && modalForm.tripDate.value) ? modalForm.tripDate.value : '' }
+            };
+            var p = (typeof submitLandingLead === 'function') ? submitLandingLead(payload) : Promise.resolve(null);
+            p.catch(function() { return null; }).then(function() {
+                if (typeof trackLandingEvent === 'function') {
+                    trackLandingEvent('lead_submit', { cta_label: 'ContinueModal', source: 'continue-modal' });
+                }
+            }).finally(function() {
+                closeLpContinueModal();
+                var contForm = document.getElementById('landingContinueForm');
+                var t = window._lpContinueTarget || ((window.LandingPageConfig && window.LandingPageConfig.continueDefaultTarget) ? window.LandingPageConfig.continueDefaultTarget : '/login');
+                if (contForm) {
+                    contForm.querySelector('input[name="target"]').value = t;
+                    contForm.submit();
+                }
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                }
+            });
+        });
+    }
+})();
 
 if (window.LandingPageConfig.inlineEditEnabled) {
     (function() {
@@ -245,7 +350,10 @@ if (window.LandingPageConfig.inlineEditEnabled) {
                         'Accept': 'application/json',
                         'X-CSRF-TOKEN': window.LandingPageConfig.csrfToken
                     },
-                    body: JSON.stringify({ fields: fields })
+                    body: JSON.stringify({
+                        fields: fields,
+                        locale: window.LandingPageConfig.inlineLocale || 'en'
+                    })
                 }).then(function(r) { return r.json(); })
                   .then(function(data) {
                       if (!data || data.ok !== true) {
