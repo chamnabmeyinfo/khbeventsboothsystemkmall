@@ -155,6 +155,14 @@
         color:#fff;border:1px solid rgba(255,255,255,.12);
         box-shadow:var(--lv-shadow-lg);
     }
+    .lv-price-panel--clickable{
+        cursor:pointer;
+        transition:transform .2s ease,box-shadow .2s ease;
+        -webkit-tap-highlight-color:transparent;
+    }
+    .lv-price-panel--clickable:hover{transform:translateY(-2px);box-shadow:0 16px 44px rgba(196,30,30,.38)}
+    .lv-price-panel--clickable:focus-visible{outline:3px solid var(--lv-accent);outline-offset:4px}
+    .lv-price-panel--clickable:active{transform:translateY(0)}
     .lv-price-panel .lv-price-num{font-size:clamp(2.25rem,6vw,3.25rem);font-weight:800;font-family:"Roboto","Hanuman",sans-serif;line-height:1}
     .lv-price-panel .lv-price-sub{color:rgba(255,255,255,.95);margin-top:10px;font-size:1.05rem;text-shadow:0 1px 2px rgba(0,0,0,.2)}
     .lv-trip-card{text-align:left}
@@ -343,7 +351,15 @@
                     <div class="lv-card">{{ $item }}</div>
                 @endforeach
             </div>
-            <div class="lv-price-panel" style="margin-top:14px;">
+            <div
+                class="lv-price-panel lv-price-panel--clickable"
+                style="margin-top:14px;"
+                role="button"
+                tabindex="0"
+                aria-label="Register or continue"
+                onclick="if(typeof trackLandingEvent==='function'){trackLandingEvent('cta_click',{cta_label:'PricePanel',source:'package-price'});} if(typeof landingContinue==='function'){landingContinue('{{ $heroCtaTarget }}');}"
+                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}"
+            >
                 <div class="lv-price-num" data-lv-key="package_price">{{ $packagePrice }}</div>
                 <div class="lv-price-sub" data-lv-key="per_person_label">{{ $perPersonLabel }}</div>
             </div>
