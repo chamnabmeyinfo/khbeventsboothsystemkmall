@@ -10,7 +10,7 @@
         <div class="card-header">
             <h3 class="card-title"><i class="fas fa-rocket mr-2"></i>Create Landing Page</h3>
         </div>
-        <form action="{{ route('landing-pages.store') }}" method="POST">
+        <form action="{{ route('landing-pages.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             @include('landing-pages.partials.form', ['landingPage' => null])
             <div class="card-footer">

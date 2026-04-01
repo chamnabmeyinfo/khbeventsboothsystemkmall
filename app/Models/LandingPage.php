@@ -21,6 +21,9 @@ class LandingPage extends Model
         'redirect_url',
         'show_once_mode',
         'allow_inline_scripts',
+        'use_visual_builder',
+        'template_key',
+        'visual_content',
         'priority',
         'is_active',
         'is_published',
@@ -29,6 +32,8 @@ class LandingPage extends Model
 
     protected $casts = [
         'allow_inline_scripts' => 'boolean',
+        'use_visual_builder' => 'boolean',
+        'visual_content' => 'array',
         'is_active' => 'boolean',
         'is_published' => 'boolean',
         'published_at' => 'datetime',

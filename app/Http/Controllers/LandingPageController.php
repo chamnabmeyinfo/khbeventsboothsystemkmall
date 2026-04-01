@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\LandingPage;
 use App\Models\LandingPageEvent;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -72,6 +74,7 @@ class LandingPageController extends Controller
     {
         $validated = $this->validateLandingPage($request);
         $validated['slug'] = Str::slug($validated['slug']);
+        $validated = $this->prepareVisualBuilderData($request, $validated);
         $validated = $this->applyContentSafety($validated);
         $validated['is_active'] = $request->boolean('is_active');
         $validated['is_published'] = $request->boolean('is_published');
@@ -96,6 +99,7 @@ class LandingPageController extends Controller
     {
         $validated = $this->validateLandingPage($request, $landingPage->id);
         $validated['slug'] = Str::slug($validated['slug']);
+        $validated = $this->prepareVisualBuilderData($request, $validated, $landingPage);
         $validated = $this->applyContentSafety($validated);
         $validated['is_active'] = $request->boolean('is_active');
         $validated['is_published'] = $request->boolean('is_published');
@@ -126,6 +130,74 @@ class LandingPageController extends Controller
     public function preview(LandingPage $landingPage)
     {
         return view('landing-pages.preview', compact('landingPage'));
+    }
+
+    public function updateVisualInline(Request $request, LandingPage $landingPage)
+    {
+        if (! $landingPage->use_visual_builder) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Inline visual editing is not enabled for this landing page.',
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'fields' => 'required|array',
+        ]);
+
+        $allowedText = [
+            'hero_title' => 255,
+            'hero_subtitle' => 2000,
+            'hero_cta_text' => 120,
+            'hero_cta_target' => 1024,
+            'about_title' => 255,
+            'about_text_en' => 4000,
+            'about_text_kh' => 4000,
+            'package_title' => 255,
+            'package_price' => 120,
+            'booking_title' => 255,
+            'faq_title' => 255,
+        ];
+        $allowedImage = [
+            'logo_image',
+            'hero_background_image',
+            'about_image',
+            'why_image',
+        ];
+
+        $visual = is_array($landingPage->visual_content) ? $landingPage->visual_content : [];
+        foreach ($validated['fields'] as $key => $value) {
+            if (array_key_exists($key, $allowedText)) {
+                $max = $allowedText[$key];
+                $text = trim((string) $value);
+                $text = strip_tags($text);
+                $visual[$key] = mb_substr($text, 0, $max);
+                continue;
+            }
+
+            if (in_array($key, $allowedImage, true)) {
+                $url = trim((string) $value);
+                if ($url === '') {
+                    $visual[$key] = '';
+                    continue;
+                }
+                if (Str::startsWith($url, ['javascript:', 'data:text/html'])) {
+                    continue;
+                }
+                if (! Str::startsWith($url, ['http://', 'https://', '/']) && ! Str::startsWith($url, 'images/')) {
+                    continue;
+                }
+                $visual[$key] = mb_substr($url, 0, 2048);
+            }
+        }
+
+        $landingPage->update(['visual_content' => $visual]);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Visual preview updated.',
+            'visual_content' => $visual,
+        ]);
     }
 
     public function setActive(LandingPage $landingPage)
@@ -174,12 +246,34 @@ class LandingPageController extends Controller
             ],
             'industry' => 'nullable|string|max:255',
             'headline' => 'nullable|string|max:255',
-            'html_content' => 'required|string',
+            'html_content' => [
+                Rule::requiredIf(! $request->boolean('use_visual_builder')),
+                'nullable',
+                'string',
+            ],
             'css_content' => 'nullable|string',
             'js_content' => 'nullable|string',
             'redirect_url' => 'required|string|max:1024',
             'show_once_mode' => 'required|in:cookie_once,session_once,entry_url_once',
             'allow_inline_scripts' => 'nullable|boolean',
+            'use_visual_builder' => 'nullable|boolean',
+            'template_key' => 'nullable|in:canton_fair_visual',
+            'visual' => 'nullable|array',
+            'visual.hero_title' => 'nullable|string|max:255',
+            'visual.hero_subtitle' => 'nullable|string|max:2000',
+            'visual.hero_cta_text' => 'nullable|string|max:120',
+            'visual.hero_cta_target' => 'nullable|string|max:1024',
+            'visual.about_title' => 'nullable|string|max:255',
+            'visual.about_text_en' => 'nullable|string|max:4000',
+            'visual.about_text_kh' => 'nullable|string|max:4000',
+            'visual.package_title' => 'nullable|string|max:255',
+            'visual.package_price' => 'nullable|string|max:120',
+            'visual.booking_title' => 'nullable|string|max:255',
+            'visual.faq_title' => 'nullable|string|max:255',
+            'visual_logo_image' => 'nullable|image|max:8192',
+            'visual_hero_background_image' => 'nullable|image|max:8192',
+            'visual_about_image' => 'nullable|image|max:8192',
+            'visual_why_image' => 'nullable|image|max:8192',
             'priority' => 'nullable|integer|min:1|max:9999',
             'is_active' => 'nullable|boolean',
             'is_published' => 'nullable|boolean',
@@ -191,19 +285,26 @@ class LandingPageController extends Controller
     private function applyContentSafety(array $validated): array
     {
         $validated['allow_inline_scripts'] = (bool) ($validated['allow_inline_scripts'] ?? false);
+        $validated['use_visual_builder'] = (bool) ($validated['use_visual_builder'] ?? false);
         $validated['priority'] = (int) ($validated['priority'] ?? 100);
         $validated['redirect_url'] = $this->normalizeRedirectUrl((string) $validated['redirect_url']);
+        $validated['template_key'] = $validated['use_visual_builder']
+            ? ($validated['template_key'] ?? 'canton_fair_visual')
+            : null;
 
-        $hasPhp = stripos($validated['html_content'], '<?php') !== false
-            || stripos($validated['html_content'], '<?=') !== false;
+        $htmlContent = (string) ($validated['html_content'] ?? '');
+        if (! $validated['use_visual_builder']) {
+            $hasPhp = stripos($htmlContent, '<?php') !== false
+                || stripos($htmlContent, '<?=') !== false;
 
-        if ($hasPhp) {
-            abort(422, 'PHP tags are not allowed in landing page content.');
-        }
+            if ($hasPhp) {
+                abort(422, 'PHP tags are not allowed in landing page content.');
+            }
 
-        if (! $validated['allow_inline_scripts']) {
-            $validated['html_content'] = $this->stripInlineScripts($validated['html_content']);
-            $validated['js_content'] = null;
+            if (! $validated['allow_inline_scripts']) {
+                $validated['html_content'] = $this->stripInlineScripts($htmlContent);
+                $validated['js_content'] = null;
+            }
         }
 
         return $validated;
@@ -239,5 +340,63 @@ class LandingPageController extends Controller
             ->when($excludeId, fn ($q) => $q->where('id', '!=', $excludeId))
             ->where('is_active', true)
             ->update(['is_active' => false]);
+    }
+
+    private function prepareVisualBuilderData(Request $request, array $validated, ?LandingPage $landingPage = null): array
+    {
+        $visual = is_array($validated['visual'] ?? null)
+            ? $validated['visual']
+            : (is_array($landingPage?->visual_content) ? $landingPage->visual_content : []);
+
+        $slug = (string) ($validated['slug'] ?? $landingPage?->slug ?? Str::random(8));
+        $uploads = [
+            'logo_image' => $request->file('visual_logo_image'),
+            'hero_background_image' => $request->file('visual_hero_background_image'),
+            'about_image' => $request->file('visual_about_image'),
+            'why_image' => $request->file('visual_why_image'),
+        ];
+
+        foreach ($uploads as $key => $file) {
+            if ($file instanceof UploadedFile) {
+                $visual[$key] = $this->storeVisualImage($file, $slug, $key);
+            } elseif (! empty($landingPage?->visual_content[$key]) && empty($visual[$key])) {
+                $visual[$key] = $landingPage->visual_content[$key];
+            }
+        }
+
+        $validated['visual_content'] = $visual;
+
+        if ((bool) ($validated['use_visual_builder'] ?? false)) {
+            $validated['html_content'] = $validated['html_content'] ?? '<div></div>';
+            $validated['css_content'] = $validated['css_content'] ?? '';
+            $validated['js_content'] = $validated['js_content'] ?? '';
+            $validated['allow_inline_scripts'] = true;
+            $validated['template_key'] = $validated['template_key'] ?? 'canton_fair_visual';
+        }
+
+        unset(
+            $validated['visual'],
+            $validated['visual_logo_image'],
+            $validated['visual_hero_background_image'],
+            $validated['visual_about_image'],
+            $validated['visual_why_image']
+        );
+
+        return $validated;
+    }
+
+    private function storeVisualImage(UploadedFile $file, string $slug, string $key): string
+    {
+        $safeSlug = Str::slug($slug);
+        $dir = public_path('images/landing-pages/'.$safeSlug);
+        if (! File::exists($dir)) {
+            File::makeDirectory($dir, 0755, true);
+        }
+
+        $ext = strtolower((string) $file->getClientOriginalExtension());
+        $filename = $key.'-'.time().'-'.Str::random(6).'.'.$ext;
+        $file->move($dir, $filename);
+
+        return 'images/landing-pages/'.$safeSlug.'/'.$filename;
     }
 }

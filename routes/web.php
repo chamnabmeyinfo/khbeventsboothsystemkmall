@@ -372,6 +372,7 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/{landingPage:slug}/publish', [LandingPageController::class, 'publish'])->name('publish');
             Route::post('/{landingPage:slug}/unpublish', [LandingPageController::class, 'unpublish'])->name('unpublish');
             Route::post('/{landingPage:slug}/set-active', [LandingPageController::class, 'setActive'])->name('set-active');
+            Route::post('/{landingPage:slug}/visual-inline', [LandingPageController::class, 'updateVisualInline'])->name('visual-inline');
             Route::get('/{landingPage:slug}/analytics', [LandingPageTrackingController::class, 'analytics'])->name('analytics');
         });
         Route::post('/settings/cache/clear', [SettingsController::class, 'clearCache'])->name('settings.cache.clear');

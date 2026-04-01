@@ -10,7 +10,7 @@
         <div class="card-header">
             <h3 class="card-title"><i class="fas fa-edit mr-2"></i>Edit Landing Page: {{ $landingPage->name }}</h3>
         </div>
-        <form action="{{ route('landing-pages.update', $landingPage) }}" method="POST">
+        <form action="{{ route('landing-pages.update', $landingPage) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             @include('landing-pages.partials.form', ['landingPage' => $landingPage])
