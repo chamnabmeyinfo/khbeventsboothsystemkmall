@@ -26,6 +26,7 @@
 /bootstrap/cache/*
 !/bootstrap/cache/.gitkeep
 
+/temp_processing/
 .phpunit.result.cache
 .phpunit.cache
 auth.json

@@ -3,12 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\LandingPage;
-use App\Models\LandingPageEvent;
+use App\Services\LandingTrackingService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class LandingPageTrackingController extends Controller
 {
+    public function __construct(private readonly LandingTrackingService $tracking) {}
+
     public function track(LandingPage $landingPage, Request $request)
     {
         abort_unless($landingPage->is_published, 404);
@@ -20,18 +21,19 @@ class LandingPageTrackingController extends Controller
             'meta' => 'nullable|array',
         ]);
 
-        LandingPageEvent::create([
-            'landing_page_id' => $landingPage->id,
-            'event_type' => $validated['event_type'],
+        $capture = $this->tracking->capture($landingPage, $request, $validated['event_type'], [
+            'event_category' => 'engagement',
             'cta_label' => $validated['cta_label'] ?? null,
             'source' => $validated['source'] ?? null,
-            'ip_address' => $request->ip(),
-            'user_agent' => Str::limit((string) $request->userAgent(), 65000, ''),
-            'referrer_url' => Str::limit((string) $request->headers->get('referer'), 65535, ''),
             'meta' => $validated['meta'] ?? [],
         ]);
 
-        return response()->json(['ok' => true]);
+        $response = response()->json(['ok' => true]);
+        foreach ($capture['cookies'] as $cookie) {
+            $response->withCookie($cookie);
+        }
+
+        return $response;
     }
 
     public function lead(LandingPage $landingPage, Request $request)
@@ -46,19 +48,30 @@ class LandingPageTrackingController extends Controller
             'meta' => 'nullable|array',
         ]);
 
-        LandingPageEvent::create([
-            'landing_page_id' => $landingPage->id,
-            'event_type' => 'lead_submit',
+        $capture = $this->tracking->capture($landingPage, $request, 'lead_submit', [
+            'event_category' => 'conversion',
             'lead_name' => $validated['lead_name'] ?? null,
             'lead_email' => $validated['lead_email'] ?? null,
             'lead_phone' => $validated['lead_phone'] ?? null,
             'source' => $validated['source'] ?? null,
-            'ip_address' => $request->ip(),
-            'user_agent' => Str::limit((string) $request->userAgent(), 65000, ''),
-            'referrer_url' => Str::limit((string) $request->headers->get('referer'), 65535, ''),
             'meta' => $validated['meta'] ?? [],
         ]);
 
-        return response()->json(['ok' => true]);
+        $response = response()->json(['ok' => true]);
+        foreach ($capture['cookies'] as $cookie) {
+            $response->withCookie($cookie);
+        }
+
+        return $response;
+    }
+
+    public function analytics(LandingPage $landingPage)
+    {
+        abort_unless($landingPage->is_published, 404);
+
+        return response()->json([
+            'ok' => true,
+            'data' => $this->tracking->summary($landingPage),
+        ]);
     }
 }
