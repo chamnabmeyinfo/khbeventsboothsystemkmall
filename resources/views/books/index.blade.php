@@ -6,6 +6,7 @@
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.6">
 <link rel="stylesheet" href="{{ asset('css/books-page-index.css') }}?v=1.0">
+<link rel="stylesheet" href="{{ asset('css/booths-on-books.css') }}?v=2.3">
 @endpush
 
 @push('body-class', 'ios-dashboard-mode')
@@ -88,15 +89,18 @@
         </div>
     </div>
 
-    <div class="books-toolbar">
+    <div class="books-toolbar d-flex flex-wrap align-items-center justify-content-between gap-3">
         <div class="books-view-toggle" role="group" aria-label="List layout">
             <button type="button" class="active plastic-btn-press" onclick="switchView('table')" id="viewTable">
                 <i class="fas fa-table me-1"></i>Table
             </button>
-            <button type="button" class="plastic-btn-press" onclick="switchView('cards')" id="viewCards">
+            <button type="button" class="plastic-btn-press" onclick="switchView('cards')" id="viewCards" title="Card view — adjust size in Book settings">
                 <i class="fas fa-th-large me-1"></i>Cards
             </button>
         </div>
+        <button type="button" class="action-btn action-btn-secondary booths-list-settings-btn" data-bs-toggle="modal" data-bs-target="#booksListSettingsModal" aria-controls="booksListSettingsModal" id="booksListSettingsOpen">
+            <i class="fas fa-cog me-1" aria-hidden="true"></i>Book settings
+        </button>
     </div>
 
     <!-- Filter Bar -->
@@ -235,6 +239,63 @@
     <div id="bookingsContainer">
         @include('books.partials.index-bookings-container', ['books' => $books, 'groupBy' => $groupBy, 'groupedBooks' => $groupedBooks, 'boothsByBookId' => $boothsByBookId])
     </div>
+
+    {{-- Book list settings: card density + links (same Looker-style shell as Booth settings) --}}
+    <div class="modal fade booths-list-settings-modal text-body" id="booksListSettingsModal" tabindex="-1" aria-labelledby="booksListSettingsLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl booths-settings-modal-dialog">
+            <div class="modal-content booths-settings-modal__shell">
+                <div class="modal-header booths-settings-modal__header border-0">
+                    <div class="d-flex align-items-start gap-3 flex-grow-1 min-w-0">
+                        <div class="booths-settings-modal__icon-wrap" aria-hidden="true">
+                            <i class="fas fa-sliders-h"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h5 class="modal-title mb-1" id="booksListSettingsLabel">Book list settings</h5>
+                            <p class="booths-settings-modal__subtitle mb-0">Cards layout and where to change booking rules in System Settings.</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close booths-settings-modal__close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body booths-settings-modal__body">
+                    <div class="booths-settings-block">
+                        <div class="booths-settings-block__head">
+                            <span class="booths-settings-block__icon booths-settings-block__icon--blue"><i class="fas fa-th-large" aria-hidden="true"></i></span>
+                            <div>
+                                <h6 class="booths-settings-block__title">Card layout</h6>
+                                <p class="booths-settings-block__desc">Used when <strong>Cards</strong> is selected. Stored in this browser only.</p>
+                            </div>
+                        </div>
+                        <div class="books-view-toggle booths-density-toggle booths-density-toggle--settings w-100 flex-wrap" role="group" aria-label="Booking card size" id="booksListDensityToggle">
+                            <button type="button" class="plastic-btn-press" onclick="setBooksCardDensity('tiny')" id="booksDensityTiny" title="Tiny list — compact rows">
+                                <i class="fas fa-list me-1" aria-hidden="true"></i>Tiny
+                            </button>
+                            <button type="button" class="plastic-btn-press" onclick="setBooksCardDensity('small')" id="booksDensitySmall">Small</button>
+                            <button type="button" class="active plastic-btn-press" onclick="setBooksCardDensity('medium')" id="booksDensityMedium">Medium</button>
+                            <button type="button" class="plastic-btn-press" onclick="setBooksCardDensity('large')" id="booksDensityLarge">Large</button>
+                        </div>
+                    </div>
+
+                    <div class="booths-settings-block booths-settings-block--muted" aria-labelledby="booksSettingsSystemLinkHeading">
+                        <div class="booths-settings-block__head">
+                            <span class="booths-settings-block__icon booths-settings-block__icon--muted" aria-hidden="true"><i class="fas fa-cog"></i></span>
+                            <div>
+                                <h6 class="booths-settings-block__title" id="booksSettingsSystemLinkHeading">System-wide options</h6>
+                                <p class="booths-settings-block__desc mb-2">Who can create or see bookings on the public floor plan, upload limits, and module visibility are configured in <strong>System Settings</strong>.</p>
+                                <div class="d-flex flex-wrap gap-2 mt-2">
+                                    <a href="{{ route('settings.index') }}#settings-public-view" class="btn btn-sm btn-outline-secondary">Public view &amp; booking actions</a>
+                                    <a href="{{ route('settings.index') }}#settings-upload-control" class="btn btn-sm btn-outline-secondary">Upload control</a>
+                                    <a href="{{ route('settings.index') }}#module-display" class="btn btn-sm btn-outline-secondary">Module display</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer booths-settings-modal__footer border-0">
+                    <button type="button" class="btn btn-light border booths-settings-modal__btn-done" data-bs-dismiss="modal">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Booking Info Modal -->
@@ -267,6 +328,38 @@
     let isLoading = false;
     let hasMore = @json($lazyLoadMoreAvailable);
     let currentView = 'table';
+
+    window.setBooksCardDensity = function(size) {
+        var allowed = { tiny: 1, small: 1, medium: 1, large: 1 };
+        if (!allowed[size]) {
+            size = 'medium';
+        }
+        var inners = document.querySelectorAll('#bookingsContainer .books-card-view-inner');
+        if (!inners.length) return;
+
+        inners.forEach(function(inner) {
+            inner.classList.remove(
+                'booths-card-density--tiny',
+                'booths-card-density--small',
+                'booths-card-density--medium',
+                'booths-card-density--large'
+            );
+            inner.classList.add('booths-card-density--' + size);
+        });
+
+        var idSuffix = { tiny: 'Tiny', small: 'Small', medium: 'Medium', large: 'Large' };
+        document.querySelectorAll('#booksListDensityToggle button').forEach(function(btn) {
+            btn.classList.remove('active');
+        });
+        var activeBtn = document.getElementById('booksDensity' + idSuffix[size]);
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+        }
+
+        try {
+            localStorage.setItem('bookingsCardDensity', size);
+        } catch (e) {}
+    };
     
     // Switch View
     window.switchView = function(view) {
@@ -289,6 +382,14 @@
     const savedView = localStorage.getItem('bookingsView');
     if (savedView) {
         switchView(savedView);
+    }
+
+    var savedBooksDensity = 'medium';
+    try {
+        savedBooksDensity = localStorage.getItem('bookingsCardDensity') || 'medium';
+    } catch (e) {}
+    if (typeof window.setBooksCardDensity === 'function') {
+        window.setBooksCardDensity(savedBooksDensity);
     }
     
     // Lazy loading — GET must use query string (request body is ignored for GET in fetch)
@@ -370,6 +471,12 @@
             const cleanQs = cleanParams.toString();
             history.replaceState(null, '', lazyLoadIndexUrl + (cleanQs ? '?' + cleanQs : ''));
             switchView(currentView);
+            try {
+                var d = localStorage.getItem('bookingsCardDensity') || 'medium';
+                if (typeof window.setBooksCardDensity === 'function') {
+                    window.setBooksCardDensity(d);
+                }
+            } catch (e) {}
             setupLazyLoadObserver();
             reinitBooksTableResize();
         })

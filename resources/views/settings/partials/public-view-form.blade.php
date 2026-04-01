@@ -27,6 +27,14 @@
         <small class="text-muted d-block mt-1">When enabled, users who are not Administrators can only view, edit, update, and delete <strong>their own</strong> bookings (bookings they created). Sales can only manage their own; they cannot edit or delete other sales&#39; bookings. Administrators can always manage all bookings.</small>
     </div>
     <div class="mb-3">
+        <label class="form-label" for="{{ $p }}public_view_button_color">Public view button color</label>
+        <div class="input-group" style="max-width: 320px;">
+            <input type="color" class="form-control form-control-color" name="public_view_button_color" id="{{ $p }}public_view_button_color" value="{{ old('public_view_button_color', $publicViewButtonColor ?? '#28a745') }}" title="Primary button color">
+            <input type="text" class="form-control" value="{{ old('public_view_button_color', $publicViewButtonColor ?? '#28a745') }}" id="{{ $p }}public_view_button_color_hex" maxlength="7" pattern="#[0-9A-Fa-f]{6}" placeholder="#28a745" aria-label="Button color hex" autocomplete="off">
+        </div>
+        <small class="text-muted d-block mt-1">Accent for primary actions on the public floor plan (Book this booth, toolbar controls, booking modal, help headings). Booth status colors on the map are unchanged.</small>
+    </div>
+    <div class="mb-3">
         <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" name="booth_booked_show_tick" id="{{ $p }}booth_booked_show_tick" value="1" {{ ($showBookedTick ?? true) ? 'checked' : '' }}>
             <label class="form-check-label" for="{{ $p }}booth_booked_show_tick">

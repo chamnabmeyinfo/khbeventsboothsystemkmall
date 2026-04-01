@@ -22,6 +22,7 @@ class SettingsController extends Controller
     {
         $publicViewAllowCreate = Setting::getValue('public_view_allow_create_booking', true);
         $publicViewRestrictOwn = Setting::getValue('public_view_restrict_crud_to_own_booking', true);
+        $publicViewButtonColor = Setting::getPublicViewButtonTheme()['hex'];
 
         try {
             $floorPlans = FloorPlan::where('is_active', true)
@@ -52,7 +53,7 @@ class SettingsController extends Controller
         $uploadSettings = Setting::getUploadSettings();
 
         return view('settings.index', compact(
-            'publicViewAllowCreate', 'publicViewRestrictOwn', 'showBookedTick',
+            'publicViewAllowCreate', 'publicViewRestrictOwn', 'publicViewButtonColor', 'showBookedTick',
             'bookedTickColor', 'bookedTickSize', 'bookedTickShape', 'bookedTickPosition', 'bookedTickAnimation', 'bookedTickBgColor',
             'bookedTickBorderWidth', 'bookedTickBorderColor', 'bookedTickFontSize',
             'bookedTickSizeMode', 'bookedTickRelativePercent',
@@ -402,6 +403,152 @@ class SettingsController extends Controller
             return response()->json([
                 'status' => 500,
                 'message' => 'Error removing master booth image: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * List master booth gallery images (default gallery when a booth has no photos).
+     */
+    public function getMasterBoothGallery(Request $request)
+    {
+        try {
+            $paths = Setting::getMasterBoothGalleryPaths();
+            $items = [];
+            foreach ($paths as $path) {
+                $items[] = [
+                    'path' => $path,
+                    'url' => asset($path),
+                ];
+            }
+
+            return response()->json([
+                'status' => 200,
+                'data' => [
+                    'paths' => $paths,
+                    'items' => $items,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error fetching master gallery: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Append one image to the master booth gallery (stored under public/images/booths/master/gallery).
+     */
+    public function uploadMasterBoothGalleryImage(Request $request)
+    {
+        try {
+            if (! Setting::getUploadsEnabled()) {
+                return response()->json([
+                    'status' => 403,
+                    'message' => 'File uploads are disabled in Upload Control.',
+                ], 403);
+            }
+
+            $existing = Setting::getRawMasterBoothGalleryPaths();
+            if (count($existing) >= 20) {
+                return response()->json([
+                    'status' => 422,
+                    'message' => 'Maximum 20 master gallery images.',
+                ], 422);
+            }
+
+            $request->validate(UploadSettingsHelper::getRules(UploadSettingsHelper::CONTEXT_BOOTH, 'gallery_image', true));
+
+            $file = $request->file('gallery_image');
+
+            $directory = public_path('images/booths/master/gallery');
+            if (! File::exists($directory)) {
+                File::makeDirectory($directory, 0755, true);
+            }
+
+            $filename = 'master_gallery_'.time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
+            $file->move($directory, $filename);
+
+            $relativePath = 'images/booths/master/gallery/'.$filename;
+
+            $existing[] = $relativePath;
+            Setting::setMasterBoothGalleryPaths($existing);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Image added to master gallery.',
+                'path' => $relativePath,
+                'url' => asset($relativePath),
+                'paths' => Setting::getMasterBoothGalleryPaths(),
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error uploading master gallery image: '.$e->getMessage());
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error uploading master gallery image: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove one image from the master booth gallery by stored relative path.
+     */
+    public function removeMasterBoothGalleryImage(Request $request)
+    {
+        try {
+            $request->validate([
+                'path' => 'required|string|max:500',
+            ]);
+
+            $removePath = str_replace('\\', '/', trim($request->input('path')));
+            if (! str_starts_with($removePath, 'images/booths/master/gallery/')) {
+                return response()->json([
+                    'status' => 422,
+                    'message' => 'Invalid path.',
+                ], 422);
+            }
+
+            $paths = Setting::getRawMasterBoothGalleryPaths();
+            $filtered = array_values(array_filter($paths, static fn ($p) => $p !== $removePath));
+
+            if (count($filtered) === count($paths)) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Path not in master gallery.',
+                ], 404);
+            }
+
+            if (File::exists(public_path($removePath))) {
+                File::delete(public_path($removePath));
+            }
+
+            Setting::setMasterBoothGalleryPaths($filtered);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Image removed from master gallery.',
+                'paths' => Setting::getMasterBoothGalleryPaths(),
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error removing master gallery image: '.$e->getMessage());
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error removing master gallery image: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -1298,6 +1445,7 @@ class SettingsController extends Controller
         return response()->json([
             'public_view_allow_create_booking' => Setting::getValue('public_view_allow_create_booking', true),
             'public_view_restrict_crud_to_own_booking' => Setting::getValue('public_view_restrict_crud_to_own_booking', true),
+            'public_view_button_color' => Setting::getPublicViewButtonTheme()['hex'],
         ]);
     }
 
@@ -1335,6 +1483,10 @@ class SettingsController extends Controller
     {
         $allowCreate = $request->boolean('public_view_allow_create_booking');
         $restrictOwn = $request->boolean('public_view_restrict_crud_to_own_booking');
+        $buttonColor = $request->input('public_view_button_color', '#28a745');
+        if (! is_string($buttonColor) || ! preg_match('/^#[0-9A-Fa-f]{6}$/', $buttonColor)) {
+            $buttonColor = '#28a745';
+        }
         $showBookedTick = $request->boolean('booth_booked_show_tick');
 
         $allowedSizes = ['small', 'medium', 'large'];
@@ -1399,6 +1551,7 @@ class SettingsController extends Controller
 
         Setting::setValue('public_view_allow_create_booking', $allowCreate ? '1' : '0', 'boolean', 'Allow logged-in users with Create Bookings permission to create a booking from the public floor plan view.');
         Setting::setValue('public_view_restrict_crud_to_own_booking', $restrictOwn ? '1' : '0', 'boolean', 'When enabled, non-admin users can only view, edit, update, and delete their own bookings. Administrators can manage all bookings.');
+        Setting::setValue('public_view_button_color', $buttonColor, 'string', 'Primary accent color for buttons and key actions on the public floor plan view (/floor-plans/{id}/public).');
 
         $tickFloorPlanId = $request->input('tick_floor_plan_id');
         $tickData = [

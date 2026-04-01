@@ -43,7 +43,7 @@
                     </div>
                     <!-- Card View -->
                     <div class="card-view" style="display: none;">
-                        <div class="books-card-view-inner">
+                        <div class="books-card-view-inner booths-card-density--medium">
                             @php $groupCardRowStart = $booksRowCounter - count($groupBooks) + 1; @endphp
                             @foreach($groupBooks as $book)
                                 @include('books.partials.card', ['book' => $book, 'rowNumber' => $groupCardRowStart + $loop->index])
@@ -97,7 +97,7 @@
             </div>
             <!-- Card View -->
             <div class="card-view" style="display: none;">
-                <div class="books-card-view-inner">
+                <div class="books-card-view-inner booths-card-density--medium">
                     @forelse($books as $book)
                         @include('books.partials.card', ['book' => $book, 'rowNumber' => $loop->iteration])
                     @empty

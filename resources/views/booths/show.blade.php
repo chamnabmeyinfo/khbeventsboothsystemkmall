@@ -353,10 +353,18 @@ function displayGallery(images) {
         `;
         return;
     }
-    
-    let html = '<div class="gallery-grid">';
+
+    const masterOnly = images.length > 0 && images.every(img => img.is_master_gallery);
+    let html = '';
+    if (masterOnly) {
+        html += '<p class="small text-muted mb-3"><i class="fas fa-info-circle me-1"></i>Showing <strong>master gallery</strong> defaults until this booth has its own photos.</p>';
+    }
+    html += '<div class="gallery-grid">';
     
     images.forEach(image => {
+        const isMaster = !!image.is_master_gallery;
+        const cap = (image.caption || '').replace(/'/g, "\\'");
+        const typeLabel = (image.type_label || '').replace(/'/g, "\\'");
         html += `
             <div class="gallery-item">
                 <div class="gallery-item-overlay">
@@ -364,7 +372,7 @@ function displayGallery(images) {
                     <span class="type-badge ml-2">${image.type_label}</span>
                 </div>
                 <img src="${image.image_url}" alt="${image.caption || 'Booth image'}" 
-                     onclick="viewImage('${image.image_url}', '${image.caption || ''}', '${image.type_label}')">
+                     onclick="viewImage('${image.image_url}', '${cap}', '${typeLabel}')">
                 <div class="gallery-item-actions">
                     <div class="text-dark-gray-gray small" style="flex: 1;">
                         ${image.caption ? image.caption.substring(0, 30) : 'No caption'}
@@ -372,12 +380,12 @@ function displayGallery(images) {
                     @auth
                     @if(auth()->user()->isAdmin())
                     <div class="btn-group btn-group-sm">
-                        ${!image.is_primary ? `<button class="btn btn-glass-primary btn-sm" onclick="setPrimary(${image.id})" title="Set as Primary">
+                        ${!isMaster && !image.is_primary ? `<button class="btn btn-glass-primary btn-sm" onclick="setPrimary(${image.id})" title="Set as Primary">
                             <i class="fas fa-star"></i>
                         </button>` : ''}
-                        <button class="btn btn-danger btn-sm" onclick="deleteImage(${image.id})" title="Delete">
+                        ${!isMaster ? `<button class="btn btn-danger btn-sm" onclick="deleteImage(${image.id})" title="Delete">
                             <i class="fas fa-trash"></i>
-                        </button>
+                        </button>` : ''}
                     </div>
                     @endif
                     @endauth

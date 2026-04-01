@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\LandingPage;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,9 +39,22 @@ class SecurityHeaders
         if (app()->environment('local')) {
             $connectSrc .= ' http://127.0.0.1:7244 http://127.0.0.1:7245 http://localhost:7244 http://localhost:7245';
         }
+        $scriptSrc = "'self' 'unsafe-inline' 'unsafe-eval' blob: https://code.jquery.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net";
+        $scriptElemSrc = "'self' 'unsafe-inline' blob: https://code.jquery.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net";
+
+        // Tighten CSP for public landing pages when inline scripts are disabled.
+        if ($request->is('l/*')) {
+            $slug = (string) $request->route('landingPage');
+            $landingPage = $slug !== '' ? LandingPage::query()->where('slug', $slug)->first() : null;
+            if ($landingPage && ! $landingPage->allow_inline_scripts) {
+                $scriptSrc = "'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com";
+                $scriptElemSrc = "'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com";
+            }
+        }
+
         $csp = "default-src 'self'; "
-            ."script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://code.jquery.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net; "
-            ."script-src-elem 'self' 'unsafe-inline' blob: https://code.jquery.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net; "
+            ."script-src {$scriptSrc}; "
+            ."script-src-elem {$scriptElemSrc}; "
             ."style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://code.ionicframework.com https://cdn.datatables.net https://fonts.googleapis.com; "
             ."img-src 'self' data: blob: https:; "
             ."font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com https://cdnjs.cloudflare.com https://code.ionicframework.com; "

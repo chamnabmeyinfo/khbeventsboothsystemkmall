@@ -9,7 +9,16 @@
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
     <script src="{{ asset('vendor/jquery/jquery-3.6.0.min.js') }}"></script>
     <script src="{{ asset('vendor/panzoom/panzoom.min.js') }}"></script>
+    <script>
+        window.publicViewButtonColor = @json($publicViewButtonColor ?? '#28a745');
+    </script>
     <style>
+        /* Public view: single responsive stylesheet; button accent from Settings (public_view_button_color). */
+        :root {
+            --pv-btn-primary: {{ $publicViewButtonColor ?? '#28a745' }};
+            --pv-btn-primary-dark: {{ $publicViewButtonColorDark ?? '#218838' }};
+            --pv-btn-primary-rgb: {{ $publicViewButtonColorRgb ?? '40, 167, 69' }};
+        }
         * {
             margin: 0;
             padding: 0;
@@ -264,17 +273,18 @@
             align-items: center;
             gap: 8px;
             padding: 12px 24px;
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: #1d1d1f;
+            background: linear-gradient(135deg, var(--pv-btn-primary) 0%, var(--pv-btn-primary-dark) 100%);
+            color: #fff;
             border: none;
             border-radius: 10px;
             font-weight: 600;
             font-size: 1rem;
             text-decoration: none;
-            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+            box-shadow: 0 4px 12px rgba(var(--pv-btn-primary-rgb), 0.45);
             transition: transform 0.2s, box-shadow 0.2s;
+            text-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
         }
-        .btn-book-booth-public:hover { color: #1d1d1f; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(40, 167, 69, 0.5); }
+        .btn-book-booth-public:hover { color: #fff; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(var(--pv-btn-primary-rgb), 0.55); }
         /* Right-click context menu (public view - Create Booking) */
         .public-view-context-menu {
             display: none;
@@ -309,8 +319,8 @@
         }
         .public-view-context-menu a:hover,
         .public-view-context-menu button:hover {
-            background: #f0f4ff;
-            color: #667eea;
+            background: rgba(var(--pv-btn-primary-rgb), 0.1);
+            color: var(--pv-btn-primary);
         }
         .public-view-context-menu a i,
         .public-view-context-menu button i { width: 20px; text-align: center; }
@@ -348,7 +358,8 @@
         }
         
         .zoom-btn-simple:hover {
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(var(--pv-btn-primary-rgb), 0.35);
+            color: #fff;
         }
         
         .zoom-level-display {
@@ -378,10 +389,11 @@
         }
         
         .help-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
+            background: rgba(var(--pv-btn-primary-rgb), 0.35);
+            color: #fff;
         }
         .help-btn.copied {
-            background: rgba(76, 175, 80, 0.5);
+            background: rgba(var(--pv-btn-primary-rgb), 0.65);
             color: #fff;
         }
         
@@ -464,7 +476,7 @@
         }
         
         .help-section h4 {
-            color: #667eea;
+            color: var(--pv-btn-primary);
             font-size: 1.1rem;
             font-weight: 700;
             margin-bottom: 12px;
@@ -491,7 +503,7 @@
             content: "✓";
             position: absolute;
             left: 0;
-            color: #667eea;
+            color: var(--pv-btn-primary);
             font-weight: bold;
             font-size: 1.1rem;
         }
@@ -1013,7 +1025,7 @@
         .public-booking-modal .btn-close-inner:hover { background: rgba(255,255,255,0.3); }
         .public-booking-modal .bf-section { margin-bottom: 24px; }
         .public-booking-modal .bf-section:last-of-type { margin-bottom: 8px; }
-        .public-booking-modal .bf-section-title { font-size: 0.9rem; font-weight: 700; color: #667eea; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+        .public-booking-modal .bf-section-title { font-size: 0.9rem; font-weight: 700; color: var(--pv-btn-primary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
         .public-booking-modal .bf-form-row { display: flex; gap: 12px; flex-wrap: wrap; }
         .public-booking-modal .bf-form-row .bf-field { flex: 1; min-width: 140px; }
         .public-booking-modal .bf-field { margin-bottom: 12px; }
@@ -1024,8 +1036,8 @@
         .public-booking-modal .bf-section-title-row .bf-section-title { margin-bottom: 0; }
         .public-booking-modal .bf-booths-view-switcher { display: flex; gap: 4px; }
         .public-booking-modal .bf-view-btn { width: 32px; height: 32px; border: 1px solid #dee2e6; background: #fff; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; color: #6c757d; font-size: 0.85rem; transition: all 0.2s; }
-        .public-booking-modal .bf-view-btn:hover { background: #f8f9fa; color: #667eea; border-color: #667eea; }
-        .public-booking-modal .bf-view-btn.active { background: #667eea; color: #fff; border-color: #667eea; }
+        .public-booking-modal .bf-view-btn:hover { background: #f8f9fa; color: var(--pv-btn-primary); border-color: var(--pv-btn-primary); }
+        .public-booking-modal .bf-view-btn.active { background: var(--pv-btn-primary); color: #fff; border-color: var(--pv-btn-primary); }
         .public-booking-modal .bf-booths { min-height: 80px; max-height: 260px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 8px; padding: 12px; background: #f8f9fa; -webkit-overflow-scrolling: touch; }
         .public-booking-modal .bf-booth-item { display: flex; align-items: center; gap: 8px; padding: 8px 0; cursor: pointer; }
         .public-booking-modal .bf-booth-item input { width: auto; margin: 0; flex-shrink: 0; }
@@ -1080,7 +1092,8 @@
         .public-booking-modal .bf-footer { padding: 16px 20px; border-top: 1px solid #e9ecef; background: #f8f9fa; border-radius: 0 0 16px 16px; display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0; margin-top: auto; box-shadow: 0 -4px 12px rgba(0,0,0,0.06); position: relative; z-index: 5; flex-wrap: wrap; }
         .public-booking-modal .bf-btn { padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; }
         .public-booking-modal .bf-btn-outline-secondary { background: #fff; color: #495057; border: 1px solid #dee2e6; }
-        .public-booking-modal .bf-btn-primary { background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.5); color: #1d1d1f; }
+        .public-booking-modal .bf-btn-primary { background: var(--pv-btn-primary); color: #fff; border: 1px solid var(--pv-btn-primary-dark); box-shadow: 0 2px 8px rgba(var(--pv-btn-primary-rgb), 0.35); }
+        .public-booking-modal .bf-btn-primary:hover:not(:disabled) { filter: brightness(1.05); }
         .public-booking-modal .bf-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
         @media (max-width: 576px) {
             .public-booking-modal { padding: 8px; align-items: flex-start; padding-top: 24px; padding-bottom: 24px; }
@@ -1155,7 +1168,7 @@
         .booth-detail-section-title {
             font-size: 1.2rem;
             font-weight: 700;
-            color: #667eea;
+            color: var(--pv-btn-primary);
             margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 2px solid #e9ecef;
@@ -2433,7 +2446,7 @@
             var toast = document.createElement('div');
             toast.id = 'publicViewUndoToast';
             toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 20px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.3);display:flex;align-items:center;gap:16px;z-index:10003;font-size:14px;';
-            toast.innerHTML = '<span>' + message + '</span><button type="button" id="publicViewUndoBtn" style="background:#667eea;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;">Undo</button>';
+            toast.innerHTML = '<span>' + message + '</span><button type="button" id="publicViewUndoBtn" style="background:' + (window.publicViewButtonColor || '#28a745') + ';color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;">Undo</button>';
             document.body.appendChild(toast);
             window._undoToastTimer = setTimeout(function() {
                 if (toast.parentNode) toast.remove();
@@ -2719,13 +2732,13 @@
             
             html += '<div class="booth-detail-row">';
             html += '<span class="booth-detail-label"><i class="fas fa-hashtag"></i> Booth Number:</span>';
-            html += '<span class="booth-detail-value"><strong style="font-size: 1.3rem; color: #667eea;">' + booth.booth_number + '</strong></span>';
+            html += '<span class="booth-detail-value"><strong style="font-size: 1.3rem; color: ' + (window.publicViewButtonColor || '#28a745') + ';">' + booth.booth_number + '</strong></span>';
             html += '</div>';
             
             if (booth.booth_type) {
                 html += '<div class="booth-detail-row">';
                 html += '<span class="booth-detail-label"><i class="fas fa-tag"></i> Booth Type:</span>';
-                html += '<span class="booth-detail-value"><strong style="color: #667eea;">' + booth.booth_type + '</strong></span>';
+                html += '<span class="booth-detail-value"><strong style="color: ' + (window.publicViewButtonColor || '#28a745') + ';">' + booth.booth_type + '</strong></span>';
                 html += '</div>';
             }
             

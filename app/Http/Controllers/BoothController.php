@@ -1858,6 +1858,11 @@ class BoothController extends Controller
         $rawItems = ($canvasSetting && $canvasSetting->canvas_text_items) ? $canvasSetting->canvas_text_items : [];
         $canvasTextItems = is_array($rawItems) ? $rawItems : (is_object($rawItems) ? (array) $rawItems : []);
 
+        $pvBtnTheme = \App\Models\Setting::getPublicViewButtonTheme();
+        $publicViewButtonColor = $pvBtnTheme['hex'];
+        $publicViewButtonColorRgb = $pvBtnTheme['rgb_comma'];
+        $publicViewButtonColorDark = $pvBtnTheme['dark_hex'];
+
         return view('booths.public-view', compact(
             'floorPlan',
             'booths',
@@ -1885,7 +1890,10 @@ class BoothController extends Controller
             'bookedTickBorderColor',
             'bookedTickFontSize',
             'bookedTickSizeMode',
-            'bookedTickRelativePercent'
+            'bookedTickRelativePercent',
+            'publicViewButtonColor',
+            'publicViewButtonColorRgb',
+            'publicViewButtonColorDark'
         ));
     }
 
@@ -2282,6 +2290,9 @@ class BoothController extends Controller
         try {
             $booth = Booth::findOrFail($id);
             $images = $this->imageService->getBoothImages($id);
+            if (count($images) === 0) {
+                $images = Setting::getMasterBoothGalleryForApiResponse();
+            }
 
             return response()->json([
                 'success' => true,
@@ -2303,6 +2314,13 @@ class BoothController extends Controller
     public function deleteBoothImage($boothId, $imageId)
     {
         try {
+            if ((int) $imageId < 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Master gallery images are managed in Booth list → Booth settings → Master gallery.',
+                ], 422);
+            }
+
             $this->imageService->deleteBoothImage($boothId, $imageId);
 
             return response()->json([
@@ -2324,6 +2342,13 @@ class BoothController extends Controller
     public function setPrimaryImage($boothId, $imageId)
     {
         try {
+            if ((int) $imageId < 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Master gallery order is fixed in Booth settings → Master gallery.',
+                ], 422);
+            }
+
             $this->imageService->setPrimaryImage($boothId, $imageId);
 
             return response()->json([

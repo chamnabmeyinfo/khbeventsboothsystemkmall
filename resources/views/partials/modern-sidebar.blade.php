@@ -124,6 +124,12 @@
                     <span>Global Settings</span>
                 </a>
             </li>
+            <li class="sidebar-nav-item">
+                <a href="{{ route('landing-pages.index') }}" class="sidebar-nav-link {{ request()->is('landing-pages*') ? 'active' : '' }}">
+                    <i class="fas fa-rocket"></i>
+                    <span>Landing Pages</span>
+                </a>
+            </li>
         </ul>
         @endif
     </div>

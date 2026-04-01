@@ -192,7 +192,12 @@ class Booth extends Model
             return $url;
         }
 
-        return Setting::getMasterBoothImageUrl();
+        $masterSingle = Setting::getMasterBoothImageUrl();
+        if ($masterSingle !== null) {
+            return $masterSingle;
+        }
+
+        return Setting::getMasterBoothGalleryFirstUrl();
     }
 
     /**

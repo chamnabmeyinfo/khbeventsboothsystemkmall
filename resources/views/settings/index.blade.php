@@ -619,6 +619,15 @@
                 if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) colorEl.value = this.value;
             });
         }
+        // Public floor plan button color (picker + hex)
+        var pvBtnColor = document.getElementById('public_view_button_color');
+        var pvBtnHex = document.getElementById('public_view_button_color_hex');
+        if (pvBtnColor && pvBtnHex) {
+            pvBtnColor.addEventListener('input', function() { pvBtnHex.value = this.value; });
+            pvBtnHex.addEventListener('input', function() {
+                if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) pvBtnColor.value = this.value;
+            });
+        }
         // Sync booked tick background color and toggle visibility
         var bgNone = document.getElementById('booth_booked_tick_bg_none');
         var bgColor = document.getElementById('booth_booked_tick_bg_color');

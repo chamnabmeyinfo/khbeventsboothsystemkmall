@@ -12,6 +12,9 @@ use App\Http\Controllers\ClientProfileDashboardDemoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\FloorPlanController;
+use App\Http\Controllers\LandingPageController;
+use App\Http\Controllers\LandingPagePublicController;
+use App\Http\Controllers\LandingPageTrackingController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VersionController;
@@ -26,7 +29,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Authentication Routes
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::get('/login', [LoginController::class, 'showLoginForm'])->middleware('landing.gate')->name('login');
 Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:5,1'); // Rate limit: 5 attempts per minute
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
@@ -37,7 +40,13 @@ Route::get('/', function () {
     }
 
     return redirect()->route('login');
-});
+})->middleware('landing.gate');
+
+// Landing Pages (Public)
+Route::get('/l/{landingPage:slug}', [LandingPagePublicController::class, 'show'])->name('landing-pages.public.show');
+Route::post('/l/{landingPage:slug}/continue', [LandingPagePublicController::class, 'continue'])->name('landing-pages.public.continue');
+Route::post('/l/{landingPage:slug}/track', [LandingPageTrackingController::class, 'track'])->name('landing-pages.track');
+Route::post('/l/{landingPage:slug}/lead', [LandingPageTrackingController::class, 'lead'])->name('landing-pages.lead');
 
 // Client Portal (Public)
 Route::prefix('client-portal')->name('client-portal.')->group(function () {
@@ -352,6 +361,18 @@ Route::middleware(['auth'])->group(function () {
 
         // Settings
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+        Route::prefix('landing-pages')->name('landing-pages.')->group(function () {
+            Route::get('/', [LandingPageController::class, 'index'])->name('index');
+            Route::get('/create', [LandingPageController::class, 'create'])->name('create');
+            Route::post('/', [LandingPageController::class, 'store'])->name('store');
+            Route::get('/{landingPage:slug}/edit', [LandingPageController::class, 'edit'])->name('edit');
+            Route::put('/{landingPage:slug}', [LandingPageController::class, 'update'])->name('update');
+            Route::delete('/{landingPage:slug}', [LandingPageController::class, 'destroy'])->name('destroy');
+            Route::get('/{landingPage:slug}/preview', [LandingPageController::class, 'preview'])->name('preview');
+            Route::post('/{landingPage:slug}/publish', [LandingPageController::class, 'publish'])->name('publish');
+            Route::post('/{landingPage:slug}/unpublish', [LandingPageController::class, 'unpublish'])->name('unpublish');
+            Route::post('/{landingPage:slug}/set-active', [LandingPageController::class, 'setActive'])->name('set-active');
+        });
         Route::post('/settings/cache/clear', [SettingsController::class, 'clearCache'])->name('settings.cache.clear');
         Route::post('/settings/config/clear', [SettingsController::class, 'clearConfig'])->name('settings.config.clear');
         Route::post('/settings/route/clear', [SettingsController::class, 'clearRoute'])->name('settings.route.clear');
@@ -371,6 +392,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/settings/booth-master-image', [SettingsController::class, 'getMasterBoothImage'])->name('settings.booth-master-image');
         Route::post('/settings/booth-master-image', [SettingsController::class, 'uploadMasterBoothImage'])->name('settings.booth-master-image.upload');
         Route::post('/settings/booth-master-image/remove', [SettingsController::class, 'removeMasterBoothImage'])->name('settings.booth-master-image.remove');
+        Route::get('/settings/booth-master-gallery', [SettingsController::class, 'getMasterBoothGallery'])->name('settings.booth-master-gallery');
+        Route::post('/settings/booth-master-gallery', [SettingsController::class, 'uploadMasterBoothGalleryImage'])->name('settings.booth-master-gallery.upload');
+        Route::post('/settings/booth-master-gallery/remove', [SettingsController::class, 'removeMasterBoothGalleryImage'])->name('settings.booth-master-gallery.remove');
         Route::post('/settings/booth-upload-context', [SettingsController::class, 'saveBoothUploadContext'])->name('settings.booth-upload-context.save');
         Route::post('/settings/booths-module-display', [SettingsController::class, 'saveBoothsModuleDisplay'])->name('settings.booths-module-display.save');
 

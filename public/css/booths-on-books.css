@@ -543,6 +543,35 @@
     opacity: 0.55;
 }
 
+/* Master gallery (default booth photos) — thumbnails in Booth settings modal */
+.books-page .booths-settings-master-gallery-tile {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-light, rgba(0, 0, 0, 0.08));
+    background: rgba(248, 249, 252, 0.85);
+}
+
+.books-page .booths-settings-master-gallery-tile__img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    display: block;
+    vertical-align: middle;
+}
+
+.books-page .booths-settings-master-gallery-tile__rm {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    padding: 0;
+    border-radius: 10px;
+    line-height: 1;
+    opacity: 0.92;
+}
+
 .books-page .booths-settings-switches {
     display: flex;
     flex-direction: column;

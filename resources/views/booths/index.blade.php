@@ -5,7 +5,7 @@
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.6">
 <link rel="stylesheet" href="{{ asset('css/books-page-index.css') }}?v=1.0">
-<link rel="stylesheet" href="{{ asset('css/booths-on-books.css') }}?v=2.2">
+<link rel="stylesheet" href="{{ asset('css/booths-on-books.css') }}?v=2.3">
 @endpush
 
 @push('body-class', 'ios-dashboard-mode')
@@ -243,6 +243,27 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="booths-settings-block" role="region" aria-labelledby="boothsSettingsMasterGalleryHeading">
+                        <div class="booths-settings-block__head">
+                            <span class="booths-settings-block__icon booths-settings-block__icon--purple"><i class="fas fa-images" aria-hidden="true"></i></span>
+                            <div>
+                                <h6 class="booths-settings-block__title" id="boothsSettingsMasterGalleryHeading">Master gallery</h6>
+                                <p class="booths-settings-block__desc">Default photos when a booth has no gallery yet (detail page gallery and card image fallback after the single default image above).</p>
+                            </div>
+                        </div>
+                        <div id="boothsPageMasterGalleryList" class="booths-settings-master-gallery-grid row g-2 mb-3" aria-live="polite"></div>
+                        <div class="d-flex flex-wrap align-items-end gap-2">
+                            <div class="flex-grow-1 min-w-0" style="min-width: 200px;">
+                                <label class="form-label small fw-semibold" for="boothsPageMasterGalleryFile">Add image</label>
+                                <input type="file" class="form-control form-control-sm" id="boothsPageMasterGalleryFile" accept="image/jpeg,image/png,image/gif" aria-label="Add master gallery image">
+                            </div>
+                            <button type="button" class="btn btn-primary btn-sm px-3" id="boothsPageMasterGallerySave" disabled>
+                                <i class="fas fa-plus me-1"></i>Add
+                            </button>
+                        </div>
+                        <small class="text-muted d-block mt-2">Up to 20 images. {{ $masterBoothUploadHint ?? '' }}</small>
                     </div>
 
                     <div class="booths-settings-block" aria-labelledby="boothsSettingsUploadHeading">
@@ -713,6 +734,109 @@
                         }
                     });
                 });
+            }
+
+            function renderMasterGalleryList(items) {
+                var wrap = document.getElementById('boothsPageMasterGalleryList');
+                if (!wrap) {
+                    return;
+                }
+                if (!items || items.length === 0) {
+                    wrap.innerHTML = '<div class="col-12"><p class="text-muted small mb-0">No master gallery images yet.</p></div>';
+                    return;
+                }
+                var html = '';
+                items.forEach(function (it) {
+                    var pathEsc = String(it.path || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+                    html += '<div class="col-6 col-sm-4 col-md-3">';
+                    html += '<div class="booths-settings-master-gallery-tile position-relative">';
+                    html += '<img src="' + (it.url || '').replace(/"/g, '&quot;') + '" alt="" class="booths-settings-master-gallery-tile__img" loading="lazy" width="120" height="120">';
+                    html += '<button type="button" class="btn btn-sm btn-danger booths-settings-master-gallery-tile__rm" data-path="' + pathEsc + '" title="Remove"><i class="fas fa-times" aria-hidden="true"></i></button>';
+                    html += '</div></div>';
+                });
+                wrap.innerHTML = html;
+            }
+
+            function loadMasterGalleryList() {
+                jQuery.get("{{ route('settings.booth-master-gallery') }}")
+                    .done(function (res) {
+                        if (res.status === 200 && res.data && res.data.items) {
+                            renderMasterGalleryList(res.data.items);
+                        }
+                    })
+                    .fail(function () {
+                        var wrap = document.getElementById('boothsPageMasterGalleryList');
+                        if (wrap) {
+                            wrap.innerHTML = '<div class="col-12"><p class="text-danger small mb-0">Could not load master gallery.</p></div>';
+                        }
+                    });
+            }
+
+            var $mgFile = document.getElementById('boothsPageMasterGalleryFile');
+            var $mgSave = document.getElementById('boothsPageMasterGallerySave');
+            if ($mgFile && $mgSave) {
+                jQuery($mgFile).on('change', function () {
+                    jQuery($mgSave).prop('disabled', !this.files || !this.files[0]);
+                });
+                jQuery($mgSave).on('click', function () {
+                    var input = document.getElementById('boothsPageMasterGalleryFile');
+                    var file = input && input.files[0];
+                    if (!file) {
+                        notify('Choose an image file first.', 'warning');
+                        return;
+                    }
+                    var formData = new FormData();
+                    formData.append('gallery_image', file);
+                    formData.append('_token', '{{ csrf_token() }}');
+                    var $btn = jQuery(this);
+                    $btn.prop('disabled', true);
+                    jQuery.ajax({
+                        url: "{{ route('settings.booth-master-gallery.upload') }}",
+                        method: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (response) {
+                            if (response.status === 200) {
+                                notify(response.message || 'Image added', 'success');
+                                if (input) {
+                                    input.value = '';
+                                }
+                                $btn.prop('disabled', true);
+                                loadMasterGalleryList();
+                            }
+                        },
+                        error: function (xhr) {
+                            var msg = (xhr.responseJSON && (xhr.responseJSON.message || (xhr.responseJSON.errors && xhr.responseJSON.errors.gallery_image && xhr.responseJSON.errors.gallery_image[0]))) || 'Failed to add image';
+                            notify(msg, 'error');
+                            $btn.prop('disabled', false);
+                        }
+                    });
+                });
+                jQuery('#boothsPageMasterGalleryList').on('click', '.booths-settings-master-gallery-tile__rm', function () {
+                    var path = jQuery(this).attr('data-path');
+                    if (!path) {
+                        return;
+                    }
+                    if (!window.confirm('Remove this image from the master gallery?')) {
+                        return;
+                    }
+                    jQuery.ajax({
+                        url: "{{ route('settings.booth-master-gallery.remove') }}",
+                        method: 'POST',
+                        data: { _token: '{{ csrf_token() }}', path: path },
+                        success: function (response) {
+                            if (response.status === 200) {
+                                notify(response.message || 'Removed', 'success');
+                                loadMasterGalleryList();
+                            }
+                        },
+                        error: function (xhr) {
+                            notify((xhr.responseJSON && xhr.responseJSON.message) || 'Failed to remove', 'error');
+                        }
+                    });
+                });
+                loadMasterGalleryList();
             }
             jQuery('#boothsPageUploadLimitsSave').on('click', function () {
                 var $btn = jQuery(this);

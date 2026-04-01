@@ -73,6 +73,36 @@ class Setting extends Model
     }
 
     /**
+     * Validated public floor plan button color (#RRGGBB) plus derived values for CSS (shadows, gradients).
+     *
+     * @return array{hex: string, rgb_comma: string, dark_hex: string}
+     */
+    public static function getPublicViewButtonTheme(): array
+    {
+        $default = '#28a745';
+        $hex = self::getValue('public_view_button_color', $default);
+        if (! is_string($hex) || ! preg_match('/^#[0-9A-Fa-f]{6}$/', $hex)) {
+            $hex = $default;
+        }
+        $h = substr($hex, 1);
+        $r = hexdec(substr($h, 0, 2));
+        $g = hexdec(substr($h, 2, 2));
+        $b = hexdec(substr($h, 4, 2));
+        $rgbComma = $r.', '.$g.', '.$b;
+        $f = 0.82;
+        $dr = max(0, min(255, (int) round($r * $f)));
+        $dg = max(0, min(255, (int) round($g * $f)));
+        $db = max(0, min(255, (int) round($b * $f)));
+        $darkHex = sprintf('#%02x%02x%02x', $dr, $dg, $db);
+
+        return [
+            'hex' => $hex,
+            'rgb_comma' => $rgbComma,
+            'dark_hex' => $darkHex,
+        ];
+    }
+
+    /**
      * Master booth image URL (fallback when a booth has no gallery or legacy booth_image).
      */
     public static function getMasterBoothImageUrl(): ?string
@@ -80,6 +110,95 @@ class Setting extends Model
         $path = self::getValue('booth_master_image_path', '');
 
         return AssetHelper::imageUrl($path);
+    }
+
+    /**
+     * Normalized paths as stored (validated prefix; may include missing files on disk).
+     *
+     * @return list<string>
+     */
+    public static function getRawMasterBoothGalleryPaths(): array
+    {
+        $raw = self::getValue('booth_master_gallery_paths', []);
+        if (! is_array($raw)) {
+            return [];
+        }
+        $out = [];
+        foreach ($raw as $path) {
+            if (! is_string($path) || $path === '') {
+                continue;
+            }
+            $path = str_replace('\\', '/', trim($path));
+            if (! str_starts_with($path, 'images/booths/master/gallery/')) {
+                continue;
+            }
+            $out[] = $path;
+        }
+
+        return array_values(array_unique($out));
+    }
+
+    /**
+     * Stored relative paths for the master booth gallery — only paths whose files exist.
+     *
+     * @return list<string>
+     */
+    public static function getMasterBoothGalleryPaths(): array
+    {
+        $out = [];
+        foreach (self::getRawMasterBoothGalleryPaths() as $path) {
+            if (file_exists(public_path($path))) {
+                $out[] = $path;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * @return list<array<string, mixed>> Same shape as BoothImageService::getBoothImages for API when a booth has no own gallery.
+     */
+    public static function getMasterBoothGalleryForApiResponse(): array
+    {
+        $paths = self::getMasterBoothGalleryPaths();
+        $out = [];
+        foreach ($paths as $i => $path) {
+            $out[] = [
+                'id' => - ($i + 1),
+                'image_path' => $path,
+                'image_url' => asset($path),
+                'type' => 'photo',
+                'type_label' => 'Master gallery',
+                'caption' => '',
+                'sort_order' => $i + 1,
+                'is_primary' => $i === 0,
+                'is_master_gallery' => true,
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * First master gallery image URL, or null (used after single master image fallback).
+     */
+    public static function getMasterBoothGalleryFirstUrl(): ?string
+    {
+        $paths = self::getMasterBoothGalleryPaths();
+        if ($paths === []) {
+            return null;
+        }
+
+        return AssetHelper::imageUrl($paths[0]);
+    }
+
+    /**
+     * Persist gallery paths (validated caller).
+     */
+    public static function setMasterBoothGalleryPaths(array $paths): void
+    {
+        $paths = array_values(array_unique(array_filter($paths, static fn ($p) => is_string($p) && $p !== '')));
+        self::setValue('booth_master_gallery_paths', json_encode($paths), 'json', 'Master default booth gallery paths (shown when a booth has no gallery photos)');
     }
 
     /**

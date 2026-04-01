@@ -65,5 +65,6 @@ class Kernel extends HttpKernel
         'admin.auth' => \App\Http\Middleware\AdminAuth::class,
         'client.portal' => \App\Http\Middleware\ClientPortal::class,
         'permission' => \App\Http\Middleware\CheckPermission::class,
+        'landing.gate' => \App\Http\Middleware\ApplyLandingPageGate::class,
     ];
 }
