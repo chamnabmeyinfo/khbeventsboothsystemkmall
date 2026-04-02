@@ -1932,6 +1932,16 @@
             var k = String(code);
             return statusColorsFull[k] != null ? statusColorsFull[k] : null;
         }
+        /** Booking linked to booth + client assigned → distinct pink fill (public floor plan). */
+        const PUBLIC_BOOKED_WITH_CLIENT_PINK = '#ec4899';
+        function boothHasBookWithClient(b) {
+            function truthyId(v) {
+                if (v === null || v === undefined || v === '') return false;
+                var n = Number(v);
+                return !Number.isNaN(n) && n !== 0;
+            }
+            return truthyId(b.book_id) && truthyId(b.client_id);
+        }
         const canvasWidth = {{ $canvasWidth }};
         const canvasHeight = {{ $canvasHeight }};
         
@@ -1990,7 +2000,20 @@
                 
                 // Apply colors: DB status settings for this floor plan, then booth custom (Available only), then defaults
                 const styleFromDb = pickStatusStyle(boothStatus);
-                if (isAvailable) {
+                if (boothHasBookWithClient(booth)) {
+                    boothElement.classList.add('booked-with-client');
+                    boothElement.style.setProperty('background-color', PUBLIC_BOOKED_WITH_CLIENT_PINK, 'important');
+                    boothElement.style.setProperty('border-color', PUBLIC_BOOKED_WITH_CLIENT_PINK, 'important');
+                    boothElement.style.setProperty('color', '#ffffff', 'important');
+                    boothElement.style.setProperty('border-width', '2px', 'important');
+                    boothElement.style.setProperty('border-style', 'solid', 'important');
+                    if (styleFromDb && styleFromDb.border_radius != null) {
+                        boothElement.style.setProperty('border-radius', styleFromDb.border_radius + 'px', 'important');
+                    } else if (booth.border_radius != null) {
+                        boothElement.style.setProperty('border-radius', booth.border_radius + 'px', 'important');
+                    }
+                } else if (isAvailable) {
+                    boothElement.classList.remove('booked-with-client');
                     if (booth.background_color) {
                         boothElement.style.setProperty('background-color', booth.background_color, 'important');
                     } else if (styleFromDb && styleFromDb.background) {
@@ -2005,6 +2028,7 @@
                     if (booth.border_color) boothElement.style.setProperty('border-color', booth.border_color, 'important');
                     if (booth.text_color) boothElement.style.setProperty('color', booth.text_color, 'important');
                 } else if (styleFromDb && styleFromDb.background) {
+                    boothElement.classList.remove('booked-with-client');
                     boothElement.style.setProperty('background-color', styleFromDb.background, 'important');
                     boothElement.style.setProperty('border-color', styleFromDb.border || styleFromDb.background, 'important');
                     boothElement.style.setProperty('color', styleFromDb.text || '#ffffff', 'important');
@@ -2012,6 +2036,7 @@
                     if (styleFromDb.border_style) boothElement.style.setProperty('border-style', styleFromDb.border_style, 'important');
                     if (styleFromDb.border_radius != null) boothElement.style.setProperty('border-radius', styleFromDb.border_radius + 'px', 'important');
                 } else {
+                    boothElement.classList.remove('booked-with-client');
                     boothElement.style.setProperty('background-color', '#28a745', 'important');
                     boothElement.style.setProperty('border-color', '#28a745', 'important');
                     boothElement.style.setProperty('color', '#ffffff', 'important');
@@ -2019,8 +2044,10 @@
                 
                 // Apply other appearance properties (use setProperty with 'important' to override status CSS)
                 if (booth.font_size != null) boothElement.style.setProperty('font-size', booth.font_size + 'px', 'important');
-                if (booth.border_width != null) boothElement.style.setProperty('border-width', booth.border_width + 'px', 'important');
-                if (booth.border_radius != null) boothElement.style.setProperty('border-radius', booth.border_radius + 'px', 'important');
+                if (!boothHasBookWithClient(booth)) {
+                    if (booth.border_width != null) boothElement.style.setProperty('border-width', booth.border_width + 'px', 'important');
+                    if (booth.border_radius != null) boothElement.style.setProperty('border-radius', booth.border_radius + 'px', 'important');
+                }
                 if (booth.opacity !== null && booth.opacity !== undefined) boothElement.style.setProperty('opacity', booth.opacity, 'important');
                 if (booth.font_weight) boothElement.style.setProperty('font-weight', booth.font_weight, 'important');
                 if (booth.font_family) boothElement.style.setProperty('font-family', booth.font_family, 'important');

@@ -11586,6 +11586,15 @@ const FloorPlanDesigner = {
         
         console.log('[Load Positions] Loading booth positions from database for', booths.length, 'booths');
         
+        function fpBoothBookedWithClientPink(booth) {
+            var bid = booth.book_id != null ? booth.book_id : booth.bookid;
+            var cid = booth.client_id != null ? booth.client_id : booth.clientId;
+            if (bid === null || bid === undefined || bid === '' || bid === 0 || bid === '0') return false;
+            if (cid === null || cid === undefined || cid === '' || cid === 0 || cid === '0') return false;
+            return true;
+        }
+        var FP_BOOKED_WITH_CLIENT_PINK = '#ec4899';
+        
         // Clear any existing booths on canvas first to prevent duplicates
         // This ensures a clean state before loading from database
         const existingBooths = canvas.querySelectorAll('.dropped-booth');
@@ -11724,6 +11733,18 @@ const FloorPlanDesigner = {
                         existingBooth.classList.add('booked');
                     } else {
                         existingBooth.classList.remove('booked');
+                    }
+                    
+                    if (fpBoothBookedWithClientPink(booth)) {
+                        existingBooth.style.setProperty('background-color', FP_BOOKED_WITH_CLIENT_PINK, 'important');
+                        existingBooth.style.setProperty('border-color', FP_BOOKED_WITH_CLIENT_PINK, 'important');
+                        existingBooth.style.setProperty('color', '#ffffff', 'important');
+                        existingBooth.setAttribute('data-background-color', FP_BOOKED_WITH_CLIENT_PINK);
+                        existingBooth.setAttribute('data-border-color', FP_BOOKED_WITH_CLIENT_PINK);
+                        existingBooth.setAttribute('data-text-color', '#ffffff');
+                        existingBooth.classList.add('booked-with-client');
+                    } else {
+                        existingBooth.classList.remove('booked-with-client');
                     }
                     
                     // Still apply other appearance properties if they exist (font-weight, font-family, etc.)
@@ -11915,6 +11936,18 @@ const FloorPlanDesigner = {
                     } else {
                         boothElement.classList.remove('booked');
                     }
+                
+                if (fpBoothBookedWithClientPink(booth)) {
+                    boothElement.style.setProperty('background-color', FP_BOOKED_WITH_CLIENT_PINK, 'important');
+                    boothElement.style.setProperty('border-color', FP_BOOKED_WITH_CLIENT_PINK, 'important');
+                    boothElement.style.setProperty('color', '#ffffff', 'important');
+                    boothElement.setAttribute('data-background-color', FP_BOOKED_WITH_CLIENT_PINK);
+                    boothElement.setAttribute('data-border-color', FP_BOOKED_WITH_CLIENT_PINK);
+                    boothElement.setAttribute('data-text-color', '#ffffff');
+                    boothElement.classList.add('booked-with-client');
+                } else {
+                    boothElement.classList.remove('booked-with-client');
+                }
                 
                 // Still apply other appearance properties if they exist (font-weight, font-family, etc.)
                 if (booth.font_weight) {
