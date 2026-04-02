@@ -1464,7 +1464,7 @@ class SettingsController extends Controller
             'status' => 200,
             'data' => [
                 'show_tick' => (bool) ($tick['show_tick'] ?? true),
-                'color' => $tick['color'] ?? '#28a745',
+                'color' => $tick['color'] ?? '#ec4899',
                 'size' => $tick['size'] ?? 'medium',
                 'shape' => $tick['shape'] ?? 'round',
                 'position' => $tick['position'] ?? 'top-right',
@@ -1512,9 +1512,9 @@ class SettingsController extends Controller
             $allowedPositions = ['top-right', 'top-left', 'bottom-right', 'bottom-left', 'inside'];
             $allowedAnimations = ['pulse', 'none'];
 
-            $tickColor = $request->input('booth_booked_tick_color', '#28a745');
+            $tickColor = $request->input('booth_booked_tick_color', '#ec4899');
             if (! preg_match('/^#[0-9A-Fa-f]{6}$/', $tickColor)) {
-                $tickColor = '#28a745';
+                $tickColor = '#ec4899';
             }
             $tickSize = $request->input('booth_booked_tick_size', 'medium');
             if (! in_array($tickSize, $allowedSizes, true)) {
@@ -1866,7 +1866,7 @@ class SettingsController extends Controller
                     'public_view_button_color' => '#28a745',
                     'tick' => [
                         'show_tick' => (bool) ($tick['show_tick'] ?? true),
-                        'color' => $tick['color'] ?? '#28a745',
+                        'color' => $tick['color'] ?? '#ec4899',
                         'size' => $tick['size'] ?? 'medium',
                         'shape' => $tick['shape'] ?? 'round',
                         'position' => $tick['position'] ?? 'top-right',

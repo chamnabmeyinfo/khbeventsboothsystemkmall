@@ -46,7 +46,7 @@ class FloorPlanTickSetting extends Model
     {
         $defaults = [
             'show_tick' => true,
-            'color' => '#28a745',
+            'color' => '#ec4899',
             'size' => 'medium',
             'shape' => 'round',
             'position' => 'top-right',
@@ -96,7 +96,7 @@ class FloorPlanTickSetting extends Model
     {
         return [
             'show_tick' => true,
-            'color' => '#28a745',
+            'color' => '#ec4899',
             'size' => 'medium',
             'shape' => 'round',
             'position' => 'top-right',
@@ -150,7 +150,7 @@ class FloorPlanTickSetting extends Model
     protected static function saveToGlobalSettings(array $data): void
     {
         Setting::setValue('booth_booked_show_tick', (! empty($data['show_tick'])) ? '1' : '0', 'boolean', 'Show tick on booked booths.');
-        Setting::setValue('booth_booked_tick_color', $data['color'] ?? '#28a745', 'string', 'Tick color.');
+        Setting::setValue('booth_booked_tick_color', $data['color'] ?? '#ec4899', 'string', 'Tick color.');
         Setting::setValue('booth_booked_tick_size', $data['size'] ?? 'medium', 'string', 'Tick size.');
         Setting::setValue('booth_booked_tick_shape', $data['shape'] ?? 'round', 'string', 'Tick shape.');
         Setting::setValue('booth_booked_tick_position', $data['position'] ?? 'top-right', 'string', 'Tick position.');
@@ -188,7 +188,7 @@ class FloorPlanTickSetting extends Model
             ['floor_plan_id' => $floorPlanId],
             [
                 'show_tick' => $data['show_tick'] ?? true,
-                'color' => $data['color'] ?? '#28a745',
+                'color' => $data['color'] ?? '#ec4899',
                 'size' => $data['size'] ?? 'medium',
                 'shape' => $data['shape'] ?? 'round',
                 'position' => $data['position'] ?? 'top-right',

@@ -683,7 +683,7 @@
             $tickSizePx = $tickSize === 'small' ? 10 : ($tickSize === 'large' ? 16 : 12);
             $tickBox = $tickSizePx + 4;
             $relativePercent = (string) ($bookedTickRelativePercent ?? '12');
-            $tickColor = e($bookedTickColor ?? '#28a745');
+            $tickColor = e($bookedTickColor ?? '#ec4899');
             $tickAnim = ($bookedTickAnimation ?? 'pulse') === 'pulse' ? 'bookedIconPulse 2s ease-in-out infinite' : 'none';
             $tickBg = ($bookedTickBgColor ?? '') === '' || ($bookedTickBgColor ?? '') === 'transparent' ? 'transparent' : e($bookedTickBgColor);
             $tickFontSize = $bookedTickFontSize ?? 'medium';

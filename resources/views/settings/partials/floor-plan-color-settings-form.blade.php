@@ -43,8 +43,8 @@
             <div class="col-md-6 col-lg-4">
                 <label class="form-label" for="{{ $p }}booth_booked_tick_color">Tick color (font)</label>
                 <div class="input-group">
-                    <input type="color" class="form-control form-control-color" name="booth_booked_tick_color" id="{{ $p }}booth_booked_tick_color" value="{{ old('booth_booked_tick_color', $bookedTickColor ?? '#28a745') }}" title="Tick color">
-                    <input type="text" class="form-control" value="{{ old('booth_booked_tick_color', $bookedTickColor ?? '#28a745') }}" id="{{ $p }}booth_booked_tick_color_hex" maxlength="7" pattern="#[0-9A-Fa-f]{6}" placeholder="#28a745" aria-label="Hex color">
+                    <input type="color" class="form-control form-control-color" name="booth_booked_tick_color" id="{{ $p }}booth_booked_tick_color" value="{{ old('booth_booked_tick_color', $bookedTickColor ?? '#ec4899') }}" title="Tick color">
+                    <input type="text" class="form-control" value="{{ old('booth_booked_tick_color', $bookedTickColor ?? '#ec4899') }}" id="{{ $p }}booth_booked_tick_color_hex" maxlength="7" pattern="#[0-9A-Fa-f]{6}" placeholder="#ec4899" aria-label="Hex color">
                 </div>
             </div>
             <div class="col-md-6 col-lg-4">
@@ -135,7 +135,7 @@
                 </div>
             </div>
         </div>
-        <small class="text-muted d-block mt-1">Customize how the booked tick looks on canvas and public view. Colors must be hex (e.g. #28a745).</small>
+        <small class="text-muted d-block mt-1">Customize how the booked tick looks on canvas and public view. Colors must be hex (e.g. #ec4899).</small>
     </div>
     <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
         <button type="submit" class="btn btn-primary">
