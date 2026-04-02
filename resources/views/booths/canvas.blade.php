@@ -192,7 +192,7 @@
             <div class="toolbar-section">
                 <!-- Design Tools -->
                 <div class="tool-group" title="Design Tools">
-                    <button class="toolbar-btn active" id="btnSelectTool" title="Select Tool (V)" data-tool="select">
+                    <button class="toolbar-btn" id="btnSelectTool" title="Select Tool (V)" data-tool="select">
                     <i class="fas fa-mouse-pointer"></i>
                         <span class="tool-label">Select</span>
             </button>
