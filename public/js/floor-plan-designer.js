@@ -14953,6 +14953,11 @@ const FloorPlanDesigner = {
     }
 };
 
+// Expose on window so HTML inline handlers (onclick="FloorPlanDesigner....") always resolve the full API (incl. snapSelectedBoothsSmartGrid).
+if (typeof window !== 'undefined') {
+    window.FloorPlanDesigner = FloorPlanDesigner;
+}
+
 // Open individual booth color picker modal
 
 // CRITICAL: Load floor plan image IMMEDIATELY when DOM is ready (before FloorPlanDesigner.init)
