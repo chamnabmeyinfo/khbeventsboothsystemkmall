@@ -9,7 +9,7 @@
 
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.6">
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.7">
 <style>
     .looker-dashboard { padding: 0 !important; }
     .glass-card {
@@ -31,17 +31,195 @@
     .kpi-card-looker {
         margin-bottom: 24px;
     }
-    /* Booth status table in Color tab (matches booth management modal styling) */
+    /* Booth status table — fits tab container: fixed layout + % cols; vertical scroll only */
+    .color-tab-booth-status .booth-status-table-shell {
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.45);
+        background: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 4px 24px rgba(31, 38, 135, 0.08);
+        overflow: hidden;
+        width: 100%;
+        max-width: 100%;
+    }
+    .color-tab-booth-status .khb-booth-status-scroll {
+        max-height: min(70vh, 720px);
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        width: 100%;
+    }
+    .color-tab-booth-status .khb-booth-status-scroll .booth-status-table {
+        width: 100%;
+        max-width: 100%;
+        table-layout: fixed;
+        border-collapse: separate;
+    }
+    .color-tab-booth-status .khb-booth-status-scroll .looker-table th,
+    .color-tab-booth-status .khb-booth-status-scroll .looker-table td {
+        padding: 0.5rem 0.3rem;
+        min-width: 0;
+        overflow: hidden;
+        vertical-align: middle;
+    }
+    .color-tab-booth-status .khb-booth-status-scroll .looker-table th {
+        white-space: normal;
+        line-height: 1.2;
+        hyphens: auto;
+        word-break: break-word;
+    }
+    .color-tab-booth-status .booth-status-table input.glass-input,
+    .color-tab-booth-status .booth-status-table select.glass-input {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    .color-tab-booth-status .khb-booth-status-scroll thead th {
+        position: sticky;
+        top: 0;
+        z-index: 4;
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+        background: rgba(248, 250, 252, 0.92) !important;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+    .color-tab-booth-status .khb-booth-status-scroll thead th:not(:last-child) {
+        padding-right: 0.65rem;
+    }
+    .color-tab-booth-status .khb-col-resize-handle {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 14px;
+        margin-right: -7px;
+        cursor: col-resize;
+        z-index: 6;
+        user-select: none;
+        touch-action: none;
+        pointer-events: auto;
+    }
+    .color-tab-booth-status .khb-col-resize-handle::after {
+        content: '';
+        position: absolute;
+        right: 5px;
+        top: 18%;
+        bottom: 18%;
+        width: 2px;
+        border-radius: 1px;
+        background: rgba(0, 0, 0, 0.14);
+    }
+    .color-tab-booth-status .khb-col-resize-handle:hover::after,
+    .color-tab-booth-status .khb-col-resize-handle:focus-visible::after {
+        background: rgba(13, 110, 253, 0.55);
+    }
+    .color-tab-booth-status .khb-col-resize-handle:focus {
+        outline: none;
+    }
+    .color-tab-booth-status .khb-col-resize-handle:focus-visible {
+        outline: 2px solid rgba(13, 110, 253, 0.45);
+        outline-offset: 1px;
+    }
     .color-tab-booth-status .glass-input-color {
-        height: 38px;
-        width: 60px;
-        border: 2px solid #dee2e6;
-        border-radius: 6px;
+        height: 36px;
+        width: 100%;
+        max-width: 40px;
+        min-height: 36px;
+        border: 2px solid rgba(0, 0, 0, 0.08);
+        border-radius: 8px;
         cursor: pointer;
         padding: 2px;
+        flex-shrink: 0;
     }
-    .color-tab-booth-status .looker-table tbody tr {
-        cursor: move;
+    .color-tab-booth-status .khb-color-pair {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.25rem;
+        min-width: 0;
+    }
+    .color-tab-booth-status .khb-color-pair .status-bg-color-text,
+    .color-tab-booth-status .khb-color-pair .status-border-color-text,
+    .color-tab-booth-status .khb-color-pair .status-text-color-text {
+        width: 100%;
+        min-width: 0;
+        font-variant-numeric: tabular-nums;
+        font-size: 0.8125rem;
+    }
+    .color-tab-booth-status .khb-status-drag-handle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 40px;
+        min-height: 40px;
+        margin: -4px 0;
+        color: var(--text-tertiary, #6c757d);
+        cursor: grab;
+        border-radius: 10px;
+        flex-shrink: 0;
+        touch-action: none;
+    }
+    .color-tab-booth-status .khb-status-drag-handle:hover {
+        background: rgba(0, 0, 0, 0.04);
+        color: var(--text-secondary, #495057);
+    }
+    .color-tab-booth-status .khb-status-drag-handle:active {
+        cursor: grabbing;
+    }
+    .color-tab-booth-status .khb-bs-order-cell .d-flex {
+        min-width: 0;
+    }
+    .color-tab-booth-status .khb-bs-order-cell .status-sort-order {
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: 100%;
+        min-height: 38px;
+        text-align: center;
+    }
+    .color-tab-booth-status .khb-bs-name-cell input,
+    .color-tab-booth-status .khb-bs-desc-cell input {
+        text-overflow: ellipsis;
+    }
+    .color-tab-booth-status .khb-bs-floor-cell select,
+    .color-tab-booth-status .khb-bs-select-cell select {
+        min-width: 0;
+    }
+    .color-tab-booth-status .glass-input-sm,
+    .color-tab-booth-status .glass-input.glass-input-sm {
+        min-height: 40px;
+        font-size: 0.9375rem;
+    }
+    .color-tab-booth-status .khb-bs-check-wrap .form-check-input {
+        width: 1.15rem;
+        height: 1.15rem;
+        margin-top: 0;
+        cursor: pointer;
+    }
+    .color-tab-booth-status .khb-booth-status-empty {
+        max-width: 36rem;
+    }
+    .color-tab-booth-status .khb-booth-status-empty-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+    .color-tab-booth-status .looker-table tbody tr.khb-booth-status-row {
+        cursor: default;
+    }
+    .color-tab-booth-status .looker-table tbody tr.khb-booth-status-row:nth-child(even) td {
+        background-color: rgba(255, 255, 255, 0.12);
+    }
+    .color-tab-booth-status .looker-table tbody tr.khb-booth-status-row:hover td {
+        background-color: rgba(13, 110, 253, 0.06) !important;
+    }
+    .color-tab-booth-status .khb-bs-actions-cell .btn {
+        max-width: 100%;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    @media (max-width: 575.98px) {
+        .color-tab-booth-status .khb-booth-status-scroll .looker-table th,
+        .color-tab-booth-status .khb-booth-status-scroll .looker-table td {
+            padding: 0.35rem 0.2rem;
+        }
     }
     /* Global Settings: single responsive tab bar (scroll on narrow viewports; touch-friendly targets) */
     .settings-global-tabs-card:hover {
