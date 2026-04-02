@@ -4,553 +4,7 @@
 
 @section('content')
 <div class='looker-dashboard'>
-<div class="row mb-4">
-    <div class="col">
-        <h2><i class="fas fa-cog me-2"></i>Settings</h2>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-12">
-        <div class="glass-card">
-            <div class="p-4 border-bottom">
-                <h5 class="mb-0"><i class="fas fa-broom me-2"></i>Cache Management</h5>
-            </div>
-            <div class="p-4">
-                <p class="text-muted">Clear various caches to ensure the application is using the latest data and configurations.</p>
-                
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="card border">
-                            <div class="p-4">
-                                <h6 class="h5 fw-bold mb-0 text-dark">
-                                    <i class="fas fa-database me-2 text-primary"></i>Application Cache
-                                </h6>
-                                <p class="card-text text-muted small">Clear the application cache (stored data, queries, etc.)</p>
-                                <form action="{{ route('settings.cache.clear') }}" method="POST" class="d-inline settings-form-ajax">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-trash me-1"></i>Clear Cache
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <div class="card border">
-                            <div class="p-4">
-                                <h6 class="h5 fw-bold mb-0 text-dark">
-                                    <i class="fas fa-file-code me-2 text-info"></i>Configuration Cache
-                                </h6>
-                                <p class="card-text text-muted small">Clear the configuration cache (config files)</p>
-                                <form action="{{ route('settings.config.clear') }}" method="POST" class="d-inline settings-form-ajax">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-info">
-                                        <i class="fas fa-trash me-1"></i>Clear Config
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <div class="card border">
-                            <div class="p-4">
-                                <h6 class="h5 fw-bold mb-0 text-dark">
-                                    <i class="fas fa-route me-2 text-success"></i>Route Cache
-                                </h6>
-                                <p class="card-text text-muted small">Clear the route cache (route definitions)</p>
-                                <form action="{{ route('settings.route.clear') }}" method="POST" class="d-inline settings-form-ajax">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-success">
-                                        <i class="fas fa-trash me-1"></i>Clear Routes
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <div class="card border">
-                            <div class="p-4">
-                                <h6 class="h5 fw-bold mb-0 text-dark">
-                                    <i class="fas fa-eye me-2 text-warning"></i>View Cache
-                                </h6>
-                                <p class="card-text text-muted small">Clear the compiled view cache (Blade templates)</p>
-                                <form action="{{ route('settings.view.clear') }}" method="POST" class="d-inline settings-form-ajax">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-warning">
-                                        <i class="fas fa-trash me-1"></i>Clear Views
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <hr class="my-4">
-                
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card border-danger">
-                            <div class="p-4">
-                                <h6 class="card-title text-danger">
-                                    <i class="fas fa-broom me-2"></i>Clear All Caches
-                                </h6>
-                                <p class="card-text text-muted small">Clear all caches at once (Application, Config, Route, View)</p>
-                                <form action="{{ route('settings.clear-all') }}" method="POST" class="d-inline settings-form-ajax" data-confirm="Are you sure you want to clear all caches?">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-danger">
-                                        <i class="fas fa-trash-alt me-1"></i>Clear All
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <div class="card border-primary">
-                            <div class="p-4">
-                                <h6 class="card-title text-primary">
-                                    <i class="fas fa-rocket me-2"></i>Optimize Application
-                                </h6>
-                                <p class="card-text text-muted small">Clear all caches and optimize the application for better performance</p>
-                                <form action="{{ route('settings.optimize') }}" method="POST" class="d-inline settings-form-ajax" data-confirm="This will clear all caches and optimize the application. Continue?">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-magic me-1"></i>Optimize
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Upload Control -->
-<div class="row mt-4" id="settings-upload-control">
-    <div class="col-md-12">
-        <div class="glass-card">
-            <div class="p-4 border-bottom">
-                <h5 class="mb-0"><i class="fas fa-upload me-2"></i>Upload Control</h5>
-            </div>
-            <div class="p-4">
-                <p class="text-muted">Control file uploads across the system. Set global defaults or per-context limits (floor plan, booth, avatar, etc.).</p>
-                @include('settings.partials.upload-control-form', [
-                    'formId' => 'uploadControlForm',
-                    'idPrefix' => '',
-                    'uploadSettings' => $uploadSettings,
-                ])
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Public view actions (logged-in users on public floor plan) -->
-<div class="row mt-4" id="settings-public-view">
-    <div class="col-md-12">
-        <div class="glass-card">
-            <div class="p-4 border-bottom">
-                <h5 class="mb-0"><i class="fas fa-eye me-2"></i>Public View Actions</h5>
-            </div>
-            <div class="p-4">
-                <p class="text-muted">Control what logged-in users can do on the public floor plan view (<code>/floor-plans/{id}/public</code>).</p>
-                @include('settings.partials.public-view-form', [
-                    'formId' => 'publicViewSettingsForm',
-                    'idPrefix' => '',
-                ])
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Push Notifications -->
-<div class="row mt-4">
-    <div class="col-md-12">
-        <div class="glass-card">
-            <div class="p-4 border-bottom">
-                <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Push Notifications</h5>
-            </div>
-            <div class="p-4">
-                <p class="text-muted">Enable browser push notifications so users receive alerts (e.g. new bookings, booth updates) even when the tab is in the background. Uses Web Push (VAPID).</p>
-                <form id="pushNotificationSettingsForm" action="{{ route('settings.push-notifications.save') }}" method="POST" class="settings-form-ajax">
-                    @csrf
-                    <div class="mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" name="push_notifications_enabled" id="push_notifications_enabled" value="1" {{ ($pushNotificationsEnabled ?? true) ? 'checked' : '' }}>
-                            <label class="form-check-label" for="push_notifications_enabled">
-                                <strong>Enable push notifications</strong>
-                            </label>
-                        </div>
-                        <small class="text-muted d-block mt-1">When enabled, the system will send browser push notifications for in-app events (requires VAPID keys and user permission).</small>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="push_vapid_public_key">VAPID public key (optional)</label>
-                        <input type="text" class="form-control font-monospace" name="push_vapid_public_key" id="push_vapid_public_key" value="{{ old('push_vapid_public_key', $pushVapidPublicKey ?? '') }}" placeholder="e.g. BN1a2b3c..." maxlength="500">
-                        <small class="text-muted d-block mt-1">Required for Web Push. Generate with <code>php artisan webpush:vapid</code> (or similar). You can also set <code>PUSH_VAPID_PUBLIC_KEY</code> and <code>PUSH_VAPID_PRIVATE_KEY</code> in <code>.env</code>; the private key must never be stored in the database.</small>
-                    </div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-1"></i>Save Push Notification Settings
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row mt-4">
-    <div class="col-md-12">
-        <div class="glass-card">
-            <div class="p-4 border-bottom">
-                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>System Information</h5>
-            </div>
-            <div class="p-4">
-                <div class="row">
-                    <div class="col-md-6">
-                        <table class="table table-borderless">
-                            <tr>
-                                <th width="200">Laravel Version:</th>
-                                <td>{{ app()->version() }}</td>
-                            </tr>
-                            <tr>
-                                <th>PHP Version:</th>
-                                <td>{{ PHP_VERSION }}</td>
-                            </tr>
-                            <tr>
-                                <th>Environment:</th>
-                                <td>
-                                    <span class="badge bg-{{ app()->environment() === 'production' ? 'danger' : 'info' }}">
-                                        {{ app()->environment() }}
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Debug Mode:</th>
-                                <td>
-                                    <span class="badge bg-{{ config('app.debug') ? 'warning' : 'success' }}">
-                                        {{ config('app.debug') ? 'ON' : 'OFF' }}
-                                    </span>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div class="col-md-6">
-                        <table class="table table-borderless">
-                            <tr>
-                                <th width="200">App Name:</th>
-                                <td>{{ config('app.name') }}</td>
-                            </tr>
-                            <tr>
-                                <th>App URL:</th>
-                                <td>{{ config('app.url') }}</td>
-                            </tr>
-                            <tr>
-                                <th>Timezone:</th>
-                                <td>{{ config('app.timezone') }}</td>
-                            </tr>
-                            <tr>
-                                <th>Locale:</th>
-                                <td>{{ config('app.locale') }}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Company & Appearance Settings -->
-<div class="row mt-4">
-    <div class="col-md-12">
-        <!-- Tabs Navigation -->
-        <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="company-tab" data-bs-toggle="tab" data-bs-target="#company" type="button" role="tab">
-                    <i class="fas fa-building me-2"></i>Company Information
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="appearance-tab" data-bs-toggle="tab" data-bs-target="#appearance" type="button" role="tab">
-                    <i class="fas fa-palette me-2"></i>System Colors
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="cdn-tab" data-bs-toggle="tab" data-bs-target="#cdn" type="button" role="tab">
-                    <i class="fas fa-cloud me-2"></i>CDN Settings
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="module-display-tab" data-bs-toggle="tab" data-bs-target="#module-display" type="button" role="tab">
-                    <i class="fas fa-mobile-alt me-2"></i>Module Display Customize
-                </button>
-            </li>
-        </ul>
-
-        <!-- Tabs Content -->
-        <div class="tab-content" id="settingsTabsContent">
-            <!-- Company Information Tab -->
-            <div class="tab-pane fade show active" id="company" role="tabpanel">
-                <div class="card border-top-0 rounded-top-0">
-                    <div class="p-4">
-                        <h5 class="mb-4"><i class="fas fa-building me-2"></i>Company Information</h5>
-                        <form id="companySettingsForm">
-                            @csrf
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Company Name</label>
-                                    <input type="text" class="form-control" id="company_name" name="company_name" placeholder="Enter company name">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Company Email</label>
-                                    <input type="email" class="form-control" id="company_email" name="company_email" placeholder="contact@company.com">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Company Phone</label>
-                                    <input type="text" class="form-control" id="company_phone" name="company_phone" placeholder="+1234567890">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Company Website</label>
-                                    <input type="url" class="form-control" id="company_website" name="company_website" placeholder="https://www.company.com">
-                                </div>
-                                <div class="col-md-12">
-                                    <label class="form-label">Company Address</label>
-                                    <textarea class="form-control" id="company_address" name="company_address" rows="2" placeholder="Enter company address"></textarea>
-                                </div>
-                                
-                                <!-- Logo Upload -->
-                                <div class="col-md-6">
-                                    <label class="form-label">Company Logo</label>
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="flex-shrink-0">
-                                            <img id="logoPreview" src="" alt="Logo" style="max-width: 150px; max-height: 80px; display: none; border: 1px solid #ddd; padding: 5px; border-radius: 4px;">
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <input type="file" class="form-control" id="logoFile" accept="image/*">
-                                            <small class="text-muted">Recommended: 200x80px, PNG/JPG (max 2MB)</small>
-                                        </div>
-                                    </div>
-                                    <input type="hidden" id="company_logo" name="company_logo">
-                                </div>
-                                
-                                <!-- Favicon Upload -->
-                                <div class="col-md-6">
-                                    <label class="form-label">Favicon</label>
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="flex-shrink-0">
-                                            <img id="faviconPreview" src="" alt="Favicon" style="max-width: 32px; max-height: 32px; display: none; border: 1px solid #ddd; padding: 2px; border-radius: 4px;">
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <input type="file" class="form-control" id="faviconFile" accept="image/*">
-                                            <small class="text-muted">Recommended: 32x32px, ICO/PNG (max 512KB)</small>
-                                        </div>
-                                    </div>
-                                    <input type="hidden" id="company_favicon" name="company_favicon">
-                                </div>
-                            </div>
-                            
-                            <div class="mt-4">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save me-2"></i>Save Company Settings
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Appearance/Colors Tab -->
-            <div class="tab-pane fade" id="appearance" role="tabpanel">
-                <div class="card border-top-0 rounded-top-0">
-                    <div class="p-4">
-                        <h5 class="mb-4"><i class="fas fa-palette me-2"></i>System Color Scheme</h5>
-                        <p class="text-muted mb-4">Customize the color scheme for your entire system. Changes will be applied across all pages.</p>
-                        
-                        <form id="appearanceSettingsForm">
-                            @csrf
-                            <div class="row g-4">
-                                <!-- Primary Colors -->
-                                <div class="col-md-6">
-                                    <h6 class="mb-3">Primary Colors</h6>
-                                    <div class="mb-3">
-                                        <label class="form-label">Primary Color</label>
-                                        <div class="input-group">
-                                            <input type="color" class="form-control form-control-color" id="primary_color" name="primary_color" value="#4e73df">
-                                            <input type="text" class="form-control" id="primary_color_text" value="#4e73df" readonly>
-                                        </div>
-                                        <small class="text-muted">Main brand color for buttons and links</small>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Secondary Color</label>
-                                        <div class="input-group">
-                                            <input type="color" class="form-control form-control-color" id="secondary_color" name="secondary_color" value="#667eea">
-                                            <input type="text" class="form-control" id="secondary_color_text" value="#667eea" readonly>
-                                        </div>
-                                        <small class="text-muted">Secondary brand color</small>
-                                    </div>
-                                </div>
-                                
-                                <!-- Status Colors -->
-                                <div class="col-md-6">
-                                    <h6 class="mb-3">Status Colors</h6>
-                                    <div class="mb-3">
-                                        <label class="form-label">Success Color</label>
-                                        <div class="input-group">
-                                            <input type="color" class="form-control form-control-color" id="success_color" name="success_color" value="#1cc88a">
-                                            <input type="text" class="form-control" id="success_color_text" value="#1cc88a" readonly>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Info Color</label>
-                                        <div class="input-group">
-                                            <input type="color" class="form-control form-control-color" id="info_color" name="info_color" value="#36b9cc">
-                                            <input type="text" class="form-control" id="info_color_text" value="#36b9cc" readonly>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Warning Color</label>
-                                        <div class="input-group">
-                                            <input type="color" class="form-control form-control-color" id="warning_color" name="warning_color" value="#f6c23e">
-                                            <input type="text" class="form-control" id="warning_color_text" value="#f6c23e" readonly>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Danger Color</label>
-                                        <div class="input-group">
-                                            <input type="color" class="form-control form-control-color" id="danger_color" name="danger_color" value="#e74a3b">
-                                            <input type="text" class="form-control" id="danger_color_text" value="#e74a3b" readonly>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Layout Colors -->
-                                <div class="col-md-12">
-                                    <h6 class="mb-3">Layout Colors</h6>
-                                    <div class="row">
-                                        <div class="col-md-4 mb-3">
-                                            <label class="form-label">Sidebar Background</label>
-                                            <div class="input-group">
-                                                <input type="color" class="form-control form-control-color" id="sidebar_bg" name="sidebar_bg" value="#224abe">
-                                                <input type="text" class="form-control" id="sidebar_bg_text" value="#224abe" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label class="form-label">Navbar Background</label>
-                                            <div class="input-group">
-                                                <input type="color" class="form-control form-control-color" id="navbar_bg" name="navbar_bg" value="#ffffff">
-                                                <input type="text" class="form-control" id="navbar_bg_text" value="#ffffff" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label class="form-label">Footer Background</label>
-                                            <div class="input-group">
-                                                <input type="color" class="form-control form-control-color" id="footer_bg" name="footer_bg" value="#f8f9fc">
-                                                <input type="text" class="form-control" id="footer_bg_text" value="#f8f9fc" readonly>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="mt-4">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save me-2"></i>Save Appearance Settings
-                                </button>
-                                <button type="button" class="btn btn-secondary ms-2" id="resetColors">
-                                    <i class="fas fa-undo me-2"></i>Reset to Defaults
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!-- CDN Settings Tab -->
-            <div class="tab-pane fade" id="cdn" role="tabpanel">
-                <div class="card border-top-0 rounded-top-0">
-                    <div class="p-4">
-                        <h5 class="mb-4"><i class="fas fa-cloud me-2"></i>CDN Settings</h5>
-                        <p class="text-muted mb-4">Choose whether to load CSS and JavaScript libraries from CDN (Content Delivery Network) or from your local server.</p>
-
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>CDN vs Local Assets:</strong>
-                            <ul class="mb-0 mt-2">
-                                <li><strong>CDN (ON):</strong> Faster loading from global CDN servers, but requires internet connection</li>
-                                <li><strong>Local (OFF):</strong> Loads from your server, works offline, but may be slower</li>
-                            </ul>
-                        </div>
-
-                        <form id="cdnSettingsForm">
-                            @csrf
-                            <div class="row g-3">
-                                <div class="col-md-12">
-                                    <div class="card border">
-                                        <div class="p-4">
-                                            <div class="form-check form-switch">
-                                                <input class="form-check-input" type="checkbox" id="use_cdn" name="use_cdn" style="width: 3rem; height: 1.5rem;">
-                                                <label class="form-check-label ms-3" for="use_cdn">
-                                                    <strong>Use CDN for Assets</strong>
-                                                    <p class="text-muted small mb-0 mt-1">When enabled, CSS and JavaScript libraries will be loaded from CDN instead of local files.</p>
-                                                </label>
-                                            </div>
-
-                                            <div id="cdnStatus" class="mt-3 p-3 rounded" style="display: none;">
-                                                <div class="d-flex align-items-center">
-                                                    <i class="fas fa-circle me-2" style="font-size: 0.75rem;"></i>
-                                                    <span id="cdnStatusText"></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="mt-4">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save me-2"></i>Save CDN Settings
-                                </button>
-                                <button type="button" class="btn btn-secondary ms-2" id="cdnRefreshPageHintBtn">
-                                    <i class="fas fa-sync-alt me-2"></i>Refresh Page
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Module Display Customize Tab -->
-            <div class="tab-pane fade" id="module-display" role="tabpanel">
-                <div class="card border-top-0 rounded-top-0">
-                    <div class="p-4">
-                        <h5 class="mb-4"><i class="fas fa-mobile-alt me-2"></i>Module Display Customize</h5>
-                        <p class="text-muted mb-4">Control which modules and features are visible on Mobile and Tablet devices. This allows you to customize the user experience for different screen sizes.</p>
-
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>Device-Specific Display:</strong>
-                            <ul class="mb-0 mt-2">
-                                <li><strong>Mobile (≤768px):</strong> Control visibility on smartphones</li>
-                                <li><strong>Tablet (769px-1024px):</strong> Control visibility on tablets</li>
-                                <li>Desktop views are not affected by these settings</li>
-                            </ul>
-                        </div>
-
-                        @include('settings.partials.module-display-form', [
-                            'moduleDisplayFormId' => 'moduleDisplayForm',
-                            'moduleDisplayContainerId' => 'moduleDisplayContainer',
-                            'useGlobalResetOnclick' => true,
-                        ])
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
+@include('settings._index_tabs_body')
 </div>
 
 
@@ -577,6 +31,43 @@
     .kpi-card-looker {
         margin-bottom: 24px;
     }
+    /* Booth status table in Color tab (matches booth management modal styling) */
+    .color-tab-booth-status .glass-input-color {
+        height: 38px;
+        width: 60px;
+        border: 2px solid #dee2e6;
+        border-radius: 6px;
+        cursor: pointer;
+        padding: 2px;
+    }
+    .color-tab-booth-status .looker-table tbody tr {
+        cursor: move;
+    }
+    /* Global Settings: single responsive tab bar (scroll on narrow viewports; touch-friendly targets) */
+    .settings-global-tabs-card:hover {
+        transform: none;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    }
+    .settings-tabs-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+    .settings-main-tabs {
+        flex-wrap: nowrap;
+        border-bottom: 0;
+    }
+    .settings-main-tabs .nav-link {
+        white-space: nowrap;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.75rem 0.75rem 0 0;
+    }
+    .settings-main-tabs .nav-link.active {
+        font-weight: 600;
+    }
 </style>
 @endpush
 
@@ -588,6 +79,8 @@
 <script src="{{ asset('vendor/toastr/js/toastr.min.js') }}"></script>
 <script src="{{ asset('vendor/jquery-ui/jquery-ui.min.js') }}"></script>
 <link rel="stylesheet" href="{{ asset('vendor/jquery-ui/css/jquery-ui.min.css') }}">
+<script src="{{ asset('js/booth-status-settings-manager.js') }}"></script>
+<script src="{{ asset('js/booking-status-settings-manager.js') }}"></script>
 <script>
     // Configure toastr
     toastr.options = {
@@ -791,21 +284,27 @@
             });
     }
 
+    function applyAppearanceDataToForm(data) {
+        if (!data) {
+            return;
+        }
+        $('#primary_color, #primary_color_text').val(data.primary_color);
+        $('#secondary_color, #secondary_color_text').val(data.secondary_color);
+        $('#success_color, #success_color_text').val(data.success_color);
+        $('#info_color, #info_color_text').val(data.info_color);
+        $('#warning_color, #warning_color_text').val(data.warning_color);
+        $('#danger_color, #danger_color_text').val(data.danger_color);
+        $('#sidebar_bg, #sidebar_bg_text').val(data.sidebar_bg);
+        $('#navbar_bg, #navbar_bg_text').val(data.navbar_bg);
+        $('#footer_bg, #footer_bg_text').val(data.footer_bg);
+    }
+
     // Load appearance settings
     function loadAppearanceSettings() {
         $.get('{{ route("settings.appearance") }}')
             .done(function(response) {
                 if (response.status === 200) {
-                    const data = response.data;
-                    $('#primary_color, #primary_color_text').val(data.primary_color);
-                    $('#secondary_color, #secondary_color_text').val(data.secondary_color);
-                    $('#success_color, #success_color_text').val(data.success_color);
-                    $('#info_color, #info_color_text').val(data.info_color);
-                    $('#warning_color, #warning_color_text').val(data.warning_color);
-                    $('#danger_color, #danger_color_text').val(data.danger_color);
-                    $('#sidebar_bg, #sidebar_bg_text').val(data.sidebar_bg);
-                    $('#navbar_bg, #navbar_bg_text').val(data.navbar_bg);
-                    $('#footer_bg, #footer_bg_text').val(data.footer_bg);
+                    applyAppearanceDataToForm(response.data);
                 }
             })
             .fail(function() {
@@ -980,19 +479,137 @@
         });
     });
 
-    // Reset colors to defaults
-    $('#resetColors').on('click', function() {
-        if (confirm('Reset all colors to default values?')) {
-            $('#primary_color, #primary_color_text').val('#4e73df');
-            $('#secondary_color, #secondary_color_text').val('#667eea');
-            $('#success_color, #success_color_text').val('#1cc88a');
-            $('#info_color, #info_color_text').val('#36b9cc');
-            $('#warning_color, #warning_color_text').val('#f6c23e');
-            $('#danger_color, #danger_color_text').val('#e74a3b');
-            $('#sidebar_bg, #sidebar_bg_text').val('#224abe');
-            $('#navbar_bg, #navbar_bg_text').val('#ffffff');
-            $('#footer_bg, #footer_bg_text').val('#f8f9fc');
+    function postAppearanceRestore(section) {
+        $.ajax({
+            url: '{{ route("settings.appearance.restore-section") }}',
+            method: 'POST',
+            data: { _token: '{{ csrf_token() }}', section: section },
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+            success: function(res) {
+                if (res.status === 200 && res.data) {
+                    applyAppearanceDataToForm(res.data);
+                    toastr.success(res.message || 'Defaults restored. Refresh other pages to see layout colors.');
+                } else {
+                    toastr.error(res.message || 'Restore failed.');
+                }
+            },
+            error: function(xhr) {
+                var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Restore failed.';
+                toastr.error(msg);
+            }
+        });
+    }
+
+    $(document).on('click', '.appearance-restore-section', function() {
+        var section = $(this).data('appearance-section');
+        if (!section || !window.confirm('Restore default colors for this group? This saves immediately.')) {
+            return;
         }
+        postAppearanceRestore(section);
+    });
+
+    // Reset all system colors to defaults (persisted)
+    $('#resetColors').on('click', function() {
+        if (!window.confirm('Reset all system colors to default values? This saves immediately.')) {
+            return;
+        }
+        postAppearanceRestore('all');
+    });
+
+    $('#btnRestoreFloorPlanColorDefaults').on('click', function() {
+        if (!window.confirm('Restore default public button color and booked-tick settings for the selected floor plan scope? This saves immediately.')) {
+            return;
+        }
+        var $btn = $(this);
+        $btn.prop('disabled', true);
+        $.ajax({
+            url: '{{ route("settings.floor-plan-colors.restore") }}',
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                tick_floor_plan_id: $('#tick_floor_plan_id').val() || ''
+            },
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+            success: function(res) {
+                if (res.status === 200 && res.data) {
+                    $('#public_view_button_color').val(res.data.public_view_button_color);
+                    $('#public_view_button_color_hex').val(res.data.public_view_button_color);
+                    if (res.data.tick) {
+                        applyTickSettingsToForm(res.data.tick);
+                    }
+                    toastr.success(res.message || 'Restored.');
+                } else {
+                    toastr.error(res.message || 'Restore failed.');
+                }
+            },
+            error: function(xhr) {
+                var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Restore failed.';
+                toastr.error(msg);
+            },
+            complete: function() {
+                $btn.prop('disabled', false);
+            }
+        });
+    });
+
+    $('#ct_btnRestoreBoothDefaults').on('click', function() {
+        if (!window.confirm('Replace all booth statuses with the five factory defaults? Custom and floor-plan-specific statuses will be removed. This cannot be undone.')) {
+            return;
+        }
+        var $btn = $(this);
+        $btn.prop('disabled', true);
+        $.ajax({
+            url: '{{ route("settings.booth-statuses.restore-defaults") }}',
+            method: 'POST',
+            data: { _token: '{{ csrf_token() }}' },
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+            success: function(res) {
+                if (res.status === 200) {
+                    toastr.success(res.message || 'Restored.');
+                    if (typeof window.khbReloadBoothStatusesFromServer === 'function') {
+                        window.khbReloadBoothStatusesFromServer();
+                    }
+                } else {
+                    toastr.error(res.message || 'Restore failed.');
+                }
+            },
+            error: function(xhr) {
+                toastr.error((xhr.responseJSON && xhr.responseJSON.message) || 'Restore failed.');
+            },
+            complete: function() {
+                $btn.prop('disabled', false);
+            }
+        });
+    });
+
+    $('#bk_btnRestoreBookingDefaults').on('click', function() {
+        if (!window.confirm('Replace all booking statuses with the six factory defaults? Custom statuses will be removed. This cannot be undone.')) {
+            return;
+        }
+        var $btn = $(this);
+        $btn.prop('disabled', true);
+        $.ajax({
+            url: '{{ route("settings.booking-statuses.restore-defaults") }}',
+            method: 'POST',
+            data: { _token: '{{ csrf_token() }}' },
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+            success: function(res) {
+                if (res.status === 200) {
+                    toastr.success(res.message || 'Restored.');
+                    if (typeof window.khbReloadBookingStatusesFromServer === 'function') {
+                        window.khbReloadBookingStatusesFromServer();
+                    }
+                } else {
+                    toastr.error(res.message || 'Restore failed.');
+                }
+            },
+            error: function(xhr) {
+                toastr.error((xhr.responseJSON && xhr.responseJSON.message) || 'Restore failed.');
+            },
+            complete: function() {
+                $btn.prop('disabled', false);
+            }
+        });
     });
 
     // Load settings on page load
@@ -1160,11 +777,79 @@
         }
     });
 
+    var floorPlansForColorTab = @json($floorPlans->map(function ($fp) { return ['id' => $fp->id, 'name' => $fp->name]; })->values());
+    var colorTabManagersLoaded = false;
+
+    function initColorTabManagers() {
+        if (colorTabManagersLoaded) {
+            return;
+        }
+        colorTabManagersLoaded = true;
+        if (typeof window.khbInitBoothStatusSettings === 'function') {
+            window.khbInitBoothStatusSettings({
+                idPrefix: 'ct_',
+                floorPlans: floorPlansForColorTab,
+                listUrl: '{{ route("settings.booth-statuses") }}',
+                saveUrl: '{{ route("settings.booth-statuses.save") }}',
+                deleteUrlTemplate: '{{ url('/settings/booth-statuses') }}/:id',
+                csrfToken: '{{ csrf_token() }}',
+            });
+        }
+        if (typeof window.khbInitBookingStatusSettings === 'function') {
+            window.khbInitBookingStatusSettings({
+                idPrefix: 'bk_',
+                listUrl: '{{ route("settings.booking-statuses") }}',
+                saveUrl: '{{ route("settings.booking-statuses.save") }}',
+                deleteUrlTemplate: '{{ url('/settings/booking-statuses') }}/:id',
+                csrfToken: '{{ csrf_token() }}',
+            });
+        }
+    }
+
+    $('#global-color-tab').on('shown.bs.tab', function() {
+        initColorTabManagers();
+    });
+
+    function applySettingsHashTab() {
+        var hash = (window.location.hash || '').replace(/^#/, '');
+        if (!hash) {
+            return;
+        }
+        var map = {
+            'global-color-settings': 'global-color-tab',
+            'settings-upload-control': 'upload-control-tab',
+            'settings-public-view': 'public-view-tab',
+            'module-display': 'module-display-tab',
+            'cache-management': 'cache-tab',
+            'push-notifications': 'push-tab',
+            'system-information': 'system-info-tab',
+            'company': 'company-tab',
+            'appearance': 'appearance-tab',
+            'cdn': 'cdn-tab'
+        };
+        var tabId = map[hash];
+        if (!tabId) {
+            return;
+        }
+        var el = document.getElementById(tabId);
+        if (el && typeof bootstrap !== 'undefined' && bootstrap.Tab) {
+            bootstrap.Tab.getOrCreateInstance(el).show();
+            if (hash === 'global-color-settings') {
+                initColorTabManagers();
+            }
+            try {
+                el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+            } catch (e) { /* ignore */ }
+        }
+    }
+
     $(document).ready(function() {
         loadCompanySettings();
         loadAppearanceSettings();
         loadCDNSettings();
-        
+        applySettingsHashTab();
+        window.addEventListener('hashchange', applySettingsHashTab);
+
         // Load module display settings if tab is active
         if ($('#module-display-tab').hasClass('active')) {
             loadModuleDisplaySettings();

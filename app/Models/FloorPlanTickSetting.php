@@ -89,6 +89,43 @@ class FloorPlanTickSetting extends Model
         return self::getGlobalTickSettings($defaults);
     }
 
+    /**
+     * Default tick appearance (global and per-floor-plan reset).
+     */
+    public static function defaultTickSettings(): array
+    {
+        return [
+            'show_tick' => true,
+            'color' => '#28a745',
+            'size' => 'medium',
+            'shape' => 'round',
+            'position' => 'top-right',
+            'animation' => 'pulse',
+            'bg_color' => '',
+            'border_width' => '0',
+            'border_color' => '#ffffff',
+            'font_size' => 'medium',
+            'size_mode' => 'fixed',
+            'relative_percent' => '12',
+        ];
+    }
+
+    /**
+     * Reset global tick settings (settings table) to defaults.
+     */
+    public static function restoreGlobalTickDefaults(): void
+    {
+        self::saveToGlobalSettings(self::defaultTickSettings());
+    }
+
+    /**
+     * Reset tick settings for one floor plan row to defaults.
+     */
+    public static function restoreFloorPlanTickDefaults(int $floorPlanId): void
+    {
+        self::saveForFloorPlan($floorPlanId, self::defaultTickSettings());
+    }
+
     protected static function getGlobalTickSettings(array $defaults): array
     {
         return [

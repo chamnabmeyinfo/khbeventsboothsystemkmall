@@ -70,7 +70,23 @@ class BoothStatusSetting extends Model
     }
 
     /**
-     * Get status by code (optionally filtered by floor plan)
+     * Global-only factory defaults (initial migration seed + border fields).
+     */
+    public static function defaultGlobalSeedRows(): array
+    {
+        $now = now();
+
+        return [
+            ['floor_plan_id' => null, 'status_code' => 1, 'status_name' => 'Available', 'status_color' => '#28a745', 'border_color' => '#28a745', 'border_width' => 2, 'border_style' => 'solid', 'border_radius' => 4, 'text_color' => '#ffffff', 'badge_color' => 'success', 'description' => 'Booth is available for booking', 'is_active' => true, 'sort_order' => 1, 'is_default' => true, 'created_at' => $now, 'updated_at' => $now],
+            ['floor_plan_id' => null, 'status_code' => 2, 'status_name' => 'Confirmed', 'status_color' => '#0dcaf0', 'border_color' => '#0dcaf0', 'border_width' => 2, 'border_style' => 'solid', 'border_radius' => 4, 'text_color' => '#ffffff', 'badge_color' => 'info', 'description' => 'Booking has been confirmed', 'is_active' => true, 'sort_order' => 2, 'is_default' => false, 'created_at' => $now, 'updated_at' => $now],
+            ['floor_plan_id' => null, 'status_code' => 3, 'status_name' => 'Reserved', 'status_color' => '#ffc107', 'border_color' => '#ffc107', 'border_width' => 2, 'border_style' => 'solid', 'border_radius' => 4, 'text_color' => '#333333', 'badge_color' => 'warning', 'description' => 'Booth is reserved but not yet confirmed', 'is_active' => true, 'sort_order' => 3, 'is_default' => false, 'created_at' => $now, 'updated_at' => $now],
+            ['floor_plan_id' => null, 'status_code' => 4, 'status_name' => 'Hidden', 'status_color' => '#6c757d', 'border_color' => '#6c757d', 'border_width' => 2, 'border_style' => 'solid', 'border_radius' => 4, 'text_color' => '#ffffff', 'badge_color' => 'secondary', 'description' => 'Booth is hidden from public view', 'is_active' => true, 'sort_order' => 4, 'is_default' => false, 'created_at' => $now, 'updated_at' => $now],
+            ['floor_plan_id' => null, 'status_code' => 5, 'status_name' => 'Paid', 'status_color' => '#212529', 'border_color' => '#212529', 'border_width' => 2, 'border_style' => 'solid', 'border_radius' => 4, 'text_color' => '#ffffff', 'badge_color' => 'primary', 'description' => 'Payment has been received', 'is_active' => true, 'sort_order' => 5, 'is_default' => false, 'created_at' => $now, 'updated_at' => $now],
+        ];
+    }
+
+    /**
+     * Get status by code (optionally filtered by floor plan).
      */
     public static function getByCode($statusCode, $floorPlanId = null)
     {

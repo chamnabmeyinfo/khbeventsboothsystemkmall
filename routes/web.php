@@ -411,6 +411,16 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/settings/booth-statuses', [SettingsController::class, 'saveBoothStatusSettings'])->name('settings.booth-statuses.save');
         Route::delete('/settings/booth-statuses/{id}', [SettingsController::class, 'deleteBoothStatusSetting'])->name('settings.booth-statuses.delete');
 
+        // Booking status settings (bookings module labels & colors)
+        Route::get('/settings/booking-statuses', [SettingsController::class, 'getBookingStatusSettings'])->name('settings.booking-statuses');
+        Route::post('/settings/booking-statuses', [SettingsController::class, 'saveBookingStatusSettings'])->name('settings.booking-statuses.save');
+        Route::delete('/settings/booking-statuses/{id}', [SettingsController::class, 'deleteBookingStatusSetting'])->name('settings.booking-statuses.delete');
+        Route::post('/settings/booking-statuses/restore-defaults', [SettingsController::class, 'restoreBookingStatusDefaults'])->name('settings.booking-statuses.restore-defaults');
+
+        Route::post('/settings/booth-statuses/restore-defaults', [SettingsController::class, 'restoreBoothStatusDefaults'])->name('settings.booth-statuses.restore-defaults');
+        Route::post('/settings/floor-plan-colors/restore', [SettingsController::class, 'restoreFloorPlanColorDefaults'])->name('settings.floor-plan-colors.restore');
+        Route::post('/settings/appearance/restore-section', [SettingsController::class, 'restoreAppearanceSection'])->name('settings.appearance.restore-section');
+
         // Company & Appearance Settings API
         Route::get('/settings/company', [SettingsController::class, 'getCompanySettings'])->name('settings.company');
         Route::post('/settings/company', [SettingsController::class, 'saveCompanySettings'])->name('settings.company.save');

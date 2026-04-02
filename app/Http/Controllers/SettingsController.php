@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\UploadSettingsHelper;
+use App\Models\Book;
+use App\Models\BookingStatusSetting;
 use App\Models\BoothStatusSetting;
 use App\Models\CanvasSetting;
 use App\Models\FloorPlan;
@@ -10,6 +12,7 @@ use App\Models\FloorPlanTickSetting;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 
@@ -1478,111 +1481,124 @@ class SettingsController extends Controller
 
     /**
      * Save public view action settings.
+     *
+     * Supports partial saves via hidden flags: pv_behavior_scope, floor_plan_color_scope.
+     * If neither flag is present, the full legacy save runs (all fields in one request).
      */
     public function savePublicViewSettings(Request $request)
     {
-        $allowCreate = $request->boolean('public_view_allow_create_booking');
-        $restrictOwn = $request->boolean('public_view_restrict_crud_to_own_booking');
-        $buttonColor = $request->input('public_view_button_color', '#28a745');
-        if (! is_string($buttonColor) || ! preg_match('/^#[0-9A-Fa-f]{6}$/', $buttonColor)) {
-            $buttonColor = '#28a745';
-        }
-        $showBookedTick = $request->boolean('booth_booked_show_tick');
-
-        $allowedSizes = ['small', 'medium', 'large'];
-        $allowedShapes = ['round', 'square'];
-        $allowedPositions = ['top-right', 'top-left', 'bottom-right', 'bottom-left', 'inside'];
-        $allowedAnimations = ['pulse', 'none'];
-
-        $tickColor = $request->input('booth_booked_tick_color', '#28a745');
-        if (! preg_match('/^#[0-9A-Fa-f]{6}$/', $tickColor)) {
-            $tickColor = '#28a745';
-        }
-        $tickSize = $request->input('booth_booked_tick_size', 'medium');
-        if (! in_array($tickSize, $allowedSizes, true)) {
-            $tickSize = 'medium';
-        }
-        $tickShape = $request->input('booth_booked_tick_shape', 'round');
-        if (! in_array($tickShape, $allowedShapes, true)) {
-            $tickShape = 'round';
-        }
-        $tickPosition = $request->input('booth_booked_tick_position', 'top-right');
-        if (! in_array($tickPosition, $allowedPositions, true)) {
-            $tickPosition = 'top-right';
-        }
-        $tickAnimation = $request->input('booth_booked_tick_animation', 'pulse');
-        if (! in_array($tickAnimation, $allowedAnimations, true)) {
-            $tickAnimation = 'pulse';
-        }
-
-        $tickBgColor = '';
-        if (! $request->boolean('booth_booked_tick_bg_none')) {
-            $tickBgColor = $request->input('booth_booked_tick_bg_color', '');
-            if ($tickBgColor !== '' && ! preg_match('/^#[0-9A-Fa-f]{6}$/', $tickBgColor)) {
-                $tickBgColor = '';
-            }
-        }
-
-        $allowedBorderWidths = ['0', '1', '2', '3'];
-        $tickBorderWidth = $request->input('booth_booked_tick_border_width', '0');
-        if (! in_array($tickBorderWidth, $allowedBorderWidths, true)) {
-            $tickBorderWidth = '0';
-        }
-        $tickBorderColor = $request->input('booth_booked_tick_border_color', '#ffffff');
-        if (! preg_match('/^#[0-9A-Fa-f]{6}$/', $tickBorderColor)) {
-            $tickBorderColor = '#ffffff';
-        }
-        $allowedFontSizes = ['small', 'medium', 'large'];
-        $tickFontSize = $request->input('booth_booked_tick_font_size', 'medium');
-        if (! in_array($tickFontSize, $allowedFontSizes, true)) {
-            $tickFontSize = 'medium';
-        }
-
-        $allowedSizeModes = ['fixed', 'relative'];
-        $tickSizeMode = $request->input('booth_booked_tick_size_mode', 'fixed');
-        if (! in_array($tickSizeMode, $allowedSizeModes, true)) {
-            $tickSizeMode = 'fixed';
-        }
-        $allowedRelativePercents = ['8', '10', '12', '15', '20'];
-        $tickRelativePercent = $request->input('booth_booked_tick_relative_percent', '12');
-        if (! in_array($tickRelativePercent, $allowedRelativePercents, true)) {
-            $tickRelativePercent = '12';
-        }
-
-        Setting::setValue('public_view_allow_create_booking', $allowCreate ? '1' : '0', 'boolean', 'Allow logged-in users with Create Bookings permission to create a booking from the public floor plan view.');
-        Setting::setValue('public_view_restrict_crud_to_own_booking', $restrictOwn ? '1' : '0', 'boolean', 'When enabled, non-admin users can only view, edit, update, and delete their own bookings. Administrators can manage all bookings.');
-        Setting::setValue('public_view_button_color', $buttonColor, 'string', 'Primary accent color for buttons and key actions on the public floor plan view (/floor-plans/{id}/public).');
+        $legacyFull = ! $request->has('pv_behavior_scope') && ! $request->has('floor_plan_color_scope');
+        $doBehavior = $legacyFull || $request->boolean('pv_behavior_scope');
+        $doFloorColors = $legacyFull || $request->boolean('floor_plan_color_scope');
 
         $tickFloorPlanId = $request->input('tick_floor_plan_id');
-        $tickData = [
-            'show_tick' => $showBookedTick,
-            'color' => $tickColor,
-            'size' => $tickSize,
-            'shape' => $tickShape,
-            'position' => $tickPosition,
-            'animation' => $tickAnimation,
-            'bg_color' => $tickBgColor,
-            'border_width' => $tickBorderWidth,
-            'border_color' => $tickBorderColor,
-            'font_size' => $tickFontSize,
-            'size_mode' => $tickSizeMode,
-            'relative_percent' => $tickRelativePercent,
-        ];
-        if ($tickFloorPlanId && FloorPlan::where('id', (int) $tickFloorPlanId)->exists()) {
-            FloorPlanTickSetting::saveForFloorPlan((int) $tickFloorPlanId, $tickData);
-        } else {
-            Setting::setValue('booth_booked_show_tick', $showBookedTick ? '1' : '0', 'boolean', 'Show a tick (check) sign on booked booths on canvas and public view.');
-            Setting::setValue('booth_booked_tick_color', $tickColor, 'string', 'Color of the booked tick icon.');
-            Setting::setValue('booth_booked_tick_size', $tickSize, 'string', 'Size of the booked tick: small, medium, large.');
-            Setting::setValue('booth_booked_tick_shape', $tickShape, 'string', 'Shape of the tick container: round or square.');
-            Setting::setValue('booth_booked_tick_position', $tickPosition, 'string', 'Position of the tick: top-right, top-left, bottom-right, bottom-left, or inside the booth.');
-            Setting::setValue('booth_booked_tick_animation', $tickAnimation, 'string', 'Animation: pulse or none.');
-            Setting::setValue('booth_booked_tick_bg_color', $tickBgColor, 'string', 'Background color of the booked tick container (empty for transparent).');
-            Setting::setValue('booth_booked_tick_border_width', $tickBorderWidth, 'string', 'Border width of the booked tick container (0, 1, 2, 3 px).');
-            Setting::setValue('booth_booked_tick_border_color', $tickBorderColor, 'string', 'Border color of the booked tick container.');
-            Setting::setValue('booth_booked_tick_font_size', $tickFontSize, 'string', 'Font size of the booked tick icon: small, medium, large.');
-            Setting::setValue('booth_booked_tick_size_mode', $tickSizeMode, 'string', 'Tick size mode: fixed (Box size / Font size) or relative to booth width/height.');
-            Setting::setValue('booth_booked_tick_relative_percent', $tickRelativePercent, 'string', 'When size mode is relative: tick size as percentage of booth width (8, 10, 12, 15, 20).');
+
+        if ($doBehavior) {
+            $allowCreate = $request->boolean('public_view_allow_create_booking');
+            $restrictOwn = $request->boolean('public_view_restrict_crud_to_own_booking');
+            Setting::setValue('public_view_allow_create_booking', $allowCreate ? '1' : '0', 'boolean', 'Allow logged-in users with Create Bookings permission to create a booking from the public floor plan view.');
+            Setting::setValue('public_view_restrict_crud_to_own_booking', $restrictOwn ? '1' : '0', 'boolean', 'When enabled, non-admin users can only view, edit, update, and delete their own bookings. Administrators can manage all bookings.');
+        }
+
+        if ($doFloorColors) {
+            $buttonColor = $request->input('public_view_button_color', '#28a745');
+            if (! is_string($buttonColor) || ! preg_match('/^#[0-9A-Fa-f]{6}$/', $buttonColor)) {
+                $buttonColor = '#28a745';
+            }
+            $showBookedTick = $request->boolean('booth_booked_show_tick');
+
+            $allowedSizes = ['small', 'medium', 'large'];
+            $allowedShapes = ['round', 'square'];
+            $allowedPositions = ['top-right', 'top-left', 'bottom-right', 'bottom-left', 'inside'];
+            $allowedAnimations = ['pulse', 'none'];
+
+            $tickColor = $request->input('booth_booked_tick_color', '#28a745');
+            if (! preg_match('/^#[0-9A-Fa-f]{6}$/', $tickColor)) {
+                $tickColor = '#28a745';
+            }
+            $tickSize = $request->input('booth_booked_tick_size', 'medium');
+            if (! in_array($tickSize, $allowedSizes, true)) {
+                $tickSize = 'medium';
+            }
+            $tickShape = $request->input('booth_booked_tick_shape', 'round');
+            if (! in_array($tickShape, $allowedShapes, true)) {
+                $tickShape = 'round';
+            }
+            $tickPosition = $request->input('booth_booked_tick_position', 'top-right');
+            if (! in_array($tickPosition, $allowedPositions, true)) {
+                $tickPosition = 'top-right';
+            }
+            $tickAnimation = $request->input('booth_booked_tick_animation', 'pulse');
+            if (! in_array($tickAnimation, $allowedAnimations, true)) {
+                $tickAnimation = 'pulse';
+            }
+
+            $tickBgColor = '';
+            if (! $request->boolean('booth_booked_tick_bg_none')) {
+                $tickBgColor = $request->input('booth_booked_tick_bg_color', '');
+                if ($tickBgColor !== '' && ! preg_match('/^#[0-9A-Fa-f]{6}$/', $tickBgColor)) {
+                    $tickBgColor = '';
+                }
+            }
+
+            $allowedBorderWidths = ['0', '1', '2', '3'];
+            $tickBorderWidth = $request->input('booth_booked_tick_border_width', '0');
+            if (! in_array($tickBorderWidth, $allowedBorderWidths, true)) {
+                $tickBorderWidth = '0';
+            }
+            $tickBorderColor = $request->input('booth_booked_tick_border_color', '#ffffff');
+            if (! preg_match('/^#[0-9A-Fa-f]{6}$/', $tickBorderColor)) {
+                $tickBorderColor = '#ffffff';
+            }
+            $allowedFontSizes = ['small', 'medium', 'large'];
+            $tickFontSize = $request->input('booth_booked_tick_font_size', 'medium');
+            if (! in_array($tickFontSize, $allowedFontSizes, true)) {
+                $tickFontSize = 'medium';
+            }
+
+            $allowedSizeModes = ['fixed', 'relative'];
+            $tickSizeMode = $request->input('booth_booked_tick_size_mode', 'fixed');
+            if (! in_array($tickSizeMode, $allowedSizeModes, true)) {
+                $tickSizeMode = 'fixed';
+            }
+            $allowedRelativePercents = ['8', '10', '12', '15', '20'];
+            $tickRelativePercent = $request->input('booth_booked_tick_relative_percent', '12');
+            if (! in_array($tickRelativePercent, $allowedRelativePercents, true)) {
+                $tickRelativePercent = '12';
+            }
+
+            Setting::setValue('public_view_button_color', $buttonColor, 'string', 'Primary accent color for buttons and key actions on the public floor plan view (/floor-plans/{id}/public).');
+
+            $tickData = [
+                'show_tick' => $showBookedTick,
+                'color' => $tickColor,
+                'size' => $tickSize,
+                'shape' => $tickShape,
+                'position' => $tickPosition,
+                'animation' => $tickAnimation,
+                'bg_color' => $tickBgColor,
+                'border_width' => $tickBorderWidth,
+                'border_color' => $tickBorderColor,
+                'font_size' => $tickFontSize,
+                'size_mode' => $tickSizeMode,
+                'relative_percent' => $tickRelativePercent,
+            ];
+            if ($tickFloorPlanId && FloorPlan::where('id', (int) $tickFloorPlanId)->exists()) {
+                FloorPlanTickSetting::saveForFloorPlan((int) $tickFloorPlanId, $tickData);
+            } else {
+                Setting::setValue('booth_booked_show_tick', $showBookedTick ? '1' : '0', 'boolean', 'Show a tick (check) sign on booked booths on canvas and public view.');
+                Setting::setValue('booth_booked_tick_color', $tickColor, 'string', 'Color of the booked tick icon.');
+                Setting::setValue('booth_booked_tick_size', $tickSize, 'string', 'Size of the booked tick: small, medium, large.');
+                Setting::setValue('booth_booked_tick_shape', $tickShape, 'string', 'Shape of the tick container: round or square.');
+                Setting::setValue('booth_booked_tick_position', $tickPosition, 'string', 'Position of the tick: top-right, top-left, bottom-right, bottom-left, or inside the booth.');
+                Setting::setValue('booth_booked_tick_animation', $tickAnimation, 'string', 'Animation: pulse or none.');
+                Setting::setValue('booth_booked_tick_bg_color', $tickBgColor, 'string', 'Background color of the booked tick container (empty for transparent).');
+                Setting::setValue('booth_booked_tick_border_width', $tickBorderWidth, 'string', 'Border width of the booked tick container (0, 1, 2, 3 px).');
+                Setting::setValue('booth_booked_tick_border_color', $tickBorderColor, 'string', 'Border color of the booked tick container.');
+                Setting::setValue('booth_booked_tick_font_size', $tickFontSize, 'string', 'Font size of the booked tick icon: small, medium, large.');
+                Setting::setValue('booth_booked_tick_size_mode', $tickSizeMode, 'string', 'Tick size mode: fixed (Box size / Font size) or relative to booth width/height.');
+                Setting::setValue('booth_booked_tick_relative_percent', $tickRelativePercent, 'string', 'When size mode is relative: tick size as percentage of booth width (8, 10, 12, 15, 20).');
+            }
         }
 
         if ($request->expectsJson()) {
@@ -1593,6 +1609,341 @@ class SettingsController extends Controller
         }
 
         return redirect()->route('settings.index', ['tick_floor_plan_id' => $tickFloorPlanId ?: null])->with('success', 'Public view settings saved successfully.');
+    }
+
+    /**
+     * Get all booking status settings (bookings module labels & colors).
+     */
+    public function getBookingStatusSettings()
+    {
+        try {
+            $statuses = BookingStatusSetting::orderBy('sort_order')->get();
+
+            return response()->json([
+                'status' => 200,
+                'data' => $statuses,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error fetching booking status settings: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Save booking status settings (batch create/update).
+     */
+    public function saveBookingStatusSettings(Request $request)
+    {
+        try {
+            $statuses = $request->input('statuses', []);
+            foreach ($statuses as &$status) {
+                if (isset($status['is_active'])) {
+                    $status['is_active'] = filter_var($status['is_active'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                }
+                if (isset($status['is_default'])) {
+                    $status['is_default'] = filter_var($status['is_default'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                }
+            }
+            unset($status);
+
+            $request->merge(['statuses' => $statuses]);
+
+            $validated = $request->validate([
+                'statuses' => 'required|array',
+                'statuses.*.id' => 'nullable|integer|exists:booking_status_settings,id',
+                'statuses.*.status_code' => 'required|integer|min:1',
+                'statuses.*.status_name' => 'required|string|max:100',
+                'statuses.*.status_color' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'statuses.*.border_color' => 'nullable|string|max:50',
+                'statuses.*.text_color' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'statuses.*.badge_color' => 'nullable|string|max:50',
+                'statuses.*.description' => 'nullable|string',
+                'statuses.*.is_active' => 'nullable|boolean',
+                'statuses.*.sort_order' => 'required|integer|min:0',
+                'statuses.*.is_default' => 'nullable|boolean',
+            ]);
+
+            $saved = [];
+            $errors = [];
+
+            foreach ($validated['statuses'] as $statusData) {
+                try {
+                    $bc = isset($statusData['border_color']) ? trim((string) $statusData['border_color']) : '';
+                    if ($bc === '' || ! preg_match('/^#[0-9A-Fa-f]{6}$/', $bc)) {
+                        $statusData['border_color'] = $statusData['status_color'];
+                    }
+
+                    if (isset($statusData['is_default']) && $statusData['is_default']) {
+                        BookingStatusSetting::where('id', '!=', $statusData['id'] ?? 0)->update(['is_default' => false]);
+                    }
+
+                    $existingStatus = BookingStatusSetting::where('status_code', $statusData['status_code'])
+                        ->where('id', '!=', $statusData['id'] ?? 0)
+                        ->first();
+
+                    if ($existingStatus) {
+                        throw new \Exception('Status code '.$statusData['status_code'].' already exists.');
+                    }
+
+                    if (isset($statusData['id']) && $statusData['id']) {
+                        $row = BookingStatusSetting::findOrFail($statusData['id']);
+                        $row->update($statusData);
+                    } else {
+                        $row = BookingStatusSetting::create($statusData);
+                    }
+                    $saved[] = $row;
+                } catch (\Exception $e) {
+                    $errors[] = [
+                        'status_code' => $statusData['status_code'] ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ];
+                }
+            }
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Booking status settings saved successfully.',
+                'data' => $saved,
+                'errors' => $errors,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error saving booking status settings: '.$e->getMessage());
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error saving booking status settings: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete a booking status if no bookings use it.
+     */
+    public function deleteBookingStatusSetting(Request $request, $id)
+    {
+        try {
+            $status = BookingStatusSetting::findOrFail($id);
+
+            $activeCount = BookingStatusSetting::where('is_active', true)->count();
+            if ($status->is_active && $activeCount <= 1) {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Cannot delete the last active status.',
+                ], 400);
+            }
+
+            if (Book::where('status', $status->status_code)->exists()) {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Cannot delete a status that is used by existing bookings.',
+                ], 400);
+            }
+
+            $status->delete();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Booking status deleted successfully.',
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error deleting booking status setting: '.$e->getMessage());
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error deleting booking status setting: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Default system appearance colors (matches Setting::getAppearanceSettings fallbacks).
+     */
+    protected static function defaultAppearanceColors(): array
+    {
+        return [
+            'primary_color' => '#4e73df',
+            'secondary_color' => '#667eea',
+            'success_color' => '#1cc88a',
+            'info_color' => '#36b9cc',
+            'warning_color' => '#f6c23e',
+            'danger_color' => '#e74a3b',
+            'sidebar_bg' => '#224abe',
+            'navbar_bg' => '#ffffff',
+            'footer_bg' => '#f8f9fc',
+        ];
+    }
+
+    /**
+     * Restore one appearance group (primary / status / layout) or all system colors.
+     */
+    public function restoreAppearanceSection(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'section' => 'required|string|in:primary,status,layout,all',
+            ]);
+            $section = $validated['section'];
+            $defaults = self::defaultAppearanceColors();
+            $current = Setting::getAppearanceSettings();
+
+            if ($section === 'all') {
+                $current = $defaults;
+            } else {
+                if ($section === 'primary') {
+                    $current['primary_color'] = $defaults['primary_color'];
+                    $current['secondary_color'] = $defaults['secondary_color'];
+                }
+                if ($section === 'status') {
+                    $current['success_color'] = $defaults['success_color'];
+                    $current['info_color'] = $defaults['info_color'];
+                    $current['warning_color'] = $defaults['warning_color'];
+                    $current['danger_color'] = $defaults['danger_color'];
+                }
+                if ($section === 'layout') {
+                    $current['sidebar_bg'] = $defaults['sidebar_bg'];
+                    $current['navbar_bg'] = $defaults['navbar_bg'];
+                    $current['footer_bg'] = $defaults['footer_bg'];
+                }
+            }
+
+            Setting::saveAppearanceSettings($current);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Appearance colors restored for the selected group.',
+                'data' => Setting::getAppearanceSettings(),
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error restoring appearance: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Restore public floor plan button color + booked tick to defaults (global or selected floor plan).
+     */
+    public function restoreFloorPlanColorDefaults(Request $request)
+    {
+        try {
+            $tickFloorPlanId = $request->input('tick_floor_plan_id');
+            if ($tickFloorPlanId !== null && $tickFloorPlanId !== '') {
+                $tickFloorPlanId = (int) $tickFloorPlanId;
+                if (! FloorPlan::where('id', $tickFloorPlanId)->exists()) {
+                    return response()->json([
+                        'status' => 422,
+                        'message' => 'Floor plan not found.',
+                    ], 422);
+                }
+                FloorPlanTickSetting::restoreFloorPlanTickDefaults($tickFloorPlanId);
+            } else {
+                FloorPlanTickSetting::restoreGlobalTickDefaults();
+            }
+
+            Setting::setValue('public_view_button_color', '#28a745', 'string', 'Primary accent color for buttons and key actions on the public floor plan view (/floor-plans/{id}/public).');
+
+            $tick = FloorPlanTickSetting::getForFloorPlan($tickFloorPlanId ?: null);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Public floor plan colors restored to defaults for the selected scope.',
+                'data' => [
+                    'public_view_button_color' => '#28a745',
+                    'tick' => [
+                        'show_tick' => (bool) ($tick['show_tick'] ?? true),
+                        'color' => $tick['color'] ?? '#28a745',
+                        'size' => $tick['size'] ?? 'medium',
+                        'shape' => $tick['shape'] ?? 'round',
+                        'position' => $tick['position'] ?? 'top-right',
+                        'animation' => $tick['animation'] ?? 'pulse',
+                        'bg_color' => $tick['bg_color'] ?? '',
+                        'border_width' => (string) ($tick['border_width'] ?? '0'),
+                        'border_color' => $tick['border_color'] ?? '#ffffff',
+                        'font_size' => $tick['font_size'] ?? 'medium',
+                        'size_mode' => $tick['size_mode'] ?? 'fixed',
+                        'relative_percent' => (string) ($tick['relative_percent'] ?? '12'),
+                    ],
+                ],
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('restoreFloorPlanColorDefaults: '.$e->getMessage());
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error restoring floor plan colors: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Reset booth status table to factory global defaults (removes custom & floor-plan-specific rows).
+     */
+    public function restoreBoothStatusDefaults(Request $request)
+    {
+        try {
+            DB::transaction(function () {
+                BoothStatusSetting::query()->delete();
+                foreach (BoothStatusSetting::defaultGlobalSeedRows() as $row) {
+                    BoothStatusSetting::create($row);
+                }
+            });
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Booth statuses restored to factory defaults.',
+                'data' => BoothStatusSetting::orderBy('sort_order')->get(),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('restoreBoothStatusDefaults: '.$e->getMessage());
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error restoring booth statuses: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Reset booking status table to factory defaults.
+     */
+    public function restoreBookingStatusDefaults(Request $request)
+    {
+        try {
+            DB::transaction(function () {
+                BookingStatusSetting::query()->delete();
+                foreach (BookingStatusSetting::defaultSeedRows() as $row) {
+                    BookingStatusSetting::create($row);
+                }
+            });
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Booking statuses restored to factory defaults.',
+                'data' => BookingStatusSetting::orderBy('sort_order')->get(),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('restoreBookingStatusDefaults: '.$e->getMessage());
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error restoring booking statuses: '.$e->getMessage(),
+            ], 500);
+        }
     }
 
     /**

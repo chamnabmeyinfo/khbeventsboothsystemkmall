@@ -1,5 +1,5 @@
 {{--
-  Public view + booked tick form. Reused on /settings and in Booth list settings modal.
+  Floor plan & public view color settings (accent + booked tick). Global Settings → Color tab.
   @param string $formId
   @param string $idPrefix  Prefix for HTML ids only.
 --}}
@@ -8,33 +8,17 @@
 @endphp
 <form id="{{ $formId }}" action="{{ route('settings.public-view.save') }}" method="POST" class="settings-form-ajax {{ $extraFormClass ?? '' }}">
     @csrf
-    <div class="mb-3">
-        <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" name="public_view_allow_create_booking" id="{{ $p }}public_view_allow_create_booking" value="1" {{ ($publicViewAllowCreate ?? true) ? 'checked' : '' }}>
-            <label class="form-check-label" for="{{ $p }}public_view_allow_create_booking">
-                <strong>Allow create booking on public view</strong>
-            </label>
-        </div>
-        <small class="text-muted d-block mt-1">When enabled, logged-in users with &quot;Create Bookings&quot; permission can create a booking from the public floor plan page (e.g. Sales can book a booth from the public link).</small>
-    </div>
-    <div class="mb-3">
-        <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" name="public_view_restrict_crud_to_own_booking" id="{{ $p }}public_view_restrict_crud_to_own_booking" value="1" {{ ($publicViewRestrictOwn ?? true) ? 'checked' : '' }}>
-            <label class="form-check-label" for="{{ $p }}public_view_restrict_crud_to_own_booking">
-                <strong>Restrict booking CRUD to own bookings (non-admin)</strong>
-            </label>
-        </div>
-        <small class="text-muted d-block mt-1">When enabled, users who are not Administrators can only view, edit, update, and delete <strong>their own</strong> bookings (bookings they created). Sales can only manage their own; they cannot edit or delete other sales&#39; bookings. Administrators can always manage all bookings.</small>
-    </div>
+    <input type="hidden" name="floor_plan_color_scope" value="1">
     <div class="mb-3">
         <label class="form-label" for="{{ $p }}public_view_button_color">Public view button color</label>
         <div class="input-group" style="max-width: 320px;">
             <input type="color" class="form-control form-control-color" name="public_view_button_color" id="{{ $p }}public_view_button_color" value="{{ old('public_view_button_color', $publicViewButtonColor ?? '#28a745') }}" title="Primary button color">
             <input type="text" class="form-control" value="{{ old('public_view_button_color', $publicViewButtonColor ?? '#28a745') }}" id="{{ $p }}public_view_button_color_hex" maxlength="7" pattern="#[0-9A-Fa-f]{6}" placeholder="#28a745" aria-label="Button color hex" autocomplete="off">
         </div>
-        <small class="text-muted d-block mt-1">Accent for primary actions on the public floor plan (Book this booth, toolbar controls, booking modal, help headings). Booth status colors on the map are unchanged.</small>
+        <small class="text-muted d-block mt-1">Accent for primary actions on the public floor plan (Book this booth, toolbar controls, booking modal, help headings). Booth status colors on the map are configured below.</small>
     </div>
     <div class="mb-3">
+        <input type="hidden" name="booth_booked_show_tick" value="0">
         <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" name="booth_booked_show_tick" id="{{ $p }}booth_booked_show_tick" value="1" {{ ($showBookedTick ?? true) ? 'checked' : '' }}>
             <label class="form-check-label" for="{{ $p }}booth_booked_show_tick">
@@ -153,7 +137,13 @@
         </div>
         <small class="text-muted d-block mt-1">Customize how the booked tick looks on canvas and public view. Colors must be hex (e.g. #28a745).</small>
     </div>
-    <button type="submit" class="btn btn-primary">
-        <i class="fas fa-save me-1"></i>Save Public View Settings
-    </button>
+    <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-1"></i>Save floor plan colors &amp; tick
+        </button>
+        <button type="button" class="btn btn-outline-warning" id="{{ $p }}btnRestoreFloorPlanColorDefaults">
+            <i class="fas fa-undo me-1"></i>Restore defaults
+        </button>
+    </div>
+    <p class="text-muted small mt-2 mb-0">Restore applies to the <strong>public button color</strong> and <strong>booked tick</strong> for the floor plan selected above (or global default).</p>
 </form>
