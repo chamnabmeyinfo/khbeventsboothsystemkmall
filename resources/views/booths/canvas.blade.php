@@ -270,9 +270,6 @@
                 <button class="toolbar-btn" id="btnGrid" title="Toggle Grid (Show/Hide)" data-toggle="grid">
                     <i class="fas fa-th"></i>
             </button>
-                <button class="toolbar-btn active" id="btnSnap" title="Snap to Grid" data-toggle="snap">
-                    <i class="fas fa-magnet"></i>
-            </button>
                 <div class="toolbar-divider"></div>
                 @if(isset($canEditCanvas) && $canEditCanvas)
                 <!-- Center Marker Toggle -->
@@ -864,7 +861,7 @@
                             <i class="fas fa-th"></i> Grid Size (px)
                         </label>
                         <input type="number" class="glass-input" id="gridSize" min="1" max="100" step="1" value="1" placeholder="1">
-                        <small class="form-text text-muted">Size of grid cells in pixels. Affects both visual grid and snap-to-grid behavior.</small>
+                        <small class="form-text text-muted">Size of grid cells in pixels. Affects the visual grid overlay.</small>
                     </div>
                     <div class="form-group">
                         <label for="uploadSizeLimit">
@@ -874,7 +871,7 @@
                         <small class="form-text text-muted">Maximum file size allowed for floorplan image uploads (in megabytes). No maximum limit if left empty or set to 0.</small>
                     </div>
                     <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> <strong>Note:</strong> Changing canvas size will not affect existing booths. Resolution only affects PNG exports. Grid size affects snap-to-grid alignment.
+                        <i class="fas fa-info-circle"></i> <strong>Note:</strong> Changing canvas size will not affect existing booths. Resolution only affects PNG exports. Grid size affects the visual grid overlay.
                     </div>
                 </form>
             </div>

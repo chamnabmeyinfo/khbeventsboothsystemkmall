@@ -589,7 +589,7 @@ const FloorPlanDesigner = {
     history: [],
     historyIndex: -1,
     gridEnabled: false, // Grid visibility (can be toggled)
-    snapEnabled: true,
+    snapEnabled: false, // Snap-to-grid toolbar removed; keep false until feature is reintroduced
     gridSize: 1, // Grid size in px (default 1px)
     /** When true, selected booths snap to shared vertical/horizontal lines (edge-to-edge) after multi-drag and via toolbar */
     smartSnapEnabled: true,
@@ -10858,7 +10858,6 @@ const FloorPlanDesigner = {
             if (result.canvasSaved) {
                 successMsg += '\n\nCanvas settings saved:\n';
                 successMsg += '• Grid: ' + (self.gridEnabled ? 'Visible' : 'Hidden') + '\n';
-                successMsg += '• Snap to Grid: ' + (self.snapEnabled ? 'Enabled' : 'Disabled') + '\n';
                 successMsg += '• Grid Size: ' + self.gridSize + 'px\n';
                 successMsg += '• Canvas Size: ' + self.canvasWidth + 'x' + self.canvasHeight + 'px\n';
                 if (self.panzoomInstance) {
@@ -10998,8 +10997,8 @@ const FloorPlanDesigner = {
         }
         // Save grid enabled state (show/hide grid) - Always save current state
         settings.grid_enabled = self.gridEnabled !== undefined ? Boolean(self.gridEnabled) : false;
-        // Save snap to grid state - Always save current state
-        settings.snap_to_grid = self.snapEnabled !== undefined ? Boolean(self.snapEnabled) : false;
+        // Snap-to-grid UI removed; persist false until feature returns
+        settings.snap_to_grid = false;
         
         // Get zoom and pan if panzoom is initialized
         if (self.panzoomInstance) {
@@ -11063,7 +11062,6 @@ const FloorPlanDesigner = {
                 localStorage.setItem('canvasResolution', self.canvasResolution);
                 localStorage.setItem('gridSize', self.gridSize);
                 localStorage.setItem('gridEnabled', self.gridEnabled);
-                localStorage.setItem('snapEnabled', self.snapEnabled);
                 console.log('[Canvas Settings] All canvas settings saved:', settings);
                 return data;
             }
@@ -11076,7 +11074,6 @@ const FloorPlanDesigner = {
             localStorage.setItem('canvasResolution', self.canvasResolution);
             localStorage.setItem('gridSize', self.gridSize);
             localStorage.setItem('gridEnabled', self.gridEnabled);
-            localStorage.setItem('snapEnabled', self.snapEnabled);
             console.warn('[Canvas Settings] Failed to save to database, saved to localStorage:', error);
         });
     },
@@ -11425,7 +11422,7 @@ const FloorPlanDesigner = {
                 self.canvasResolution = settings.canvas_resolution || 300;
                 self.setGridSize(settings.grid_size || 1);
                 self.gridEnabled = settings.grid_enabled !== undefined ? settings.grid_enabled : true;
-                self.snapEnabled = settings.snap_to_grid !== undefined ? settings.snap_to_grid : false;
+                self.snapEnabled = false;
                 
                 // Restore grid visibility state in UI
                 const gridOverlay = $('#gridOverlay');
@@ -11436,15 +11433,6 @@ const FloorPlanDesigner = {
                 } else {
                     gridOverlay.removeClass('visible');
                     btnGrid.removeClass('active');
-                }
-                
-                // Restore snap to grid state in UI
-                const btnSnap = $('#btnSnap');
-                btnSnap.toggleClass('active', self.snapEnabled);
-                if (self.snapEnabled) {
-                    btnSnap.attr('title', 'Snap to Grid: ON (Click to disable)').css('background', 'rgba(40, 167, 69, 0.3)');
-                } else {
-                    btnSnap.attr('title', 'Snap to Grid: OFF (Click to enable)').css('background', 'rgba(108, 117, 125, 0.3)');
                 }
                 
                 // Apply saved dimensions
@@ -11587,15 +11575,6 @@ const FloorPlanDesigner = {
             const btnGrid = $('#btnGrid');
             gridOverlay.addClass('visible');
             btnGrid.addClass('active');
-            
-            // Update UI for snap to grid
-            const btnSnap = $('#btnSnap');
-            btnSnap.toggleClass('active', self.snapEnabled);
-            if (self.snapEnabled) {
-                btnSnap.attr('title', 'Snap to Grid: ON (Click to disable)').css('background', 'rgba(40, 167, 69, 0.3)');
-            } else {
-                btnSnap.attr('title', 'Snap to Grid: OFF (Click to enable)').css('background', 'rgba(108, 117, 125, 0.3)');
-            }
             
             // Apply saved dimensions
             self.setCanvasSize(self.canvasWidth, self.canvasHeight);
@@ -12387,40 +12366,6 @@ const FloorPlanDesigner = {
         if (self.centerMarkerEnabled) {
             $('#canvasCenterMarker').addClass('visible');
             $('#btnCenter').addClass('active');
-        }
-        
-        // Snap to Grid toggle button - Enhanced functionality
-        $('#btnSnap').on('click', function() {
-            self.snapEnabled = !self.snapEnabled;
-            const btn = $(this);
-            btn.toggleClass('active', self.snapEnabled);
-            
-            // Update button title and visual feedback
-            if (self.snapEnabled) {
-                btn.attr('title', 'Snap to Grid: ON (Click to disable)');
-                btn.css('background', 'rgba(40, 167, 69, 0.3)');
-                showNotification('Snap to Grid enabled - Booths will align to grid', 'success');
-            } else {
-                btn.attr('title', 'Snap to Grid: OFF (Click to enable)');
-                btn.css('background', 'rgba(108, 117, 125, 0.3)');
-                showNotification('Snap to Grid disabled - Free positioning', 'info');
-            }
-            
-            // Save snap preference to localStorage
-            localStorage.setItem('snapEnabled', self.snapEnabled);
-        });
-        
-        // Load snap preference from localStorage on page load
-        const savedSnapEnabled = localStorage.getItem('snapEnabled');
-        if (savedSnapEnabled !== null) {
-            self.snapEnabled = savedSnapEnabled === 'true';
-            const btnSnap = $('#btnSnap');
-            btnSnap.toggleClass('active', self.snapEnabled);
-            if (self.snapEnabled) {
-                btnSnap.attr('title', 'Snap to Grid: ON (Click to disable)').css('background', 'rgba(40, 167, 69, 0.3)');
-            } else {
-                btnSnap.attr('title', 'Snap to Grid: OFF (Click to enable)').css('background', 'rgba(108, 117, 125, 0.3)');
-            }
         }
         
         // Rotation Controls - Rotate Left (-90 degrees)
