@@ -227,13 +227,13 @@
                                 <i class="fas fa-align-center"></i> Align Bottom
                             </a>
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#" onclick="FloorPlanDesigner.snapSelectedBoothsSmartGrid(); return false;" title="Align edges of selected booths to shared vertical and horizontal lines">
+                            <a class="dropdown-item" href="#" data-fpd-action="snap-smart-grid" title="Align edges of selected booths to shared vertical and horizontal lines">
                                 <i class="fas fa-border-all"></i> Smart snap (grid)
                             </a>
                         </div>
                     </div>
                     @if(isset($canEditCanvas) && $canEditCanvas)
-                    <button type="button" class="toolbar-btn" id="btnSnapAlignSelection" title="Align then stick selected booths edge-to-edge in each row and column (no gaps)" onclick="FloorPlanDesigner.snapSelectedBoothsSmartGrid(); return false;">
+                    <button type="button" class="toolbar-btn" id="btnSnapAlignSelection" title="Align then stick selected booths edge-to-edge in each row and column (no gaps)">
                         <i class="fas fa-border-all"></i>
                         <span class="tool-label">Snap align</span>
                     </button>

@@ -922,6 +922,23 @@ const FloorPlanDesigner = {
         self._cachedElements.floorplanImage = document.getElementById('floorplanImageElement');
 
         self.setupBoothContextMenuDelegation();
+
+        // Snap align (toolbar + Align dropdown): bind here so we use `self`, not inline onclick (which can resolve the wrong global FloorPlanDesigner).
+        $(document).on('click', '#btnSnapAlignSelection', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (typeof self.snapSelectedBoothsSmartGrid === 'function') {
+                self.snapSelectedBoothsSmartGrid();
+            }
+        });
+        $(document).on('click', '[data-fpd-action="snap-smart-grid"]', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $('.dropdown').removeClass('show');
+            if (typeof self.snapSelectedBoothsSmartGrid === 'function') {
+                self.snapSelectedBoothsSmartGrid();
+            }
+        });
         
         // #region agent log
         // #endregion
@@ -6165,6 +6182,74 @@ const FloorPlanDesigner = {
     },
 
     /**
+     * Align selection to shared vertical lines (left X) and horizontal lines (top Y): cluster nearby coordinates,
+     * snap each cluster to its median. Infers column/row gaps from median spacing so many booths still form a grid.
+     * Skipped when snapSelectedBoothsSmartGrid runs with skipSave (e.g. end of multi-drag).
+     */
+    _snapSelectionToMedianLineGrid: function(booths, applyGridRound) {
+        const self = this;
+        if (!booths || booths.length < 2) {
+            return;
+        }
+
+        function clusterAndSnap(axis) {
+            const items = booths.map(function(el) {
+                const r = self._getBoothRectPx(el);
+                return { el: el, v: axis === 'left' ? r.l : r.t };
+            });
+            items.sort(function(a, b) {
+                return a.v - b.v;
+            });
+            const gaps = [];
+            for (let i = 1; i < items.length; i++) {
+                gaps.push(items[i].v - items[i - 1].v);
+            }
+            let medianGap = 0;
+            if (gaps.length) {
+                gaps.sort(function(a, b) {
+                    return a - b;
+                });
+                medianGap = gaps[Math.floor(gaps.length / 2)];
+            }
+            let split = 16;
+            if (medianGap > 0) {
+                split = Math.max(16, Math.min(120, medianGap * 0.45));
+            }
+            const clusters = [];
+            let cur = [items[0]];
+            for (let j = 1; j < items.length; j++) {
+                if (items[j].v - items[j - 1].v <= split) {
+                    cur.push(items[j]);
+                } else {
+                    clusters.push(cur);
+                    cur = [items[j]];
+                }
+            }
+            clusters.push(cur);
+            clusters.forEach(function(c) {
+                const vs = c.map(function(x) {
+                    return x.v;
+                }).sort(function(a, b) {
+                    return a - b;
+                });
+                const mid = Math.floor(vs.length / 2);
+                const target = vs.length % 2 ? vs[mid] : (vs[mid - 1] + vs[mid]) / 2;
+                c.forEach(function(item) {
+                    const r = self._getBoothRectPx(item.el);
+                    if (axis === 'left') {
+                        applyGridRound(item.el, target, r.t);
+                    } else {
+                        applyGridRound(item.el, r.l, target);
+                    }
+                });
+            });
+        }
+
+        clusterAndSnap('left');
+        clusterAndSnap('top');
+    },
+
+    /**
      * Snap selected booths to each other: shared vertical/horizontal lines, edges flush when within threshold.
      * @param {object} options - { silent: bool, skipSave: bool }
      */
@@ -6175,7 +6260,8 @@ const FloorPlanDesigner = {
         const skipSave = options.skipSave === true;
         const booths = self.selectedBooths;
         const canvas = document.getElementById('print');
-        const T = typeof self.smartSnapThreshold === 'number' ? self.smartSnapThreshold : 8;
+        const baseT = typeof self.smartSnapThreshold === 'number' ? self.smartSnapThreshold : 8;
+        let T = baseT;
 
         if (!canvas || !booths || booths.length < 2) {
             if (!silent) {
@@ -6183,6 +6269,8 @@ const FloorPlanDesigner = {
             }
             return;
         }
+
+        const n = booths.length;
 
         function clamp(el, l, t) {
             const r = self._getBoothRectPx(el);
@@ -6205,8 +6293,32 @@ const FloorPlanDesigner = {
             el.setAttribute('data-y', c[1]);
         }
 
+        // Phase 1 (explicit Snap align / Smart snap only): align all selected booths to shared vertical lines (X) then
+        // shared horizontal lines (Y), using cluster medians. Skipped during multi-drag (skipSave) so drag does not collapse layout.
+        if (!skipSave) {
+            self._snapSelectionToMedianLineGrid(booths, applyGridRound);
+        }
+
+        // Phase 2: magnetic refinement — threshold scales with selection footprint so many booths still pull flush
+        let minL = Infinity;
+        let minT = Infinity;
+        let maxR = -Infinity;
+        let maxB = -Infinity;
+        booths.forEach(function(b) {
+            const r = self._getBoothRectPx(b);
+            minL = Math.min(minL, r.l);
+            minT = Math.min(minT, r.t);
+            maxR = Math.max(maxR, r.r);
+            maxB = Math.max(maxB, r.b);
+        });
+        const spreadW = maxR - minL;
+        const spreadH = maxB - minT;
+        const adaptiveMag = Math.max(baseT, Math.min(120, Math.floor(0.07 * Math.max(spreadW, spreadH, 1))));
+        T = Math.max(baseT, adaptiveMag);
+
         // Alternate X / Y relaxation so vertical and horizontal lines stabilize (max ~10 passes)
-        for (let iter = 0; iter < 10; iter++) {
+        const maxIter = Math.min(12, 8 + Math.floor(n / 50));
+        for (let iter = 0; iter < maxIter; iter++) {
             let moved = false;
             booths.forEach(function(A, i) {
                 const a = self._getBoothRectPx(A);
@@ -6319,8 +6431,8 @@ const FloorPlanDesigner = {
             if (!silent) {
                 showNotification(
                     self.smartSnapStickEnabled
-                        ? 'Snapped & stuck ' + booths.length + ' booth(s) edge-to-edge'
-                        : 'Snapped ' + booths.length + ' booth(s) to smart grid',
+                        ? 'Aligned ' + booths.length + ' booth(s) on vertical & horizontal grid lines, then stuck edge-to-edge'
+                        : 'Aligned ' + booths.length + ' booth(s) on vertical & horizontal grid lines, then refined edges',
                     'success'
                 );
             }
