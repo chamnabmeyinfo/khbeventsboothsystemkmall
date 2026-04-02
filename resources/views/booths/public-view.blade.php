@@ -1226,33 +1226,18 @@
                     <span>Status:</span>
                 </div>
                 <div class="legend-items-horizontal">
-                    @forelse($statusSettings ?? [] as $status)
+                    @forelse(($statusLegendStatuses ?? collect()) as $status)
                         <div class="legend-item-horizontal">
-                            <span class="legend-color" style="background: {{ $status->status_code == 1 ? '#ffffff' : ($status->status_code == 4 ? '#6c757d' : '#28a745') }}; border: 1px solid {{ $status->status_code == 1 ? '#dee2e6' : ($status->status_code == 4 ? '#6c757d' : '#28a745') }};"></span>
+                            <span class="legend-color" style="background: {{ $status->status_color ?: '#ffffff' }}; border: {{ (int) ($status->border_width ?? 2) }}px {{ $status->border_style ?? 'solid' }} {{ $status->border_color ?: ($status->status_color ?: '#dee2e6') }}; border-radius: {{ (int) ($status->border_radius ?? 4) }}px;"@if($status->description) title="{{ e($status->description) }}"@endif></span>
                             <span class="legend-text">{{ $status->status_name }}</span>
                         </div>
                     @empty
-                        {{-- Public view: Available = white, Booked = green, Hidden = gray --}}
-                        <div class="legend-item-horizontal">
-                            <span class="legend-color" style="background: #ffffff; border: 1px solid #dee2e6;"></span>
-                            <span class="legend-text">Available</span>
-                        </div>
-                        <div class="legend-item-horizontal">
-                            <span class="legend-color" style="background: #28a745;"></span>
-                            <span class="legend-text">Confirmed</span>
-                        </div>
-                        <div class="legend-item-horizontal">
-                            <span class="legend-color" style="background: #28a745;"></span>
-                            <span class="legend-text">Reserved</span>
-                        </div>
-                        <div class="legend-item-horizontal">
-                            <span class="legend-color" style="background: #6c757d;"></span>
-                            <span class="legend-text">Hidden</span>
-                        </div>
-                        <div class="legend-item-horizontal">
-                            <span class="legend-color" style="background: #28a745;"></span>
-                            <span class="legend-text">Paid</span>
-                        </div>
+                        @foreach(\App\Models\BoothStatusSetting::defaultGlobalSeedRows() as $row)
+                            <div class="legend-item-horizontal">
+                                <span class="legend-color" style="background: {{ $row['status_color'] }}; border: {{ (int) ($row['border_width'] ?? 2) }}px {{ $row['border_style'] ?? 'solid' }} {{ $row['border_color'] ?? $row['status_color'] }}; border-radius: {{ (int) ($row['border_radius'] ?? 4) }}px;"@if(!empty($row['description'])) title="{{ e($row['description']) }}"@endif></span>
+                                <span class="legend-text">{{ $row['status_name'] }}</span>
+                            </div>
+                        @endforeach
                     @endforelse
                 </div>
             </div>
@@ -1340,20 +1325,21 @@
                 </div>
                 <div class="help-section">
                     <h4><i class="fas fa-palette text-primary"></i> Understanding Colors</h4>
-                    <p>Each booth has a color that shows its availability:</p>
+                    <p>Each booth uses the same colors as in <strong>Settings → Global color → Booth status</strong> (map + public view):</p>
                     <div class="help-legend">
-                        <div class="help-legend-item">
-                            <span class="help-legend-color" style="background: #ffffff; border: 1px solid #dee2e6;"></span>
-                            <span>White = Available for booking</span>
-                        </div>
-                        <div class="help-legend-item">
-                            <span class="help-legend-color" style="background: #28a745;"></span>
-                            <span>Green = Booked (confirmed, reserved, or paid)</span>
-                        </div>
-                        <div class="help-legend-item">
-                            <span class="help-legend-color" style="background: #6c757d;"></span>
-                            <span>Gray = Hidden</span>
-                        </div>
+                        @forelse(($statusLegendStatuses ?? collect()) as $status)
+                            <div class="help-legend-item">
+                                <span class="help-legend-color" style="background: {{ $status->status_color ?: '#ffffff' }}; border: {{ (int) ($status->border_width ?? 2) }}px {{ $status->border_style ?? 'solid' }} {{ $status->border_color ?: ($status->status_color ?: '#dee2e6') }}; border-radius: {{ (int) ($status->border_radius ?? 4) }}px;"></span>
+                                <span><strong>{{ $status->status_name }}</strong>@if($status->description)<span class="text-muted"> — {{ $status->description }}</span>@endif</span>
+                            </div>
+                        @empty
+                            @foreach(\App\Models\BoothStatusSetting::defaultGlobalSeedRows() as $row)
+                                <div class="help-legend-item">
+                                    <span class="help-legend-color" style="background: {{ $row['status_color'] }}; border: {{ (int) ($row['border_width'] ?? 2) }}px {{ $row['border_style'] ?? 'solid' }} {{ $row['border_color'] ?? $row['status_color'] }}; border-radius: {{ (int) ($row['border_radius'] ?? 4) }}px;"></span>
+                                    <span><strong>{{ $row['status_name'] }}</strong>@if(!empty($row['description']))<span class="text-muted"> — {{ $row['description'] }}</span>@endif</span>
+                                </div>
+                            @endforeach
+                        @endforelse
                     </div>
                 </div>
             </div>

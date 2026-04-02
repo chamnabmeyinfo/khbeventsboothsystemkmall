@@ -584,11 +584,17 @@ const FloorPlanDesigner = {
     draggedElement: null,
     draggedBoothData: null,
     selectedBooths: [],
+    /** Anchor booth for Shift+click range select (DOM order on canvas) */
+    selectionShiftAnchor: null,
     history: [],
     historyIndex: -1,
     gridEnabled: false, // Grid visibility (can be toggled)
     snapEnabled: true,
     gridSize: 1, // Grid size in px (default 1px)
+    /** When true, selected booths snap to shared vertical/horizontal lines (edge-to-edge) after multi-drag and via toolbar */
+    smartSnapEnabled: true,
+    /** Canvas px: max distance to treat edges as alignable / flush */
+    smartSnapThreshold: 8,
     centerMarkerEnabled: false, // Show/hide canvas center marker
     zoomLevel: 1,
     panzoomInstance: null,
@@ -3049,12 +3055,29 @@ const FloorPlanDesigner = {
         if (existingMenu) {
             existingMenu.remove();
         }
+
+        const showAlignGrids = self.canEditCanvas &&
+            self.selectedBooths &&
+            self.selectedBooths.length > 1 &&
+            self.selectedBooths.indexOf(boothElement) !== -1;
+        const layoutSectionHtml = showAlignGrids
+            ? `
+            <div class="context-menu-item context-menu-subheader" style="pointer-events: none; font-weight: 600; color: #20c997;">
+                <i class="fas fa-border-all"></i> Selection layout
+            </div>
+            <div class="context-menu-item" data-action="align-grids" title="Snap edges to shared vertical and horizontal lines (same as Align → Smart snap)">
+                <i class="fas fa-th"></i> Align Grids
+            </div>
+            <div class="context-menu-divider"></div>
+            `
+            : '';
         
         // Create context menu
         const contextMenu = document.createElement('div');
         contextMenu.id = 'boothContextMenu';
         contextMenu.className = 'booth-context-menu';
         contextMenu.innerHTML = `
+            ${layoutSectionHtml}
             <div class="context-menu-item context-menu-subheader" style="pointer-events: none; font-weight: 600; color: #667eea;">
                 <i class="fas fa-edit"></i> Edit Booth
             </div>
@@ -3120,8 +3143,10 @@ const FloorPlanDesigner = {
                 e.stopPropagation();
                 e.preventDefault();
                 const action = this.getAttribute('data-action');
-                
-                if (action === 'update-booth-info') {
+
+                if (action === 'align-grids') {
+                    self.snapSelectedBoothsSmartGrid();
+                } else if (action === 'update-booth-info') {
                     // Open Update Booth Info modal on canvas (no redirect): fetch booth data and populate form
                     self.openBoothInfoModal(boothId);
                 } else if (action === 'set-price') {
@@ -6028,6 +6053,269 @@ const FloorPlanDesigner = {
         showNotification('Distributed ' + booths.length + ' booth(s) ' + direction + 'ly', 'success');
         self.saveState();
     },
+
+    /**
+     * Axis-aligned rect from booth element (ignores rotation for snapping — matches layout tools).
+     */
+    _getBoothRectPx: function(el) {
+        const l = parseFloat(el.style.left) || 0;
+        const t = parseFloat(el.style.top) || 0;
+        const w = parseFloat(el.style.width) || 80;
+        const h = parseFloat(el.style.height) || 50;
+        return { l: l, t: t, w: w, h: h, r: l + w, b: t + h };
+    },
+
+    /**
+     * Snap selected booths to each other: shared vertical/horizontal lines, edges flush when within threshold.
+     * @param {object} options - { silent: bool, skipSave: bool }
+     */
+    snapSelectedBoothsSmartGrid: function(options) {
+        const self = this;
+        options = options || {};
+        const silent = options.silent === true;
+        const skipSave = options.skipSave === true;
+        const booths = self.selectedBooths;
+        const canvas = document.getElementById('print');
+        const T = typeof self.smartSnapThreshold === 'number' ? self.smartSnapThreshold : 8;
+
+        if (!canvas || !booths || booths.length < 2) {
+            if (!silent) {
+                showNotification('Select at least 2 booths on the canvas', 'warning');
+            }
+            return;
+        }
+
+        function clamp(el, l, t) {
+            const r = self._getBoothRectPx(el);
+            const cw = canvas.offsetWidth;
+            const ch = canvas.offsetHeight;
+            l = Math.max(0, Math.min(l, cw - r.w));
+            t = Math.max(0, Math.min(t, ch - r.h));
+            return [l, t];
+        }
+
+        function applyGridRound(el, l, t) {
+            if (self.snapEnabled && self.gridSize > 0) {
+                l = Math.round(l / self.gridSize) * self.gridSize;
+                t = Math.round(t / self.gridSize) * self.gridSize;
+            }
+            const c = clamp(el, l, t);
+            el.style.left = c[0] + 'px';
+            el.style.top = c[1] + 'px';
+            el.setAttribute('data-x', c[0]);
+            el.setAttribute('data-y', c[1]);
+        }
+
+        // Alternate X / Y relaxation so vertical and horizontal lines stabilize (max ~10 passes)
+        for (let iter = 0; iter < 10; iter++) {
+            let moved = false;
+            booths.forEach(function(A, i) {
+                const a = self._getBoothRectPx(A);
+                let newL = a.l;
+                let best = T + 1;
+                booths.forEach(function(B, j) {
+                    if (i === j) {
+                        return;
+                    }
+                    const b = self._getBoothRectPx(B);
+                    [b.l, b.r].forEach(function(xg) {
+                        const d = Math.abs(a.l - xg);
+                        if (d < best && d <= T) {
+                            best = d;
+                            newL = xg;
+                        }
+                    });
+                    const dRtoL = Math.abs(a.r - b.l);
+                    if (dRtoL < best && dRtoL <= T) {
+                        best = dRtoL;
+                        newL = b.l - a.w;
+                    }
+                    const dLtoR = Math.abs(a.l - b.r);
+                    if (dLtoR < best && dLtoR <= T) {
+                        best = dLtoR;
+                        newL = b.r;
+                    }
+                    const dRtoR = Math.abs(a.r - b.r);
+                    if (dRtoR < best && dRtoR <= T) {
+                        best = dRtoR;
+                        newL = b.r - a.w;
+                    }
+                });
+                if (best <= T && Math.abs(newL - a.l) > 0.25) {
+                    applyGridRound(A, newL, a.t);
+                    moved = true;
+                }
+            });
+            booths.forEach(function(A, i) {
+                const a = self._getBoothRectPx(A);
+                let newT = a.t;
+                let best = T + 1;
+                booths.forEach(function(B, j) {
+                    if (i === j) {
+                        return;
+                    }
+                    const b = self._getBoothRectPx(B);
+                    [b.t, b.b].forEach(function(yg) {
+                        const d = Math.abs(a.t - yg);
+                        if (d < best && d <= T) {
+                            best = d;
+                            newT = yg;
+                        }
+                    });
+                    const dBtoT = Math.abs(a.b - b.t);
+                    if (dBtoT < best && dBtoT <= T) {
+                        best = dBtoT;
+                        newT = b.t - a.h;
+                    }
+                    const dTtoB = Math.abs(a.t - b.b);
+                    if (dTtoB < best && dTtoB <= T) {
+                        best = dTtoB;
+                        newT = b.b;
+                    }
+                    const dBtoB = Math.abs(a.b - b.b);
+                    if (dBtoB < best && dBtoB <= T) {
+                        best = dBtoB;
+                        newT = b.b - a.h;
+                    }
+                });
+                if (best <= T && Math.abs(newT - a.t) > 0.25) {
+                    applyGridRound(A, a.l, newT);
+                    moved = true;
+                }
+            });
+            if (!moved) {
+                break;
+            }
+        }
+
+        self.updateSelectionBoundingBox();
+
+        if (!skipSave) {
+            booths.forEach(function(boothElement) {
+                const boothId = boothElement.getAttribute('data-booth-id');
+                const boothX = parseFloat(boothElement.style.left) || 0;
+                const boothY = parseFloat(boothElement.style.top) || 0;
+                const boothWidth = parseFloat(boothElement.style.width) || 80;
+                const boothHeight = parseFloat(boothElement.style.height) || 50;
+                const boothRotation = parseFloat(boothElement.getAttribute('data-rotation')) || 0;
+                const boothZIndex = parseFloat(boothElement.style.zIndex) || parseFloat(boothElement.getAttribute('data-z-index')) || self.defaultBoothZIndex;
+                const boothFontSize = parseFloat(boothElement.style.fontSize) || parseFloat(boothElement.getAttribute('data-font-size')) || self.defaultBoothFontSize;
+                const boothBorderWidth = parseFloat(boothElement.style.borderWidth) || parseFloat(boothElement.getAttribute('data-border-width')) || self.defaultBoothBorderWidth;
+                const boothBorderRadius = parseFloat(boothElement.style.borderRadius) || parseFloat(boothElement.getAttribute('data-border-radius')) || self.defaultBoothBorderRadius;
+                const boothOpacity = parseFloat(boothElement.style.opacity) || parseFloat(boothElement.getAttribute('data-opacity')) || self.defaultBoothOpacity;
+                const boothBackgroundColor = boothElement.style.backgroundColor || boothElement.getAttribute('data-background-color') || self.defaultBackgroundColor;
+                const boothBorderColor = boothElement.style.borderColor || boothElement.getAttribute('data-border-color') || self.defaultBorderColor;
+                const boothTextColor = boothElement.style.color || boothElement.getAttribute('data-text-color') || self.defaultTextColor;
+                const boothFontWeight = boothElement.style.fontWeight || boothElement.getAttribute('data-font-weight') || self.defaultFontWeight;
+                const boothFontFamily = boothElement.style.fontFamily || boothElement.getAttribute('data-font-family') || self.defaultFontFamily;
+                const boothTextAlign = boothElement.style.textAlign || boothElement.getAttribute('data-text-align') || self.defaultTextAlign;
+                const boothBoxShadow = boothElement.style.boxShadow || boothElement.getAttribute('data-box-shadow') || self.defaultBoxShadow;
+                self.saveBoothPosition(boothId, boothX, boothY, boothWidth, boothHeight, boothRotation, boothZIndex, boothFontSize, boothBorderWidth, boothBorderRadius, boothOpacity, boothBackgroundColor, boothBorderColor, boothTextColor, boothFontWeight, boothFontFamily, boothTextAlign, boothBoxShadow);
+            });
+            self.saveState();
+            if (!silent) {
+                showNotification('Snapped ' + booths.length + ' booth(s) to smart grid', 'success');
+            }
+        }
+    },
+
+    /**
+     * While dragging one booth, snap its edges to other canvas booths (not in selection) when close.
+     */
+    _applySmartSnapSingleToPeers: function(element) {
+        const self = this;
+        if (!self.smartSnapEnabled) {
+            return;
+        }
+        const canvas = document.getElementById('print');
+        if (!canvas || !element) {
+            return;
+        }
+        const T = typeof self.smartSnapThreshold === 'number' ? self.smartSnapThreshold : 8;
+        const others = Array.from(canvas.querySelectorAll('.dropped-booth')).filter(function(el) {
+            return el !== element;
+        });
+        if (others.length === 0) {
+            return;
+        }
+
+        let a = self._getBoothRectPx(element);
+        let newL = a.l;
+        let newT = a.t;
+        let bestX = T + 1;
+        let bestY = T + 1;
+
+        others.forEach(function(B) {
+            const b = self._getBoothRectPx(B);
+            [b.l, b.r].forEach(function(xg) {
+                const d = Math.abs(a.l - xg);
+                if (d < bestX && d <= T) {
+                    bestX = d;
+                    newL = xg;
+                }
+            });
+            const dRtoL = Math.abs(a.r - b.l);
+            if (dRtoL < bestX && dRtoL <= T) {
+                bestX = dRtoL;
+                newL = b.l - a.w;
+            }
+            const dLtoR = Math.abs(a.l - b.r);
+            if (dLtoR < bestX && dLtoR <= T) {
+                bestX = dLtoR;
+                newL = b.r;
+            }
+            const dRtoR = Math.abs(a.r - b.r);
+            if (dRtoR < bestX && dRtoR <= T) {
+                bestX = dRtoR;
+                newL = b.r - a.w;
+            }
+
+            [b.t, b.b].forEach(function(yg) {
+                const d = Math.abs(a.t - yg);
+                if (d < bestY && d <= T) {
+                    bestY = d;
+                    newT = yg;
+                }
+            });
+            const dBtoT = Math.abs(a.b - b.t);
+            if (dBtoT < bestY && dBtoT <= T) {
+                bestY = dBtoT;
+                newT = b.t - a.h;
+            }
+            const dTtoB = Math.abs(a.t - b.b);
+            if (dTtoB < bestY && dTtoB <= T) {
+                bestY = dTtoB;
+                newT = b.b;
+            }
+            const dBtoB = Math.abs(a.b - b.b);
+            if (dBtoB < bestY && dBtoB <= T) {
+                bestY = dBtoB;
+                newT = b.b - a.h;
+            }
+        });
+
+        if (bestX <= T) {
+            a = self._getBoothRectPx(element);
+            const cw = canvas.offsetWidth;
+            newL = Math.max(0, Math.min(newL, cw - a.w));
+            element.style.left = newL + 'px';
+            element.setAttribute('data-x', newL);
+        }
+        if (bestY <= T) {
+            a = self._getBoothRectPx(element);
+            const ch = canvas.offsetHeight;
+            newT = Math.max(0, Math.min(newT, ch - a.h));
+            element.style.top = newT + 'px';
+            element.setAttribute('data-y', newT);
+        }
+        if (self.snapEnabled && self.gridSize > 0) {
+            const x = Math.round(parseFloat(element.style.left) / self.gridSize) * self.gridSize;
+            const y = Math.round(parseFloat(element.style.top) / self.gridSize) * self.gridSize;
+            const r = self._getBoothRectPx(element);
+            element.style.left = Math.max(0, Math.min(x, canvas.offsetWidth - r.w)) + 'px';
+            element.style.top = Math.max(0, Math.min(y, canvas.offsetHeight - r.h)) + 'px';
+        }
+    },
     
     // Get zone from booth number
     getZoneFromBoothNumber: function(boothNumber) {
@@ -6810,7 +7098,9 @@ const FloorPlanDesigner = {
                 // self.openBoothColorPicker(boothId, boothNumber, div);
             }, 2000);
             
-            // Clean up on mouse release
+            // Clean up on mouse release / move (visual + timer only).
+            // Do NOT open the menu here: on Chrome/Edge, mouseup often fires *before* contextmenu,
+            // so listeners were registered too late and cleanup never ran — menu never appeared.
             const cleanup = function() {
                 if (rightClickTimer) {
                     clearTimeout(rightClickTimer);
@@ -6824,20 +7114,24 @@ const FloorPlanDesigner = {
                     progressIndicator.remove();
                 }
                 
-                // If NOT held for 2 seconds, show regular context menu
-                if (!isRightClickHeld) {
-                    // Show context menu immediately (quick right-click)
-                    self.showBoothContextMenu(e, boothId, boothNumber, div);
-                }
-                
                 document.removeEventListener('mouseup', cleanup);
+                document.removeEventListener('pointerup', cleanup);
                 document.removeEventListener('contextmenu', cleanup);
                 document.removeEventListener('mousemove', cleanup);
             };
             
             document.addEventListener('mouseup', cleanup);
+            document.addEventListener('pointerup', cleanup);
             document.addEventListener('contextmenu', cleanup);
             document.addEventListener('mousemove', cleanup);
+
+            // Open menu after the current event stack (reliable across browsers; see comment above).
+            const menuEvent = e;
+            window.setTimeout(function() {
+                if (!isRightClickHeld) {
+                    self.showBoothContextMenu(menuEvent, boothId, boothNumber, div);
+                }
+            }, 0);
         });
         
         return div;
@@ -7351,6 +7645,7 @@ const FloorPlanDesigner = {
         self.selectedBooths.forEach(function(booth) {
             booth.classList.add('selected');
         });
+        self.selectionShiftAnchor = self.selectedBooths.length > 0 ? self.selectedBooths[0] : null;
         self.updateSelectionBoundingBox();
         self.updateInfoToolbar && self.updateInfoToolbar(null);
         showNotification(allBooths.length + ' booth(s) selected', 'success');
@@ -7431,6 +7726,7 @@ const FloorPlanDesigner = {
                 if (rot) rot.style.display = 'none';
             });
         }
+        self.selectionShiftAnchor = self.selectedBooths.length > 0 ? self.selectedBooths[0] : null;
         showNotification(zoneBooths.length + ' booth(s) from Zone ' + zoneName + ' selected', 'success');
     },
     updateSelectionBoundingBox: function() {
@@ -7538,8 +7834,95 @@ const FloorPlanDesigner = {
             
             // Selection always allowed (no tool restriction)
             
-            // Check if Ctrl/Cmd key is pressed for multi-select
-            const isMultiSelect = e.ctrlKey || e.metaKey;
+            const isCtrlMulti = e.ctrlKey || e.metaKey;
+            const isShiftRange = e.shiftKey;
+
+            // Shift+click: range select all booths between anchor and this one (canvas DOM order)
+            if (isShiftRange) {
+                const canvas = document.getElementById('print');
+                if (!canvas) {
+                    return;
+                }
+                const all = Array.from(canvas.querySelectorAll('.dropped-booth'));
+                let anchor = self.selectionShiftAnchor;
+                if (!anchor || all.indexOf(anchor) === -1) {
+                    if (self.selectedBooths.length === 1) {
+                        anchor = self.selectedBooths[0];
+                    } else {
+                        anchor = element;
+                    }
+                }
+                const iA = all.indexOf(anchor);
+                const iB = all.indexOf(element);
+                if (iA === -1 || iB === -1) {
+                    self.selectionShiftAnchor = element;
+                } else {
+                    const i0 = Math.min(iA, iB);
+                    const i1 = Math.max(iA, iB);
+                    const range = all.slice(i0, i1 + 1);
+
+                    document.querySelectorAll('.dropped-booth').forEach(function(booth) {
+                        booth.classList.remove('selected');
+                        const ctrl = booth.querySelector('.transform-controls');
+                        if (ctrl) {
+                            ctrl.style.display = 'none';
+                            ctrl.style.visibility = 'hidden';
+                            ctrl.style.opacity = '0';
+                        }
+                        const handles = booth.querySelectorAll('.resize-handle');
+                        handles.forEach(function(h) { h.style.display = 'none'; });
+                        const rot = booth.querySelector('.rotate-handle');
+                        if (rot) {
+                            rot.style.display = 'none';
+                        }
+                    });
+                    self.selectedBooths = [];
+
+                    range.forEach(function(booth) {
+                        booth.classList.add('selected');
+                        const controls = booth.querySelector('.transform-controls');
+                        if (controls) {
+                            controls.style.display = 'none';
+                            controls.style.visibility = 'hidden';
+                            controls.style.opacity = '0';
+                        }
+                        self.selectedBooths.push(booth);
+                    });
+
+                    self.selectionShiftAnchor = anchor;
+                    self.updateSelectionBoundingBox();
+
+                    if (range.length === 1) {
+                        const b0 = range[0];
+                        if (!b0.classList.contains('locked')) {
+                            const handles = b0.querySelectorAll('.resize-handle');
+                            handles.forEach(function(h) { h.style.display = 'block'; });
+                            self.updateResizeHandlesSize(b0);
+                            const rotateHandle = b0.querySelector('.rotate-handle');
+                            if (rotateHandle) {
+                                rotateHandle.style.display = 'flex';
+                            }
+                            self.updateRotationIndicator(b0);
+                        }
+                        requestAnimationFrame(function() {
+                            setTimeout(function() {
+                                self.updateInfoToolbar(b0);
+                            }, 50);
+                        });
+                    } else {
+                        self.updateInfoToolbar(null);
+                    }
+
+                    const panel = document.getElementById('propertiesPanel');
+                    if (panel && panel.classList.contains('active') && range.length === 1) {
+                        self.updatePropertiesPanel(range[0]);
+                    }
+                    return;
+                }
+            }
+
+            // Check if Ctrl/Cmd key is pressed for multi-select (toggle)
+            const isMultiSelect = isCtrlMulti;
             
             if (!isMultiSelect) {
                 // Single select - deselect all others
@@ -7553,6 +7936,7 @@ const FloorPlanDesigner = {
                 }
             });
                 self.selectedBooths = [];
+                self.selectionShiftAnchor = element;
             } else {
                 // Multi-select - toggle this booth's selection
                 if (element.classList.contains('selected')) {
@@ -7578,6 +7962,7 @@ const FloorPlanDesigner = {
                     } else {
                         self.updateInfoToolbar(null); // Show multi-select info
                     }
+                    self.selectionShiftAnchor = self.selectedBooths.length > 0 ? self.selectedBooths[0] : null;
                     return;
                 }
             }
@@ -7642,6 +8027,9 @@ const FloorPlanDesigner = {
             // Add to selected booths array
             if (self.selectedBooths.indexOf(element) === -1) {
                 self.selectedBooths.push(element);
+            }
+            if (isMultiSelect) {
+                self.selectionShiftAnchor = element;
             }
             
             // Update bounding box
@@ -8121,6 +8509,9 @@ const FloorPlanDesigner = {
                     boothElement.style.userSelect = '';
                     boothElement.classList.remove('dragging');
                 });
+                if (self.smartSnapEnabled && self.selectedBooths && self.selectedBooths.length > 1) {
+                    self.snapSelectedBoothsSmartGrid({ silent: true, skipSave: true });
+                }
             } else {
             // Final snap to grid (if snap is enabled)
             const currentX = parseFloat(element.style.left) || 0;
@@ -8150,6 +8541,9 @@ const FloorPlanDesigner = {
             element.classList.remove('dragging');
             element.setAttribute('data-x', snappedX);
             element.setAttribute('data-y', snappedY);
+                if (self.smartSnapEnabled) {
+                    self._applySmartSnapSingleToPeers(element);
+                }
             }
             
             // Clear multi-select dragging state

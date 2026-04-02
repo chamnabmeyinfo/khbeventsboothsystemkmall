@@ -1825,6 +1825,13 @@ class BoothController extends Controller
             $statusColors = [];
         }
 
+        // One row per status_code for the public header legend (floor-specific overrides global)
+        $statusLegendStatuses = $statusSettings
+            ->sortByDesc(fn ($s) => $s->floor_plan_id ? 1 : 0)
+            ->unique('status_code')
+            ->sortBy('sort_order')
+            ->values();
+
         // Public view actions for logged-in users (controlled by settings)
         $authUser = auth()->user();
         $allowCreateOnPublicView = Setting::getValue('public_view_allow_create_booking', true);
@@ -1874,6 +1881,7 @@ class BoothController extends Controller
             'floorImageExists',
             'canvasTextItems',
             'statusSettings',
+            'statusLegendStatuses',
             'statusColors',
             'authUser',
             'canCreateBookingOnPublicView',

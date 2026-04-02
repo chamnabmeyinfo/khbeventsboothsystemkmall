@@ -226,6 +226,10 @@
                             <a class="dropdown-item" href="#" onclick="FloorPlanDesigner.alignBooths('bottom'); return false;">
                                 <i class="fas fa-align-center"></i> Align Bottom
                             </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#" onclick="FloorPlanDesigner.snapSelectedBoothsSmartGrid(); return false;" title="Align edges of selected booths to shared vertical and horizontal lines">
+                                <i class="fas fa-border-all"></i> Smart snap (grid)
+                            </a>
                         </div>
                     </div>
                     <div class="dropdown">
