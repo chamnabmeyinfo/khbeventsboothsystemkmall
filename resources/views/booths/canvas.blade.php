@@ -258,14 +258,6 @@
                     <i class="fas fa-crosshairs"></i>
                 </button>
                 <div class="toolbar-divider"></div>
-                <!-- Rotation Controls -->
-                <button class="toolbar-btn" id="btnRotateLeft" title="Rotate Left (-90°) [Shift+R]">
-                    <i class="fas fa-undo"></i>
-            </button>
-                <button class="toolbar-btn" id="btnRotateRight" title="Rotate Right (+90°) [R]">
-                    <i class="fas fa-redo"></i>
-            </button>
-                <div class="toolbar-divider"></div>
                 <button class="toolbar-btn" id="btnUndo" title="Undo (Ctrl+Z)">
                     <i class="fas fa-undo"></i>
             </button>

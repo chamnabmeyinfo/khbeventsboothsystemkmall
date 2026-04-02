@@ -12105,16 +12105,6 @@ const FloorPlanDesigner = {
             $('#btnCenter').addClass('active');
         }
         
-        // Rotation Controls - Rotate Left (-90 degrees)
-        $('#btnRotateLeft').on('click', function() {
-            self.rotateSelectedBooths(-90);
-        });
-        
-        // Rotation Controls - Rotate Right (+90 degrees)
-        $('#btnRotateRight').on('click', function() {
-            self.rotateSelectedBooths(90);
-        });
-        
         // Function to update booth count badge and info toolbar
         self.updateBoothCount = function() {
             const booths = document.querySelectorAll('.dropped-booth');
@@ -13955,19 +13945,6 @@ const FloorPlanDesigner = {
             // Don't trigger shortcuts when typing in inputs
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
                 return;
-            }
-            
-            // Rotation shortcuts
-            if ((e.key === 'r' || e.key === 'R') && self.selectedBooths.length > 0) {
-                // Rotate right (+90°) with R key
-                if (!e.shiftKey) {
-                    self.rotateSelectedBooths(90);
-                    e.preventDefault();
-                } else {
-                    // Rotate left (-90°) with Shift+R
-                    self.rotateSelectedBooths(-90);
-                    e.preventDefault();
-                }
             }
             
             // Delete key - canvas text (no booth selected)
