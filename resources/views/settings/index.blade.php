@@ -4,7 +4,605 @@
 
 @section('content')
 <div class='looker-dashboard'>
-@include('settings._index_tabs_body')
+<div class="row mb-4">
+    <div class="col">
+        <h2 class="mb-1"><i class="fas fa-cog me-2"></i>Global Settings</h2>
+        <p class="text-muted mb-0">System configuration, appearance, uploads, and maintenance in one place.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="glass-card settings-global-tabs-card">
+            <div class="settings-tabs-scroll border-bottom">
+                <ul class="nav nav-tabs settings-main-tabs flex-nowrap mb-0 px-2 px-md-3 pt-3" id="globalSettingsTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="cache-tab" data-bs-toggle="tab" data-bs-target="#cache-management" type="button" role="tab" aria-controls="cache-management" aria-selected="true">
+                            <i class="fas fa-broom me-1 me-md-2"></i><span>Cache</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="upload-control-tab" data-bs-toggle="tab" data-bs-target="#settings-upload-control" type="button" role="tab" aria-controls="settings-upload-control" aria-selected="false">
+                            <i class="fas fa-upload me-1 me-md-2"></i><span class="d-none d-md-inline">Upload</span><span class="d-md-none">Up</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="public-view-tab" data-bs-toggle="tab" data-bs-target="#settings-public-view" type="button" role="tab" aria-controls="settings-public-view" aria-selected="false">
+                            <i class="fas fa-eye me-1 me-md-2"></i><span class="d-none d-lg-inline">Public view</span><span class="d-lg-none">Public</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="push-tab" data-bs-toggle="tab" data-bs-target="#push-notifications" type="button" role="tab" aria-controls="push-notifications" aria-selected="false">
+                            <i class="fas fa-bell me-1 me-md-2"></i><span>Push</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="system-info-tab" data-bs-toggle="tab" data-bs-target="#system-information" type="button" role="tab" aria-controls="system-information" aria-selected="false">
+                            <i class="fas fa-info-circle me-1 me-md-2"></i><span class="d-none d-md-inline">System</span><span class="d-md-none">Sys</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="company-tab" data-bs-toggle="tab" data-bs-target="#company" type="button" role="tab" aria-controls="company" aria-selected="false">
+                            <i class="fas fa-building me-1 me-md-2"></i><span>Company</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="global-color-tab" data-bs-toggle="tab" data-bs-target="#global-color-settings" type="button" role="tab" aria-controls="global-color-settings" aria-selected="false">
+                            <i class="fas fa-fill-drip me-1 me-md-2"></i><span class="d-none d-xl-inline">Color</span><span class="d-xl-none">Color</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="appearance-tab" data-bs-toggle="tab" data-bs-target="#appearance" type="button" role="tab" aria-controls="appearance" aria-selected="false">
+                            <i class="fas fa-palette me-1 me-md-2"></i><span class="d-none d-lg-inline">UI colors</span><span class="d-lg-none">UI</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="cdn-tab" data-bs-toggle="tab" data-bs-target="#cdn" type="button" role="tab" aria-controls="cdn" aria-selected="false">
+                            <i class="fas fa-cloud me-1 me-md-2"></i><span>CDN</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="module-display-tab" data-bs-toggle="tab" data-bs-target="#module-display" type="button" role="tab" aria-controls="module-display" aria-selected="false">
+                            <i class="fas fa-mobile-alt me-1 me-md-2"></i><span class="d-none d-xl-inline">Modules</span><span class="d-xl-none">Mod</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="tab-content" id="globalSettingsTabsContent">
+                <!-- Cache Management -->
+                <div class="tab-pane fade show active" id="cache-management" role="tabpanel" aria-labelledby="cache-tab" tabindex="0">
+                    <div class="p-4">
+                        <h5 class="mb-3 h6 text-dark fw-bold"><i class="fas fa-broom me-2"></i>Cache Management</h5>
+                        <p class="text-muted">Clear various caches to ensure the application is using the latest data and configurations.</p>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="card border">
+                                    <div class="p-4">
+                                        <h6 class="h5 fw-bold mb-0 text-dark">
+                                            <i class="fas fa-database me-2 text-primary"></i>Application Cache
+                                        </h6>
+                                        <p class="card-text text-muted small">Clear the application cache (stored data, queries, etc.)</p>
+                                        <form action="{{ route('settings.cache.clear') }}" method="POST" class="d-inline settings-form-ajax">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-trash me-1"></i>Clear Cache
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card border">
+                                    <div class="p-4">
+                                        <h6 class="h5 fw-bold mb-0 text-dark">
+                                            <i class="fas fa-file-code me-2 text-info"></i>Configuration Cache
+                                        </h6>
+                                        <p class="card-text text-muted small">Clear the configuration cache (config files)</p>
+                                        <form action="{{ route('settings.config.clear') }}" method="POST" class="d-inline settings-form-ajax">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-info">
+                                                <i class="fas fa-trash me-1"></i>Clear Config
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card border">
+                                    <div class="p-4">
+                                        <h6 class="h5 fw-bold mb-0 text-dark">
+                                            <i class="fas fa-route me-2 text-success"></i>Route Cache
+                                        </h6>
+                                        <p class="card-text text-muted small">Clear the route cache (route definitions)</p>
+                                        <form action="{{ route('settings.route.clear') }}" method="POST" class="d-inline settings-form-ajax">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                <i class="fas fa-trash me-1"></i>Clear Routes
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card border">
+                                    <div class="p-4">
+                                        <h6 class="h5 fw-bold mb-0 text-dark">
+                                            <i class="fas fa-eye me-2 text-warning"></i>View Cache
+                                        </h6>
+                                        <p class="card-text text-muted small">Clear the compiled view cache (Blade templates)</p>
+                                        <form action="{{ route('settings.view.clear') }}" method="POST" class="d-inline settings-form-ajax">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-trash me-1"></i>Clear Views
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card border-danger">
+                                    <div class="p-4">
+                                        <h6 class="card-title text-danger">
+                                            <i class="fas fa-broom me-2"></i>Clear All Caches
+                                        </h6>
+                                        <p class="card-text text-muted small">Clear all caches at once (Application, Config, Route, View)</p>
+                                        <form action="{{ route('settings.clear-all') }}" method="POST" class="d-inline settings-form-ajax" data-confirm="Are you sure you want to clear all caches?">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash-alt me-1"></i>Clear All
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card border-primary">
+                                    <div class="p-4">
+                                        <h6 class="card-title text-primary">
+                                            <i class="fas fa-rocket me-2"></i>Optimize Application
+                                        </h6>
+                                        <p class="card-text text-muted small">Clear all caches and optimize the application for better performance</p>
+                                        <form action="{{ route('settings.optimize') }}" method="POST" class="d-inline settings-form-ajax" data-confirm="This will clear all caches and optimize the application. Continue?">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-magic me-1"></i>Optimize
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Control -->
+                <div class="tab-pane fade" id="settings-upload-control" role="tabpanel" aria-labelledby="upload-control-tab" tabindex="0">
+                    <div class="p-4">
+                        <h5 class="mb-3 h6 text-dark fw-bold"><i class="fas fa-upload me-2"></i>Upload Control</h5>
+                        <p class="text-muted">Control file uploads across the system. Set global defaults or per-context limits (floor plan, booth, avatar, etc.).</p>
+                        @include('settings.partials.upload-control-form', [
+                            'formId' => 'uploadControlForm',
+                            'idPrefix' => '',
+                            'uploadSettings' => $uploadSettings,
+                        ])
+                    </div>
+                </div>
+
+                <!-- Public View Actions -->
+                <div class="tab-pane fade" id="settings-public-view" role="tabpanel" aria-labelledby="public-view-tab" tabindex="0">
+                    <div class="p-4">
+                        <h5 class="mb-3 h6 text-dark fw-bold"><i class="fas fa-eye me-2"></i>Public View Actions</h5>
+                        <p class="text-muted">Control what logged-in users can do on the public floor plan view (<code>/floor-plans/{id}/public</code>). Colors for the public map and ticks are managed under the <strong>Color (map &amp; bookings)</strong> tab.</p>
+                        @include('settings.partials.public-view-behavior-form', [
+                            'formId' => 'publicViewBehaviorForm',
+                            'idPrefix' => '',
+                        ])
+                    </div>
+                </div>
+
+                <!-- Push Notifications -->
+                <div class="tab-pane fade" id="push-notifications" role="tabpanel" aria-labelledby="push-tab" tabindex="0">
+                    <div class="p-4">
+                        <h5 class="mb-3 h6 text-dark fw-bold"><i class="fas fa-bell me-2"></i>Push Notifications</h5>
+                        <p class="text-muted">Enable browser push notifications so users receive alerts (e.g. new bookings, booth updates) even when the tab is in the background. Uses Web Push (VAPID).</p>
+                        <form id="pushNotificationSettingsForm" action="{{ route('settings.push-notifications.save') }}" method="POST" class="settings-form-ajax">
+                            @csrf
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="push_notifications_enabled" id="push_notifications_enabled" value="1" {{ ($pushNotificationsEnabled ?? true) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="push_notifications_enabled">
+                                        <strong>Enable push notifications</strong>
+                                    </label>
+                                </div>
+                                <small class="text-muted d-block mt-1">When enabled, the system will send browser push notifications for in-app events (requires VAPID keys and user permission).</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="push_vapid_public_key">VAPID public key (optional)</label>
+                                <input type="text" class="form-control font-monospace" name="push_vapid_public_key" id="push_vapid_public_key" value="{{ old('push_vapid_public_key', $pushVapidPublicKey ?? '') }}" placeholder="e.g. BN1a2b3c..." maxlength="500">
+                                <small class="text-muted d-block mt-1">Required for Web Push. Generate with <code>php artisan webpush:vapid</code> (or similar). You can also set <code>PUSH_VAPID_PUBLIC_KEY</code> and <code>PUSH_VAPID_PRIVATE_KEY</code> in <code>.env</code>; the private key must never be stored in the database.</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Save Push Notification Settings
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- System Information -->
+                <div class="tab-pane fade" id="system-information" role="tabpanel" aria-labelledby="system-info-tab" tabindex="0">
+                    <div class="p-4">
+                        <h5 class="mb-3 h6 text-dark fw-bold"><i class="fas fa-info-circle me-2"></i>System Information</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <th width="200">Laravel Version:</th>
+                                        <td>{{ app()->version() }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>PHP Version:</th>
+                                        <td>{{ PHP_VERSION }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Environment:</th>
+                                        <td>
+                                            <span class="badge bg-{{ app()->environment() === 'production' ? 'danger' : 'info' }}">
+                                                {{ app()->environment() }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Debug Mode:</th>
+                                        <td>
+                                            <span class="badge bg-{{ config('app.debug') ? 'warning' : 'success' }}">
+                                                {{ config('app.debug') ? 'ON' : 'OFF' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <th width="200">App Name:</th>
+                                        <td>{{ config('app.name') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>App URL:</th>
+                                        <td>{{ config('app.url') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Timezone:</th>
+                                        <td>{{ config('app.timezone') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Locale:</th>
+                                        <td>{{ config('app.locale') }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+<!-- Company Information Tab -->
+            <div class="tab-pane fade" id="company" role="tabpanel" aria-labelledby="company-tab" tabindex="0">
+                <div class="p-4">
+                        <h5 class="mb-4"><i class="fas fa-building me-2"></i>Company Information</h5>
+                        <form id="companySettingsForm">
+                            @csrf
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Company Name</label>
+                                    <input type="text" class="form-control" id="company_name" name="company_name" placeholder="Enter company name">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Company Email</label>
+                                    <input type="email" class="form-control" id="company_email" name="company_email" placeholder="contact@company.com">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Company Phone</label>
+                                    <input type="text" class="form-control" id="company_phone" name="company_phone" placeholder="+1234567890">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Company Website</label>
+                                    <input type="url" class="form-control" id="company_website" name="company_website" placeholder="https://www.company.com">
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Company Address</label>
+                                    <textarea class="form-control" id="company_address" name="company_address" rows="2" placeholder="Enter company address"></textarea>
+                                </div>
+
+                                <!-- Logo Upload -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Company Logo</label>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="flex-shrink-0">
+                                            <img id="logoPreview" src="" alt="Logo" style="max-width: 150px; max-height: 80px; display: none; border: 1px solid #ddd; padding: 5px; border-radius: 4px;">
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <input type="file" class="form-control" id="logoFile" accept="image/*">
+                                            <small class="text-muted">Recommended: 200x80px, PNG/JPG (max 2MB)</small>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="company_logo" name="company_logo">
+                                </div>
+
+                                <!-- Favicon Upload -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Favicon</label>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="flex-shrink-0">
+                                            <img id="faviconPreview" src="" alt="Favicon" style="max-width: 32px; max-height: 32px; display: none; border: 1px solid #ddd; padding: 2px; border-radius: 4px;">
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <input type="file" class="form-control" id="faviconFile" accept="image/*">
+                                            <small class="text-muted">Recommended: 32x32px, ICO/PNG (max 512KB)</small>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="company_favicon" name="company_favicon">
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Save Company Settings
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+            </div>
+
+            <!-- Color: floor plan, booth map, booking statuses (single responsive implementation; breakpoints align with project standard) -->
+            <div class="tab-pane fade" id="global-color-settings" role="tabpanel" aria-labelledby="global-color-tab" tabindex="0">
+                <div class="p-4">
+                        <h5 class="mb-2"><i class="fas fa-fill-drip me-2"></i>Color (map &amp; bookings)</h5>
+                        <p class="text-muted mb-4">Public floor plan accent and booked-tick appearance, booth colors on the canvas/public map, and booking record status colors.</p>
+
+                        <div class="mb-5 pb-4 border-bottom">
+                            <h6 class="mb-3"><i class="fas fa-map me-2 text-primary"></i>Public floor plan &amp; booked tick</h6>
+                            <p class="text-muted small">Applies to the public floor plan view and the booked-booth checkmark on the designer and public view.</p>
+                            @include('settings.partials.floor-plan-color-settings-form', [
+                                'formId' => 'floorPlanColorSettingsForm',
+                                'idPrefix' => '',
+                            ])
+                        </div>
+
+                        <div class="mb-5 pb-4 border-bottom color-tab-booth-status">
+                            <h6 class="mb-3"><i class="fas fa-th-large me-2 text-primary"></i>Booth status (floor plan map)</h6>
+                            <p class="text-muted small">Colors and labels for booth states on the canvas and public floor plan. You can scope a status to a specific floor plan or leave it global.</p>
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <button type="button" class="btn btn-primary btn-sm" id="ct_btnAddStatus"><i class="fas fa-plus me-1"></i>Add status</button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="ct_btnSaveStatusSettings"><i class="fas fa-save me-1"></i>Save booth statuses</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="ct_btnResetStatusSettings"><i class="fas fa-undo me-1"></i>Reload</button>
+                                <button type="button" class="btn btn-outline-warning btn-sm" id="ct_btnRestoreBoothDefaults"><i class="fas fa-history me-1"></i>Restore defaults</button>
+                            </div>
+                            <p class="text-muted small mb-3">Restore defaults replaces all booth statuses with the five factory global statuses (custom and floor-plan-specific rows are removed).</p>
+                            <div id="ct_statusSettingsContainer">
+                                <div class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Open this tab to load booth status colors.</div>
+                            </div>
+                        </div>
+
+                        <div class="color-tab-booking-status">
+                            <h6 class="mb-3"><i class="fas fa-calendar-check me-2 text-primary"></i>Booking status (bookings module)</h6>
+                            <p class="text-muted small">Labels and colors for booking records (lists, cards, detail pages).</p>
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <button type="button" class="btn btn-primary btn-sm" id="bk_btnAddBookingStatus"><i class="fas fa-plus me-1"></i>Add status</button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="bk_btnSaveBookingStatuses"><i class="fas fa-save me-1"></i>Save booking statuses</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="bk_btnReloadBookingStatuses"><i class="fas fa-undo me-1"></i>Reload</button>
+                                <button type="button" class="btn btn-outline-warning btn-sm" id="bk_btnRestoreBookingDefaults"><i class="fas fa-history me-1"></i>Restore defaults</button>
+                            </div>
+                            <p class="text-muted small mb-3">Restore defaults resets all booking statuses to the six factory defaults (custom rows are removed).</p>
+                            <div id="bk_bookingStatusSettingsContainer">
+                                <div class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Open this tab to load booking statuses.</div>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+
+            <!-- Appearance/Colors Tab -->
+            <div class="tab-pane fade" id="appearance" role="tabpanel" aria-labelledby="appearance-tab" tabindex="0">
+                <div class="p-4">
+                        <h5 class="mb-4"><i class="fas fa-palette me-2"></i>System Color Scheme</h5>
+                        <p class="text-muted mb-4">Customize the color scheme for your entire system. Changes will be applied across all pages.</p>
+
+                        <form id="appearanceSettingsForm">
+                            @csrf
+                            <div class="row g-4">
+                                <!-- Primary Colors -->
+                                <div class="col-md-6">
+                                    <h6 class="mb-3 d-flex flex-wrap align-items-center gap-2">Primary Colors
+                                        <button type="button" class="btn btn-sm btn-outline-secondary appearance-restore-section" data-appearance-section="primary">Restore defaults</button>
+                                    </h6>
+                                    <div class="mb-3">
+                                        <label class="form-label">Primary Color</label>
+                                        <div class="input-group">
+                                            <input type="color" class="form-control form-control-color" id="primary_color" name="primary_color" value="#4e73df">
+                                            <input type="text" class="form-control" id="primary_color_text" value="#4e73df" readonly>
+                                        </div>
+                                        <small class="text-muted">Main brand color for buttons and links</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Secondary Color</label>
+                                        <div class="input-group">
+                                            <input type="color" class="form-control form-control-color" id="secondary_color" name="secondary_color" value="#667eea">
+                                            <input type="text" class="form-control" id="secondary_color_text" value="#667eea" readonly>
+                                        </div>
+                                        <small class="text-muted">Secondary brand color</small>
+                                    </div>
+                                </div>
+
+                                <!-- Status Colors -->
+                                <div class="col-md-6">
+                                    <h6 class="mb-3 d-flex flex-wrap align-items-center gap-2">Status Colors
+                                        <button type="button" class="btn btn-sm btn-outline-secondary appearance-restore-section" data-appearance-section="status">Restore defaults</button>
+                                    </h6>
+                                    <div class="mb-3">
+                                        <label class="form-label">Success Color</label>
+                                        <div class="input-group">
+                                            <input type="color" class="form-control form-control-color" id="success_color" name="success_color" value="#1cc88a">
+                                            <input type="text" class="form-control" id="success_color_text" value="#1cc88a" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Info Color</label>
+                                        <div class="input-group">
+                                            <input type="color" class="form-control form-control-color" id="info_color" name="info_color" value="#36b9cc">
+                                            <input type="text" class="form-control" id="info_color_text" value="#36b9cc" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Warning Color</label>
+                                        <div class="input-group">
+                                            <input type="color" class="form-control form-control-color" id="warning_color" name="warning_color" value="#f6c23e">
+                                            <input type="text" class="form-control" id="warning_color_text" value="#f6c23e" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Danger Color</label>
+                                        <div class="input-group">
+                                            <input type="color" class="form-control form-control-color" id="danger_color" name="danger_color" value="#e74a3b">
+                                            <input type="text" class="form-control" id="danger_color_text" value="#e74a3b" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Layout Colors -->
+                                <div class="col-md-12">
+                                    <h6 class="mb-3 d-flex flex-wrap align-items-center gap-2">Layout Colors
+                                        <button type="button" class="btn btn-sm btn-outline-secondary appearance-restore-section" data-appearance-section="layout">Restore defaults</button>
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Sidebar Background</label>
+                                            <div class="input-group">
+                                                <input type="color" class="form-control form-control-color" id="sidebar_bg" name="sidebar_bg" value="#224abe">
+                                                <input type="text" class="form-control" id="sidebar_bg_text" value="#224abe" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Navbar Background</label>
+                                            <div class="input-group">
+                                                <input type="color" class="form-control form-control-color" id="navbar_bg" name="navbar_bg" value="#ffffff">
+                                                <input type="text" class="form-control" id="navbar_bg_text" value="#ffffff" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Footer Background</label>
+                                            <div class="input-group">
+                                                <input type="color" class="form-control form-control-color" id="footer_bg" name="footer_bg" value="#f8f9fc">
+                                                <input type="text" class="form-control" id="footer_bg_text" value="#f8f9fc" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Save Appearance Settings
+                                </button>
+                                <button type="button" class="btn btn-secondary ms-2" id="resetColors">
+                                    <i class="fas fa-undo me-2"></i>Reset all to defaults
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+            </div>
+
+            <!-- CDN Settings Tab -->
+            <div class="tab-pane fade" id="cdn" role="tabpanel" aria-labelledby="cdn-tab" tabindex="0">
+                <div class="p-4">
+                        <h5 class="mb-4"><i class="fas fa-cloud me-2"></i>CDN Settings</h5>
+                        <p class="text-muted mb-4">Choose whether to load CSS and JavaScript libraries from CDN (Content Delivery Network) or from your local server.</p>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>CDN vs Local Assets:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li><strong>CDN (ON):</strong> Faster loading from global CDN servers, but requires internet connection</li>
+                                <li><strong>Local (OFF):</strong> Loads from your server, works offline, but may be slower</li>
+                            </ul>
+                        </div>
+
+                        <form id="cdnSettingsForm">
+                            @csrf
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <div class="card border">
+                                        <div class="p-4">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="use_cdn" name="use_cdn" style="width: 3rem; height: 1.5rem;">
+                                                <label class="form-check-label ms-3" for="use_cdn">
+                                                    <strong>Use CDN for Assets</strong>
+                                                    <p class="text-muted small mb-0 mt-1">When enabled, CSS and JavaScript libraries will be loaded from CDN instead of local files.</p>
+                                                </label>
+                                            </div>
+
+                                            <div id="cdnStatus" class="mt-3 p-3 rounded" style="display: none;">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-circle me-2" style="font-size: 0.75rem;"></i>
+                                                    <span id="cdnStatusText"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Save CDN Settings
+                                </button>
+                                <button type="button" class="btn btn-secondary ms-2" id="cdnRefreshPageHintBtn">
+                                    <i class="fas fa-sync-alt me-2"></i>Refresh Page
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+            </div>
+
+            <!-- Module Display Customize Tab -->
+            <div class="tab-pane fade" id="module-display" role="tabpanel" aria-labelledby="module-display-tab" tabindex="0">
+                <div class="p-4">
+                        <h5 class="mb-4"><i class="fas fa-mobile-alt me-2"></i>Module Display Customize</h5>
+                        <p class="text-muted mb-4">Control which modules and features are visible on Mobile and Tablet devices. This allows you to customize the user experience for different screen sizes.</p>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Device-Specific Display:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li><strong>Mobile (≤768px):</strong> Control visibility on smartphones</li>
+                                <li><strong>Tablet (769px-1024px):</strong> Control visibility on tablets</li>
+                                <li>Desktop views are not affected by these settings</li>
+                            </ul>
+                        </div>
+
+                        @include('settings.partials.module-display-form', [
+                            'moduleDisplayFormId' => 'moduleDisplayForm',
+                            'moduleDisplayContainerId' => 'moduleDisplayContainer',
+                            'useGlobalResetOnclick' => true,
+                        ])
+                    </div>
+            </div>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
 </div>
 
 
