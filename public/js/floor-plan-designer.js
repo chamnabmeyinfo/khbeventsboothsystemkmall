@@ -11586,14 +11586,11 @@ const FloorPlanDesigner = {
         
         console.log('[Load Positions] Loading booth positions from database for', booths.length, 'booths');
         
-        function fpBoothBookedWithClientPink(booth) {
-            var bid = booth.book_id != null ? booth.book_id : booth.bookid;
-            var cid = booth.client_id != null ? booth.client_id : booth.clientId;
-            if (bid === null || bid === undefined || bid === '' || bid === 0 || bid === '0') return false;
-            if (cid === null || cid === undefined || cid === '' || cid === 0 || cid === '0') return false;
-            return true;
+        /** Fill from bookings module (BookingStatusSetting) — server sends booking_status_color when booth has bookid. */
+        function fpBoothUsesBookingStatusFill(booth) {
+            var c = booth.booking_status_color;
+            return c != null && String(c).length > 0;
         }
-        var FP_BOOKED_WITH_CLIENT_PINK = '#ec4899';
         
         // Clear any existing booths on canvas first to prevent duplicates
         // This ensures a clean state before loading from database
@@ -11735,16 +11732,19 @@ const FloorPlanDesigner = {
                         existingBooth.classList.remove('booked');
                     }
                     
-                    if (fpBoothBookedWithClientPink(booth)) {
-                        existingBooth.style.setProperty('background-color', FP_BOOKED_WITH_CLIENT_PINK, 'important');
-                        existingBooth.style.setProperty('border-color', FP_BOOKED_WITH_CLIENT_PINK, 'important');
-                        existingBooth.style.setProperty('color', '#ffffff', 'important');
-                        existingBooth.setAttribute('data-background-color', FP_BOOKED_WITH_CLIENT_PINK);
-                        existingBooth.setAttribute('data-border-color', FP_BOOKED_WITH_CLIENT_PINK);
-                        existingBooth.setAttribute('data-text-color', '#ffffff');
-                        existingBooth.classList.add('booked-with-client');
+                    if (fpBoothUsesBookingStatusFill(booth)) {
+                        var bbg = booth.booking_status_color;
+                        var bbd = booth.booking_border_color || bbg;
+                        var btx = booth.booking_text_color || '#ffffff';
+                        existingBooth.style.setProperty('background-color', bbg, 'important');
+                        existingBooth.style.setProperty('border-color', bbd, 'important');
+                        existingBooth.style.setProperty('color', btx, 'important');
+                        existingBooth.setAttribute('data-background-color', bbg);
+                        existingBooth.setAttribute('data-border-color', bbd);
+                        existingBooth.setAttribute('data-text-color', btx);
+                        existingBooth.classList.add('has-booking-status-fill');
                     } else {
-                        existingBooth.classList.remove('booked-with-client');
+                        existingBooth.classList.remove('has-booking-status-fill');
                     }
                     
                     // Still apply other appearance properties if they exist (font-weight, font-family, etc.)
@@ -11937,16 +11937,19 @@ const FloorPlanDesigner = {
                         boothElement.classList.remove('booked');
                     }
                 
-                if (fpBoothBookedWithClientPink(booth)) {
-                    boothElement.style.setProperty('background-color', FP_BOOKED_WITH_CLIENT_PINK, 'important');
-                    boothElement.style.setProperty('border-color', FP_BOOKED_WITH_CLIENT_PINK, 'important');
-                    boothElement.style.setProperty('color', '#ffffff', 'important');
-                    boothElement.setAttribute('data-background-color', FP_BOOKED_WITH_CLIENT_PINK);
-                    boothElement.setAttribute('data-border-color', FP_BOOKED_WITH_CLIENT_PINK);
-                    boothElement.setAttribute('data-text-color', '#ffffff');
-                    boothElement.classList.add('booked-with-client');
+                if (fpBoothUsesBookingStatusFill(booth)) {
+                    var nbg = booth.booking_status_color;
+                    var nbd = booth.booking_border_color || nbg;
+                    var ntx = booth.booking_text_color || '#ffffff';
+                    boothElement.style.setProperty('background-color', nbg, 'important');
+                    boothElement.style.setProperty('border-color', nbd, 'important');
+                    boothElement.style.setProperty('color', ntx, 'important');
+                    boothElement.setAttribute('data-background-color', nbg);
+                    boothElement.setAttribute('data-border-color', nbd);
+                    boothElement.setAttribute('data-text-color', ntx);
+                    boothElement.classList.add('has-booking-status-fill');
                 } else {
-                    boothElement.classList.remove('booked-with-client');
+                    boothElement.classList.remove('has-booking-status-fill');
                 }
                 
                 // Still apply other appearance properties if they exist (font-weight, font-family, etc.)

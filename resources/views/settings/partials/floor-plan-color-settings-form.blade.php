@@ -135,7 +135,7 @@
                 </div>
             </div>
         </div>
-        <small class="text-muted d-block mt-1">Customize how the booked tick looks on canvas and public view. Colors must be hex (e.g. #ec4899).</small>
+        <small class="text-muted d-block mt-1">Customize how the booked tick looks on canvas and public view. Colors must be hex (e.g. #ec4899). Booths linked to a booking use colors from <strong>Settings → Booking statuses</strong> (bookings module).</small>
     </div>
     <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
         <button type="submit" class="btn btn-primary">

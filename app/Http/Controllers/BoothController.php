@@ -20,6 +20,7 @@ use App\Http\Requests\UploadFloorplanRequest;
 use App\Models\AffiliateClick;
 use App\Models\Asset;
 use App\Models\Book;
+use App\Models\BookingStatusSetting;
 use App\Models\Booth;
 use App\Models\BoothType;
 use App\Models\CanvasSetting;
@@ -138,7 +139,7 @@ class BoothController extends Controller
         }
 
         // Get all booths ordered by booth number, including positions
-        $boothsQuery = Booth::with(['client', 'category', 'subCategory', 'asset', 'boothType', 'user', 'floorPlan']);
+        $boothsQuery = Booth::with(['client', 'category', 'subCategory', 'asset', 'boothType', 'user', 'floorPlan', 'book.statusSetting']);
 
         // Filter by floor plan if specified
         if ($floorPlanId) {
@@ -204,7 +205,7 @@ class BoothController extends Controller
 
         // Prepare booth data for JavaScript (to avoid parsing issues in Blade)
         $boothsForJS = $booths->map(function ($booth) {
-            return [
+            return array_merge([
                 'id' => $booth->id,
                 'booth_number' => $booth->booth_number,
                 'company' => $booth->client ? $booth->client->company : '',
@@ -232,7 +233,7 @@ class BoothController extends Controller
                 'font_family' => $booth->font_family,
                 'text_align' => $booth->text_align,
                 'box_shadow' => $booth->box_shadow,
-            ];
+            ], $this->bookingStatusColorsForBooth($booth));
         })->values();
 
         // #region agent log
@@ -1739,7 +1740,7 @@ class BoothController extends Controller
 
         // Get all booths for this floor plan
         $booths = Booth::where('floor_plan_id', $id)
-            ->with(['client', 'category', 'subCategory', 'boothType', 'book'])
+            ->with(['client', 'category', 'subCategory', 'boothType', 'book.statusSetting'])
             ->orderBy('booth_number', 'asc')
             ->get();
 
@@ -1755,7 +1756,7 @@ class BoothController extends Controller
                 }
             }
 
-            return [
+            return array_merge([
                 'id' => $booth->id,
                 'booth_number' => $booth->booth_number,
                 'company' => $booth->client ? $booth->client->company : '',
@@ -1795,7 +1796,7 @@ class BoothController extends Controller
                 'book_id' => $booth->bookid,
                 'book_userid' => $booth->book ? $booth->book->userid : null,
                 'can_manage_booking' => ($booth->book && auth()->check()) ? $booth->book->canBeManagedBy(auth()->user()) : false,
-            ];
+            ], $this->bookingStatusColorsForBooth($booth));
         })->values();
 
         // Get canvas settings
@@ -2394,5 +2395,60 @@ class BoothController extends Controller
                 'message' => 'Error updating order: '.$e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Floor plan / canvas: colors from Settings → Booking statuses when a booth row is linked to a booking (book table).
+     *
+     * @return array{
+     *     booking_status_code: int|null,
+     *     booking_status_color: string|null,
+     *     booking_border_color: string|null,
+     *     booking_text_color: string|null
+     * }
+     */
+    private function bookingStatusColorsForBooth(Booth $booth): array
+    {
+        $empty = [
+            'booking_status_code' => null,
+            'booking_status_color' => null,
+            'booking_border_color' => null,
+            'booking_text_color' => null,
+        ];
+        if (! $booth->bookid) {
+            return $empty;
+        }
+        $book = $booth->relationLoaded('book') ? $booth->book : $booth->book()->with('statusSetting')->first();
+        if (! $book) {
+            return $empty;
+        }
+        $code = (int) ($book->status ?? 1);
+        $st = null;
+        if ($book->relationLoaded('statusSetting')) {
+            $st = $book->statusSetting;
+        }
+        if (! $st) {
+            $st = BookingStatusSetting::where('status_code', $code)->first();
+        }
+        if (! $st) {
+            $st = BookingStatusSetting::getByCode($code);
+        }
+        if (! $st) {
+            return array_merge($empty, [
+                'booking_status_code' => $code,
+                'booking_status_color' => '#ec4899',
+                'booking_border_color' => '#ec4899',
+                'booking_text_color' => '#ffffff',
+            ]);
+        }
+
+        $bg = $st->status_color ?? '#ec4899';
+
+        return [
+            'booking_status_code' => $code,
+            'booking_status_color' => $bg,
+            'booking_border_color' => $st->border_color ?? $bg,
+            'booking_text_color' => $st->text_color ?? '#ffffff',
+        ];
     }
 }
