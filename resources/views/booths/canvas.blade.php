@@ -200,10 +200,6 @@
                     <i class="fas fa-hand-paper"></i>
                         <span class="tool-label">Pan</span>
             </button>
-                    <button class="toolbar-btn" id="btnZoomTool" title="Zoom Tool (Z)" data-tool="zoom">
-                        <i class="fas fa-search-plus"></i>
-                        <span class="tool-label">Zoom</span>
-                    </button>
                 </div>
                 <div class="toolbar-divider"></div>
                 <div class="tool-group" title="Alignment Tools">
@@ -317,20 +313,6 @@
                     <i class="fas fa-eraser"></i>
             </button>
                 @endif
-            </div>
-            <div class="toolbar-section">
-                <div class="zoom-controls-group">
-                    <button class="toolbar-btn" id="zoomOut" title="Zoom Out">
-                <i class="fas fa-minus"></i>
-            </button>
-                    <span class="zoom-level" id="zoomLevel">100%</span>
-                    <button class="toolbar-btn" id="zoomIn" title="Zoom In">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                    <button class="toolbar-btn" id="zoomFit" title="Fit to Canvas (Center and Fit Image)">
-                <i class="fas fa-expand-arrows-alt"></i>
-            </button>
-                </div>
             </div>
             <div class="toolbar-section">
                 @if(isset($canEditCanvas) && $canEditCanvas)
@@ -746,8 +728,6 @@
                     
                 <!-- Grid Overlay -->
                 <div id="gridOverlay" class="grid-overlay"></div>
-                <!-- Zoom Selection Box (for Zoom Tool) -->
-                <div id="zoomSelection" class="zoom-selection" style="display: none;"></div>
                     </div>
                     </div>
                     

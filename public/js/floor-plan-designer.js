@@ -605,10 +605,6 @@ const FloorPlanDesigner = {
     canvasWidth: FPD.canvasWidth, // Floor plan canvas width or default
     canvasHeight: FPD.canvasHeight, // Floor plan canvas height or default
     canvasResolution: 300, // Default export resolution (DPI)
-    isZoomSelecting: false, // Track if user is selecting area to zoom (Ctrl+Space)
-    zoomSelectionStart: null, // Start position of zoom selection {x, y}
-    zoomSelectionElement: null, // The selection rectangle element
-    ctrlSpacePressed: false, // Track Ctrl+Space key combination
     lastMousePosition: null, // Track last mouse position for zoom focal point {x, y} in canvas coordinates
     zoomFocalPoint: null, // Track zoom focal point set by clicking while holding Space {x, y} in canvas coordinates
     uploadSizeLimit: 10, // Default upload size limit in MB (0 = no limit)
@@ -1020,14 +1016,6 @@ const FloorPlanDesigner = {
                 self.switchTool('pan');
                 const btn = document.getElementById('btnPanTool');
                 if (btn) btn.click();
-            } else if (e.key === 'z' || e.key === 'Z') {
-                e.preventDefault();
-                if (!self.isSpacePanning && self.currentTool !== 'zoom') {
-                    self.previousTool = self.currentTool;
-                }
-                self.switchTool('zoom');
-                const btn = document.getElementById('btnZoomTool');
-                if (btn) btn.click();
             } else if (e.key === 'a' || e.key === 'A') {
                 e.preventDefault();
                 if (!self.isSpacePanning && self.currentTool !== 'align') {
@@ -1153,7 +1141,6 @@ const FloorPlanDesigner = {
             self.setupTextFormatPanel();
             self.setupCanvas();
             self.setupKeyboard();
-            self.setupZoomSelection(); // Setup Photoshop-like zoom selection (Ctrl+Space)
             
             // AUTOMATICALLY load floor plan image and resize canvas to match image resolution
             if (FPD.currentFloorPlan && FPD.currentFloorPlan.floor_image) {
@@ -1336,7 +1323,6 @@ const FloorPlanDesigner = {
             self.setupCanvas();
             self.setupZoneBoothSelection();
             self.setupKeyboard();
-            self.setupZoomSelection();
             self.loadCanvasSettings();
             if (!localStorage.getItem('canvasWidth') || !localStorage.getItem('canvasHeight')) {
                 self.setCanvasSize(self.canvasWidth, self.canvasHeight);
@@ -5580,6 +5566,9 @@ const FloorPlanDesigner = {
     // Switch between tools
     switchTool: function(tool) {
         const self = this;
+        if (tool === 'zoom') {
+            tool = 'select';
+        }
         self.currentTool = tool;
         
         // Update button states
@@ -5589,7 +5578,7 @@ const FloorPlanDesigner = {
         // Update canvas classes and cursor
         const canvas = document.getElementById('print');
         if (canvas) {
-            canvas.classList.remove('tool-select', 'tool-pan', 'tool-zoom', 'tool-align', 'tool-distribute', 'tool-measure', 'tool-text');
+            canvas.classList.remove('tool-select', 'tool-pan', 'tool-align', 'tool-distribute', 'tool-measure', 'tool-text');
             canvas.classList.add('tool-' + tool);
             
             // Set appropriate cursor
@@ -5599,9 +5588,6 @@ const FloorPlanDesigner = {
                     break;
                 case 'pan':
                     canvas.style.cursor = 'grab';
-                    break;
-                case 'zoom':
-                    canvas.style.cursor = 'zoom-in';
                     break;
                 case 'align':
                     canvas.style.cursor = 'crosshair';
@@ -5633,7 +5619,6 @@ const FloorPlanDesigner = {
         const toolNames = {
             'select': 'Select Tool',
             'pan': 'Pan Tool',
-            'zoom': 'Zoom Tool',
             'align': 'Align Tool',
             'distribute': 'Distribute Tool',
             'measure': 'Measure Tool',
@@ -5658,172 +5643,6 @@ const FloorPlanDesigner = {
         
         // Pan Tool - Enable direct panning
         // Handled by Panzoom when tool is 'pan'
-        
-        // Zoom Tool - Click to zoom in, Alt+Click to zoom out, Drag to zoom selection
-        container.addEventListener('mousedown', function(e) {
-            if (self.currentTool === 'zoom' && e.button === 0) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const canvasRect = canvas.getBoundingClientRect();
-                const containerRect = container.getBoundingClientRect();
-                
-                // Get current zoom and pan
-                let scale = 1;
-                let panX = 0;
-                let panY = 0;
-                if (self.panzoomInstance) {
-                    if (self.panzoomInstance.getScale) {
-                        scale = self.panzoomInstance.getScale();
-                    }
-                    if (self.panzoomInstance.getTransform) {
-                        const transform = self.panzoomInstance.getTransform();
-                        panX = transform.x || 0;
-                        panY = transform.y || 0;
-                    }
-                }
-                
-                // Convert click position to canvas coordinates
-                const clickX = (e.clientX - canvasRect.left - panX) / scale;
-                const clickY = (e.clientY - canvasRect.top - panY) / scale;
-                
-                // Check if Alt/Option key is pressed (zoom out)
-                const isZoomOut = e.altKey || e.metaKey;
-                
-                // Update cursor
-                if (isZoomOut) {
-                    canvas.classList.add('zooming-out');
-                } else {
-                    canvas.classList.remove('zooming-out');
-                }
-                
-                // Start zoom selection or click zoom
-                let isDragging = false;
-                const startX = e.clientX;
-                const startY = e.clientY;
-                const startTime = Date.now();
-                
-                // Capture variables for nested functions
-                const capturedClickX = clickX;
-                const capturedClickY = clickY;
-                const capturedIsZoomOut = isZoomOut;
-                
-                // Create or get zoom selection element
-                let zoomSelection = document.getElementById('zoomSelection');
-                if (!zoomSelection) {
-                    zoomSelection = document.createElement('div');
-                    zoomSelection.className = 'zoom-selection';
-                    zoomSelection.id = 'zoomSelection';
-                    container.appendChild(zoomSelection);
-                }
-                
-                // Mouse move handler
-                const handleZoomMove = function(e) {
-                    const moveDistance = Math.abs(e.clientX - startX) + Math.abs(e.clientY - startY);
-                    if (moveDistance > 5) {
-                        isDragging = true;
-                        
-                        const currentContainerRect = container.getBoundingClientRect();
-                        const currentX = e.clientX - currentContainerRect.left;
-                        const currentY = e.clientY - currentContainerRect.top;
-                        const startContainerX = startX - currentContainerRect.left;
-                        const startContainerY = startY - currentContainerRect.top;
-                        
-                        const left = Math.min(startContainerX, currentX);
-                        const top = Math.min(startContainerY, currentY);
-                        const width = Math.abs(currentX - startContainerX);
-                        const height = Math.abs(currentY - startContainerY);
-                        
-                        zoomSelection.style.display = 'block';
-                        zoomSelection.style.left = left + 'px';
-                        zoomSelection.style.top = top + 'px';
-                        zoomSelection.style.width = width + 'px';
-                        zoomSelection.style.height = height + 'px';
-                        zoomSelection.classList.add('active');
-                    }
-                };
-                
-                // Mouse up handler
-                const handleZoomUp = function(e) {
-                    document.removeEventListener('mousemove', handleZoomMove);
-                    document.removeEventListener('mouseup', handleZoomUp);
-                    
-                    const moveDistance = Math.abs(e.clientX - startX) + Math.abs(e.clientY - startY);
-                    const timeDiff = Date.now() - startTime;
-                    
-                    canvas.classList.remove('zooming-out');
-                    
-                    // Re-get current transform values in case they changed
-                    let currentScale = scale;
-                    let currentPanX = panX;
-                    let currentPanY = panY;
-                    if (self.panzoomInstance) {
-                        if (self.panzoomInstance.getScale) {
-                            currentScale = self.panzoomInstance.getScale();
-                        }
-                        if (self.panzoomInstance.getTransform) {
-                            const transform = self.panzoomInstance.getTransform();
-                            currentPanX = transform.x || 0;
-                            currentPanY = transform.y || 0;
-                        }
-                    }
-                    
-                    if (isDragging && moveDistance > 10) {
-                        // Drag selection - zoom to selected area
-                        const containerRect = container.getBoundingClientRect();
-                        const endX = e.clientX - containerRect.left;
-                        const endY = e.clientY - containerRect.top;
-                        const startContainerX = startX - containerRect.left;
-                        const startContainerY = startY - containerRect.top;
-                        
-                        const selectionLeft = Math.min(startContainerX, endX);
-                        const selectionTop = Math.min(startContainerY, endY);
-                        const selectionWidth = Math.abs(endX - startContainerX);
-                        const selectionHeight = Math.abs(endY - startContainerY);
-                        
-                        if (selectionWidth > 10 && selectionHeight > 10) {
-                            const canvasLeft = (selectionLeft - currentPanX) / currentScale;
-                            const canvasTop = (selectionTop - currentPanY) / currentScale;
-                            const canvasRight = ((selectionLeft + selectionWidth) - currentPanX) / currentScale;
-                            const canvasBottom = ((selectionTop + selectionHeight) - currentPanY) / currentScale;
-                            
-                            self.zoomToSelection(canvasLeft, canvasTop, canvasRight, canvasBottom);
-                        }
-                    } else if (!isDragging && timeDiff < 300) {
-                        // Click zoom - zoom in/out at click point
-                        const zoomFactor = capturedIsZoomOut ? 0.8 : 1.25;
-                        const newScale = capturedIsZoomOut ? 
-                            Math.max(0.1, currentScale * zoomFactor) : 
-                            Math.min(5, currentScale * zoomFactor);
-                        
-                        if (self.panzoomInstance && self.panzoomInstance.zoom) {
-                            // Zoom with focal point if supported
-                            try {
-                                self.panzoomInstance.zoom(newScale, { 
-                                    animate: true,
-                                    focal: { x: capturedClickX, y: capturedClickY }
-                                });
-                            } catch (err) {
-                                // Fallback if focal point not supported
-                                self.panzoomInstance.zoom(newScale, { animate: true });
-                            }
-                            
-                            self.zoomLevel = newScale;
-                            const zoomLevelEl = document.getElementById('zoomLevel');
-                            if (zoomLevelEl) {
-                                zoomLevelEl.textContent = Math.round(newScale * 100) + '%';
-                            }
-                        }
-                    }
-                    
-                    zoomSelection.style.display = 'none';
-                    zoomSelection.classList.remove('active');
-                };
-                
-                document.addEventListener('mousemove', handleZoomMove);
-                document.addEventListener('mouseup', handleZoomUp);
-            }
-        });
         
         // Text Tool - Click on canvas to add a text label
         container.addEventListener('mousedown', function(e) {
@@ -13034,102 +12853,6 @@ const FloorPlanDesigner = {
             };
         }
         
-        $('#zoomIn').on('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            if (self.panzoomInstance) {
-                const canvas = document.getElementById('print');
-                const container = document.getElementById('printContainer');
-                if (canvas && container) {
-                    // Get current scale
-                    const currentScale = self.panzoomInstance.getScale ? self.panzoomInstance.getScale() : 1;
-                    const newScale = Math.min(currentScale * 1.2, 5); // Increase by 20%, max 5x
-                    
-                    // Always use canvas center (crosshairs) as the focal point
-                    const canvasCenterX = (self.canvasWidth || 1200) / 2;
-                    const canvasCenterY = (self.canvasHeight || 800) / 2;
-                    const focalPoint = { x: canvasCenterX, y: canvasCenterY };
-                    
-                    // Apply zoom with canvas center as focal point
-                    if (self.panzoomInstance.zoom && focalPoint) {
-                        self.panzoomInstance.zoom(newScale, { 
-                            animate: true, 
-                            focal: { x: focalPoint.x, y: focalPoint.y }
-                        });
-                    } else if (self.panzoomInstance.zoom) {
-                        // Fallback if no focal point
-                        self.panzoomInstance.zoom(newScale, { animate: true });
-                    }
-                    
-                    // Update zoom level display immediately with the new scale
-                    self.zoomLevel = newScale;
-                    $('#zoomLevel').text(Math.round(newScale * 100) + '%');
-                    
-                    // Also update after a delay to sync with actual panzoom state
-                    setTimeout(function() {
-                        if (self.panzoomInstance && self.panzoomInstance.getScale) {
-                            const actualScale = self.panzoomInstance.getScale();
-                            if (!isNaN(actualScale) && actualScale > 0) {
-                                self.zoomLevel = actualScale;
-                                $('#zoomLevel').text(Math.round(actualScale * 100) + '%');
-                            }
-                        }
-                    }, 200);
-                }
-            }
-        });
-        
-        $('#zoomOut').on('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            if (self.panzoomInstance) {
-                const canvas = document.getElementById('print');
-                const container = document.getElementById('printContainer');
-                if (canvas && container) {
-                    // Get current scale and minimum scale
-                    const currentScale = self.panzoomInstance.getScale ? self.panzoomInstance.getScale() : 1;
-                    let minScale = 0.1;
-                    if (self.panzoomInstance.getOptions) {
-                        const options = self.panzoomInstance.getOptions();
-                        minScale = options.minScale || 0.1;
-                    }
-                    
-                    const newScale = Math.max(currentScale / 1.2, minScale); // Decrease by 20%, respect minScale
-                    
-                    // Always use canvas center (crosshairs) as the focal point
-                    const canvasCenterX = (self.canvasWidth || 1200) / 2;
-                    const canvasCenterY = (self.canvasHeight || 800) / 2;
-                    const focalPoint = { x: canvasCenterX, y: canvasCenterY };
-                    
-                    // Apply zoom with canvas center as focal point
-                    if (self.panzoomInstance.zoom && focalPoint) {
-                        self.panzoomInstance.zoom(newScale, { 
-                            animate: true, 
-                            focal: { x: focalPoint.x, y: focalPoint.y }
-                        });
-                    } else if (self.panzoomInstance.zoom) {
-                        // Fallback if no focal point
-                        self.panzoomInstance.zoom(newScale, { animate: true });
-                    }
-                    
-                    // Update zoom level display immediately with the new scale
-                    self.zoomLevel = newScale;
-                    $('#zoomLevel').text(Math.round(newScale * 100) + '%');
-                    
-                    // Also update after a delay to sync with actual panzoom state
-                    setTimeout(function() {
-                        if (self.panzoomInstance && self.panzoomInstance.getScale) {
-                            const actualScale = self.panzoomInstance.getScale();
-                            if (!isNaN(actualScale) && actualScale > 0) {
-                                self.zoomLevel = actualScale;
-                                $('#zoomLevel').text(Math.round(actualScale * 100) + '%');
-                            }
-                        }
-                    }, 200);
-                }
-            }
-        });
-        
         // Zoom at canvas center (crosshairs) - Always uses canvas center as focal point
         this.zoomAtCursor = function(scaleMultiplier) {
             const self = this;
@@ -13193,13 +12916,6 @@ const FloorPlanDesigner = {
                 }
             }, 200);
         };
-        
-        // Fit to Canvas - Center and fit the entire image to show it completely
-        $('#zoomFit').on('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            self.fitCanvasToView(true); // true = animate
-        });
         
         // Sidebar toggle with expand/collapse
         $('#toggleSidebar').on('click', function(e) {
@@ -13691,276 +13407,6 @@ const FloorPlanDesigner = {
         self.saveState();
     },
     
-    // Setup Photoshop-like zoom selection (Ctrl+Space + Drag)
-    setupZoomSelection: function() {
-        const self = this;
-        const canvas = document.getElementById('print');
-        const container = document.getElementById('printContainer');
-        if (!canvas || !container) return;
-        
-        // Create zoom selection rectangle element
-        const zoomSelection = document.createElement('div');
-        zoomSelection.className = 'zoom-selection';
-        container.appendChild(zoomSelection);
-        self.zoomSelectionElement = zoomSelection;
-        
-        // Track Ctrl+Space key combination
-        document.addEventListener('keydown', function(e) {
-            // Check for Ctrl+Space (or Cmd+Space on Mac)
-            if ((e.ctrlKey || e.metaKey) && e.code === 'Space' && !e.repeat) {
-                self.ctrlSpacePressed = true;
-                canvas.style.cursor = 'crosshair';
-                e.preventDefault();
-            }
-        });
-        
-        document.addEventListener('keyup', function(e) {
-            if (e.code === 'Space' || e.key === 'Control' || e.key === 'Meta') {
-                // Only cancel if Ctrl/Cmd is released or Space is released
-                if (!e.ctrlKey && !e.metaKey) {
-                    self.ctrlSpacePressed = false;
-                    if (self.isZoomSelecting) {
-                        // Cancel zoom selection
-                        self.cancelZoomSelection();
-                    }
-                }
-            }
-        });
-        
-        // Handle mouse down for zoom selection
-        container.addEventListener('mousedown', function(e) {
-            // Only activate if Ctrl+Space is pressed and not clicking on a booth
-            if (!self.ctrlSpacePressed) return;
-            
-            const target = e.target;
-            const isBoothElement = target.closest('.dropped-booth') || 
-                                  target.classList.contains('resize-handle') ||
-                                  target.classList.contains('rotate-handle') ||
-                                  target.closest('.transform-controls') ||
-                                  target.closest('.booth-number-item');
-            
-            if (isBoothElement) return; // Don't interfere with booth interactions
-            
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Get container bounds
-            const rect = container.getBoundingClientRect();
-            const startX = e.clientX - rect.left;
-            const startY = e.clientY - rect.top;
-            
-            self.isZoomSelecting = true;
-            self.zoomSelectionStart = { x: startX, y: startY };
-            
-            // Show selection rectangle
-            zoomSelection.style.display = 'block';
-            zoomSelection.style.left = startX + 'px';
-            zoomSelection.style.top = startY + 'px';
-            zoomSelection.style.width = '0px';
-            zoomSelection.style.height = '0px';
-            
-            // Disable Panzoom during zoom selection
-            if (self.panzoomInstance && self.panzoomInstance.setOptions) {
-                self.panzoomInstance.setOptions({ disablePan: true });
-            }
-        });
-        
-        // Handle mouse move for zoom selection
-        container.addEventListener('mousemove', function(e) {
-            if (!self.isZoomSelecting || !self.zoomSelectionStart) return;
-            
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const rect = container.getBoundingClientRect();
-            const currentX = e.clientX - rect.left;
-            const currentY = e.clientY - rect.top;
-            
-            // Calculate selection rectangle
-            const left = Math.min(self.zoomSelectionStart.x, currentX);
-            const top = Math.min(self.zoomSelectionStart.y, currentY);
-            const width = Math.abs(currentX - self.zoomSelectionStart.x);
-            const height = Math.abs(currentY - self.zoomSelectionStart.y);
-            
-            // Update selection rectangle
-            zoomSelection.style.left = left + 'px';
-            zoomSelection.style.top = top + 'px';
-            zoomSelection.style.width = width + 'px';
-            zoomSelection.style.height = height + 'px';
-        });
-        
-        // Handle mouse up for zoom selection
-        container.addEventListener('mouseup', function(e) {
-            if (!self.isZoomSelecting) return;
-            
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const rect = container.getBoundingClientRect();
-            const endX = e.clientX - rect.left;
-            const endY = e.clientY - rect.top;
-            
-            const selectionWidth = Math.abs(endX - self.zoomSelectionStart.x);
-            const selectionHeight = Math.abs(endY - self.zoomSelectionStart.y);
-            
-            // Only zoom if selection is large enough (at least 10px)
-            if (selectionWidth > 10 && selectionHeight > 10) {
-                self.zoomToSelection(self.zoomSelectionStart.x, self.zoomSelectionStart.y, endX, endY);
-            }
-            
-            // Clean up
-            self.cancelZoomSelection();
-        });
-        
-        // Handle mouse wheel for zoom at cursor location when Ctrl+Space is pressed
-        container.addEventListener('wheel', function(e) {
-            // Only activate if Ctrl+Space is pressed
-            if (!self.ctrlSpacePressed) return;
-            
-            // Prevent default scrolling
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Don't interfere if hovering over a booth (let booth wheel handler work)
-            const target = e.target;
-            const isBoothElement = target.closest('.dropped-booth');
-            if (isBoothElement) return;
-            
-            // Get current scale
-            const currentScale = self.panzoomInstance.getScale ? self.panzoomInstance.getScale() : 1;
-            const minScale = 0.1;
-            const maxScale = 10;
-            
-            // Calculate zoom factor (scroll up = zoom in, scroll down = zoom out)
-            const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1; // 10% zoom per scroll step
-            const newScale = Math.max(minScale, Math.min(maxScale, currentScale * zoomFactor));
-            
-            // Get container and canvas dimensions
-            const containerRect = container.getBoundingClientRect();
-            const canvas = document.getElementById('print');
-            const canvasWidth = canvas.offsetWidth || self.canvasWidth || 1200;
-            const canvasHeight = canvas.offsetHeight || self.canvasHeight || 800;
-            
-            // Get cursor position relative to container
-            const cursorX = e.clientX - containerRect.left;
-            const cursorY = e.clientY - containerRect.top;
-            
-            // Get current transform
-            const transform = self.panzoomInstance.getTransform ? self.panzoomInstance.getTransform() : { x: 0, y: 0, scale: currentScale };
-            const currentX = transform.x || 0;
-            const currentY = transform.y || 0;
-            
-            // Convert cursor position to canvas coordinates (before zoom)
-            const canvasX = (cursorX - currentX) / currentScale;
-            const canvasY = (cursorY - currentY) / currentScale;
-            
-            // Calculate new pan position to keep cursor point fixed
-            // After zoom, we want: cursorX = canvasX * newScale + newX
-            // Therefore: newX = cursorX - canvasX * newScale
-            const newX = cursorX - canvasX * newScale;
-            const newY = cursorY - canvasY * newScale;
-            
-            // Apply zoom and pan
-            if (self.panzoomInstance.setTransform) {
-                self.panzoomInstance.setTransform({ x: newX, y: newY, scale: newScale });
-            } else if (self.panzoomInstance.zoom) {
-                self.panzoomInstance.zoom(newScale, { animate: false });
-                setTimeout(function() {
-                    if (self.panzoomInstance.moveTo) {
-                        self.panzoomInstance.moveTo(newX, newY, { animate: false });
-                    } else if (self.panzoomInstance.setTransform) {
-                        self.panzoomInstance.setTransform({ x: newX, y: newY, scale: newScale });
-                    }
-                }, 10);
-            }
-            
-            // Update zoom level display
-            setTimeout(function() {
-                const scale = self.panzoomInstance.getScale ? self.panzoomInstance.getScale() : newScale;
-                self.zoomLevel = scale;
-                $('#zoomLevel').text(Math.round(scale * 100) + '%');
-            }, 50);
-        }, { passive: false });
-    },
-    
-    // Cancel zoom selection
-    cancelZoomSelection: function() {
-        this.isZoomSelecting = false;
-        this.zoomSelectionStart = null;
-        if (this.zoomSelectionElement) {
-            this.zoomSelectionElement.style.display = 'none';
-        }
-        // Re-enable Panzoom
-        if (this.panzoomInstance && this.panzoomInstance.setOptions) {
-            this.panzoomInstance.setOptions({ disablePan: false });
-        }
-        // Reset cursor
-        const canvas = document.getElementById('print');
-    },
-    
-    // Zoom to selected area (Photoshop-like zoom selection)
-    zoomToSelection: function(startX, startY, endX, endY) {
-        const self = this;
-        const canvas = document.getElementById('print');
-        const container = document.getElementById('printContainer');
-        if (!canvas || !container || !self.panzoomInstance) return;
-        
-        // Get container dimensions
-        const containerWidth = container.clientWidth;
-        const containerHeight = container.clientHeight;
-        
-        // Calculate selection rectangle (already in canvas coordinates)
-        const selectionLeft = Math.min(startX, endX);
-        const selectionTop = Math.min(startY, endY);
-        const selectionWidth = Math.abs(endX - startX);
-        const selectionHeight = Math.abs(endY - startY);
-        
-        // Get current transform
-        const transform = self.panzoomInstance.getTransform ? self.panzoomInstance.getTransform() : { x: 0, y: 0, scale: 1 };
-        const currentScale = transform.scale || 1;
-        
-        // Calculate the scale needed to fit the selection in the viewport
-        // The selection is in canvas coordinates, so we need to account for current scale
-        const scaleX = (containerWidth / selectionWidth);
-        const scaleY = (containerHeight / selectionHeight);
-        const newScale = Math.min(scaleX, scaleY) * 0.95; // 95% to add some padding
-        
-        // Clamp scale to reasonable limits
-        const minScale = 0.1;
-        const maxScale = 10;
-        const clampedScale = Math.max(minScale, Math.min(maxScale, newScale));
-        
-        // Calculate the center of the selection in canvas coordinates
-        const selectionCenterX = selectionLeft + selectionWidth / 2;
-        const selectionCenterY = selectionTop + selectionHeight / 2;
-        
-        // Calculate container center
-        const containerCenterX = containerWidth / 2;
-        const containerCenterY = containerHeight / 2;
-        
-        // Calculate new pan position to center the selection
-        // We want: containerCenterX = selectionCenterX * clampedScale + newX
-        // Therefore: newX = containerCenterX - selectionCenterX * clampedScale
-        const newX = containerCenterX - selectionCenterX * clampedScale;
-        const newY = containerCenterY - selectionCenterY * clampedScale;
-        
-        // Apply zoom and pan
-        if (self.panzoomInstance.setTransform) {
-            self.panzoomInstance.setTransform({ x: newX, y: newY, scale: clampedScale });
-        } else if (self.panzoomInstance.zoom) {
-            self.panzoomInstance.zoom(clampedScale, { animate: true });
-            setTimeout(function() {
-                if (self.panzoomInstance.pan) {
-                    self.panzoomInstance.pan(newX, newY, { animate: true });
-                }
-            }, 200);
-        }
-        
-        // Update zoom level display
-        self.zoomLevel = clampedScale;
-        $('#zoomLevel').text(Math.round(clampedScale * 100) + '%');
-    },
-    
     // Wire up text-format panel controls to the currently-selected canvas text element
     setupTextFormatPanel: function() {
         var self = this;
@@ -14409,12 +13855,12 @@ const FloorPlanDesigner = {
         // Also switch to pan tool when Space is held, and restore previous tool when released
         const spaceKeyHandler = function(e) {
             if (e.code === 'Space') {
-                // Don't interfere if user is typing in inputs or if Ctrl/Cmd+Space (zoom selection)
+                // Don't interfere if user is typing in inputs
                 if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
                     return;
                 }
                 
-                // Don't interfere with Ctrl+Space (zoom selection)
+                // Let Ctrl/Cmd+Space pass through (OS/browser may use it)
                 if (e.ctrlKey || e.metaKey) {
                     return;
                 }
