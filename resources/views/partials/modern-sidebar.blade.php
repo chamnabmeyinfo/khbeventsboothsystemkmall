@@ -4,6 +4,22 @@
 @endphp
 
 <aside class="modern-sidebar {{ $sidebarClass ?? '' }}" id="mainSidebar">
+    <!-- User / collapse: pinned to top of sidebar -->
+    <div class="sidebar-footer p-3 border-bottom flex-shrink-0" style="border-color: rgba(0, 0, 0, 0.05) !important;">
+        <div class="d-flex align-items-center gap-2">
+            <div class="user-avatar-modern-small" style="width: 32px; height: 32px; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.8rem;">
+                {{ strtoupper(substr($user->username ?? $user->name ?? 'U', 0, 1)) }}
+            </div>
+            <div class="user-info-mini overflow-hidden flex-grow-1">
+                <div class="text-dark small fw-bold text-truncate" style="font-size: 0.85rem;">{{ $user->username ?? $user->name }}</div>
+                <div class="text-muted x-small text-truncate" style="font-size: 0.7rem;">{{ $user->isAdmin() ? 'Administrator' : 'Sales Rep' }}</div>
+            </div>
+            <a href="javascript:void(0)" class="text-muted hover-dark" id="sidebarCollapseBtn">
+                <i class="fas fa-indent"></i>
+            </a>
+        </div>
+    </div>
+
     <div class="sidebar-content">
         <!-- Overview Section -->
         <h6 class="sidebar-section-label">Overview</h6>
@@ -132,22 +148,6 @@
             </li>
         </ul>
         @endif
-    </div>
-    
-    <!-- Sidebar Footer -->
-    <div class="sidebar-footer p-3 border-top mt-auto" style="border-color: rgba(0, 0, 0, 0.05) !important;">
-        <div class="d-flex align-items-center gap-2">
-            <div class="user-avatar-modern-small" style="width: 32px; height: 32px; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.8rem;">
-                {{ strtoupper(substr($user->username ?? $user->name ?? 'U', 0, 1)) }}
-            </div>
-            <div class="user-info-mini overflow-hidden flex-grow-1">
-                <div class="text-dark small fw-bold text-truncate" style="font-size: 0.85rem;">{{ $user->username ?? $user->name }}</div>
-                <div class="text-muted x-small text-truncate" style="font-size: 0.7rem;">{{ $user->isAdmin() ? 'Administrator' : 'Sales Rep' }}</div>
-            </div>
-            <a href="javascript:void(0)" class="text-muted hover-dark" id="sidebarCollapseBtn">
-                <i class="fas fa-indent"></i>
-            </a>
-        </div>
     </div>
 </aside>
 
