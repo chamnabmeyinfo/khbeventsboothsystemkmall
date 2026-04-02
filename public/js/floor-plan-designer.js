@@ -595,6 +595,10 @@ const FloorPlanDesigner = {
     smartSnapEnabled: true,
     /** Canvas px: max distance to treat edges as alignable / flush */
     smartSnapThreshold: 8,
+    /** After alignment, pack booths into touching strips (zero gap between neighbors in the same band) */
+    smartSnapStickEnabled: true,
+    /** Also stack booths vertically edge-to-edge within the same column band (after row stick). Can shift tops; turn off if only horizontal stick is wanted */
+    smartSnapStickVertical: true,
     centerMarkerEnabled: false, // Show/hide canvas center marker
     zoomLevel: 1,
     panzoomInstance: null,
@@ -877,6 +881,30 @@ const FloorPlanDesigner = {
         return element;
     },
     
+    /**
+     * One delegated contextmenu on #print (capture) so right-click always opens the booth menu,
+     * including on resize/rotate handles and under panzoom, without per-booth races.
+     */
+    setupBoothContextMenuDelegation: function() {
+        const self = this;
+        const canvas = document.getElementById('print');
+        if (!canvas || canvas.dataset.boothContextMenuDelegated === '1') {
+            return;
+        }
+        canvas.dataset.boothContextMenuDelegated = '1';
+        canvas.addEventListener('contextmenu', function(e) {
+            const booth = e.target && e.target.closest && e.target.closest('.dropped-booth');
+            if (!booth) {
+                return;
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            const boothId = booth.getAttribute('data-booth-id');
+            const boothNumber = booth.getAttribute('data-booth-number');
+            self.showBoothContextMenu(e, boothId, boothNumber, booth);
+        }, true);
+    },
+
     // Initialize
     init: function() {
         const self = this;
@@ -892,6 +920,8 @@ const FloorPlanDesigner = {
         self._cachedElements.container = document.getElementById('printContainer');
         self._cachedElements.infoToolbar = document.getElementById('infoToolbar');
         self._cachedElements.floorplanImage = document.getElementById('floorplanImageElement');
+
+        self.setupBoothContextMenuDelegation();
         
         // #region agent log
         // #endregion
@@ -3056,10 +3086,8 @@ const FloorPlanDesigner = {
             existingMenu.remove();
         }
 
-        const showAlignGrids = self.canEditCanvas &&
-            self.selectedBooths &&
-            self.selectedBooths.length > 1 &&
-            self.selectedBooths.indexOf(boothElement) !== -1;
+        // Show whenever 2+ booths are selected (any booth may be right-clicked; do not require boothElement ∈ selectedBooths)
+        const showAlignGrids = self.selectedBooths && self.selectedBooths.length > 1;
         const layoutSectionHtml = showAlignGrids
             ? `
             <div class="context-menu-item context-menu-subheader" style="pointer-events: none; font-weight: 600; color: #20c997;">
@@ -3145,7 +3173,13 @@ const FloorPlanDesigner = {
                 const action = this.getAttribute('data-action');
 
                 if (action === 'align-grids') {
-                    self.snapSelectedBoothsSmartGrid();
+                    if (!self.canEditCanvas) {
+                        if (typeof showNotification === 'function') {
+                            showNotification('Canvas editing is not allowed for your account. Align Grids requires edit permission.', 'warning');
+                        }
+                    } else {
+                        self.snapSelectedBoothsSmartGrid();
+                    }
                 } else if (action === 'update-booth-info') {
                     // Open Update Booth Info modal on canvas (no redirect): fetch booth data and populate form
                     self.openBoothInfoModal(boothId);
@@ -6066,6 +6100,71 @@ const FloorPlanDesigner = {
     },
 
     /**
+     * After magnetic alignment, pack selection into touching strips: same-row neighbors share a vertical edge (no gap);
+     * optionally same-column neighbors share a horizontal edge (vertical stack). Bands use center Y / center X so separate rows/columns usually stay separate.
+     */
+    _stickSelectionEdgeToEdge: function(booths, canvas, applyGridRound) {
+        const self = this;
+        const base = typeof self.smartSnapThreshold === 'number' ? self.smartSnapThreshold : 8;
+        const band = Math.max(14, base * 2.5);
+
+        const items = booths.map(function(el) {
+            return { el: el, r: self._getBoothRectPx(el) };
+        });
+
+        const rowBuckets = new Map();
+        items.forEach(function(it) {
+            const cy = it.r.t + it.r.h / 2;
+            const rid = Math.round(cy / band);
+            if (!rowBuckets.has(rid)) {
+                rowBuckets.set(rid, []);
+            }
+            rowBuckets.get(rid).push(it);
+        });
+        rowBuckets.forEach(function(row) {
+            row.sort(function(a, b) {
+                return a.r.l - b.r.l;
+            });
+            let x = Math.min.apply(null, row.map(function(it) {
+                return it.r.l;
+            }));
+            row.forEach(function(it) {
+                applyGridRound(it.el, x, it.r.t);
+                it.r = self._getBoothRectPx(it.el);
+                x = it.r.r;
+            });
+        });
+
+        if (self.smartSnapStickVertical) {
+            items.forEach(function(it) {
+                it.r = self._getBoothRectPx(it.el);
+            });
+            const colBuckets = new Map();
+            items.forEach(function(it) {
+                const cx = it.r.l + it.r.w / 2;
+                const cid = Math.round(cx / band);
+                if (!colBuckets.has(cid)) {
+                    colBuckets.set(cid, []);
+                }
+                colBuckets.get(cid).push(it);
+            });
+            colBuckets.forEach(function(col) {
+                col.sort(function(a, b) {
+                    return a.r.t - b.r.t;
+                });
+                let y = Math.min.apply(null, col.map(function(it) {
+                    return it.r.t;
+                }));
+                col.forEach(function(it) {
+                    applyGridRound(it.el, it.r.l, y);
+                    it.r = self._getBoothRectPx(it.el);
+                    y = it.r.b;
+                });
+            });
+        }
+    },
+
+    /**
      * Snap selected booths to each other: shared vertical/horizontal lines, edges flush when within threshold.
      * @param {object} options - { silent: bool, skipSave: bool }
      */
@@ -6188,6 +6287,10 @@ const FloorPlanDesigner = {
             }
         }
 
+        if (self.smartSnapStickEnabled) {
+            self._stickSelectionEdgeToEdge(booths, canvas, applyGridRound);
+        }
+
         self.updateSelectionBoundingBox();
 
         if (!skipSave) {
@@ -6214,7 +6317,12 @@ const FloorPlanDesigner = {
             });
             self.saveState();
             if (!silent) {
-                showNotification('Snapped ' + booths.length + ' booth(s) to smart grid', 'success');
+                showNotification(
+                    self.smartSnapStickEnabled
+                        ? 'Snapped & stuck ' + booths.length + ' booth(s) edge-to-edge'
+                        : 'Snapped ' + booths.length + ' booth(s) to smart grid',
+                    'success'
+                );
             }
         }
     },
@@ -7054,85 +7162,7 @@ const FloorPlanDesigner = {
         transformControls.style.display = 'none';
         div.appendChild(transformControls);
         
-        // Add right-click context menu handler with long-press detection (2 seconds for color settings)
-        let rightClickStartTime = 0;
-        let rightClickTimer = null;
-        let isRightClickHeld = false;
-        let progressIndicator = null;
-        let originalTransform = '';
-        
-        div.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const boothId = div.getAttribute('data-booth-id');
-            const boothNumber = div.getAttribute('data-booth-number');
-            
-            // Store original transform
-            originalTransform = div.style.transform || '';
-            
-            // Start timer for long-press detection (2 seconds)
-            rightClickStartTime = Date.now();
-            isRightClickHeld = false;
-            
-            // Show visual feedback that right-click is being held
-            div.style.opacity = '0.8';
-            div.style.transform = originalTransform + (originalTransform ? ' ' : '') + 'scale(1.08)';
-            
-            // Create a progress indicator
-            progressIndicator = document.createElement('div');
-            progressIndicator.className = 'right-click-progress';
-            div.appendChild(progressIndicator);
-            
-            // Timer for 2 seconds - show color picker directly
-            rightClickTimer = setTimeout(function() {
-                isRightClickHeld = true;
-                
-                // Clean up visual feedback
-                div.style.opacity = '';
-                div.style.transform = originalTransform;
-                if (progressIndicator && progressIndicator.parentElement) {
-                    progressIndicator.remove();
-                }
-                
-                // self.openBoothColorPicker(boothId, boothNumber, div);
-            }, 2000);
-            
-            // Clean up on mouse release / move (visual + timer only).
-            // Do NOT open the menu here: on Chrome/Edge, mouseup often fires *before* contextmenu,
-            // so listeners were registered too late and cleanup never ran — menu never appeared.
-            const cleanup = function() {
-                if (rightClickTimer) {
-                    clearTimeout(rightClickTimer);
-                    rightClickTimer = null;
-                }
-                
-                // Restore original appearance
-                div.style.opacity = '';
-                div.style.transform = originalTransform;
-                if (progressIndicator && progressIndicator.parentElement) {
-                    progressIndicator.remove();
-                }
-                
-                document.removeEventListener('mouseup', cleanup);
-                document.removeEventListener('pointerup', cleanup);
-                document.removeEventListener('contextmenu', cleanup);
-                document.removeEventListener('mousemove', cleanup);
-            };
-            
-            document.addEventListener('mouseup', cleanup);
-            document.addEventListener('pointerup', cleanup);
-            document.addEventListener('contextmenu', cleanup);
-            document.addEventListener('mousemove', cleanup);
-
-            // Open menu after the current event stack (reliable across browsers; see comment above).
-            const menuEvent = e;
-            window.setTimeout(function() {
-                if (!isRightClickHeld) {
-                    self.showBoothContextMenu(menuEvent, boothId, boothNumber, div);
-                }
-            }, 0);
-        });
+        // Booth context menu: delegated on #print (see setupBoothContextMenuDelegation in init)
         
         return div;
     },

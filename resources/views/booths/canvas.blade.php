@@ -232,6 +232,12 @@
                             </a>
                         </div>
                     </div>
+                    @if(isset($canEditCanvas) && $canEditCanvas)
+                    <button type="button" class="toolbar-btn" id="btnSnapAlignSelection" title="Align then stick selected booths edge-to-edge in each row and column (no gaps)" onclick="FloorPlanDesigner.snapSelectedBoothsSmartGrid(); return false;">
+                        <i class="fas fa-border-all"></i>
+                        <span class="tool-label">Snap align</span>
+                    </button>
+                    @endif
                     <div class="dropdown">
                         <button class="toolbar-btn" id="btnDistributeTool" title="Distribute Tool (D)" data-tool="distribute" data-toggle="dropdown">
                             <i class="fas fa-arrows-alt-h"></i>
