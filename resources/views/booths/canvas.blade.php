@@ -234,21 +234,6 @@
                         <span class="tool-label">Snap align</span>
                     </button>
                     @endif
-                    <div class="dropdown">
-                        <button class="toolbar-btn" id="btnDistributeTool" title="Distribute Tool (D)" data-tool="distribute" data-toggle="dropdown">
-                            <i class="fas fa-arrows-alt-h"></i>
-                            <span class="tool-label">Distribute</span>
-                            <i class="fas fa-caret-down" style="font-size: 8px; margin-left: 2px;"></i>
-                        </button>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item" href="#" onclick="FloorPlanDesigner.distributeBooths('horizontal'); return false;">
-                                <i class="fas fa-arrows-alt-h"></i> Distribute Horizontally
-                            </a>
-                            <a class="dropdown-item" href="#" onclick="FloorPlanDesigner.distributeBooths('vertical'); return false;">
-                                <i class="fas fa-arrows-alt-v"></i> Distribute Vertically
-                            </a>
-                        </div>
-                    </div>
                     <button class="toolbar-btn" id="btnSelectAll" title="Select All Booths on Canvas" onclick="FloorPlanDesigner.selectAllBoothsOnCanvas(); return false;">
                         <i class="fas fa-object-group"></i>
                         <span class="tool-label">Select All</span>

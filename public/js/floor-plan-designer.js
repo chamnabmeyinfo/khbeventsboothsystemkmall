@@ -949,8 +949,8 @@ const FloorPlanDesigner = {
             const tool = $(this).data('tool');
             const $btn = $(this);
             
-            // Handle dropdown menus for align and distribute
-            if (tool === 'align' || tool === 'distribute') {
+            // Handle dropdown menu for align
+            if (tool === 'align') {
                 const $dropdown = $btn.closest('.dropdown');
                 if ($dropdown.length) {
                     e.stopPropagation();
@@ -1023,14 +1023,6 @@ const FloorPlanDesigner = {
                 }
                 self.switchTool('align');
                 const btn = document.getElementById('btnAlignTool');
-                if (btn) btn.click();
-            } else if (e.key === 'd' || e.key === 'D') {
-                e.preventDefault();
-                if (!self.isSpacePanning && self.currentTool !== 'distribute') {
-                    self.previousTool = self.currentTool;
-                }
-                self.switchTool('distribute');
-                const btn = document.getElementById('btnDistributeTool');
                 if (btn) btn.click();
             } else if (e.key === 'm' || e.key === 'M') {
                 e.preventDefault();
@@ -5566,7 +5558,7 @@ const FloorPlanDesigner = {
     // Switch between tools
     switchTool: function(tool) {
         const self = this;
-        if (tool === 'zoom') {
+        if (tool === 'zoom' || tool === 'distribute') {
             tool = 'select';
         }
         self.currentTool = tool;
@@ -5578,7 +5570,7 @@ const FloorPlanDesigner = {
         // Update canvas classes and cursor
         const canvas = document.getElementById('print');
         if (canvas) {
-            canvas.classList.remove('tool-select', 'tool-pan', 'tool-align', 'tool-distribute', 'tool-measure', 'tool-text');
+            canvas.classList.remove('tool-select', 'tool-pan', 'tool-align', 'tool-measure', 'tool-text');
             canvas.classList.add('tool-' + tool);
             
             // Set appropriate cursor
@@ -5591,9 +5583,6 @@ const FloorPlanDesigner = {
                     break;
                 case 'align':
                     canvas.style.cursor = 'crosshair';
-                    break;
-                case 'distribute':
-                    canvas.style.cursor = 'move';
                     break;
                 case 'measure':
                     canvas.style.cursor = 'crosshair';
@@ -5620,7 +5609,6 @@ const FloorPlanDesigner = {
             'select': 'Select Tool',
             'pan': 'Pan Tool',
             'align': 'Align Tool',
-            'distribute': 'Distribute Tool',
             'measure': 'Measure Tool',
             'text': 'Text Tool'
         };
@@ -5851,76 +5839,6 @@ const FloorPlanDesigner = {
         }
         
         showNotification('Aligned ' + booths.length + ' booth(s) ' + alignment, 'success');
-        self.saveState();
-    },
-    
-    // Distribute Tool - Distribute selected booths evenly
-    distributeBooths: function(direction) {
-        const self = this;
-        if (!self.selectedBooths || self.selectedBooths.length < 3) {
-            showNotification('Please select at least 3 booths to distribute', 'warning');
-            return;
-        }
-        
-        const booths = self.selectedBooths;
-        
-        if (direction === 'horizontal') {
-            // Sort by X position
-            booths.sort(function(a, b) {
-                return (parseFloat(a.style.left) || 0) - (parseFloat(b.style.left) || 0);
-            });
-            
-            const firstLeft = parseFloat(booths[0].style.left) || 0;
-            const lastBooth = booths[booths.length - 1];
-            const lastLeft = parseFloat(lastBooth.style.left) || 0;
-            const lastWidth = parseFloat(lastBooth.style.width) || 80;
-            const lastRight = lastLeft + lastWidth;
-            
-            const totalWidth = lastRight - firstLeft;
-            const spacing = totalWidth / (booths.length - 1);
-            
-            booths.forEach(function(booth, index) {
-                if (index > 0 && index < booths.length - 1) {
-                    const width = parseFloat(booth.style.width) || 80;
-                    const newLeft = firstLeft + (spacing * index) - (width / 2);
-                    booth.style.left = newLeft + 'px';
-                    
-                    const boothId = booth.getAttribute('data-booth-id');
-                    const x = newLeft;
-                    const y = parseFloat(booth.style.top) || 0;
-                    self.saveBoothPosition(parseInt(boothId), x, y);
-                }
-            });
-        } else if (direction === 'vertical') {
-            // Sort by Y position
-            booths.sort(function(a, b) {
-                return (parseFloat(a.style.top) || 0) - (parseFloat(b.style.top) || 0);
-            });
-            
-            const firstTop = parseFloat(booths[0].style.top) || 0;
-            const lastBooth = booths[booths.length - 1];
-            const lastTop = parseFloat(lastBooth.style.top) || 0;
-            const lastHeight = parseFloat(lastBooth.style.height) || 50;
-            const lastBottom = lastTop + lastHeight;
-            
-            const totalHeight = lastBottom - firstTop;
-            const spacing = totalHeight / (booths.length - 1);
-            
-            booths.forEach(function(booth, index) {
-                if (index > 0 && index < booths.length - 1) {
-                    const height = parseFloat(booth.style.height) || 50;
-                    const newTop = firstTop + (spacing * index) - (height / 2);
-                    booth.style.top = newTop + 'px';
-                    
-                    const boothId = booth.getAttribute('data-booth-id');
-                    const x = parseFloat(booth.style.left) || 0;
-                    const y = newTop;
-                    self.saveBoothPosition(parseInt(boothId), x, y);
-                }
-            });
-        }
-        
-        showNotification('Distributed ' + booths.length + ' booth(s) ' + direction + 'ly', 'success');
         self.saveState();
     },
 
