@@ -35,22 +35,30 @@ class SecurityHeaders
         // connect-src: allow CDNs for source-map requests (.map) and other fetch/XHR to same CDNs as script/style.
         // In local env only: allow debug ingest (e.g. 127.0.0.1:7244/7245) so CSP does not block it and clutter the console.
         // Tighten later with nonces/hashes if you remove 'unsafe-inline' / 'unsafe-eval'.
-        $connectSrc = "'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.google-analytics.com https://www.googletagmanager.com";
+        //
+        // Cloudflare Web Analytics / Insights injects beacon.min.js from static.cloudflareinsights.com and POSTs to cloudflareinsights.com.
+        $cfInsightsScript = 'https://static.cloudflareinsights.com';
+        $connectSrc = "'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.google-analytics.com https://www.googletagmanager.com https://cloudflareinsights.com";
         if (app()->environment('local')) {
             $connectSrc .= ' http://127.0.0.1:7244 http://127.0.0.1:7245 http://localhost:7244 http://localhost:7245';
         }
-        $scriptSrc = "'self' 'unsafe-inline' 'unsafe-eval' blob: https://code.jquery.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net";
-        $scriptElemSrc = "'self' 'unsafe-inline' blob: https://code.jquery.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net";
+        $scriptSrc = "'self' 'unsafe-inline' 'unsafe-eval' blob: https://code.jquery.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net {$cfInsightsScript}";
+        $scriptElemSrc = "'self' 'unsafe-inline' blob: https://code.jquery.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net {$cfInsightsScript}";
 
         // Tighten CSP for public landing pages when inline scripts are disabled.
         if ($request->is('l/*')) {
             $slug = (string) $request->route('landingPage');
             $landingPage = $slug !== '' ? LandingPage::query()->where('slug', $slug)->first() : null;
             if ($landingPage && ! $landingPage->allow_inline_scripts) {
-                $scriptSrc = "'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com";
-                $scriptElemSrc = "'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com";
+                $scriptSrc = "'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com {$cfInsightsScript}";
+                $scriptElemSrc = "'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com {$cfInsightsScript}";
             }
         }
+
+        // frame-src: required for YouTube hero embeds (without this, frames fall back to default-src and are blocked).
+        // If you still see "frame-src was not explicitly set" in the browser, the response may be merging multiple CSP
+        // headers (e.g. Cloudflare or nginx adds a second policy). Remove or merge duplicate CSP at the edge.
+        $frameSrc = "'self' https://www.youtube.com https://www.youtube-nocookie.com https://youtube.com";
 
         $csp = "default-src 'self'; "
             ."script-src {$scriptSrc}; "
@@ -58,7 +66,9 @@ class SecurityHeaders
             ."style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://code.ionicframework.com https://cdn.datatables.net https://fonts.googleapis.com; "
             ."img-src 'self' data: blob: https:; "
             ."font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com https://cdnjs.cloudflare.com https://code.ionicframework.com; "
-            .'connect-src '.$connectSrc."; frame-ancestors 'self';";
+            .'connect-src '.$connectSrc.'; '
+            ."frame-src {$frameSrc}; "
+            ."frame-ancestors 'self';";
         $response->headers->set('Content-Security-Policy', $csp);
 
         return $response;

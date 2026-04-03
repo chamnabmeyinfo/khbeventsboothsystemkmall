@@ -196,8 +196,8 @@
     /* YouTube: iframe cannot use object-fit; scale to cover hero (16:9) */
     .lv-hero__bg-video--youtube{overflow:hidden}
     .lv-hero__bg-video--youtube iframe{
-        position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-        width:100vw;height:56.25vw;min-width:177.77vh;min-height:100%;
+        position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+        width:177.78vh;min-width:100%;height:100vh;min-height:56.25vw;
         border:0;pointer-events:none;
     }
     /* Stronger scrim so hero copy stays readable on bright or busy photos */
