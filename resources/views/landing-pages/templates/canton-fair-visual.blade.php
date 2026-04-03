@@ -581,7 +581,7 @@
     /* Section 5 — Trip dates: Phase I / II / III cards */
     .lv-trip-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:8px}
     .lv-trip-card{
-        text-align:left;position:relative;padding:20px 18px 18px;border-radius:var(--lv-radius-sm);
+        text-align:left;position:relative;padding:0;border-radius:var(--lv-radius-sm);
         border:1px solid var(--lv-glass-edge);
         background:var(--lv-glass-fill-strong);
         backdrop-filter:blur(var(--lv-glass-blur)) saturate(var(--lv-glass-saturate));
@@ -589,7 +589,17 @@
         box-shadow:var(--lv-glass-shadow);
         border-top:4px solid var(--lv-trip-accent,var(--lv-primary));
         transition:transform .2s ease,box-shadow .2s ease;
+        display:flex;flex-direction:column;overflow:hidden;
     }
+    .lv-trip-card__media{
+        position:relative;width:100%;aspect-ratio:16/10;flex-shrink:0;
+        background:rgba(15,23,42,.06);
+        border-bottom:1px solid rgba(15,23,42,.06);
+    }
+    .lv-trip-card__media-img{
+        display:block;width:100%;height:100%;object-fit:cover;object-position:center;
+    }
+    .lv-trip-card__body{padding:20px 18px 18px}
     .lv-trip-card:hover{transform:translateY(-2px);box-shadow:0 16px 44px rgba(15,23,42,.1),var(--lv-glass-inset)}
     .lv-trip-grid .lv-trip-card:nth-child(3n+1){--lv-trip-accent:#b45309}
     .lv-trip-grid .lv-trip-card:nth-child(3n+2){--lv-trip-accent:#c41e1e}
@@ -988,8 +998,18 @@
                         $tripDate = trim((string) ($ph['date'] ?? ''));
                         $intro = trim((string) ($ph['intro'] ?? ''));
                         $subs = is_array($ph['subsections'] ?? null) ? $ph['subsections'] : [];
+                        $tripFeaturePath = \App\Models\LandingPage::sanitizeTripPhaseFeatureImagePath((string) ($ph['feature_image'] ?? ''));
+                        $tripFeatureUrl = $tripFeaturePath !== '' ? asset($tripFeaturePath) : '';
+                        $tripFeatureAlt = trim($tripPhase.($tripDate !== '' ? ' · '.$tripDate : ''));
+                        $tripFeatureAlt = $tripFeatureAlt !== '' ? $tripFeatureAlt : $tripSectionTitle;
                     @endphp
                     <article class="lv-trip-card">
+                        @if($tripFeatureUrl !== '')
+                            <div class="lv-trip-card__media">
+                                <img class="lv-trip-card__media-img" src="{{ $tripFeatureUrl }}" alt="{{ $tripFeatureAlt }}" loading="lazy" decoding="async" width="800" height="500">
+                            </div>
+                        @endif
+                        <div class="lv-trip-card__body">
                         @if($tripPhase !== '')
                             <p class="lv-trip-phase"><span class="lv-trip-phase-badge">{{ $tripPhase }}</span></p>
                         @endif
@@ -1030,6 +1050,7 @@
                             data-phase-label="{{ e($phaseBtnLabel) }}"
                             aria-label="{{ e($phaseAria) }}"
                         >{{ $tripPhaseRegisterCta }}</button>
+                        </div>
                     </article>
                 @endforeach
             </div>

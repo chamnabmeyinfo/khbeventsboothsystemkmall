@@ -488,8 +488,8 @@
                             </div>
                             <div class="form-group">
                                 <label class="mb-0">Trip phases (JSON)</label>
-                                <textarea name="{{ $pfx }}[trip_phases_json]" class="form-control font-monospace" rows="14" spellcheck="false" placeholder='[{"label":"Phase I","date":"…","status":"…","seats_left":"…","intro":"…","subsections":[{"title":"…","detail":"…"}]}]'>{{ $tripPhasesJson }}</textarea>
-                                <small class="text-muted d-block mt-1">Array of objects: <code>label</code>, <code>date</code>, <code>status</code>, <code>seats_left</code>, optional <code>intro</code>, and <code>subsections</code> as <code>[{&quot;title&quot;,&quot;detail&quot;}, …]</code>. Invalid JSON cannot be saved. Clear the field to drop rich content and use only the pipe list below.</small>
+                                <textarea name="{{ $pfx }}[trip_phases_json]" class="form-control font-monospace" rows="14" spellcheck="false" placeholder='[{"label":"Phase I","date":"…","feature_image":"images/landing-pages/your-slug/phase1.jpg","status":"…","seats_left":"…","intro":"…","subsections":[{"title":"…","detail":"…"}]}]'>{{ $tripPhasesJson }}</textarea>
+                                <small class="text-muted d-block mt-1">Array of objects: <code>label</code>, <code>date</code>, <code>status</code>, <code>seats_left</code>, optional <code>intro</code>, optional <code>feature_image</code> (site path like <code>images/landing-pages/your-slug/photo.jpg</code> after you upload to that folder), and <code>subsections</code> as <code>[{&quot;title&quot;,&quot;detail&quot;}, …]</code>. Invalid JSON cannot be saved. Clear the field to drop rich content and use only the pipe list below.</small>
                             </div>
                             <div class="form-group mb-0">
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">

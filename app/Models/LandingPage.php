@@ -637,8 +637,24 @@ TXT;
     }
 
     /**
+     * Allow only site-relative paths under public images/landing-pages/ (same rule as hero gallery).
+     */
+    public static function sanitizeTripPhaseFeatureImagePath(string $path): string
+    {
+        $p = trim($path);
+        if ($p === '' || str_contains($p, '..')) {
+            return '';
+        }
+        if (! preg_match('#^images/landing-pages/[\w\-]+/[\w\-.]+\.(jpg|jpeg|png|gif|webp)$#i', $p)) {
+            return '';
+        }
+
+        return $p;
+    }
+
+    /**
      * @param  array<int, mixed>  $input
-     * @return list<array{label: string, date: string, status: string, seats_left: string, intro: string, subsections: list<array{title: string, detail: string}>}>
+     * @return list<array{label: string, date: string, status: string, seats_left: string, intro: string, subsections: list<array{title: string, detail: string}>, feature_image?: string}>
      */
     public static function sanitizeTripPhases(array $input): array
     {
@@ -660,7 +676,8 @@ TXT;
                 }
                 $subs[] = ['title' => $t, 'detail' => $d];
             }
-            $out[] = [
+            $fi = self::sanitizeTripPhaseFeatureImagePath((string) ($ph['feature_image'] ?? ''));
+            $row = [
                 'label' => trim((string) ($ph['label'] ?? $ph['phase'] ?? '')),
                 'date' => trim((string) ($ph['date'] ?? '')),
                 'status' => trim((string) ($ph['status'] ?? '')),
@@ -668,6 +685,10 @@ TXT;
                 'intro' => trim((string) ($ph['intro'] ?? '')),
                 'subsections' => $subs,
             ];
+            if ($fi !== '') {
+                $row['feature_image'] = $fi;
+            }
+            $out[] = $row;
         }
 
         return $out;
@@ -677,7 +698,7 @@ TXT;
      * Merge trip_phases when present; else flat trip_dates; else built-in Phase I–III demo.
      *
      * @param  array<string, mixed>  $visual
-     * @return list<array{label: string, date: string, status: string, seats_left: string, intro: string, subsections: list<array{title: string, detail: string}>}>
+     * @return list<array{label: string, date: string, status: string, seats_left: string, intro: string, subsections: list<array{title: string, detail: string}>, feature_image?: string}>
      */
     public static function resolveTripPhasesForDisplay(array $visual): array
     {
