@@ -124,7 +124,7 @@
     $whyImage = !empty($visual['why_image']) ? asset($visual['why_image']) : 'https://images.unsplash.com/photo-1549692520-acc6669e2f0c?q=80&w=1400&auto=format&fit=crop';
 @endphp
 
-{{-- Single responsive landing CSS; breakpoints align with project: 576 / 768 / 992 / 1200 --}}
+{{-- Single responsive landing CSS — Premium Glass; breakpoints: 576 / 768 / 992 / 1200 --}}
 {{-- Fonts: Roboto (Latin/English), Hanuman (Khmer); Chinese uses system UI via sans-serif fallback --}}
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Hanuman:wght@400;700&family=Roboto:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
@@ -132,21 +132,32 @@
         --lv-primary:#c41e1e;
         --lv-primary-hover:#9e1818;
         --lv-accent:#c9a227;
-        --lv-accent-soft:#fff8e7;
+        --lv-accent-soft:rgba(255,248,231,.85);
         --lv-ink:#0f172a;
-        /* Body / secondary text: darker than slate-500 so copy does not fade into light backgrounds */
         --lv-body:#1e293b;
         --lv-muted:#475569;
-        --lv-surface:#ffffff;
-        --lv-surface-2:#f8fafc;
-        --lv-border:rgba(15,23,42,.12);
-        --lv-radius:16px;
-        --lv-radius-sm:12px;
-        --lv-shadow:0 4px 24px rgba(15,23,42,.08);
-        --lv-shadow-lg:0 20px 50px rgba(15,23,42,.12);
+        --lv-surface:rgba(255,255,255,.72);
+        --lv-surface-2:rgba(248,250,252,.65);
+        --lv-border:rgba(15,23,42,.08);
+        --lv-radius:20px;
+        --lv-radius-sm:14px;
+        --lv-shadow:0 8px 32px rgba(15,23,42,.07);
+        --lv-shadow-lg:0 24px 64px rgba(15,23,42,.1);
+        /* Premium glass tokens */
+        --lv-glass-blur:20px;
+        --lv-glass-saturate:1.28;
+        --lv-glass-fill:rgba(255,255,255,.58);
+        --lv-glass-fill-strong:rgba(255,255,255,.82);
+        --lv-glass-edge:rgba(255,255,255,.75);
+        --lv-glass-edge-out:rgba(15,23,42,.06);
+        --lv-glass-inset:inset 0 1px 0 rgba(255,255,255,.92);
+        --lv-glass-shadow:0 8px 32px rgba(15,23,42,.06),0 2px 8px rgba(15,23,42,.04),var(--lv-glass-inset);
         font-family:"Roboto","Hanuman",sans-serif;
         color:var(--lv-body);
-        background:var(--lv-surface-2);
+        background:
+            radial-gradient(120% 80% at 10% 0%,rgba(201,162,39,.09) 0%,transparent 45%),
+            radial-gradient(90% 60% at 100% 20%,rgba(196,30,30,.06) 0%,transparent 42%),
+            linear-gradient(165deg,#e4eaf3 0%,#eef2f9 38%,#e8edf6 100%);
         font-size:17px;
         line-height:1.6;
         -webkit-font-smoothing:antialiased;
@@ -182,11 +193,12 @@
     .lv-hero h2{font-size:clamp(1.05rem,2.8vw,1.4rem);font-family:"Roboto","Hanuman",sans-serif;font-weight:500;color:rgba(255,255,255,.98);margin:0 0 28px;max-width:52ch;margin-left:auto;margin-right:auto;line-height:1.55;text-shadow:0 1px 3px rgba(0,0,0,.65),0 2px 14px rgba(0,0,0,.4)}
     /* Buttons do not inherit .lv-wrap fonts from UA styles; set stack so Khmer (Hanuman) applies to hero_cta_text etc. */
     .lv-wrap .lv-btn{
-        min-height:48px;border:0;border-radius:999px;padding:14px 28px;
+        min-height:48px;border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:14px 28px;
         font-family:"Roboto","Hanuman",sans-serif;
-        background:linear-gradient(135deg,var(--lv-primary) 0%,#8b1414 100%);
+        background:linear-gradient(145deg,rgba(255,255,255,.12) 0%,transparent 40%),
+            linear-gradient(135deg,var(--lv-primary) 0%,#7a1212 100%);
         color:#fff;font-weight:700;font-size:1rem;cursor:pointer;
-        box-shadow:0 8px 28px rgba(196,30,30,.45),inset 0 1px 0 rgba(255,255,255,.15);
+        box-shadow:0 10px 32px rgba(196,30,30,.42),inset 0 1px 0 rgba(255,255,255,.28),0 0 0 1px rgba(0,0,0,.08);
         transition:transform .2s ease,box-shadow .2s ease,background .2s ease;
     }
     .lv-wrap .lv-btn [data-lv-key]{font-family:inherit}
@@ -235,36 +247,85 @@
     }
     .lv-hero .lv-btn--hero-cta:hover,.lv-hero .lv-btn--hero-cta:focus-visible{animation-play-state:paused}
     .lv-hero .lv-btn--hero-cta:hover [data-lv-key],.lv-hero .lv-btn--hero-cta:focus-visible [data-lv-key]{animation-play-state:paused}
-    .lv-section{padding:clamp(48px,8vw,80px) 0}
-    .lv-section--about{background:var(--lv-surface)}
-    .lv-section--package{background:linear-gradient(180deg,var(--lv-accent-soft) 0%,#fff 100%)}
-    .lv-section--trip{background:var(--lv-surface)}
-    .lv-section--agenda{background:linear-gradient(180deg,#fff 0%,var(--lv-surface-2) 100%)}
+    .lv-section{padding:clamp(48px,8vw,80px) 0;position:relative}
+    .lv-section--about{
+        background:linear-gradient(180deg,rgba(255,255,255,.35) 0%,rgba(241,245,249,.25) 100%);
+    }
+    .lv-section--package{
+        background:
+            radial-gradient(ellipse 80% 50% at 50% 0%,rgba(201,162,39,.12) 0%,transparent 55%),
+            linear-gradient(180deg,rgba(255,252,245,.6) 0%,rgba(255,255,255,.35) 55%,rgba(241,245,249,.4) 100%);
+    }
+    .lv-section--trip{background:transparent}
+    .lv-section--agenda{
+        background:linear-gradient(180deg,rgba(255,255,255,.28) 0%,rgba(236,242,252,.45) 100%);
+    }
     /* Agenda: single responsive table (public + preview) */
-    .lv-agenda-table-wrap{width:100%;margin-top:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--lv-radius-sm);border:1px solid var(--lv-border);background:var(--lv-surface);box-shadow:var(--lv-shadow)}
+    .lv-agenda-table-wrap{
+        width:100%;margin-top:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+        border-radius:var(--lv-radius-sm);
+        border:1px solid var(--lv-glass-edge);
+        background:var(--lv-glass-fill-strong);
+        backdrop-filter:blur(var(--lv-glass-blur)) saturate(var(--lv-glass-saturate));
+        -webkit-backdrop-filter:blur(var(--lv-glass-blur)) saturate(var(--lv-glass-saturate));
+        box-shadow:var(--lv-glass-shadow),0 0 0 1px var(--lv-glass-edge-out);
+    }
     .lv-agenda-table{width:100%;min-width:min(100%,560px);border-collapse:collapse;font-size:.95rem;line-height:1.45}
-    .lv-agenda-table thead th{text-align:left;padding:12px 14px;background:var(--lv-surface-2);color:var(--lv-ink);font-weight:700;font-size:.82rem;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid var(--lv-border)}
+    .lv-agenda-table thead th{
+        text-align:left;padding:12px 14px;
+        background:rgba(248,250,252,.65);
+        color:var(--lv-ink);font-weight:700;font-size:.82rem;text-transform:uppercase;letter-spacing:.04em;
+        border-bottom:1px solid rgba(15,23,42,.08);
+    }
     .lv-agenda-table tbody td{padding:14px 14px;vertical-align:top;border-bottom:1px solid var(--lv-border)}
     .lv-agenda-table tbody tr:last-child td{border-bottom:none}
     .lv-agenda-table tbody tr:nth-child(even){background:rgba(15,23,42,.025)}
     .lv-agenda-table .lv-agenda-slot{font-weight:700;color:var(--lv-primary);font-size:.95rem}
     .lv-agenda-table .lv-agenda-activity{font-weight:600;color:var(--lv-ink)}
     .lv-agenda-table .lv-agenda-detail{color:var(--lv-body);line-height:1.55}
-    .lv-section--booking{background:var(--lv-surface-2)}
-    .lv-section--faq{background:linear-gradient(180deg,#f1f5f9 0%,var(--lv-surface-2) 100%)}
-    .lv-section--terms{background:var(--lv-surface);border-top:1px solid var(--lv-border)}
+    .lv-section--booking{background:linear-gradient(180deg,rgba(241,245,249,.5) 0%,rgba(255,255,255,.2) 100%)}
+    .lv-section--faq{
+        background:
+            radial-gradient(ellipse 70% 40% at 20% 100%,rgba(196,30,30,.05) 0%,transparent 50%),
+            linear-gradient(180deg,rgba(241,245,249,.55) 0%,rgba(248,250,252,.35) 100%);
+    }
+    .lv-section--terms{
+        background:rgba(255,255,255,.4);
+        border-top:1px solid rgba(255,255,255,.5);
+        backdrop-filter:blur(12px);
+        -webkit-backdrop-filter:blur(12px);
+    }
     .lv-terms-prose{max-width:min(72ch,100%);margin:0 auto;text-align:left;font-size:1rem;line-height:1.65;color:var(--lv-body);min-height:3rem}
     .lv-terms-prose p{margin:0 0 1em}
     .lv-terms-prose p:last-child{margin-bottom:0}
     .lv-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,40px);align-items:center}
-    .lv-image{min-height:min(360px,50vh);border-radius:var(--lv-radius);background-size:cover;background-position:center;box-shadow:var(--lv-shadow-lg);border:1px solid var(--lv-border)}
+    .lv-image{
+        min-height:min(360px,50vh);border-radius:var(--lv-radius);background-size:cover;background-position:center;
+        box-shadow:var(--lv-shadow-lg),0 0 0 1px rgba(255,255,255,.45) inset,0 0 40px rgba(15,23,42,.12);
+        border:1px solid rgba(255,255,255,.55);
+    }
     .lv-card{
-        background:var(--lv-surface);border:1px solid var(--lv-border);border-radius:var(--lv-radius-sm);
-        padding:16px 18px;box-shadow:var(--lv-shadow);transition:box-shadow .2s ease,transform .2s ease;
+        background:var(--lv-glass-fill);
+        border:1px solid var(--lv-glass-edge);
+        border-radius:var(--lv-radius-sm);
+        padding:16px 18px;
+        box-shadow:var(--lv-glass-shadow);
+        backdrop-filter:blur(var(--lv-glass-blur)) saturate(var(--lv-glass-saturate));
+        -webkit-backdrop-filter:blur(var(--lv-glass-blur)) saturate(var(--lv-glass-saturate));
+        transition:box-shadow .25s ease,transform .25s ease,border-color .25s ease;
         color:var(--lv-body);line-height:1.5;
     }
-    /* Dark translucent panels so stats never wash out against the hero image */
-    .lv-hero .lv-card{background:rgba(15,23,42,.78);border:1px solid rgba(255,255,255,.32);backdrop-filter:blur(10px);color:#fff;box-shadow:0 8px 32px rgba(0,0,0,.25)}
+    .lv-card:hover{box-shadow:0 12px 40px rgba(15,23,42,.1),var(--lv-glass-inset)}
+    /* Dark glass stat panels on hero */
+    .lv-hero .lv-card{
+        background:rgba(15,23,42,.38);
+        border:1px solid rgba(255,255,255,.28);
+        backdrop-filter:blur(22px) saturate(1.4);
+        -webkit-backdrop-filter:blur(22px) saturate(1.4);
+        color:#fff;
+        box-shadow:0 12px 40px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.22),0 0 0 1px rgba(255,255,255,.06) inset;
+    }
+    .lv-hero .lv-card:hover{box-shadow:0 16px 48px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.28)}
     .lv-stat-card{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 14px;text-align:center}
     .lv-stat__icon{font-size:clamp(1.35rem,3.5vw,1.75rem);color:rgba(255,255,255,.98);line-height:1}
     .lv-stat__icon i{filter:drop-shadow(0 2px 8px rgba(0,0,0,.25))}
@@ -273,15 +334,32 @@
     .lv-three{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px}
     .lv-package-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:14px;margin-top:8px}
     .lv-package-item{display:flex;align-items:flex-start;gap:14px;text-align:left;padding:16px 18px}
-    .lv-package-item__icon{flex-shrink:0;width:44px;height:44px;border-radius:50%;background:rgba(196,30,30,.1);color:var(--lv-primary);display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+    .lv-package-item__icon{
+        flex-shrink:0;width:44px;height:44px;border-radius:50%;
+        background:rgba(196,30,30,.12);
+        backdrop-filter:blur(8px);
+        -webkit-backdrop-filter:blur(8px);
+        border:1px solid rgba(255,255,255,.55);
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
+        color:var(--lv-primary);display:flex;align-items:center;justify-content:center;font-size:1.1rem;
+    }
     .lv-package-item__text{line-height:1.45;color:var(--lv-body);font-size:1rem;flex:1;min-width:0}
     .lv-section h2{font-size:clamp(1.5rem,3.5vw,2rem);margin:0 0 24px}
     .lv-section--package h2,.lv-section--trip h2{text-align:center;max-width:40ch;margin-left:auto;margin-right:auto;margin-bottom:28px}
     .lv-price-panel{
-        margin-top:20px;text-align:center;border-radius:var(--lv-radius);padding:28px 20px;
-        background:linear-gradient(145deg,var(--lv-primary) 0%,#6b1010 100%);
-        color:#fff;border:1px solid rgba(255,255,255,.12);
-        box-shadow:var(--lv-shadow-lg);
+        margin-top:20px;text-align:center;border-radius:var(--lv-radius);padding:28px 22px;
+        background:
+            linear-gradient(135deg,rgba(255,255,255,.18) 0%,transparent 45%),
+            linear-gradient(145deg,var(--lv-primary) 0%,#5a0d0d 55%,#3f0a0a 100%);
+        color:#fff;
+        border:1px solid rgba(255,255,255,.35);
+        box-shadow:
+            var(--lv-shadow-lg),
+            inset 0 1px 0 rgba(255,255,255,.35),
+            inset 0 -1px 0 rgba(0,0,0,.15),
+            0 0 0 1px rgba(0,0,0,.08);
+        backdrop-filter:blur(8px) saturate(1.15);
+        -webkit-backdrop-filter:blur(8px) saturate(1.15);
     }
     .lv-price-panel--clickable{
         cursor:pointer;
@@ -295,7 +373,17 @@
     .lv-price-panel .lv-price-sub{color:rgba(255,255,255,.95);margin-top:10px;font-size:1.05rem;text-shadow:0 1px 2px rgba(0,0,0,.2)}
     /* Section 4 — Trip dates: Phase I / II / III cards */
     .lv-trip-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:8px}
-    .lv-trip-card{text-align:left;position:relative;padding:20px 18px 18px;border-radius:var(--lv-radius-sm);border:1px solid var(--lv-border);background:var(--lv-surface);box-shadow:var(--lv-shadow);border-top:4px solid var(--lv-trip-accent,var(--lv-primary))}
+    .lv-trip-card{
+        text-align:left;position:relative;padding:20px 18px 18px;border-radius:var(--lv-radius-sm);
+        border:1px solid var(--lv-glass-edge);
+        background:var(--lv-glass-fill-strong);
+        backdrop-filter:blur(var(--lv-glass-blur)) saturate(var(--lv-glass-saturate));
+        -webkit-backdrop-filter:blur(var(--lv-glass-blur)) saturate(var(--lv-glass-saturate));
+        box-shadow:var(--lv-glass-shadow);
+        border-top:4px solid var(--lv-trip-accent,var(--lv-primary));
+        transition:transform .2s ease,box-shadow .2s ease;
+    }
+    .lv-trip-card:hover{transform:translateY(-2px);box-shadow:0 16px 44px rgba(15,23,42,.1),var(--lv-glass-inset)}
     .lv-trip-grid .lv-trip-card:nth-child(3n+1){--lv-trip-accent:#b45309}
     .lv-trip-grid .lv-trip-card:nth-child(3n+2){--lv-trip-accent:#c41e1e}
     .lv-trip-grid .lv-trip-card:nth-child(3n+3){--lv-trip-accent:#1d4ed8}
@@ -312,12 +400,31 @@
     .lv-trip-sub{border-left:3px solid var(--lv-trip-accent,var(--lv-primary));padding:0 0 0 12px;margin:0}
     .lv-trip-sub-title{margin:0 0 4px;font-size:.82rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--lv-muted)}
     .lv-trip-sub-detail{margin:0;font-size:.9rem;line-height:1.5;color:var(--lv-body)}
-    .lv-card.lv-about-highlight{background:var(--lv-accent-soft);border-left:4px solid var(--lv-accent);padding:16px 18px;border-radius:0 var(--lv-radius-sm) var(--lv-radius-sm) 0;color:var(--lv-ink)}
-    .lv-booking{background:var(--lv-surface);border-radius:var(--lv-radius);padding:24px;border:1px solid var(--lv-border);box-shadow:var(--lv-shadow)}
+    .lv-card.lv-about-highlight{
+        background:rgba(255,252,240,.75);
+        border:1px solid rgba(201,162,39,.35);
+        border-left:4px solid var(--lv-accent);
+        padding:16px 18px;border-radius:var(--lv-radius-sm);
+        color:var(--lv-ink);
+        backdrop-filter:blur(12px) saturate(1.2);
+        -webkit-backdrop-filter:blur(12px) saturate(1.2);
+        box-shadow:var(--lv-glass-shadow);
+    }
+    .lv-booking{
+        background:var(--lv-glass-fill-strong);
+        border-radius:var(--lv-radius);padding:24px;
+        border:1px solid var(--lv-glass-edge);
+        box-shadow:var(--lv-glass-shadow);
+        backdrop-filter:blur(var(--lv-glass-blur)) saturate(var(--lv-glass-saturate));
+        -webkit-backdrop-filter:blur(var(--lv-glass-blur)) saturate(var(--lv-glass-saturate));
+    }
     .lv-booking form{display:grid;gap:12px}
     .lv-booking input,.lv-booking select{
-        min-height:48px;border:1px solid #94a3b8;border-radius:var(--lv-radius-sm);padding:12px 14px;font-size:16px;
-        color:var(--lv-ink);background:#fff;
+        min-height:48px;border:1px solid rgba(148,163,184,.55);border-radius:var(--lv-radius-sm);padding:12px 14px;font-size:16px;
+        color:var(--lv-ink);
+        background:rgba(255,255,255,.92);
+        backdrop-filter:blur(6px);
+        -webkit-backdrop-filter:blur(6px);
         transition:border-color .15s,box-shadow .15s;
     }
     .lv-booking input:focus,.lv-booking select:focus{border-color:var(--lv-primary);outline:0;box-shadow:0 0 0 3px rgba(196,30,30,.2)}
@@ -326,11 +433,14 @@
     .lv-contact-bar a{color:var(--lv-primary);text-decoration:none;font-weight:700}
     .lv-contact-bar a:hover{text-decoration:underline}
     @media (max-width:991.98px){.lv-grid,.lv-three,.lv-trip-grid{grid-template-columns:1fr}}
-    /* Site header: simple language row (no nested pills / glass) */
+    /* Site header — premium frosted bar */
     .lv-site-header{
         position:sticky;top:0;z-index:100;
-        background:#0f172a;
-        border-bottom:1px solid rgba(255,255,255,.1);
+        background:rgba(15,23,42,.52);
+        backdrop-filter:blur(20px) saturate(1.35);
+        -webkit-backdrop-filter:blur(20px) saturate(1.35);
+        border-bottom:1px solid rgba(255,255,255,.14);
+        box-shadow:0 8px 32px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.15);
     }
     .lv-site-header__inner{
         width:min(1140px,92vw);margin:0 auto;
@@ -389,9 +499,11 @@
         position:absolute;left:50%;transform:translateX(-50%);top:100%;z-index:101;
         margin-top:10px;max-width:min(92vw,440px);width:min(92vw,440px);
         padding:14px 16px 16px;margin:0;
-        background:linear-gradient(180deg,#fffef8,#fff);
-        border:1px solid rgba(201,162,39,.55);border-radius:var(--lv-radius-sm);
-        box-shadow:0 16px 40px rgba(15,23,42,.18);
+        background:rgba(255,254,248,.92);
+        backdrop-filter:blur(16px) saturate(1.2);
+        -webkit-backdrop-filter:blur(16px) saturate(1.2);
+        border:1px solid rgba(201,162,39,.45);border-radius:var(--lv-radius-sm);
+        box-shadow:0 16px 48px rgba(15,23,42,.15),inset 0 1px 0 rgba(255,255,255,.85);
     }
     .lv-lang-welcome__pointer{
         position:absolute;left:50%;top:-9px;transform:translateX(-50%);
@@ -418,9 +530,17 @@
         .lv-lang-switch{justify-content:center;gap:8px 12px}
         .lv-lang-switch__links{justify-content:center}
     }
+    @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))){
+        .lv-card,.lv-trip-card,.lv-booking,.lv-agenda-table-wrap,.lv-site-header,.lv-card.lv-about-highlight{
+            background:rgba(255,255,255,.94);
+            backdrop-filter:none;
+            -webkit-backdrop-filter:none;
+        }
+        .lv-hero .lv-card{background:rgba(15,23,42,.88)}
+    }
     @media (prefers-reduced-motion:reduce){
-        .lv-wrap .lv-btn,.lv-card{transition:none !important}
-        .lv-wrap .lv-btn:hover{transform:none}
+        .lv-wrap .lv-btn,.lv-card,.lv-trip-card{transition:none !important}
+        .lv-wrap .lv-btn:hover,.lv-card:hover,.lv-trip-card:hover{transform:none !important}
         .lv-hero .lv-btn--hero-cta,.lv-hero .lv-btn--hero-cta [data-lv-key]{animation:none !important}
     }
 </style>
