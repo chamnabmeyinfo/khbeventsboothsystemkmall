@@ -254,11 +254,16 @@ class LandingPage extends Model
     public static function defaultDemoAgendaItems(): array
     {
         return [
-            ['slot' => 'Day 1 · Morning', 'activity' => 'Arrival in Guangzhou', 'detail' => 'Airport meet & hotel check-in'],
-            ['slot' => 'Day 1 · Afternoon', 'activity' => 'Canton Fair Phase 1', 'detail' => 'Registration & halls 1–3 orientation'],
-            ['slot' => 'Day 2 · Full day', 'activity' => 'Exhibitor visits & sourcing', 'detail' => 'Guided floor plan with KHB'],
-            ['slot' => 'Day 3 · Morning', 'activity' => 'Optional factory tour', 'detail' => 'Pre-booked visits'],
-            ['slot' => 'Day 3 · Afternoon', 'activity' => 'Return to Phnom Penh', 'detail' => 'Group departure'],
+            ['slot' => 'Day 1 · 06:00', 'activity' => 'Meet at Phnom Penh International Airport', 'detail' => ''],
+            ['slot' => 'Day 1 · 08:20', 'activity' => 'Flight departure', 'detail' => ''],
+            ['slot' => 'Day 1 · 12:15', 'activity' => 'Arrive at Guangzhou International Airport', 'detail' => 'Lunch, then transfer to hotel'],
+            ['slot' => 'Day 1 · Evening', 'activity' => 'City walk (Canton Tower)', 'detail' => ''],
+            ['slot' => 'Day 1 · 21:00', 'activity' => 'Return to hotel', 'detail' => ''],
+            ['slot' => 'Day 2 · 7:30–8:30', 'activity' => 'Breakfast at hotel', 'detail' => ''],
+            ['slot' => 'Day 2 · 8:30', 'activity' => 'Depart hotel to Canton Fair venue', 'detail' => ''],
+            ['slot' => 'Day 2 · 10:00–17:00', 'activity' => 'Canton Fair program', 'detail' => ''],
+            ['slot' => 'Day 2 · Evening', 'activity' => 'City walk (Beijing Road)', 'detail' => ''],
+            ['slot' => 'Day 2 · 21:00', 'activity' => 'Return to hotel', 'detail' => ''],
         ];
     }
 
@@ -271,26 +276,103 @@ class LandingPage extends Model
 
         if ($loc === 'km') {
             return <<<'TXT'
-ថ្ងៃទី 1 · ព្រឹក|មកដល់ Guangzhou|ទទួលនៅអាកាសយានដ្ឋាន និងចូលសណ្ឋាគា
-ថ្ងៃទី 1 · រសៀល|Canton Fair ដំណាក់ទី 1|ចុះឈ្មោះ និងស្គាល់រោងទិញ 1–3
-ថ្ងៃទី 2 · ពេញមួយថ្ងៃ|ទស្សនា​ស្តង់ និងមានការណែនាំ|ជាមួយ KHB
-ថ្ងៃទី 3 · ព្រឹក|ជម្រើសទៅរោងចក្រ|ចុះឈ្មោះមុន
-ថ្ងៃទី 3 · រសៀល|ត្រឡប់ទៅភ្នំពេញ|ចេញដំណើរការជាក្រុម
+Day 1 · 06:00|ជួបជុំគ្នានៅ ព្រលានយន្តហោះអន្តរជាតិតាខ្មៅ|
+Day 1 · 08:20|យន្តហោះចេញដំណើរ|
+Day 1 · 12:15|មកដល់ព្រលានយន្តហោះអន្តរជាតិ Guangzhou|ញាំបាយថ្ងៃត្រង់ រួចចេញដំណើរមកសណ្ឋាគារ
+Day 1 · ល្ងាច-យប់|ដើរកំសាន្តនៅក្នុងទីក្រុង (Canton Tower)|
+Day 1 · 21:00|ត្រលប់មកសណ្ឋាគារវិញ|
+Day 2 · 7:30-8:30|ញាំអាហារពេលព្រឹកនៅសណ្ឋាគារ|
+Day 2 · 8:30|ចេញពីសណ្ឋាគារមកទីតាំងពិព័រណ៍ Canton Fair|
+Day 2 · 10:00-17:00|ចូលរួមកម្មវិធីពិព័រណ៍ Canton Fair|
+Day 2 · ល្ងាច-យប់|ដើរកំសាន្តនៅក្នុងទីក្រុង (Beijing Leu)|
+Day 2 · 21:00|ត្រលប់មកសណ្ឋាគារវិញ|
 TXT;
         }
 
         if ($loc === 'zh') {
             return <<<'TXT'
-第一天 · 上午|抵达广州|接机与酒店入住
-第一天 · 下午|广交会第一期|办证与展馆 1–3 区导览
-第二天 · 全天|展商拜访与采购对接|KHB 向导陪同
-第三天 · 上午|可选工厂参观|需提前预约
-第三天 · 下午|返回金边|团队出发
+第一天 · 06:00|金边国际机场集合|
+第一天 · 08:20|航班起飞|
+第一天 · 12:15|抵达广州国际机场|午餐后前往酒店
+第一天 · 傍晚至晚上|市区观光（广州塔）|
+第一天 · 21:00|返回酒店|
+第二天 · 7:30-8:30|酒店早餐|
+第二天 · 8:30|离开酒店前往广交会展馆|
+第二天 · 10:00-17:00|参加广交会活动|
+第二天 · 傍晚至晚上|市区观光（北京路）|
+第二天 · 21:00|返回酒店|
 TXT;
         }
 
         return collect(self::defaultDemoAgendaItems())
             ->map(fn (array $row) => $row['slot'].'|'.$row['activity'].'|'.$row['detail'])
             ->implode("\n");
+    }
+
+    /**
+     * Parse admin textarea format into agenda rows (slot|activity|detail per line).
+     *
+     * @return list<array{slot: string, activity: string, detail: string}>
+     */
+    public static function parseAgendaItemsFromText(string $multiline): array
+    {
+        $out = [];
+        foreach (preg_split('/\r\n|\r|\n/', trim($multiline)) as $line) {
+            if ($line === '') {
+                continue;
+            }
+            $p = explode('|', $line, 3);
+            $out[] = [
+                'slot' => trim($p[0] ?? ''),
+                'activity' => trim($p[1] ?? ''),
+                'detail' => trim($p[2] ?? ''),
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Default agenda rows for a locale (matches Section 5 public defaults).
+     *
+     * @return list<array{slot: string, activity: string, detail: string}>
+     */
+    public static function defaultDemoAgendaItemsForLocale(string $locale): array
+    {
+        $loc = strtolower(trim($locale));
+
+        if ($loc === 'en') {
+            return self::defaultDemoAgendaItems();
+        }
+
+        return self::parseAgendaItemsFromText(self::defaultDemoAgendaItemsText($loc));
+    }
+
+    /**
+     * Use saved agenda rows when present; otherwise the canonical Day 1–2 demo schedule for the locale.
+     *
+     * @param  array<int, mixed>  $rows
+     * @return list<array{slot: string, activity: string, detail: string}>
+     */
+    public static function resolveAgendaItemsForDisplay(array $rows, string $locale): array
+    {
+        $filtered = [];
+        foreach ($rows as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $slot = trim((string) ($row['slot'] ?? ''));
+            $act = trim((string) ($row['activity'] ?? ''));
+            $det = trim((string) ($row['detail'] ?? ''));
+            if ($slot !== '' || $act !== '' || $det !== '') {
+                $filtered[] = ['slot' => $slot, 'activity' => $act, 'detail' => $det];
+            }
+        }
+
+        if ($filtered !== []) {
+            return $filtered;
+        }
+
+        return self::defaultDemoAgendaItemsForLocale($locale);
     }
 }

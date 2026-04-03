@@ -11,27 +11,6 @@ use Illuminate\Database\Seeder;
  */
 class LandingPageAgendaDemoSeeder extends Seeder
 {
-    /**
-     * @return list<array{slot: string, activity: string, detail: string}>
-     */
-    private static function agendaTextToItems(string $multiline): array
-    {
-        $out = [];
-        foreach (preg_split('/\r\n|\r|\n/', trim($multiline)) as $line) {
-            if ($line === '') {
-                continue;
-            }
-            $p = explode('|', $line, 3);
-            $out[] = [
-                'slot' => trim($p[0] ?? ''),
-                'activity' => trim($p[1] ?? ''),
-                'detail' => trim($p[2] ?? ''),
-            ];
-        }
-
-        return $out;
-    }
-
     public function run(): void
     {
         LandingPage::updateOrCreate(
@@ -70,7 +49,7 @@ class LandingPageAgendaDemoSeeder extends Seeder
                         ],
                         'zh' => [
                             'agenda_title' => '行程表',
-                            'agenda_items' => self::agendaTextToItems(LandingPage::defaultDemoAgendaItemsText('zh')),
+                            'agenda_items' => LandingPage::parseAgendaItemsFromText(LandingPage::defaultDemoAgendaItemsText('zh')),
                         ],
                     ],
                 ],

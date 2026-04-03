@@ -12,8 +12,10 @@
     $faqTitle = $visual['faq_title'] ?? 'Frequently Asked Questions';
     $termsTitle = $visual['terms_title'] ?? 'Terms & Conditions';
     $termsText = $visual['terms_text'] ?? '';
+    $currentLocale = $currentLocale ?? 'en';
     $agendaTitle = $visual['agenda_title'] ?? 'Trip agenda';
-    $agendaItems = is_array($visual['agenda_items'] ?? null) ? $visual['agenda_items'] : [];
+    $rawAgendaItems = is_array($visual['agenda_items'] ?? null) ? $visual['agenda_items'] : [];
+    $agendaItems = \App\Models\LandingPage::resolveAgendaItemsForDisplay($rawAgendaItems, $currentLocale);
     $agendaHdrSlot = trim((string) ($visual['agenda_hdr_slot'] ?? '')) ?: 'Time / slot';
     $agendaHdrActivity = trim((string) ($visual['agenda_hdr_activity'] ?? '')) ?: 'Activity';
     $agendaHdrDetail = trim((string) ($visual['agenda_hdr_detail'] ?? '')) ?: 'Details';
@@ -32,7 +34,6 @@
         'zh' => '中文 (Chinese)',
     ];
     $langSwitcherUrls = $langSwitcherUrls ?? [];
-    $currentLocale = $currentLocale ?? 'en';
     $showLangSwitch = is_array($enabledLocales) && count($enabledLocales) >= 2;
     /** Flag images (public/images/landing-flags); full names for aria/title (no locale shortcuts). */
     $localeFlagImages = [
@@ -252,7 +253,6 @@
     .lv-agenda-table .lv-agenda-slot{font-weight:700;color:var(--lv-primary);font-size:.95rem}
     .lv-agenda-table .lv-agenda-activity{font-weight:600;color:var(--lv-ink)}
     .lv-agenda-table .lv-agenda-detail{color:var(--lv-body);line-height:1.55}
-    .lv-agenda-empty{margin-top:8px;padding:16px;border-radius:var(--lv-radius-sm);border:1px dashed var(--lv-border);color:var(--lv-body);text-align:center;font-size:.95rem}
     .lv-section--booking{background:var(--lv-surface-2)}
     .lv-section--faq{background:linear-gradient(180deg,#f1f5f9 0%,var(--lv-surface-2) 100%)}
     .lv-section--terms{background:var(--lv-surface);border-top:1px solid var(--lv-border)}
@@ -532,49 +532,36 @@
         </div>
     </section>
 
-    {{-- Section 5 — Agenda (table mode on all viewports; horizontal scroll on narrow screens) --}}
+    {{-- Section 5 — Agenda (table; uses saved rows or LandingPage::defaultDemoAgendaItemsForLocale) --}}
     <section class="lv-section lv-section--agenda" data-lp-section="agenda" aria-labelledby="lvAgendaHeading">
         <div class="lv-container">
             <h2 id="lvAgendaHeading" data-lv-key="agenda_title">{{ $agendaTitle }}</h2>
-            @php
-                $agendaRows = collect($agendaItems)->filter(function ($row) {
-                    $slot = trim((string) ($row['slot'] ?? ''));
-                    $act = trim((string) ($row['activity'] ?? ''));
-                    $det = trim((string) ($row['detail'] ?? ''));
-
-                    return $slot !== '' || $act !== '' || $det !== '';
-                })->values();
-            @endphp
-            @if($agendaRows->isEmpty())
-                <p class="lv-agenda-empty" role="status">Schedule details will appear here once rows are added in the editor.</p>
-            @else
-                <div class="lv-agenda-table-wrap">
-                    <table class="lv-agenda-table">
-                        <caption class="sr-only">{{ $agendaTitle }}</caption>
-                        <thead>
+            <div class="lv-agenda-table-wrap">
+                <table class="lv-agenda-table">
+                    <caption class="sr-only">{{ $agendaTitle }}</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">{{ $agendaHdrSlot }}</th>
+                            <th scope="col">{{ $agendaHdrActivity }}</th>
+                            <th scope="col">{{ $agendaHdrDetail }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($agendaItems as $row)
+                            @php
+                                $slot = trim((string) ($row['slot'] ?? ''));
+                                $act = trim((string) ($row['activity'] ?? ''));
+                                $det = trim((string) ($row['detail'] ?? ''));
+                            @endphp
                             <tr>
-                                <th scope="col">{{ $agendaHdrSlot }}</th>
-                                <th scope="col">{{ $agendaHdrActivity }}</th>
-                                <th scope="col">{{ $agendaHdrDetail }}</th>
+                                <td class="lv-agenda-slot">{{ $slot !== '' ? $slot : '—' }}</td>
+                                <td class="lv-agenda-activity">{{ $act !== '' ? $act : '—' }}</td>
+                                <td class="lv-agenda-detail">{{ $det !== '' ? $det : '—' }}</td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($agendaRows as $row)
-                                @php
-                                    $slot = trim((string) ($row['slot'] ?? ''));
-                                    $act = trim((string) ($row['activity'] ?? ''));
-                                    $det = trim((string) ($row['detail'] ?? ''));
-                                @endphp
-                                <tr>
-                                    <td class="lv-agenda-slot">{{ $slot !== '' ? $slot : '—' }}</td>
-                                    <td class="lv-agenda-activity">{{ $act !== '' ? $act : '—' }}</td>
-                                    <td class="lv-agenda-detail">{{ $det !== '' ? $det : '—' }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     </section>
 
