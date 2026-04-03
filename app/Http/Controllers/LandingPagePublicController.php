@@ -33,6 +33,10 @@ class LandingPagePublicController extends Controller
         }
         $documentTitle = $landingPage->headline ?: ($visual['hero_title'] ?? $landingPage->name);
 
+        $seo = $landingPage->buildSeoMeta($currentLocale, $visual, $enabledLocales, [
+            'force_noindex' => $request->boolean('editor'),
+        ]);
+
         $response = response()->view('landing-pages.public-show', compact(
             'landingPage',
             'visual',
@@ -40,7 +44,8 @@ class LandingPagePublicController extends Controller
             'enabledLocales',
             'localeLabels',
             'langSwitcherUrls',
-            'documentTitle'
+            'documentTitle',
+            'seo'
         ));
 
         if ($landingPage->show_once_mode === 'session_once') {
@@ -88,6 +93,30 @@ class LandingPagePublicController extends Controller
         $visual = $landingPage->visualForLocale($currentLocale);
         $documentTitle = __('Thank you').' — '.($landingPage->headline ?: ($visual['hero_title'] ?? $landingPage->name));
 
+        $enabledLocales = $landingPage->enabledLocaleList();
+        $defLoc = strtolower(trim((string) ($landingPage->default_locale ?: 'en')));
+        $baseThank = route('landing-pages.public.thank-you', $landingPage, true);
+        $alternates = [];
+        foreach ($enabledLocales as $loc) {
+            $loc = strtolower(trim((string) $loc));
+            if ($loc === '') {
+                continue;
+            }
+            $alternates[$loc] = $loc === $defLoc ? $baseThank : $baseThank.'?lang='.$loc;
+        }
+        $canonicalThank = $alternates[$currentLocale] ?? $baseThank;
+        $xDefaultUrl = $alternates[$defLoc] ?? ($alternates['en'] ?? (reset($alternates) ?: $baseThank));
+
+        $thxDesc = trim(preg_replace('/\s+/u', ' ', strip_tags($documentTitle)));
+        $seo = $landingPage->buildSeoMeta($currentLocale, $visual, $enabledLocales, [
+            'force_noindex' => true,
+            'title' => $documentTitle,
+            'description' => Str::limit($thxDesc, 160, ''),
+            'canonical_url' => $canonicalThank,
+            'alternates' => $alternates,
+            'x_default_url' => $xDefaultUrl,
+        ]);
+
         $capture = $this->tracking->capture($landingPage, $request, 'thank_you', [
             'event_category' => 'conversion',
             'source' => 'thank-you-page',
@@ -101,6 +130,7 @@ class LandingPagePublicController extends Controller
             'visual' => $visual,
             'currentLocale' => $currentLocale,
             'documentTitle' => $documentTitle,
+            'seo' => $seo,
         ]);
 
         foreach ($capture['cookies'] as $cookie) {

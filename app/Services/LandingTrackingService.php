@@ -7,6 +7,7 @@ use App\Models\LandingTrackingEvent;
 use App\Models\LandingTrackingVisitor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Cookie as SymfonyCookie;
 
@@ -93,10 +94,140 @@ class LandingTrackingService
             'cta_clicks' => $ctaClicks,
             'leads' => $leads,
             'continues' => $continues,
+            'thank_you' => (clone $events)->where('event_name', 'thank_you')->count(),
             'unique_visitors' => $uniqueVisitors,
             'lead_conversion_rate_percent' => $conversionRate,
             'top_sources' => $bySource,
         ];
+    }
+
+    /**
+     * Full analytics for admin: funnel, time series, UTM, recent activity.
+     *
+     * @return array<string, mixed>
+     */
+    public function analyticsReport(LandingPage $landingPage, int $days = 30, int $recentLimit = 75): array
+    {
+        $days = max(7, min(365, $days));
+        $recentLimit = max(10, min(200, $recentLimit));
+
+        $summary = $this->summary($landingPage);
+        $since = now()->subDays($days)->startOfDay();
+
+        $base = LandingTrackingEvent::query()
+            ->where('landing_page_id', $landingPage->id)
+            ->where('occurred_at', '>=', $since);
+
+        $byEventName = (clone $base)
+            ->selectRaw('event_name, COUNT(*) as total')
+            ->groupBy('event_name')
+            ->orderByDesc('total')
+            ->get();
+
+        $dateExpr = $this->sqlDateExpressionForOccurredAt();
+
+        $dailyRows = LandingTrackingEvent::query()
+            ->where('landing_page_id', $landingPage->id)
+            ->where('occurred_at', '>=', $since)
+            ->selectRaw(
+                "{$dateExpr} as day, SUM(CASE WHEN event_name = 'view' THEN 1 ELSE 0 END) as views, COUNT(*) as total_events"
+            )
+            ->groupBy(DB::raw($dateExpr))
+            ->orderBy('day')
+            ->get();
+
+        $dailyActivity = [];
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $d = now()->subDays($i)->toDateString();
+            $dailyActivity[$d] = ['views' => 0, 'total_events' => 0];
+        }
+        foreach ($dailyRows as $row) {
+            $d = $this->normalizeDayKey($row->day ?? null);
+            if ($d !== null && isset($dailyActivity[$d])) {
+                $dailyActivity[$d] = [
+                    'views' => (int) ($row->views ?? 0),
+                    'total_events' => (int) ($row->total_events ?? 0),
+                ];
+            }
+        }
+
+        $utmSources = (clone $base)
+            ->whereNotNull('utm_source')
+            ->where('utm_source', '!=', '')
+            ->selectRaw('utm_source, COUNT(*) as total')
+            ->groupBy('utm_source')
+            ->orderByDesc('total')
+            ->limit(12)
+            ->get();
+
+        $utmCampaigns = (clone $base)
+            ->whereNotNull('utm_campaign')
+            ->where('utm_campaign', '!=', '')
+            ->selectRaw('utm_campaign, COUNT(*) as total')
+            ->groupBy('utm_campaign')
+            ->orderByDesc('total')
+            ->limit(12)
+            ->get();
+
+        $topSourcesPeriod = (clone $base)
+            ->selectRaw("COALESCE(source, 'unknown') as source_key, COUNT(*) as total")
+            ->groupBy(DB::raw("COALESCE(source, 'unknown')"))
+            ->orderByDesc('total')
+            ->limit(10)
+            ->get();
+
+        $recentEvents = LandingTrackingEvent::query()
+            ->where('landing_page_id', $landingPage->id)
+            ->orderByDesc('occurred_at')
+            ->limit($recentLimit)
+            ->get([
+                'id',
+                'occurred_at',
+                'event_name',
+                'event_category',
+                'source',
+                'cta_label',
+                'visitor_id',
+                'ip_address',
+                'utm_source',
+                'utm_medium',
+                'utm_campaign',
+            ]);
+
+        return [
+            'summary' => $summary,
+            'period_days' => $days,
+            'period_start' => $since->toIso8601String(),
+            'by_event_name' => $byEventName,
+            'daily_activity' => $dailyActivity,
+            'utm_top_sources' => $utmSources,
+            'utm_top_campaigns' => $utmCampaigns,
+            'top_sources_period' => $topSourcesPeriod,
+            'recent_events' => $recentEvents,
+        ];
+    }
+
+    private function sqlDateExpressionForOccurredAt(): string
+    {
+        $driver = LandingTrackingEvent::query()->getConnection()->getDriverName();
+
+        return match ($driver) {
+            'sqlite' => "date(occurred_at)",
+            default => 'DATE(occurred_at)',
+        };
+    }
+
+    private function normalizeDayKey(mixed $day): ?string
+    {
+        if ($day === null) {
+            return null;
+        }
+        if ($day instanceof \DateTimeInterface) {
+            return $day->format('Y-m-d');
+        }
+        $s = (string) $day;
+
+        return strlen($s) >= 10 ? substr($s, 0, 10) : $s;
     }
 
     /**

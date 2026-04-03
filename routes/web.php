@@ -369,6 +369,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/create', [LandingPageController::class, 'create'])->name('create');
             Route::post('/', [LandingPageController::class, 'store'])->name('store');
             Route::get('/reporting', [LandingPageController::class, 'reportingIndex'])->name('reporting.index');
+            Route::get('/analytics', [LandingPageController::class, 'analyticsIndex'])->name('analytics.index');
             Route::get('/{landingPage:slug}/edit', [LandingPageController::class, 'edit'])->name('edit');
             Route::put('/{landingPage:slug}', [LandingPageController::class, 'update'])->name('update');
             Route::delete('/{landingPage:slug}', [LandingPageController::class, 'destroy'])->name('destroy');

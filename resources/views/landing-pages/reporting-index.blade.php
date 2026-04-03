@@ -9,6 +9,8 @@
     <div class="alert alert-light border mb-3">
         <strong>Marketing leads only.</strong>
         Data shown here is stored under <code>/landing-pages</code> (table <code>landing_page_leads</code>).
+        For visitor funnel and engagement (views, CTA, UTM), use
+        <a href="{{ route('landing-pages.analytics.index') }}" class="btn btn-sm btn-outline-info ml-1">Visitor analytics</a>.
         Booth and floor-plan <strong>event bookings</strong> use the main <strong>Bookings</strong> menu, not this screen.
     </div>
 

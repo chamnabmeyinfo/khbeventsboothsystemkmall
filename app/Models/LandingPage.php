@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class LandingPage extends Model
 {
@@ -67,6 +68,11 @@ class LandingPage extends Model
     public function leads(): HasMany
     {
         return $this->hasMany(LandingPageLead::class);
+    }
+
+    public function trackingEvents(): HasMany
+    {
+        return $this->hasMany(LandingTrackingEvent::class, 'landing_page_id');
     }
 
     public function scopePublished($query)
@@ -343,6 +349,142 @@ class LandingPage extends Model
         }
 
         return array_merge($shared, is_array($block) ? $block : []);
+    }
+
+    /**
+     * SEO meta for public pages (meta, Open Graph, Twitter, hreflang, JSON-LD).
+     * Uses headline, hero copy, and images from visual — no extra DB columns.
+     *
+     * @param  array<string, mixed>  $visual  From visualForLocale()
+     * @param  list<string>  $enabledLocales
+     * @param  array{title?: string, description?: string, canonical_url?: string, force_noindex?: bool, alternates?: array<string, string>, x_default_url?: string}  $overrides
+     * @return array<string, mixed>
+     */
+    public function buildSeoMeta(string $currentLocale, array $visual, array $enabledLocales, array $overrides = []): array
+    {
+        $currentLocale = strtolower(trim($currentLocale));
+        $defLoc = strtolower(trim((string) ($this->default_locale ?: 'en')));
+
+        $title = trim((string) ($overrides['title'] ?? ''));
+        if ($title === '') {
+            $title = trim((string) ($this->headline ?: ''));
+            if ($title === '') {
+                $title = trim((string) ($visual['hero_title'] ?? ''));
+            }
+            if ($title === '') {
+                $title = (string) $this->name;
+            }
+        }
+
+        $rawDesc = trim((string) ($overrides['description'] ?? ''));
+        if ($rawDesc === '') {
+            $rawDesc = strip_tags((string) ($visual['hero_subtitle'] ?? ''));
+        }
+        if (trim($rawDesc) === '') {
+            $parts = array_filter([
+                $this->industry ? trim((string) $this->industry) : '',
+                trim((string) ($this->headline ?: $this->name)),
+            ]);
+            $rawDesc = implode(' — ', $parts);
+        }
+        $description = Str::limit(trim(preg_replace('/\s+/u', ' ', strip_tags($rawDesc))), 160, '');
+
+        $canonicalUrl = trim((string) ($overrides['canonical_url'] ?? ''));
+        if ($canonicalUrl === '') {
+            $baseShow = route('landing-pages.public.show', $this, true);
+            $canonicalUrl = $currentLocale === $defLoc ? $baseShow : $baseShow.'?lang='.$currentLocale;
+        }
+
+        $imagePath = $visual['hero_background_image'] ?? $visual['logo_image'] ?? null;
+        $ogImage = null;
+        if (is_string($imagePath) && $imagePath !== '') {
+            $ogImage = preg_match('#^https?://#i', $imagePath) ? $imagePath : asset($imagePath);
+        }
+
+        if (! empty($overrides['alternates']) && is_array($overrides['alternates'])) {
+            $alternates = [];
+            foreach ($overrides['alternates'] as $loc => $url) {
+                $loc = strtolower(trim((string) $loc));
+                if ($loc !== '') {
+                    $alternates[$loc] = (string) $url;
+                }
+            }
+        } else {
+            $alternates = [];
+            $base = route('landing-pages.public.show', $this, true);
+            foreach ($enabledLocales as $loc) {
+                $loc = strtolower(trim((string) $loc));
+                if ($loc === '') {
+                    continue;
+                }
+                $alternates[$loc] = $loc === $defLoc ? $base : $base.'?lang='.$loc;
+            }
+        }
+
+        $xDefaultUrl = trim((string) ($overrides['x_default_url'] ?? ''));
+        if ($xDefaultUrl === '') {
+            $xDefaultUrl = $alternates[$defLoc] ?? ($alternates['en'] ?? $canonicalUrl);
+        }
+
+        $ogLocale = match ($currentLocale) {
+            'zh' => 'zh_CN',
+            'km' => 'km_KH',
+            default => 'en_US',
+        };
+
+        $alternateOgLocales = [];
+        foreach ($enabledLocales as $loc) {
+            $loc = strtolower(trim((string) $loc));
+            if ($loc === '' || $loc === $currentLocale) {
+                continue;
+            }
+            $altOg = match ($loc) {
+                'zh' => 'zh_CN',
+                'km' => 'km_KH',
+                default => 'en_US',
+            };
+            $alternateOgLocales[] = ['locale' => $altOg, 'url' => $alternates[$loc] ?? ''];
+        }
+
+        $forceNoindex = (bool) ($overrides['force_noindex'] ?? false);
+        $robots = $forceNoindex ? 'noindex, nofollow' : 'index, follow';
+
+        $siteName = (string) (config('app.name') ?: '');
+
+        $jsonLd = [
+            '@context' => 'https://schema.org',
+            '@type' => 'WebPage',
+            'name' => $title,
+            'description' => $description !== '' ? $description : $title,
+            'url' => $canonicalUrl,
+            'inLanguage' => $currentLocale,
+        ];
+        if ($siteName !== '') {
+            $jsonLd['isPartOf'] = [
+                '@type' => 'WebSite',
+                'name' => $siteName,
+                'url' => rtrim((string) config('app.url'), '/').'/',
+            ];
+        }
+        if ($ogImage !== null) {
+            $jsonLd['image'] = $ogImage;
+        }
+
+        return [
+            'title' => $title,
+            'description' => $description,
+            'canonical_url' => $canonicalUrl,
+            'og_image' => $ogImage,
+            'og_site_name' => $siteName,
+            'og_type' => 'website',
+            'og_locale' => $ogLocale,
+            'alternate_og_locales' => $alternateOgLocales,
+            'alternates' => $alternates,
+            'x_default_url' => $xDefaultUrl,
+            'robots' => $robots,
+            'twitter_card' => 'summary_large_image',
+            'json_ld' => $jsonLd,
+        ];
     }
 
     /**

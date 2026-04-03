@@ -6,6 +6,7 @@ use App\Models\LandingPage;
 use App\Models\LandingPageLead;
 use App\Models\LandingPageEvent;
 use App\Services\LandingTextTranslationService;
+use App\Services\LandingTrackingService;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
@@ -237,6 +238,23 @@ class LandingPageController extends Controller
             ->get(['id', 'name', 'slug']);
 
         return view('landing-pages.reporting-index', compact('leads', 'landingPageOptions'));
+    }
+
+    /**
+     * Admin: visitor & engagement analytics across all landing pages (under /landing-pages/analytics).
+     */
+    public function analyticsIndex(LandingTrackingService $tracking)
+    {
+        $pages = LandingPage::query()->orderBy('name')->get(['id', 'name', 'slug', 'is_published']);
+        $rows = [];
+        foreach ($pages as $page) {
+            $rows[] = [
+                'page' => $page,
+                'summary' => $tracking->summary($page),
+            ];
+        }
+
+        return view('landing-pages.analytics-index', compact('rows'));
     }
 
     /**

@@ -50,6 +50,9 @@
             <a href="{{ route('landing-pages.create') }}" class="btn btn-primary" style="min-height:44px;">
                 <i class="fas fa-plus mr-1"></i>Create Landing Page
             </a>
+            <a href="{{ route('landing-pages.analytics.index') }}" class="btn btn-outline-info" style="min-height:44px;">
+                <i class="fas fa-chart-area mr-1"></i>Visitor analytics
+            </a>
             <a href="{{ route('landing-pages.reporting.index') }}" class="btn btn-outline-primary" style="min-height:44px;">
                 <i class="fas fa-chart-line mr-1"></i>Leads &amp; reporting
             </a>
@@ -129,7 +132,9 @@
                             <td>{{ optional($landingPage->updated_at)->format('Y-m-d H:i') }}</td>
                             <td>
                                 <span class="badge badge-light">{{ (int) ($landingPage->leads_count ?? 0) }}</span>
-                                <a href="{{ route('landing-pages.reporting', $landingPage) }}" class="small d-inline-block ml-1">Reporting</a>
+                                <a href="{{ route('landing-pages.analytics', $landingPage) }}" class="small d-inline-block ml-1">Analytics</a>
+                                <span class="text-muted small">·</span>
+                                <a href="{{ route('landing-pages.reporting', $landingPage) }}" class="small d-inline-block ml-1">Leads</a>
                             </td>
                             <td class="text-right">
                                 <div class="btn-group btn-group-sm">

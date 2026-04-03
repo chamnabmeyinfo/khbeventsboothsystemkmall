@@ -109,13 +109,23 @@ class LandingPageTrackingController extends Controller
         return $response;
     }
 
-    public function analytics(LandingPage $landingPage)
+    public function analytics(Request $request, LandingPage $landingPage)
     {
-        abort_unless($landingPage->is_published, 404);
+        $days = max(7, min(365, (int) $request->query('days', 30)));
+        $report = $this->tracking->analyticsReport($landingPage, $days);
 
-        return response()->json([
-            'ok' => true,
-            'data' => $this->tracking->summary($landingPage),
-        ]);
+        if ($request->wantsJson() || $request->query('format') === 'json') {
+            $summary = $report['summary'];
+            unset($report['summary']);
+
+            return response()->json([
+                'ok' => true,
+                'data' => array_merge($summary, [
+                    'analytics' => $report,
+                ]),
+            ]);
+        }
+
+        return view('landing-pages.analytics', compact('landingPage', 'report'));
     }
 }

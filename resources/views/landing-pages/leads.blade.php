@@ -18,6 +18,7 @@
             </h3>
             <div class="d-flex flex-wrap gap-2">
                 <a href="{{ route('landing-pages.edit', $landingPage) }}" class="btn btn-default btn-sm">Edit page</a>
+                <a href="{{ route('landing-pages.analytics', $landingPage) }}" class="btn btn-primary btn-sm">Visitor analytics</a>
                 <a href="{{ route('landing-pages.public.show', $landingPage) }}" class="btn btn-info btn-sm" target="_blank" rel="noopener">Public URL</a>
                 <a href="{{ route('landing-pages.reporting.index') }}" class="btn btn-outline-primary btn-sm">All pages — leads</a>
                 <a href="{{ route('landing-pages.index') }}" class="btn btn-default btn-sm">All pages</a>
