@@ -43,6 +43,7 @@ Route::get('/', function () {
 })->middleware('landing.gate');
 
 // Landing Pages (Public)
+Route::get('/l/{landingPage:slug}/thank-you', [LandingPagePublicController::class, 'thankYou'])->name('landing-pages.public.thank-you');
 Route::get('/l/{landingPage:slug}', [LandingPagePublicController::class, 'show'])->name('landing-pages.public.show');
 Route::post('/l/{landingPage:slug}/continue', [LandingPagePublicController::class, 'continue'])->name('landing-pages.public.continue');
 Route::post('/l/{landingPage:slug}/track', [LandingPageTrackingController::class, 'track'])->name('landing-pages.track');

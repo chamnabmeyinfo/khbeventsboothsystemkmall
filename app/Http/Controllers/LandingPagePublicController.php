@@ -77,6 +77,39 @@ class LandingPagePublicController extends Controller
         return $response;
     }
 
+    /**
+     * Post-submission thank-you page (after CTA / lead flows).
+     */
+    public function thankYou(LandingPage $landingPage, Request $request)
+    {
+        abort_unless($landingPage->is_published, 404);
+
+        $currentLocale = $landingPage->resolveLocaleForRequest($request);
+        $visual = $landingPage->visualForLocale($currentLocale);
+        $documentTitle = __('Thank you').' — '.($landingPage->headline ?: ($visual['hero_title'] ?? $landingPage->name));
+
+        $capture = $this->tracking->capture($landingPage, $request, 'thank_you', [
+            'event_category' => 'conversion',
+            'source' => 'thank-you-page',
+            'event_payload' => [
+                'path' => $request->path(),
+            ],
+        ]);
+
+        $response = response()->view('landing-pages.thank-you', [
+            'landingPage' => $landingPage,
+            'visual' => $visual,
+            'currentLocale' => $currentLocale,
+            'documentTitle' => $documentTitle,
+        ]);
+
+        foreach ($capture['cookies'] as $cookie) {
+            $response->withCookie($cookie);
+        }
+
+        return $response;
+    }
+
     public function continue(LandingPage $landingPage, Request $request)
     {
         abort_unless($landingPage->is_published, 404);
@@ -84,6 +117,14 @@ class LandingPagePublicController extends Controller
         $target = trim((string) ($request->input('target') ?: $landingPage->redirect_url ?: '/login'));
         if ($target === '' || (! Str::startsWith($target, '/') && ! Str::startsWith($target, ['http://', 'https://']))) {
             $target = '/login';
+        }
+
+        // Visual template: send visitors to thank-you instead of login after Continue (unless admin set another URL).
+        $loginPath = url('/login');
+        if ($landingPage->use_visual_builder && ($landingPage->template_key === 'canton_fair_visual')) {
+            if ($target === '/login' || $target === $loginPath) {
+                $target = route('landing-pages.public.thank-you', $landingPage, false);
+            }
         }
 
         $capture = $this->tracking->capture($landingPage, $request, 'continue', [

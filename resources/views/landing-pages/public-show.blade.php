@@ -40,6 +40,7 @@ window.LandingPageConfig = {
     trackingUrl: @json(route('landing-pages.track', $landingPage)),
     leadUrl: @json(route('landing-pages.lead', $landingPage)),
     continueUrl: @json(route('landing-pages.public.continue', $landingPage)),
+    thankYouUrl: @json(route('landing-pages.public.thank-you', $landingPage)),
     csrfToken: @json(csrf_token()),
     inlineEditEnabled: @json($canInlineEdit),
     inlineUpdateUrl: @json($canInlineEdit ? route('landing-pages.visual-inline', $landingPage) : null),
@@ -74,7 +75,13 @@ window.submitLandingLead = function(payload) {
             'X-CSRF-TOKEN': window.LandingPageConfig.csrfToken
         },
         body: JSON.stringify(payload || {})
-    }).catch(function() { return null; });
+    }).then(function (r) {
+        return r.json().then(function (data) {
+            return { ok: r.ok, status: r.status, data: data };
+        });
+    }).catch(function () {
+        return { ok: false, status: 0, data: null };
+    });
 };
 
 window._lpContinueTarget = null;
@@ -162,12 +169,16 @@ window.landingContinue = function(targetUrl) {
                     locale: (window.LandingPageConfig && window.LandingPageConfig.currentLocale) ? window.LandingPageConfig.currentLocale : 'en'
                 }
             };
-            var p = (typeof submitLandingLead === 'function') ? submitLandingLead(payload) : Promise.resolve(null);
-            p.catch(function() { return null; }).then(function() {
+            var p = (typeof submitLandingLead === 'function') ? submitLandingLead(payload) : Promise.resolve({ ok: true, data: { ok: true } });
+            p.then(function (res) {
+                if (!res || !res.ok || (res.data && res.data.ok === false)) {
+                    var msg = (res && res.data && res.data.message) ? res.data.message : 'Could not save your submission. Please try again.';
+                    alert(msg);
+                    return;
+                }
                 if (typeof trackLandingEvent === 'function') {
                     trackLandingEvent('lead_submit', { cta_label: 'ContinueModal', source: 'continue-modal' });
                 }
-            }).finally(function() {
                 closeLpContinueModal();
                 var contForm = document.getElementById('landingContinueForm');
                 var t = window._lpContinueTarget || ((window.LandingPageConfig && window.LandingPageConfig.continueDefaultTarget) ? window.LandingPageConfig.continueDefaultTarget : '/login');
@@ -175,6 +186,9 @@ window.landingContinue = function(targetUrl) {
                     contForm.querySelector('input[name="target"]').value = t;
                     contForm.submit();
                 }
+            }).catch(function () {
+                alert('Network error. Please try again.');
+            }).finally(function () {
                 if (submitBtn) {
                     submitBtn.disabled = false;
                 }

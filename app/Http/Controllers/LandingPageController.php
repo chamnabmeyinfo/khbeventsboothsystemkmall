@@ -79,8 +79,8 @@ class LandingPageController extends Controller
         $validated = $this->validateLandingPage($request);
         $validated['slug'] = Str::slug($validated['slug']);
         $validated = $this->forceMarketingVisualMode($validated);
-        $validated = $this->prepareVisualBuilderData($request, $validated);
         $validated = $this->applyContentSafety($validated);
+        $validated = $this->prepareVisualBuilderData($request, $validated);
         $validated['is_active'] = $request->boolean('is_active');
         $validated['is_published'] = $request->boolean('is_published');
         $validated['published_at'] = $validated['is_published'] ? now() : null;
@@ -175,8 +175,8 @@ class LandingPageController extends Controller
         $validated = $this->validateLandingPage($request, $landingPage->id);
         $validated['slug'] = Str::slug($validated['slug']);
         $validated = $this->forceMarketingVisualMode($validated);
-        $validated = $this->prepareVisualBuilderData($request, $validated, $landingPage);
         $validated = $this->applyContentSafety($validated);
+        $validated = $this->prepareVisualBuilderData($request, $validated, $landingPage);
         $validated['is_active'] = $request->boolean('is_active');
         $validated['is_published'] = $request->boolean('is_published');
         $validated['published_at'] = $validated['is_published'] && ! $landingPage->published_at ? now() : $landingPage->published_at;
@@ -507,7 +507,7 @@ class LandingPageController extends Controller
             $def = $enabled[0];
         }
         $validated['default_locale'] = $def;
-        $validated['redirect_url'] = $this->normalizeRedirectUrl((string) $validated['redirect_url']);
+        $validated['redirect_url'] = $this->normalizeRedirectUrl((string) ($validated['redirect_url'] ?? ''), (string) ($validated['slug'] ?? ''));
         $validated['template_key'] = $validated['use_visual_builder']
             ? ($validated['template_key'] ?? 'canton_fair_visual')
             : null;
@@ -540,9 +540,13 @@ class LandingPageController extends Controller
         return $html;
     }
 
-    private function normalizeRedirectUrl(string $url): string
+    private function normalizeRedirectUrl(string $url, string $landingSlug = ''): string
     {
         $url = trim($url);
+        $landingSlug = trim($landingSlug);
+        if ($url === '' && $landingSlug !== '') {
+            return '/l/'.Str::slug($landingSlug).'/thank-you';
+        }
         if ($url === '') {
             return '/login';
         }
@@ -629,7 +633,7 @@ class LandingPageController extends Controller
         if (array_key_exists('hero_cta_target', $incoming)) {
             $visual['hero_cta_target'] = trim((string) $incoming['hero_cta_target']);
         } elseif (! isset($visual['hero_cta_target']) || $visual['hero_cta_target'] === '') {
-            $visual['hero_cta_target'] = $existing['hero_cta_target'] ?? $this->normalizeRedirectUrl((string) ($validated['redirect_url'] ?? '/login'));
+            $visual['hero_cta_target'] = $existing['hero_cta_target'] ?? $this->normalizeRedirectUrl((string) ($validated['redirect_url'] ?? ''), (string) ($validated['slug'] ?? ''));
         }
 
         $adminLocales = LandingPage::allowedLocaleCodes();

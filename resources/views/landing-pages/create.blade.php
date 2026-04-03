@@ -13,7 +13,7 @@
         <form id="lpLandingPageAdminForm" action="{{ route('landing-pages.store') }}" method="POST" enctype="multipart/form-data" novalidate>
             @csrf
             @include('landing-pages.partials.form', ['landingPage' => null])
-            <div class="card-footer">
+            <div class="card-footer lp-sticky-card-footer">
                 <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i>Create</button>
                 <a href="{{ route('landing-pages.index') }}" class="btn btn-default">Cancel</a>
             </div>

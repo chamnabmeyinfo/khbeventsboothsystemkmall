@@ -43,6 +43,21 @@
     $showOnceMode = old('show_once_mode', optional($landingPage)->show_once_mode ?? 'cookie_once');
     $canAutoTranslate = isset($landingPage) && $landingPage;
 @endphp
+@once
+@push('styles')
+<style>
+    /* Sticky save/cancel bar on landing page create & edit (card-footer in parent view) */
+    .card-footer.lp-sticky-card-footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 1020;
+        background-color: #fff;
+        border-top: 1px solid rgba(0, 0, 0, 0.125);
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+    }
+</style>
+@endpush
+@endonce
 <div class="card-body">
     <div class="row">
         <div class="col-12 col-md-6">

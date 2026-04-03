@@ -17,7 +17,7 @@
             @csrf
             @method('PUT')
             @include('landing-pages.partials.form', ['landingPage' => $landingPage])
-            <div class="card-footer">
+            <div class="card-footer lp-sticky-card-footer">
                 <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i>Update</button>
                 <a href="{{ route('landing-pages.index') }}" class="btn btn-default">Cancel</a>
             </div>
