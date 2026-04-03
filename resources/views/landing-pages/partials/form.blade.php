@@ -36,6 +36,10 @@
     }
     $heroCtaShared = old('visual.hero_cta_target', $visualForm['hero_cta_target'] ?? '/login');
     $heroVideoUrl = old('visual.hero_background_video', $visualForm['hero_background_video'] ?? '');
+    $heroGalleryPaths = old('visual.hero_background_images');
+    if (! is_array($heroGalleryPaths)) {
+        $heroGalleryPaths = \App\Models\LandingPage::heroBackgroundImagePathsForDisplay($visualForm ?? []);
+    }
     $showOnceMode = old('show_once_mode', optional($landingPage)->show_once_mode ?? 'cookie_once');
     $canAutoTranslate = isset($landingPage) && $landingPage;
 @endphp
@@ -138,7 +142,7 @@
         <div class="card card-outline-primary mb-3">
             <div class="card-header py-2">
                 <strong class="d-block">Shared: brand, hero &amp; CTA link</strong>
-                <small class="text-muted">Logo and hero background power the <em>Hero</em> section. Optional video plays behind the scrim; the hero image is still used as poster and fallback. The CTA button uses the same destination for all languages.</small>
+                <small class="text-muted">Logo and hero backgrounds power the <em>Hero</em> section. Add multiple hero images for a timed slideshow (6s per image, then 10s video, repeating every 45s). Optional video plays behind the scrim; the first hero image is the poster/fallback. The CTA button uses the same destination for all languages.</small>
             </div>
             <div class="card-body">
                 <div class="form-group">
@@ -160,6 +164,17 @@
                             @if(!empty($visualForm['hero_background_image']))<small class="text-muted d-block mt-1">Current: {{ $visualForm['hero_background_image'] }}</small>@endif
                         </div>
                     </div>
+                </div>
+                <div class="form-group mt-3">
+                    <label class="d-block">Additional hero slideshow images (optional)</label>
+                    <small class="text-muted d-block mb-2">Up to 10 images total (including the primary hero image above). Order is left to right in the list below. Public page: each image shows 6 seconds, then your hero video 10 seconds, in a 45-second repeating loop.</small>
+                    <input type="file" name="visual_hero_background_images[]" class="form-control-file" accept="image/*" multiple>
+                    @foreach($heroGalleryPaths as $gp)
+                        <input type="hidden" name="visual[hero_background_images][]" value="{{ $gp }}">
+                    @endforeach
+                    @if(count($heroGalleryPaths) > 0)
+                        <small class="text-muted d-block mt-2">{{ count($heroGalleryPaths) }} image(s) saved in order (first = primary).</small>
+                    @endif
                 </div>
                 <div class="form-group mb-0 mt-3 pt-3 border-top">
                     <label class="d-block">Hero background video (optional)</label>

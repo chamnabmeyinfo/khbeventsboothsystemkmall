@@ -15,6 +15,7 @@ class LandingPage extends Model
     public const VISUAL_SHARED_KEYS = [
         'logo_image',
         'hero_background_image',
+        'hero_background_images',
         'hero_background_video',
         'about_image',
         'why_image',
@@ -132,6 +133,115 @@ class LandingPage extends Model
         }
 
         return null;
+    }
+
+    /**
+     * Ordered hero slideshow paths (shared visual). Falls back to single hero_background_image.
+     *
+     * @param  array<string, mixed>  $visual
+     * @return list<string>
+     */
+    public static function heroBackgroundImagePathsForDisplay(array $visual): array
+    {
+        $raw = $visual['hero_background_images'] ?? null;
+        $paths = [];
+        if (is_array($raw)) {
+            foreach ($raw as $p) {
+                $p = trim((string) $p);
+                if ($p !== '') {
+                    $paths[] = $p;
+                }
+            }
+        }
+        $paths = array_values(array_unique($paths));
+        if ($paths === [] && ! empty($visual['hero_background_image'])) {
+            $paths = [(string) $visual['hero_background_image']];
+        }
+
+        return $paths;
+    }
+
+    /**
+     * Build a single 45s hero rotation timeline: each image once (6s each), then optional video (10s),
+     * then cycle images (6s each) until 45s total (last image segment may be shorter).
+     *
+     * @param  list<string>  $imagePaths  Relative paths under public (e.g. images/landing-pages/...)
+     * @return list<array<string, mixed>>
+     */
+    public static function buildHeroRotationSegments(
+        array $imagePaths,
+        ?string $youtubeEmbedUrl,
+        ?string $html5VideoSrc,
+        string $html5Mime = 'video/mp4'
+    ): array {
+        $cycleMs = 45000;
+        $imgMs = 6000;
+        $vidMs = 10000;
+        $segments = [];
+        $paths = [];
+        foreach ($imagePaths as $p) {
+            $p = trim((string) $p);
+            if ($p !== '') {
+                $paths[] = $p;
+            }
+        }
+        $paths = array_values(array_unique($paths));
+        if ($paths === []) {
+            return [];
+        }
+        $imageUrls = array_map(static fn (string $p) => asset($p), $paths);
+        $hasVideo = ($youtubeEmbedUrl !== null && trim($youtubeEmbedUrl) !== '')
+            || ($html5VideoSrc !== null && trim((string) $html5VideoSrc) !== '');
+        $elapsed = 0;
+
+        $addImage = function (string $url) use (&$segments, &$elapsed, $cycleMs, $imgMs): void {
+            if ($elapsed >= $cycleMs) {
+                return;
+            }
+            $dur = min($imgMs, $cycleMs - $elapsed);
+            if ($dur > 0) {
+                $segments[] = [
+                    'type' => 'image',
+                    'url' => $url,
+                    'ms' => $dur,
+                ];
+                $elapsed += $dur;
+            }
+        };
+
+        foreach ($imageUrls as $url) {
+            $addImage($url);
+        }
+
+        if ($hasVideo && $elapsed < $cycleMs) {
+            $dur = min($vidMs, $cycleMs - $elapsed);
+            if ($dur > 0) {
+                if ($youtubeEmbedUrl !== null && trim($youtubeEmbedUrl) !== '') {
+                    $segments[] = [
+                        'type' => 'video_youtube',
+                        'ms' => $dur,
+                        'embedUrl' => $youtubeEmbedUrl,
+                    ];
+                } else {
+                    $segments[] = [
+                        'type' => 'video_html5',
+                        'ms' => $dur,
+                        'src' => (string) $html5VideoSrc,
+                        'mime' => $html5Mime,
+                    ];
+                }
+                $elapsed += $dur;
+            }
+        }
+
+        $n = count($imageUrls);
+        $imgIdx = 0;
+        while ($elapsed < $cycleMs && $n > 0) {
+            $addImage($imageUrls[$imgIdx % $n]);
+            $imgIdx++;
+        }
+
+        return $segments;
     }
 
     public static function allowedLocaleCodes(): array

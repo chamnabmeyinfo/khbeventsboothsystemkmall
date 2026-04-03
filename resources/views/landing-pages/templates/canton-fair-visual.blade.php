@@ -122,11 +122,13 @@
     ];
     $contactPhones = is_array($visual['contact_phones'] ?? null) ? $visual['contact_phones'] : ['060 815 515', '010 94 76 40'];
     $logo = !empty($visual['logo_image']) ? asset($visual['logo_image']) : '';
-    $heroBg = !empty($visual['hero_background_image']) ? asset($visual['hero_background_image']) : 'https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1600&auto=format&fit=crop';
+    $heroImagePaths = \App\Models\LandingPage::heroBackgroundImagePathsForDisplay($visual);
+    $heroBg = !empty($heroImagePaths[0]) ? asset($heroImagePaths[0]) : 'https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1600&auto=format&fit=crop';
     $heroVideoRaw = trim((string) ($visual['hero_background_video'] ?? ''));
     $heroVideoYoutubeId = null;
     $heroVideoSrc = '';
     $heroVideoMime = 'video/mp4';
+    $heroYoutubeEmbedUrl = '';
     if ($heroVideoRaw !== '') {
         $heroVideoYoutubeId = \App\Models\LandingPage::parseYouTubeVideoId($heroVideoRaw);
         if ($heroVideoYoutubeId === null) {
@@ -136,7 +138,22 @@
                 $heroVideoSrc = asset($heroVideoRaw);
             }
             $heroVideoMime = str_ends_with(strtolower($heroVideoRaw), '.webm') ? 'video/webm' : 'video/mp4';
+        } else {
+            $heroYoutubeEmbedUrl = 'https://www.youtube-nocookie.com/embed/'.$heroVideoYoutubeId.'?autoplay=1&mute=1&playsinline=1&controls=0&rel=0&loop=1&playlist='.$heroVideoYoutubeId.'&modestbranding=1';
         }
+    }
+    $hasHeroVideo = $heroVideoYoutubeId !== null || $heroVideoSrc !== '';
+    $heroEnableRotation = (count($heroImagePaths) >= 2) || ($hasHeroVideo && count($heroImagePaths) >= 1);
+    $heroRotationSegments = $heroEnableRotation
+        ? \App\Models\LandingPage::buildHeroRotationSegments(
+            $heroImagePaths,
+            ($heroYoutubeEmbedUrl !== '') ? $heroYoutubeEmbedUrl : null,
+            ($heroVideoSrc !== '') ? $heroVideoSrc : null,
+            $heroVideoMime
+        )
+        : [];
+    if ($heroEnableRotation && $heroRotationSegments === []) {
+        $heroEnableRotation = false;
     }
     $aboutImage = !empty($visual['about_image']) ? asset($visual['about_image']) : 'https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=1400&auto=format&fit=crop';
     $whyImage = !empty($visual['why_image']) ? asset($visual['why_image']) : 'https://images.unsplash.com/photo-1549692520-acc6669e2f0c?q=80&w=1400&auto=format&fit=crop';
@@ -189,9 +206,34 @@
     .lv-wrap .lv-section p{color:var(--lv-body)}
     .lv-container{width:min(1140px,92vw);margin:0 auto}
     .lv-hero{position:relative;min-height:min(92vh,900px);display:flex;align-items:center;justify-content:center;background-size:cover;background-position:center}
+    /* Hero slideshow + video rotation (45s loop: 6s per image, 10s video, then cycle images) */
+    .lv-hero--rotation .lv-hero__bg-slideshow{
+        position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;
+    }
+    .lv-hero--rotation .lv-hero__bg-slide{
+        position:absolute;inset:0;background-size:cover;background-position:center;
+        transition:opacity 0.65s ease;
+    }
+    .lv-hero--rotation.lv-hero--hero-video-active .lv-hero__bg-slideshow{
+        opacity:0;visibility:hidden;transition:opacity 0.65s ease, visibility 0.65s ease;
+    }
+    .lv-hero--rotation .lv-hero__bg-video--rotation-deferred{
+        opacity:0;visibility:hidden;transition:opacity 0.65s ease, visibility 0.65s ease;
+    }
+    .lv-hero--rotation.lv-hero--hero-video-active .lv-hero__bg-video--rotation-deferred{
+        opacity:1;visibility:visible;
+    }
     .lv-hero__bg-video{
         position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;
         z-index:0;pointer-events:none;
+    }
+    /* Hero video: hidden until JS adds .lv-hero--video-ready (image shows first for a few seconds) */
+    .lv-hero__bg-video--deferred{
+        opacity:0;visibility:hidden;
+        transition:opacity 0.65s ease, visibility 0.65s ease;
+    }
+    .lv-hero--video-ready .lv-hero__bg-video--deferred{
+        opacity:1;visibility:visible;
     }
     /* YouTube: iframe cannot use object-fit; scale to cover hero (16:9) */
     .lv-hero__bg-video--youtube{overflow:hidden}
@@ -708,7 +750,7 @@
         .lv-wrap .lv-btn:hover,.lv-card:hover,.lv-trip-card:hover{transform:none !important}
         .lv-hero .lv-btn--hero-cta,.lv-hero .lv-btn--hero-cta [data-lv-key]{animation:none !important}
         .lv-hero .lv-btn--hero-cta::after{animation:none !important;opacity:0}
-        .lv-hero__bg-video{display:none !important}
+        .lv-hero__bg-video,.lv-hero__bg-video--deferred,.lv-hero__bg-slideshow,.lv-hero__bg-video--rotation-deferred{display:none !important}
     }
     /* Per-phase register CTA (Section 5) */
     .lv-btn--trip-register{
@@ -815,19 +857,25 @@
         </header>
     @endif
     {{-- Section 1 — Hero (admin form card 1); shared images set above --}}
-    <section class="lv-hero" data-lp-section="hero" data-lv-image-key="hero_background_image" data-lv-image-current="{{ $heroBg }}" style="background-image:url('{{ $heroBg }}')">
+    <section class="lv-hero @if($heroEnableRotation) lv-hero--rotation @endif" data-lp-section="hero" data-lv-image-key="hero_background_image" data-lv-image-current="{{ $heroBg }}" style="background-image:url('{{ $heroBg }}')" @if(!$heroEnableRotation && ($heroVideoYoutubeId !== null || $heroVideoSrc !== '')) data-hero-video-deferred="1" data-hero-video-delay="3000" @endif @if($heroEnableRotation) data-lp-hero-rotation="1" @endif>
+        @if($heroEnableRotation)
+            <div class="lv-hero__bg-slideshow" aria-hidden="true">
+                <div class="lv-hero__bg-slide" id="lvHeroBgSlide" style="background-image:url('{{ $heroBg }}')"></div>
+            </div>
+        @endif
         @if($heroVideoYoutubeId !== null)
-            <div class="lv-hero__bg-video lv-hero__bg-video--youtube" aria-hidden="true">
+            <div class="lv-hero__bg-video lv-hero__bg-video--youtube @if($heroEnableRotation) lv-hero__bg-video--rotation-deferred @else lv-hero__bg-video--deferred @endif" aria-hidden="true">
                 <iframe
-                    src="https://www.youtube-nocookie.com/embed/{{ $heroVideoYoutubeId }}?autoplay=1&amp;mute=1&amp;playsinline=1&amp;controls=0&amp;rel=0&amp;loop=1&amp;playlist={{ $heroVideoYoutubeId }}&amp;modestbranding=1"
+                    id="lvHeroYoutubeIframe"
+                    data-src="{{ $heroYoutubeEmbedUrl }}"
                     title="Hero background video"
-                    loading="eager"
+                    loading="lazy"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     referrerpolicy="strict-origin-when-cross-origin"
                 ></iframe>
             </div>
         @elseif($heroVideoSrc !== '')
-            <video class="lv-hero__bg-video" autoplay muted loop playsinline poster="{{ $heroBg }}" aria-hidden="true">
+            <video id="lvHeroHtml5Video" class="lv-hero__bg-video @if($heroEnableRotation) lv-hero__bg-video--rotation-deferred @else lv-hero__bg-video--deferred @endif" muted loop playsinline poster="{{ $heroBg }}" preload="none" aria-hidden="true">
                 <source src="{{ $heroVideoSrc }}" type="{{ $heroVideoMime }}">
             </video>
         @endif
@@ -1127,7 +1175,112 @@
 </main>
 
 <script>
+window.LpHeroRotation = @json($heroEnableRotation && count($heroRotationSegments) > 0 ? ['segments' => $heroRotationSegments, 'cycleMs' => 45000] : null);
 document.addEventListener('DOMContentLoaded', function () {
+    (function initHeroRotation() {
+        var cfg = window.LpHeroRotation;
+        if (!cfg || !cfg.segments || !cfg.segments.length) return;
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        var hero = document.querySelector('.lv-hero[data-lp-hero-rotation]');
+        if (!hero) return;
+        var slideEl = document.getElementById('lvHeroBgSlide');
+        var yt = document.getElementById('lvHeroYoutubeIframe');
+        var v = document.getElementById('lvHeroHtml5Video');
+        var segments = cfg.segments;
+        var pos = 0;
+
+        function bgUrl(u) {
+            return 'url("' + String(u).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '")';
+        }
+
+        function clearVideo() {
+            hero.classList.remove('lv-hero--hero-video-active');
+            if (yt) {
+                yt.src = '';
+                yt.removeAttribute('src');
+            }
+            if (v) {
+                try {
+                    v.pause();
+                    v.currentTime = 0;
+                } catch (e) {}
+            }
+        }
+
+        function showImage(url) {
+            clearVideo();
+            var b = bgUrl(url);
+            if (slideEl) {
+                slideEl.style.backgroundImage = b;
+            }
+            hero.style.backgroundImage = b;
+        }
+
+        function advance() {
+            var seg = segments[pos];
+            pos = (pos + 1) % segments.length;
+            if (!seg) {
+                return;
+            }
+            if (seg.type === 'image') {
+                showImage(seg.url);
+                setTimeout(advance, seg.ms);
+                return;
+            }
+            if (seg.type === 'video_youtube') {
+                clearVideo();
+                hero.classList.add('lv-hero--hero-video-active');
+                if (yt) {
+                    var embedU = seg.embedUrl || yt.getAttribute('data-src');
+                    if (embedU) yt.src = embedU;
+                }
+                setTimeout(function () {
+                    clearVideo();
+                    advance();
+                }, seg.ms);
+                return;
+            }
+            if (seg.type === 'video_html5') {
+                clearVideo();
+                hero.classList.add('lv-hero--hero-video-active');
+                if (v) {
+                    v.play().catch(function () {});
+                }
+                setTimeout(function () {
+                    clearVideo();
+                    advance();
+                }, seg.ms);
+                return;
+            }
+        }
+
+        advance();
+    })();
+
+    (function initHeroBackgroundVideoDeferred() {
+        if (window.LpHeroRotation && window.LpHeroRotation.segments && window.LpHeroRotation.segments.length) return;
+        var hero = document.querySelector('.lv-hero[data-hero-video-deferred]');
+        if (!hero) return;
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        var delayMs = parseInt(hero.getAttribute('data-hero-video-delay') || '3000', 10);
+        if (isNaN(delayMs) || delayMs < 0) delayMs = 3000;
+        var yt = document.getElementById('lvHeroYoutubeIframe');
+        var v = document.getElementById('lvHeroHtml5Video');
+        function reveal() {
+            hero.classList.add('lv-hero--video-ready');
+        }
+        setTimeout(function () {
+            if (yt) {
+                var u = yt.getAttribute('data-src');
+                if (u) yt.src = u;
+            }
+            if (v) {
+                v.play().catch(function () {});
+            }
+            reveal();
+        }, delayMs);
+    })();
+
     var form = document.getElementById('lvBookingForm');
     if (form) {
         form.addEventListener('submit', function (e) {

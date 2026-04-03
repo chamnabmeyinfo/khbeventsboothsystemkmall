@@ -420,6 +420,8 @@ class LandingPageController extends Controller
             'template_key' => 'nullable|in:canton_fair_visual',
             'visual' => 'nullable|array',
             'visual.hero_cta_target' => 'nullable|string|max:1024',
+            'visual.hero_background_images' => 'nullable|array',
+            'visual.hero_background_images.*' => 'nullable|string|max:512',
             'visual.hero_background_video' => 'nullable|string|max:2048',
             'clear_hero_background_video' => 'nullable|boolean',
             'visual.i18n' => 'nullable|array',
@@ -461,6 +463,8 @@ class LandingPageController extends Controller
             'visual.i18n.*.contact_phones_text' => 'nullable|string|max:4000',
             'visual_logo_image' => 'nullable|image|max:8192',
             'visual_hero_background_image' => 'nullable|image|max:8192',
+            'visual_hero_background_images' => 'nullable|array',
+            'visual_hero_background_images.*' => 'nullable|image|max:8192',
             'visual_hero_background_video' => 'nullable|file|mimes:mp4,webm|max:51200',
             'visual_about_image' => 'nullable|image|max:8192',
             'visual_why_image' => 'nullable|image|max:8192',
@@ -579,6 +583,33 @@ class LandingPageController extends Controller
             } elseif (! empty($existing[$key])) {
                 $visual[$key] = $existing[$key];
             }
+        }
+
+        $primaryHero = $visual['hero_background_image'] ?? ($existing['hero_background_image'] ?? null);
+        $gallery = [];
+        if (array_key_exists('hero_background_images', $incoming)) {
+            $gallery = $this->sanitizeHeroGalleryPaths(is_array($incoming['hero_background_images']) ? $incoming['hero_background_images'] : []);
+        } elseif (! empty($existing['hero_background_images']) && is_array($existing['hero_background_images'])) {
+            $gallery = $this->sanitizeHeroGalleryPaths($existing['hero_background_images']);
+        }
+        $multiHeroFiles = $request->file('visual_hero_background_images');
+        if (is_array($multiHeroFiles)) {
+            foreach ($multiHeroFiles as $mf) {
+                if ($mf instanceof UploadedFile) {
+                    $gallery[] = $this->storeVisualImage($mf, $slug, 'hero_background_image');
+                }
+            }
+        }
+        if ($primaryHero) {
+            $ph = (string) $primaryHero;
+            $gallery = array_values(array_unique(array_merge([$ph], array_values(array_filter($gallery, static fn ($p) => (string) $p !== $ph)))));
+        }
+        $gallery = array_slice($this->sanitizeHeroGalleryPaths($gallery), 0, 10);
+        if ($gallery !== []) {
+            $visual['hero_background_images'] = $gallery;
+            $visual['hero_background_image'] = $gallery[0];
+        } else {
+            unset($visual['hero_background_images']);
         }
 
         $heroVideoFile = $request->file('visual_hero_background_video');
@@ -788,6 +819,27 @@ class LandingPageController extends Controller
         $file->move($dir, $filename);
 
         return 'images/landing-pages/'.$safeSlug.'/'.$filename;
+    }
+
+    /**
+     * @param  array<int, mixed>  $paths
+     * @return list<string>
+     */
+    private function sanitizeHeroGalleryPaths(array $paths): array
+    {
+        $out = [];
+        foreach ($paths as $p) {
+            $p = trim((string) $p);
+            if ($p === '' || str_contains($p, '..')) {
+                continue;
+            }
+            if (! preg_match('#^images/landing-pages/[\w\-]+/[\w\-.]+\.(jpg|jpeg|png|gif|webp)$#i', $p)) {
+                continue;
+            }
+            $out[] = $p;
+        }
+
+        return array_values(array_unique($out));
     }
 
     /**
