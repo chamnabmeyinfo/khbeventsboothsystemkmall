@@ -654,7 +654,7 @@
                                     @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'agenda_items_text', 'canAutoTranslate' => $canAutoTranslate])
                                 </div>
                                 <textarea name="{{ $pfx }}[agenda_items_text]" class="form-control" rows="8" placeholder="Day 1 · Morning|Canton Fair visit|Halls 1–3&#10;Day 2|Factory tour|Optional">{{ $agendaItemsText }}</textarea>
-                                <small class="text-muted d-block mt-1">One table row per line: <code>slot|activity|detail</code>.</small>
+                                <small class="text-muted d-block mt-1">One table row per line: <code>slot|activity|detail</code>. For <strong>Day 1 / Day 2</strong> tabs on the public page, start the <strong>slot</strong> (or the activity) with <code>Day 1</code>, <code>Day 2</code>, … (e.g. <code>Day 1 · 08:00|Airport meet|</code> or <code>08:00|Day 1 · Airport meet|</code>).</small>
                             </div>
                         </div>
                     </div>

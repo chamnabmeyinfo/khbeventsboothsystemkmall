@@ -548,7 +548,8 @@ TXT;
     }
 
     /**
-     * Detect "Day 1 · …", "Day 2 …", "第一天 · …", "第2天 · …" in the slot column for tabbed itinerary.
+     * Detect "Day 1 · …", "Day1", "Day 2-…", "第一天 · …", "第2天 …" in the slot column for tabbed itinerary.
+     * Accepts flexible spacing and common separators so admin edits still map to Day 1 / Day 2 tabs.
      *
      * @return array{day: int, label: string, slot_display: string}|null
      */
@@ -559,43 +560,38 @@ TXT;
             return null;
         }
 
-        if (preg_match('/^day\s*(\d+)(?:\s*[·•]\s*|\s+)(.+)$/iu', $s, $m)) {
+        // English: Day 1 … / Day1… / DAY 2-… (anything after the day number becomes the time/slot cell)
+        if (preg_match('/^day\s*(\d+)\s*(.*)$/iu', $s, $m)) {
             $d = (int) $m[1];
+            if ($d < 1) {
+                return null;
+            }
+            $rest = trim((string) ($m[2] ?? ''));
+            // Strip a leading punctuation dash or middle dot so "Day 1 · 06:00" and "Day 1-06:00" show cleanly
+            $rest = preg_replace('/^[·•,，\-\–\—:：]\s*/u', '', $rest) ?? $rest;
+            $rest = trim($rest);
 
             return [
                 'day' => $d,
                 'label' => 'Day '.$d,
-                'slot_display' => trim((string) $m[2]) !== '' ? trim((string) $m[2]) : '—',
+                'slot_display' => $rest !== '' ? $rest : '—',
             ];
         }
 
-        if (preg_match('/^day\s*(\d+)$/iu', $s, $m)) {
+        // Chinese digits: 第1天 … / 第2天…
+        if (preg_match('/^第(\d+)天\s*(.*)$/u', $s, $m)) {
             $d = (int) $m[1];
-
-            return [
-                'day' => $d,
-                'label' => 'Day '.$d,
-                'slot_display' => '—',
-            ];
-        }
-
-        if (preg_match('/^第(\d+)天(?:\s*[·•]\s*|\s+)(.+)$/u', $s, $m)) {
-            $d = (int) $m[1];
+            if ($d < 1) {
+                return null;
+            }
+            $rest = trim((string) ($m[2] ?? ''));
+            $rest = preg_replace('/^[·•,，\-\–\—:：]\s*/u', '', $rest) ?? $rest;
+            $rest = trim($rest);
 
             return [
                 'day' => $d,
                 'label' => '第'.$m[1].'天',
-                'slot_display' => trim((string) $m[2]) !== '' ? trim((string) $m[2]) : '—',
-            ];
-        }
-
-        if (preg_match('/^第(\d+)天$/u', $s, $m)) {
-            $d = (int) $m[1];
-
-            return [
-                'day' => $d,
-                'label' => '第'.$m[1].'天',
-                'slot_display' => '—',
+                'slot_display' => $rest !== '' ? $rest : '—',
             ];
         }
 
@@ -604,31 +600,21 @@ TXT;
             '六' => 6, '七' => 7, '八' => 8, '九' => 9, '十' => 10,
         ];
 
-        if (preg_match('/^(第[一二三四五六七八九十]+天)(?:\s*[·•]\s*|\s+)(.+)$/u', $s, $m)) {
+        // Chinese han: 第一天 …
+        if (preg_match('/^(第[一二三四五六七八九十]+天)\s*(.*)$/u', $s, $m)) {
             $han = preg_replace('/^第|天$/u', '', $m[1]);
             $d = $hanToInt[$han] ?? null;
-            if ($d === null) {
+            if ($d === null || $d < 1) {
                 return null;
             }
+            $rest = trim((string) ($m[2] ?? ''));
+            $rest = preg_replace('/^[·•,，\-\–\—:：]\s*/u', '', $rest) ?? $rest;
+            $rest = trim($rest);
 
             return [
                 'day' => $d,
                 'label' => $m[1],
-                'slot_display' => trim((string) $m[2]) !== '' ? trim((string) $m[2]) : '—',
-            ];
-        }
-
-        if (preg_match('/^(第[一二三四五六七八九十]+天)$/u', $s, $m)) {
-            $han = preg_replace('/^第|天$/u', '', $m[1]);
-            $d = $hanToInt[$han] ?? null;
-            if ($d === null) {
-                return null;
-            }
-
-            return [
-                'day' => $d,
-                'label' => $m[1],
-                'slot_display' => '—',
+                'slot_display' => $rest !== '' ? $rest : '—',
             ];
         }
 
@@ -654,6 +640,12 @@ TXT;
             }
 
             $parsed = self::parseAgendaSlotDayPrefix($slot);
+            $fromActivity = false;
+            if ($parsed === null && $act !== '') {
+                $parsed = self::parseAgendaSlotDayPrefix($act);
+                $fromActivity = $parsed !== null;
+            }
+
             if ($parsed === null) {
                 $day = 0;
                 if (! isset($buckets[$day])) {
@@ -665,11 +657,20 @@ TXT;
                 if (! isset($buckets[$day])) {
                     $buckets[$day] = ['day' => $day, 'label' => $parsed['label'], 'rows' => []];
                 }
-                $buckets[$day]['rows'][] = [
-                    'slot' => $parsed['slot_display'],
-                    'activity' => $act,
-                    'detail' => $det,
-                ];
+                if ($fromActivity) {
+                    // Day marker was in the activity column; keep time/slot in first column, remainder as activity
+                    $buckets[$day]['rows'][] = [
+                        'slot' => $slot !== '' ? $slot : '—',
+                        'activity' => $parsed['slot_display'],
+                        'detail' => $det,
+                    ];
+                } else {
+                    $buckets[$day]['rows'][] = [
+                        'slot' => $parsed['slot_display'],
+                        'activity' => $act,
+                        'detail' => $det,
+                    ];
+                }
             }
         }
 
