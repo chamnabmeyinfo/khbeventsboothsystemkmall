@@ -68,43 +68,38 @@
     .lp-visual-primary-panels {
         border-top-left-radius: 0;
     }
-    .lp-landing-section-nav {
-        border: 1px solid #dee2e6;
-        border-radius: 0.25rem;
-        padding: 0.35rem;
-        background: #f8f9fa;
+    /* Horizontal section tabs (matches language + primary tabs; scroll on narrow viewports) */
+    .lp-landing-section-tabs-wrap {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: -1px;
+        border-bottom: 1px solid #dee2e6;
     }
-    .lp-landing-section-nav .nav-link {
-        text-align: left;
-        border-radius: 0.2rem;
-        margin-bottom: 0.25rem;
+    .lp-landing-section-tabs {
+        flex-wrap: nowrap;
+        border-bottom: 0;
         min-height: 44px;
-        display: flex;
+    }
+    .lp-landing-section-tabs .nav-item {
+        flex-shrink: 0;
+    }
+    .lp-landing-section-tabs .nav-link {
+        white-space: nowrap;
+        min-height: 44px;
+        display: inline-flex;
         align-items: center;
-        color: #495057;
+        padding: 0.5rem 0.75rem;
         font-size: 0.9rem;
     }
-    .lp-landing-section-nav .nav-link:last-child {
-        margin-bottom: 0;
-    }
-    .lp-landing-section-nav .nav-link:hover {
-        background: #e9ecef;
-        color: #212529;
-    }
-    .lp-landing-section-nav .nav-link.active {
-        background: #007bff;
-        color: #fff;
-    }
-    .lp-landing-section-nav .nav-link:focus {
+    .lp-landing-section-tabs .nav-link:focus {
         outline: 2px solid #007bff;
-        outline-offset: 2px;
+        outline-offset: -2px;
         z-index: 1;
     }
-    @media (min-width: 992px) {
-        .lp-landing-section-layout .lp-landing-section-nav {
-            position: sticky;
-            top: 0.75rem;
-        }
+    .lp-landing-section-panels {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
     }
 </style>
 @endpush
@@ -203,7 +198,7 @@
 
     <div class="mb-4 lp-landing-visual-builder">
         <h5 class="mb-2">Visual page (Canton Fair template)</h5>
-        <p class="text-muted small mb-3">Open <strong>Shared images &amp; hero</strong> for logos and media. Open <strong>Section copy</strong>, pick a <strong>language</strong> tab, then choose a <strong>section</strong> on the left to edit that block—less scrolling, clearer focus.</p>
+        <p class="text-muted small mb-3">Open <strong>Shared images &amp; hero</strong> for logos and media. Open <strong>Section copy</strong>, pick a <strong>language</strong> tab, then use the <strong>section tabs</strong> (1–9) to edit each block—less scrolling, clearer focus.</p>
         <input type="hidden" name="template_key" value="canton_fair_visual">
 
         <ul class="nav nav-tabs flex-wrap border-0 lp-visual-primary-tabs" id="lpVisualPrimaryTabs" role="tablist">
@@ -373,22 +368,39 @@
                     $pfx = 'visual[i18n]['.$loc.']';
                 @endphp
                 <div class="tab-pane fade {{ $i === 0 ? 'show active' : '' }}" id="pane-{{ $loc }}" role="tabpanel" aria-labelledby="tab-{{ $loc }}">
-                    <div class="row lp-landing-section-layout">
-                        <div class="col-12 col-lg-3 mb-3 mb-lg-0">
-                            <nav class="nav nav-pills flex-column lp-landing-section-nav" id="lp-section-nav-{{ $loc }}" role="tablist" aria-label="Page sections — {{ $localeLabels[$loc] ?? $loc }}">
-                                <a class="nav-link active" id="lp-{{ $loc }}-t1" data-toggle="pill" href="#lp-{{ $loc }}-s1" role="tab" aria-controls="lp-{{ $loc }}-s1" aria-selected="true">1. Hero</a>
-                                <a class="nav-link" id="lp-{{ $loc }}-t2" data-toggle="pill" href="#lp-{{ $loc }}-s2" role="tab" aria-controls="lp-{{ $loc }}-s2" aria-selected="false">2. About</a>
-                                <a class="nav-link" id="lp-{{ $loc }}-t3" data-toggle="pill" href="#lp-{{ $loc }}-s3" role="tab" aria-controls="lp-{{ $loc }}-s3" aria-selected="false">3. Package</a>
-                                <a class="nav-link" id="lp-{{ $loc }}-t4" data-toggle="pill" href="#lp-{{ $loc }}-s4" role="tab" aria-controls="lp-{{ $loc }}-s4" aria-selected="false">4. Promotion</a>
-                                <a class="nav-link" id="lp-{{ $loc }}-t5" data-toggle="pill" href="#lp-{{ $loc }}-s5" role="tab" aria-controls="lp-{{ $loc }}-s5" aria-selected="false">5. Trip dates</a>
-                                <a class="nav-link" id="lp-{{ $loc }}-t6" data-toggle="pill" href="#lp-{{ $loc }}-s6" role="tab" aria-controls="lp-{{ $loc }}-s6" aria-selected="false">6. Agenda</a>
-                                <a class="nav-link" id="lp-{{ $loc }}-t7" data-toggle="pill" href="#lp-{{ $loc }}-s7" role="tab" aria-controls="lp-{{ $loc }}-s7" aria-selected="false">7. Booking</a>
-                                <a class="nav-link" id="lp-{{ $loc }}-t8" data-toggle="pill" href="#lp-{{ $loc }}-s8" role="tab" aria-controls="lp-{{ $loc }}-s8" aria-selected="false">8. FAQ</a>
-                                <a class="nav-link" id="lp-{{ $loc }}-t9" data-toggle="pill" href="#lp-{{ $loc }}-s9" role="tab" aria-controls="lp-{{ $loc }}-s9" aria-selected="false">9. Terms</a>
-                            </nav>
+                    <div class="lp-landing-section-layout">
+                        <div class="lp-landing-section-tabs-wrap">
+                            <ul class="nav nav-tabs flex-nowrap lp-landing-section-tabs mb-0" id="lp-section-nav-{{ $loc }}" role="tablist" aria-label="Page sections — {{ $localeLabels[$loc] ?? $loc }}">
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link active" id="lp-{{ $loc }}-t1" data-toggle="tab" href="#lp-{{ $loc }}-s1" role="tab" aria-controls="lp-{{ $loc }}-s1" aria-selected="true">1. Hero</a>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link" id="lp-{{ $loc }}-t2" data-toggle="tab" href="#lp-{{ $loc }}-s2" role="tab" aria-controls="lp-{{ $loc }}-s2" aria-selected="false">2. About</a>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link" id="lp-{{ $loc }}-t3" data-toggle="tab" href="#lp-{{ $loc }}-s3" role="tab" aria-controls="lp-{{ $loc }}-s3" aria-selected="false">3. Package</a>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link" id="lp-{{ $loc }}-t4" data-toggle="tab" href="#lp-{{ $loc }}-s4" role="tab" aria-controls="lp-{{ $loc }}-s4" aria-selected="false">4. Promotion</a>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link" id="lp-{{ $loc }}-t5" data-toggle="tab" href="#lp-{{ $loc }}-s5" role="tab" aria-controls="lp-{{ $loc }}-s5" aria-selected="false">5. Trip dates</a>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link" id="lp-{{ $loc }}-t6" data-toggle="tab" href="#lp-{{ $loc }}-s6" role="tab" aria-controls="lp-{{ $loc }}-s6" aria-selected="false">6. Agenda</a>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link" id="lp-{{ $loc }}-t7" data-toggle="tab" href="#lp-{{ $loc }}-s7" role="tab" aria-controls="lp-{{ $loc }}-s7" aria-selected="false">7. Booking</a>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link" id="lp-{{ $loc }}-t8" data-toggle="tab" href="#lp-{{ $loc }}-s8" role="tab" aria-controls="lp-{{ $loc }}-s8" aria-selected="false">8. FAQ</a>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link" id="lp-{{ $loc }}-t9" data-toggle="tab" href="#lp-{{ $loc }}-s9" role="tab" aria-controls="lp-{{ $loc }}-s9" aria-selected="false">9. Terms</a>
+                                </li>
+                            </ul>
                         </div>
-                        <div class="col-12 col-lg-9">
-                            <div class="tab-content lp-landing-section-panels" id="lp-section-panels-{{ $loc }}">
+                        <div class="tab-content border border-top-0 rounded-bottom bg-white lp-landing-section-panels" id="lp-section-panels-{{ $loc }}">
 
                     {{-- Section: Hero (full-bleed image + headline + CTA + stats) --}}
                     <div class="tab-pane fade show active" id="lp-{{ $loc }}-s1" role="tabpanel" aria-labelledby="lp-{{ $loc }}-t1" tabindex="0">
@@ -775,7 +787,6 @@
                     </div>
 
                             </div>
-                        </div>
                     </div>
                 </div>
             @endforeach
