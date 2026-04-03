@@ -113,6 +113,9 @@
     }
     $tripPhases = \App\Models\LandingPage::resolveTripPhasesForDisplay($visual);
     $tripDates = \App\Models\LandingPage::tripPhasesToFlatRows($tripPhases);
+    $promotionShow = ($visual['promotion_discounts_show'] ?? true) !== false;
+    $promotion = \App\Models\LandingPage::resolvePromotionDiscountsForDisplay($visual);
+    $promotionSectionTitle = trim((string) ($visual['promotion_section_title'] ?? '')) ?: 'Group promotion discounts';
     $faqItems = is_array($visual['faq_items'] ?? null) ? $visual['faq_items'] : [
         ['question' => 'Do I need visa for China?', 'answer' => 'Yes, and we provide guidance.'],
         ['question' => 'Is translation support included?', 'answer' => 'Yes, Khmer + English assistance is included.'],
@@ -122,6 +125,8 @@
     $heroBg = !empty($visual['hero_background_image']) ? asset($visual['hero_background_image']) : 'https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1600&auto=format&fit=crop';
     $aboutImage = !empty($visual['about_image']) ? asset($visual['about_image']) : 'https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=1400&auto=format&fit=crop';
     $whyImage = !empty($visual['why_image']) ? asset($visual['why_image']) : 'https://images.unsplash.com/photo-1549692520-acc6669e2f0c?q=80&w=1400&auto=format&fit=crop';
+    $tripPhaseRegisterCta = trim((string) ($visual['trip_phase_register_cta'] ?? '')) !== '' ? trim((string) ($visual['trip_phase_register_cta'] ?? '')) : 'Register for this trip';
+    $tripPhaseModalTitle = trim((string) ($visual['trip_phase_modal_title'] ?? '')) !== '' ? trim((string) ($visual['trip_phase_modal_title'] ?? '')) : 'Complete your registration';
 @endphp
 
 {{-- Single responsive landing CSS — Premium Glass; breakpoints: 576 / 768 / 992 / 1200 --}}
@@ -256,6 +261,11 @@
             radial-gradient(ellipse 80% 50% at 50% 0%,rgba(201,162,39,.12) 0%,transparent 55%),
             linear-gradient(180deg,rgba(255,252,245,.6) 0%,rgba(255,255,255,.35) 55%,rgba(241,245,249,.4) 100%);
     }
+    .lv-section--promotion{
+        background:
+            radial-gradient(ellipse 80% 50% at 50% 100%,rgba(201,162,39,.08) 0%,transparent 55%),
+            linear-gradient(180deg,rgba(241,245,249,.45) 0%,rgba(255,255,255,.35) 100%);
+    }
     .lv-section--trip{background:transparent}
     .lv-section--agenda{
         background:linear-gradient(180deg,rgba(255,255,255,.28) 0%,rgba(236,242,252,.45) 100%);
@@ -345,7 +355,7 @@
     }
     .lv-package-item__text{line-height:1.45;color:var(--lv-body);font-size:1rem;flex:1;min-width:0}
     .lv-section h2{font-size:clamp(1.5rem,3.5vw,2rem);margin:0 0 24px}
-    .lv-section--package h2,.lv-section--trip h2{text-align:center;max-width:40ch;margin-left:auto;margin-right:auto;margin-bottom:28px}
+    .lv-section--package h2,.lv-section--promotion h2,.lv-section--trip h2{text-align:center;max-width:40ch;margin-left:auto;margin-right:auto;margin-bottom:28px}
     .lv-price-panel{
         margin-top:20px;text-align:center;border-radius:var(--lv-radius);padding:28px 22px;
         background:
@@ -371,7 +381,36 @@
     .lv-price-panel--clickable:active{transform:translateY(0)}
     .lv-price-panel .lv-price-num{font-size:clamp(2.25rem,6vw,3.25rem);font-weight:800;font-family:"Roboto","Hanuman",sans-serif;line-height:1}
     .lv-price-panel .lv-price-sub{color:rgba(255,255,255,.95);margin-top:10px;font-size:1.05rem;text-shadow:0 1px 2px rgba(0,0,0,.2)}
-    /* Section 4 — Trip dates: Phase I / II / III cards */
+    /* Section 4 — Promotion: base rate + tier cards */
+    .lv-promo-base-wrap{max-width:min(440px,100%);margin:0 auto 24px}
+    .lv-promo-base{
+        text-align:center;padding:22px 20px;border-radius:var(--lv-radius-sm);
+        border-top:4px solid var(--lv-accent);
+    }
+    .lv-promo-base__price{
+        margin-top:4px;font-size:clamp(1.6rem,4vw,2.1rem);font-weight:800;color:var(--lv-primary);
+        font-family:"Roboto","Hanuman",sans-serif;line-height:1.2;
+    }
+    .lv-promo-intro{display:block;max-width:min(62ch,100%);margin:0 auto 22px;text-align:center;color:var(--lv-body);font-size:1rem;line-height:1.55}
+    .lv-promo-tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:8px}
+    .lv-promo-tier{
+        text-align:center;position:relative;padding:20px 18px 18px;border-radius:var(--lv-radius-sm);
+        border:1px solid var(--lv-glass-edge);border-top:4px solid var(--lv-promo-accent,var(--lv-primary));
+        background:var(--lv-glass-fill-strong);
+        backdrop-filter:blur(var(--lv-glass-blur)) saturate(var(--lv-glass-saturate));
+        -webkit-backdrop-filter:blur(var(--lv-glass-blur)) saturate(var(--lv-glass-saturate));
+        box-shadow:var(--lv-glass-shadow);
+        transition:transform .2s ease,box-shadow .2s ease;
+    }
+    .lv-promo-tier:hover{transform:translateY(-2px);box-shadow:0 16px 44px rgba(15,23,42,.1),var(--lv-glass-inset)}
+    .lv-promo-tier-grid .lv-promo-tier:nth-child(3n+1){--lv-promo-accent:#b45309}
+    .lv-promo-tier-grid .lv-promo-tier:nth-child(3n+2){--lv-promo-accent:#c41e1e}
+    .lv-promo-tier-grid .lv-promo-tier:nth-child(3n+3){--lv-promo-accent:#1d4ed8}
+    .lv-promo-tier__icon{font-size:1.35rem;color:var(--lv-promo-accent,var(--lv-primary));margin-bottom:10px}
+    .lv-promo-tier__num{font-size:clamp(2rem,5vw,2.75rem);font-weight:800;line-height:1;color:var(--lv-ink);font-family:"Roboto","Hanuman",sans-serif}
+    .lv-promo-tier__num-sub{font-size:.82rem;font-weight:700;color:var(--lv-muted);text-transform:uppercase;letter-spacing:.04em;margin-top:6px}
+    .lv-promo-tier__off{margin-top:14px;font-size:1.02rem;font-weight:600;color:var(--lv-body);line-height:1.45}
+    /* Section 5 — Trip dates: Phase I / II / III cards */
     .lv-trip-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:8px}
     .lv-trip-card{
         text-align:left;position:relative;padding:20px 18px 18px;border-radius:var(--lv-radius-sm);
@@ -432,7 +471,7 @@
     .lv-faq-a{color:var(--lv-body);font-size:1rem;line-height:1.55}
     .lv-contact-bar a{color:var(--lv-primary);text-decoration:none;font-weight:700}
     .lv-contact-bar a:hover{text-decoration:underline}
-    @media (max-width:991.98px){.lv-grid,.lv-three,.lv-trip-grid{grid-template-columns:1fr}}
+    @media (max-width:991.98px){.lv-grid,.lv-three,.lv-trip-grid,.lv-promo-tier-grid{grid-template-columns:1fr}}
     /* Site header — premium frosted bar */
     .lv-site-header{
         position:sticky;top:0;z-index:100;
@@ -543,6 +582,72 @@
         .lv-wrap .lv-btn:hover,.lv-card:hover,.lv-trip-card:hover{transform:none !important}
         .lv-hero .lv-btn--hero-cta,.lv-hero .lv-btn--hero-cta [data-lv-key]{animation:none !important}
     }
+    /* Per-phase register CTA (Section 5) */
+    .lv-btn--trip-register{
+        width:100%;margin-top:14px;padding:12px 18px;font-size:.95rem;
+        background:linear-gradient(145deg,rgba(255,255,255,.14) 0%,transparent 45%),
+            linear-gradient(135deg,var(--lv-primary) 0%,#7a1212 100%);
+        border:1px solid rgba(255,255,255,.25);
+        box-shadow:0 6px 20px rgba(196,30,30,.28),inset 0 1px 0 rgba(255,255,255,.22);
+    }
+    .lv-btn--trip-register:hover{transform:translateY(-1px);box-shadow:0 10px 28px rgba(196,30,30,.38)}
+    .lv-btn--trip-register:focus{outline:3px solid var(--lv-accent);outline-offset:2px}
+    /* Trip phase register modal (above continue modal when both exist) */
+    .lv-trip-register-modal[hidden]{display:none !important}
+    .lv-trip-register-modal.lv-trip-register-modal--open{display:flex !important}
+    .lv-trip-register-modal{
+        position:fixed;inset:0;z-index:10060;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;
+        flex-direction:column;
+        background:rgba(15,23,42,.55);
+        backdrop-filter:blur(8px) saturate(1.1);
+        -webkit-backdrop-filter:blur(8px) saturate(1.1);
+        font-family:"Roboto","Hanuman",sans-serif;
+    }
+    .lv-trip-register-modal__dialog{
+        position:relative;width:min(440px,100%);max-height:min(92vh,720px);overflow:auto;
+        background:var(--lv-glass-fill-strong);
+        backdrop-filter:blur(var(--lv-glass-blur)) saturate(var(--lv-glass-saturate));
+        -webkit-backdrop-filter:blur(var(--lv-glass-blur)) saturate(var(--lv-glass-saturate));
+        border:1px solid var(--lv-glass-edge);
+        border-radius:var(--lv-radius);
+        box-shadow:var(--lv-glass-shadow),0 24px 64px rgba(15,23,42,.2);
+        padding:26px 22px 22px;
+    }
+    .lv-trip-register-modal__dialog h2{margin:0 0 8px;font-size:1.35rem;color:var(--lv-ink);font-weight:700}
+    .lv-trip-register-modal__phase{margin:0 0 18px;font-size:.95rem;color:var(--lv-muted);line-height:1.45}
+    .lv-trip-register-modal__phase strong{color:var(--lv-ink)}
+    .lv-trip-register-modal__field{margin-bottom:14px}
+    .lv-trip-register-modal__field label{display:block;font-weight:600;font-size:.78rem;color:var(--lv-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+    .lv-trip-register-modal__field input,.lv-trip-register-modal__field select{
+        width:100%;min-height:48px;border:1px solid rgba(148,163,184,.55);border-radius:var(--lv-radius-sm);
+        padding:12px 14px;font-size:16px;box-sizing:border-box;color:var(--lv-ink);
+        background:rgba(255,255,255,.94);
+    }
+    .lv-trip-register-modal__field input:focus,.lv-trip-register-modal__field select:focus{
+        outline:0;border-color:var(--lv-primary);box-shadow:0 0 0 3px rgba(196,30,30,.2);
+    }
+    .lv-trip-register-modal__actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;justify-content:flex-end}
+    .lv-trip-register-modal__btn-secondary{
+        min-height:48px;padding:12px 20px;border-radius:999px;border:0;cursor:pointer;font-weight:700;font-size:.95rem;
+        background:#f1f5f9;color:var(--lv-ink);
+    }
+    .lv-trip-register-modal__btn-secondary:hover{background:#e2e8f0}
+    .lv-trip-register-modal__btn-primary{
+        min-height:48px;padding:12px 22px;border-radius:999px;border:1px solid rgba(255,255,255,.22);cursor:pointer;font-weight:700;font-size:.95rem;
+        background:linear-gradient(145deg,rgba(255,255,255,.12) 0%,transparent 40%),
+            linear-gradient(135deg,var(--lv-primary) 0%,#7a1212 100%);
+        color:#fff;box-shadow:0 6px 22px rgba(196,30,30,.4),inset 0 1px 0 rgba(255,255,255,.25);
+    }
+    .lv-trip-register-modal__btn-primary:hover{filter:brightness(1.05)}
+    .lv-trip-register-modal__btn-primary:focus,.lv-trip-register-modal__btn-secondary:focus{outline:3px solid var(--lv-accent);outline-offset:2px}
+    .lv-trip-register-modal__close{
+        position:absolute;top:8px;right:8px;width:44px;height:44px;border:0;background:transparent;cursor:pointer;
+        font-size:1.5rem;line-height:1;color:var(--lv-muted);border-radius:12px;
+    }
+    .lv-trip-register-modal__close:hover{background:rgba(15,23,42,.06);color:var(--lv-ink)}
+    @media (prefers-reduced-motion:reduce){
+        .lv-btn--trip-register:hover{transform:none}
+    }
 </style>
 
 <main class="lv-wrap">
@@ -648,7 +753,40 @@
         </div>
     </section>
 
-    {{-- Section 4 — Trip phases (Phase I–III: intro + subsections + seats; booking options sync from flat rows) --}}
+    @if($promotionShow)
+    {{-- Section 4 — Group promotion discounts (JSON-driven tiers) --}}
+    <section class="lv-section lv-section--promotion" data-lp-section="promotion" aria-labelledby="lvPromoHeading">
+        <div class="lv-container">
+            <h2 id="lvPromoHeading" data-lv-key="promotion_section_title">{{ $promotionSectionTitle }}</h2>
+            @if(trim((string) ($promotion['intro_text'] ?? '')) !== '')
+                <p class="lv-promo-intro">{{ $promotion['intro_text'] }}</p>
+            @endif
+            <div class="lv-promo-base-wrap">
+                <div class="lv-card lv-promo-base">
+                    <div class="lv-promo-base__price">{{ $promotion['base_price_text'] }}</div>
+                </div>
+            </div>
+            <div class="lv-promo-tier-grid">
+                @foreach($promotion['tiers'] as $tier)
+                    @php
+                        $pN = (int) ($tier['participants'] ?? 0);
+                        $pOff = (int) ($tier['off_each'] ?? 0);
+                        $pLbl = trim((string) ($tier['label'] ?? ''));
+                        $pLine = $pLbl !== '' ? $pLbl : 'For '.$pN.' participants, get $'.$pOff.' off each';
+                    @endphp
+                    <article class="lv-card lv-promo-tier">
+                        <div class="lv-promo-tier__icon" aria-hidden="true"><i class="fa-solid fa-users"></i></div>
+                        <div class="lv-promo-tier__num">{{ $pN }}</div>
+                        <div class="lv-promo-tier__num-sub">participants</div>
+                        <p class="lv-promo-tier__off">{{ $pLine }}</p>
+                    </article>
+                @endforeach
+            </div>
+        </div>
+    </section>
+    @endif
+
+    {{-- Section 5 — Trip phases (Phase I–III: intro + subsections + seats; booking options sync from flat rows) --}}
     <section class="lv-section lv-section--trip" data-lp-section="trip">
         <div class="lv-container">
             <h2 data-lv-key="trip_section_title">{{ $tripSectionTitle }}</h2>
@@ -690,13 +828,24 @@
                                 @endforeach
                             </ul>
                         @endif
+                        @php
+                            $phaseBtnLabel = $tripPhase !== '' ? $tripPhase : ($tripDate !== '' ? $tripDate : 'Trip');
+                            $phaseAria = $tripPhaseRegisterCta.': '.$phaseBtnLabel.($tripDate !== '' ? ' · '.$tripDate : '');
+                        @endphp
+                        <button
+                            type="button"
+                            class="lv-btn lv-btn--trip-register"
+                            data-trip-date="{{ e($tripDate) }}"
+                            data-phase-label="{{ e($phaseBtnLabel) }}"
+                            aria-label="{{ e($phaseAria) }}"
+                        >{{ $tripPhaseRegisterCta }}</button>
                     </article>
                 @endforeach
             </div>
         </div>
     </section>
 
-    {{-- Section 5 — Agenda (table; uses saved rows or LandingPage::defaultDemoAgendaItemsForLocale) --}}
+    {{-- Section 6 — Agenda (table; uses saved rows or LandingPage::defaultDemoAgendaItemsForLocale) --}}
     <section class="lv-section lv-section--agenda" data-lp-section="agenda" aria-labelledby="lvAgendaHeading">
         <div class="lv-container">
             <h2 id="lvAgendaHeading" data-lv-key="agenda_title">{{ $agendaTitle }}</h2>
@@ -729,7 +878,7 @@
         </div>
     </section>
 
-    {{-- Section 6 — Booking --}}
+    {{-- Section 7 — Booking --}}
     <section class="lv-section lv-section--booking" data-lp-section="booking">
         <div class="lv-container lv-grid">
             <div>
@@ -758,7 +907,7 @@
         </div>
     </section>
 
-    {{-- Section 7 — FAQ & contact --}}
+    {{-- Section 8 — FAQ & contact --}}
     <section class="lv-section lv-section--faq" data-lp-section="faq">
         <div class="lv-container">
             <h2 data-lv-key="faq_title">{{ $faqTitle }}</h2>
@@ -776,7 +925,7 @@
         </div>
     </section>
 
-    {{-- Section 8 — Terms & Conditions (always visible on public page) --}}
+    {{-- Section 9 — Terms & Conditions (always visible on public page) --}}
     <section class="lv-section lv-section--terms" data-lp-section="terms" aria-labelledby="lvTermsHeading">
         <div class="lv-container">
             <h2 id="lvTermsHeading" data-lv-key="terms_title">{{ $termsTitle }}</h2>
@@ -785,6 +934,47 @@
             </div>
         </div>
     </section>
+
+    {{-- Modal: register from a specific trip phase (Section 5 buttons) --}}
+    <div id="lvTripPhaseModal" class="lv-trip-register-modal" hidden role="dialog" aria-modal="true" aria-labelledby="lvTripPhaseModalHeading">
+        <div class="lv-trip-register-modal__dialog" role="document">
+            <button type="button" class="lv-trip-register-modal__close" id="lvTripPhaseModalClose" aria-label="Close">&times;</button>
+            <h2 id="lvTripPhaseModalHeading">{{ $tripPhaseModalTitle }}</h2>
+            <p class="lv-trip-register-modal__phase" id="lvTripPhaseModalSubtitle"></p>
+            <form id="lvTripPhaseModalForm" novalidate>
+                <div class="lv-trip-register-modal__field">
+                    <label for="lvTripPhaseModalName">{{ $bookingNamePh }} <span style="color:#b91c1c">*</span></label>
+                    <input type="text" id="lvTripPhaseModalName" name="name" required autocomplete="name" placeholder="{{ $bookingNamePh }}">
+                </div>
+                <div class="lv-trip-register-modal__field">
+                    <label for="lvTripPhaseModalEmail">{{ $bookingEmailPh }} <span style="color:#b91c1c">*</span></label>
+                    <input type="email" id="lvTripPhaseModalEmail" name="email" required autocomplete="email" placeholder="{{ $bookingEmailPh }}">
+                </div>
+                <div class="lv-trip-register-modal__field">
+                    <label for="lvTripPhaseModalPhone">{{ $bookingPhonePh }}</label>
+                    <input type="text" id="lvTripPhaseModalPhone" name="phone" autocomplete="tel" placeholder="{{ $bookingPhonePh }}">
+                </div>
+                <div class="lv-trip-register-modal__field">
+                    <label for="lvTripPhaseModalTrip">{{ $bookingTripPh }}</label>
+                    <select id="lvTripPhaseModalTrip" name="tripDate" aria-label="{{ $bookingTripPh }}">
+                        <option value="">{{ $bookingTripPh }}</option>
+                        @foreach($tripDates as $trip)
+                            @php
+                                $optPhase = trim((string) ($trip['phase'] ?? ''));
+                                $optDate = trim((string) ($trip['date'] ?? ''));
+                                $optLabel = $optPhase !== '' ? $optPhase.' — '.$optDate : $optDate;
+                            @endphp
+                            <option value="{{ $optDate }}">{{ $optLabel }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="lv-trip-register-modal__actions">
+                    <button type="button" class="lv-trip-register-modal__btn-secondary" id="lvTripPhaseModalCancel">Cancel</button>
+                    <button type="submit" class="lv-trip-register-modal__btn-primary" id="lvTripPhaseModalSubmit">{{ $bookingSubmitText }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </main>
 
 <script>
@@ -813,6 +1003,132 @@ document.addEventListener('DOMContentLoaded', function () {
             form.reset();
         });
     }
+
+    var lvTripPhaseLastMeta = { phaseLabel: '', tripDate: '' };
+    function closeLvTripPhaseModal() {
+        var modal = document.getElementById('lvTripPhaseModal');
+        if (!modal) return;
+        modal.setAttribute('hidden', '');
+        modal.classList.remove('lv-trip-register-modal--open');
+        document.body.style.overflow = '';
+    }
+    function openLvTripPhaseModal(tripDate, phaseLabel) {
+        var modal = document.getElementById('lvTripPhaseModal');
+        var sub = document.getElementById('lvTripPhaseModalSubtitle');
+        var sel = document.getElementById('lvTripPhaseModalTrip');
+        if (!modal) return;
+        lvTripPhaseLastMeta.phaseLabel = phaseLabel || '';
+        lvTripPhaseLastMeta.tripDate = tripDate || '';
+        if (sub) {
+            sub.textContent = '';
+            var strong = document.createElement('strong');
+            strong.textContent = phaseLabel || '—';
+            sub.appendChild(strong);
+            if (tripDate) {
+                sub.appendChild(document.createTextNode(' · ' + tripDate));
+            }
+        }
+        if (sel) {
+            sel.value = tripDate || '';
+            if (tripDate) {
+                var found = false;
+                for (var i = 0; i < sel.options.length; i++) {
+                    if (sel.options[i].value === tripDate) {
+                        sel.selectedIndex = i;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    sel.selectedIndex = 0;
+                }
+            }
+        }
+        modal.removeAttribute('hidden');
+        modal.classList.add('lv-trip-register-modal--open');
+        document.body.style.overflow = 'hidden';
+        if (typeof trackLandingEvent === 'function') {
+            trackLandingEvent('cta_click', {
+                cta_label: 'TripPhaseRegisterOpen',
+                source: 'trip-phase-card',
+                phase_label: phaseLabel || '',
+                trip_date: tripDate || ''
+            });
+        }
+        var nameEl = document.getElementById('lvTripPhaseModalName');
+        if (nameEl) {
+            setTimeout(function () { nameEl.focus(); }, 50);
+        }
+    }
+    document.querySelectorAll('.lv-btn--trip-register').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            openLvTripPhaseModal(
+                btn.getAttribute('data-trip-date') || '',
+                btn.getAttribute('data-phase-label') || ''
+            );
+        });
+    });
+    (function () {
+        var modal = document.getElementById('lvTripPhaseModal');
+        if (!modal) return;
+        var tripForm = document.getElementById('lvTripPhaseModalForm');
+        var closeBtn = document.getElementById('lvTripPhaseModalClose');
+        var cancelBtn = document.getElementById('lvTripPhaseModalCancel');
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) {
+                closeLvTripPhaseModal();
+            }
+        });
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeLvTripPhaseModal);
+        }
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', closeLvTripPhaseModal);
+        }
+        document.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Escape' && modal.classList.contains('lv-trip-register-modal--open')) {
+                closeLvTripPhaseModal();
+            }
+        });
+        if (tripForm) {
+            tripForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                if (!tripForm.checkValidity()) {
+                    tripForm.reportValidity();
+                    return;
+                }
+                var elName = document.getElementById('lvTripPhaseModalName');
+                var elEmail = document.getElementById('lvTripPhaseModalEmail');
+                var elPhone = document.getElementById('lvTripPhaseModalPhone');
+                var elTrip = document.getElementById('lvTripPhaseModalTrip');
+                var payload = {
+                    lead_name: elName ? elName.value.trim() : '',
+                    lead_email: elEmail ? elEmail.value.trim() : '',
+                    lead_phone: elPhone ? elPhone.value.trim() : '',
+                    source: 'trip-phase-modal',
+                    meta: {
+                        tripDate: elTrip ? elTrip.value || '' : '',
+                        phase_label: lvTripPhaseLastMeta.phaseLabel || '',
+                        locale: (window.LandingPageConfig && window.LandingPageConfig.currentLocale) ? window.LandingPageConfig.currentLocale : 'en'
+                    }
+                };
+                if (typeof submitLandingLead === 'function') {
+                    submitLandingLead(payload);
+                }
+                if (typeof trackLandingEvent === 'function') {
+                    trackLandingEvent('lead_submit', {
+                        cta_label: 'TripPhaseModal',
+                        source: 'trip-phase-modal',
+                        phase_label: lvTripPhaseLastMeta.phaseLabel || '',
+                        trip_date: payload.meta.tripDate || ''
+                    });
+                }
+                alert('Lead submitted successfully.');
+                tripForm.reset();
+                closeLvTripPhaseModal();
+            });
+        }
+    })();
 
     var welcome = document.getElementById('lvLangWelcome');
     var nav = document.getElementById('lvLangSwitchNav');

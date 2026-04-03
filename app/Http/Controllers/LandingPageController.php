@@ -276,6 +276,7 @@ class LandingPageController extends Controller
             'about_text_kh' => 4000,
             'package_title' => 255,
             'package_price' => 120,
+            'promotion_section_title' => 255,
             'booking_title' => 255,
             'faq_title' => 255,
             'terms_title' => 255,
@@ -429,6 +430,7 @@ class LandingPageController extends Controller
             'visual.i18n.*.about_text_kh' => 'nullable|string|max:4000',
             'visual.i18n.*.package_title' => 'nullable|string|max:255',
             'visual.i18n.*.package_price' => 'nullable|string|max:120',
+            'visual.i18n.*.promotion_section_title' => 'nullable|string|max:255',
             'visual.i18n.*.booking_title' => 'nullable|string|max:255',
             'visual.i18n.*.faq_title' => 'nullable|string|max:255',
             'visual.i18n.*.terms_title' => 'nullable|string|max:255',
@@ -446,10 +448,13 @@ class LandingPageController extends Controller
             'visual.i18n.*.booking_phone_placeholder' => 'nullable|string|max:120',
             'visual.i18n.*.booking_trip_placeholder' => 'nullable|string|max:120',
             'visual.i18n.*.booking_submit_text' => 'nullable|string|max:120',
+            'visual.i18n.*.trip_phase_register_cta' => 'nullable|string|max:120',
+            'visual.i18n.*.trip_phase_modal_title' => 'nullable|string|max:255',
             'visual.i18n.*.hero_stats_text' => 'nullable|string|max:8000',
             'visual.i18n.*.package_items_text' => 'nullable|string|max:12000',
             'visual.i18n.*.trip_dates_text' => 'nullable|string|max:12000',
             'visual.i18n.*.trip_phases_json' => 'nullable|string|max:50000',
+            'visual.i18n.*.promotion_discounts_json' => 'nullable|string|max:20000',
             'visual.i18n.*.faq_items_text' => 'nullable|string|max:16000',
             'visual.i18n.*.contact_phones_text' => 'nullable|string|max:4000',
             'visual_logo_image' => 'nullable|image|max:8192',
@@ -652,11 +657,12 @@ class LandingPageController extends Controller
         $stringFields = [
             'hero_title', 'hero_subtitle', 'hero_cta_text',
             'about_title', 'about_text_en', 'about_text_kh',
-            'package_title', 'package_price', 'booking_title', 'faq_title', 'terms_title', 'terms_text', 'agenda_title',
+            'package_title', 'package_price', 'promotion_section_title', 'booking_title', 'faq_title', 'terms_title', 'terms_text', 'agenda_title',
             'agenda_hdr_slot', 'agenda_hdr_activity', 'agenda_hdr_detail',
             'trip_section_title', 'per_person_label', 'seats_left_suffix',
             'booking_name_placeholder', 'booking_email_placeholder', 'booking_phone_placeholder',
             'booking_trip_placeholder', 'booking_submit_text',
+            'trip_phase_register_cta', 'trip_phase_modal_title',
         ];
 
         foreach ($stringFields as $f) {
@@ -708,6 +714,23 @@ class LandingPageController extends Controller
                 } else {
                     unset($block['trip_phases']);
                 }
+            }
+        }
+
+        if (array_key_exists('promotion_discounts_json', $locIn)) {
+            $promoRaw = trim((string) $locIn['promotion_discounts_json']);
+            if ($promoRaw === '') {
+                unset($block['promotion_discounts']);
+                $block['promotion_discounts_show'] = false;
+            } else {
+                $decoded = json_decode($promoRaw, true);
+                if (json_last_error() !== JSON_ERROR_NONE || ! is_array($decoded)) {
+                    throw ValidationException::withMessages([
+                        'visual.i18n.'.$locale.'.promotion_discounts_json' => ['Promotion discounts must be valid JSON (object with base_price_text and tiers, or an array of tier objects).'],
+                    ]);
+                }
+                $block['promotion_discounts'] = LandingPage::sanitizePromotionDiscounts($decoded);
+                $block['promotion_discounts_show'] = true;
             }
         }
 

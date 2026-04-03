@@ -244,6 +244,17 @@
                             $tripPhasesJson = $enc !== false ? $enc : '[]';
                         }
                     }
+                    $promotionDiscountsJsonOld = old('visual.i18n.'.$loc.'.promotion_discounts_json');
+                    if ($promotionDiscountsJsonOld !== null) {
+                        $promotionDiscountsJson = $promotionDiscountsJsonOld;
+                    } elseif (($vloc['promotion_discounts_show'] ?? true) === false) {
+                        $promotionDiscountsJson = '';
+                    } elseif (isset($vloc['promotion_discounts']) && is_array($vloc['promotion_discounts']) && $vloc['promotion_discounts'] !== []) {
+                        $enc = json_encode($vloc['promotion_discounts'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                        $promotionDiscountsJson = $enc !== false ? $enc : \App\Models\LandingPage::defaultPromotionDiscountsJson();
+                    } else {
+                        $promotionDiscountsJson = \App\Models\LandingPage::defaultPromotionDiscountsJson();
+                    }
                     $agendaFromDb = collect($vloc['agenda_items'] ?? [])->map(fn ($row) => trim(($row['slot'] ?? '').'|'.($row['activity'] ?? '').'|'.($row['detail'] ?? '')))->implode("\n");
                     $agendaDemoPrefill = ($landingPage === null && $agendaFromDb === '') ? LandingPage::defaultDemoAgendaItemsText($loc) : '';
                     $agendaItemsText = old('visual.i18n.'.$loc.'.agenda_items_text', $agendaFromDb !== '' ? $agendaFromDb : $agendaDemoPrefill);
@@ -374,10 +385,32 @@
                         </div>
                     </div>
 
+                    {{-- Section: Promotion discounts --}}
+                    <div class="card card-outline-secondary mb-3">
+                        <div class="card-header py-2">
+                            <strong class="d-block">4. Promotion discounts</strong>
+                            <small class="text-muted">Shown below the package price block: base rate card plus one card per tier. Edit JSON for copy and numbers.</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                    <label class="mb-0">Promotion section title</label>
+                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'promotion_section_title', 'canAutoTranslate' => $canAutoTranslate])
+                                </div>
+                                <input type="text" name="{{ $pfx }}[promotion_section_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.promotion_section_title', $vloc['promotion_section_title'] ?? '') }}" placeholder="Group promotion discounts">
+                            </div>
+                            <div class="form-group mb-0">
+                                <label class="mb-1">Promotion discounts (JSON)</label>
+                                <textarea name="{{ $pfx }}[promotion_discounts_json]" class="form-control font-monospace" rows="14" spellcheck="false">{{ $promotionDiscountsJson }}</textarea>
+                                <small class="text-muted d-block mt-1">Object with <code>base_price_text</code>, optional <code>intro_text</code>, and <code>tiers</code> (each: <code>participants</code>, <code>off_each</code>, optional <code>label</code>). Or submit a JSON array of tiers only. Clear this field and save to hide the promotion section on the public page.</small>
+                            </div>
+                        </div>
+                    </div>
+
                     {{-- Section: Trip dates --}}
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
-                            <strong class="d-block">4. Trip dates</strong>
+                            <strong class="d-block">5. Trip dates</strong>
                             <small class="text-muted">Centered title, then one card per phase with date, status, seats, optional intro, and sub-categories (<code>subsections</code> with title + detail). Use <strong>Trip phases (JSON)</strong> for full content; <strong>Trip date rows</strong> stays as a quick pipe list and is synced from JSON when JSON is saved.</small>
                         </div>
                         <div class="card-body">
@@ -401,6 +434,27 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="row">
+                                <div class="col-12 col-md-6">
+                                    <div class="form-group">
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                            <label class="mb-0">Per-phase register button label</label>
+                                            @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'trip_phase_register_cta', 'canAutoTranslate' => $canAutoTranslate])
+                                        </div>
+                                        <input type="text" name="{{ $pfx }}[trip_phase_register_cta]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.trip_phase_register_cta', $vloc['trip_phase_register_cta'] ?? '') }}" placeholder="Register for this trip" maxlength="120">
+                                        <small class="text-muted d-block mt-1">Shown on each phase card; opens the registration popup.</small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="form-group">
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                            <label class="mb-0">Register modal title</label>
+                                            @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'trip_phase_modal_title', 'canAutoTranslate' => $canAutoTranslate])
+                                        </div>
+                                        <input type="text" name="{{ $pfx }}[trip_phase_modal_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.trip_phase_modal_title', $vloc['trip_phase_modal_title'] ?? '') }}" placeholder="Complete your registration" maxlength="255">
+                                    </div>
+                                </div>
+                            </div>
                             <div class="form-group">
                                 <label class="mb-0">Trip phases (JSON)</label>
                                 <textarea name="{{ $pfx }}[trip_phases_json]" class="form-control font-monospace" rows="14" spellcheck="false" placeholder='[{"label":"Phase I","date":"…","status":"…","seats_left":"…","intro":"…","subsections":[{"title":"…","detail":"…"}]}]'>{{ $tripPhasesJson }}</textarea>
@@ -420,7 +474,7 @@
                     {{-- Section: Agenda --}}
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
-                            <strong class="d-block">5. Agenda</strong>
+                            <strong class="d-block">6. Agenda</strong>
                             <small class="text-muted">Shown after trip dates as a <strong>table</strong> on the public page. Each line is one row: <code>slot|activity|detail</code> (detail can be empty). Optional column titles below override the default English headers.</small>
                         </div>
                         <div class="card-body">
@@ -459,7 +513,7 @@
                     {{-- Section: Booking --}}
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
-                            <strong class="d-block">6. Booking</strong>
+                            <strong class="d-block">7. Booking</strong>
                             <small class="text-muted">Split layout: form + fields on one side, shared <strong>Why / booking image</strong> on the other. Set the section heading and all form control labels for this language.</small>
                         </div>
                         <div class="card-body">
@@ -524,7 +578,7 @@
                     {{-- Section: FAQ & contact --}}
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
-                            <strong class="d-block">7. FAQ &amp; contact</strong>
+                            <strong class="d-block">8. FAQ &amp; contact</strong>
                             <small class="text-muted">Stacked Q&amp;A cards, then a single contact bar with phone links (one number per line).</small>
                         </div>
                         <div class="card-body">
@@ -555,7 +609,7 @@
                     {{-- Section: Terms & Conditions --}}
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
-                            <strong class="d-block">8. Terms &amp; Conditions</strong>
+                            <strong class="d-block">9. Terms &amp; Conditions</strong>
                             <small class="text-muted">Always shown after FAQ on the public page. Add your legal or policy copy below; the section heading still appears if the body is empty.</small>
                         </div>
                         <div class="card-body">

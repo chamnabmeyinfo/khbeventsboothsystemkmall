@@ -653,4 +653,104 @@ TXT;
 
         return self::defaultTripDateRows();
     }
+
+    /**
+     * Default group discount tiers (below package section). Editable via promotion_discounts_json.
+     *
+     * @return array{base_price_text: string, intro_text: string, tiers: list<array{participants: int, off_each: int, label: string}>}
+     */
+    public static function defaultPromotionDiscountsData(): array
+    {
+        return [
+            'base_price_text' => '$499/person',
+            'intro_text' => '',
+            'tiers' => [
+                ['participants' => 3, 'off_each' => 10, 'label' => ''],
+                ['participants' => 5, 'off_each' => 15, 'label' => ''],
+                ['participants' => 10, 'off_each' => 25, 'label' => ''],
+            ],
+        ];
+    }
+
+    public static function defaultPromotionDiscountsJson(): string
+    {
+        $json = json_encode(self::defaultPromotionDiscountsData(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+        return $json !== false ? $json : '{}';
+    }
+
+    /**
+     * @param  array<int, mixed>  $rows
+     * @return list<array{participants: int, off_each: int, label: string}>
+     */
+    public static function sanitizePromotionTiers(array $rows): array
+    {
+        $out = [];
+        foreach ($rows as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $n = (int) ($row['participants'] ?? $row['min_participants'] ?? 0);
+            $off = (int) ($row['off_each'] ?? $row['discount_off_each'] ?? $row['off'] ?? 0);
+            $label = trim((string) ($row['label'] ?? ''));
+            if ($n < 1 || $off < 1) {
+                continue;
+            }
+            $out[] = [
+                'participants' => $n,
+                'off_each' => $off,
+                'label' => $label,
+            ];
+        }
+        usort($out, static fn (array $a, array $b) => $a['participants'] <=> $b['participants']);
+
+        return $out;
+    }
+
+    /**
+     * @param  array<string, mixed>|list<mixed>  $input
+     * @return array{base_price_text: string, intro_text: string, tiers: list<array{participants: int, off_each: int, label: string}>}
+     */
+    public static function sanitizePromotionDiscounts(array $input): array
+    {
+        $defaults = self::defaultPromotionDiscountsData();
+        if ($input === []) {
+            return $defaults;
+        }
+        if (array_is_list($input)) {
+            $tiers = self::sanitizePromotionTiers($input);
+
+            return array_merge($defaults, ['tiers' => $tiers !== [] ? $tiers : $defaults['tiers']]);
+        }
+        $base = trim((string) ($input['base_price_text'] ?? ''));
+        $intro = trim((string) ($input['intro_text'] ?? ''));
+        $tiersRaw = $input['tiers'] ?? [];
+        $tiers = is_array($tiersRaw) ? self::sanitizePromotionTiers($tiersRaw) : [];
+        $out = $defaults;
+        if ($base !== '') {
+            $out['base_price_text'] = $base;
+        }
+        if ($intro !== '') {
+            $out['intro_text'] = $intro;
+        }
+        if ($tiers !== []) {
+            $out['tiers'] = $tiers;
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  array<string, mixed>  $visual
+     * @return array{base_price_text: string, intro_text: string, tiers: list<array{participants: int, off_each: int, label: string}>}
+     */
+    public static function resolvePromotionDiscountsForDisplay(array $visual): array
+    {
+        $raw = $visual['promotion_discounts'] ?? null;
+        if (is_array($raw) && $raw !== []) {
+            return self::sanitizePromotionDiscounts($raw);
+        }
+
+        return self::defaultPromotionDiscountsData();
+    }
 }

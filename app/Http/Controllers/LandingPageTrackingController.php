@@ -55,6 +55,7 @@ class LandingPageTrackingController extends Controller
             'source' => 'nullable|string|max:255',
             'meta' => 'nullable|array',
             'meta.tripDate' => 'nullable|string|max:500',
+            'meta.phase_label' => 'nullable|string|max:255',
             'meta.locale' => 'nullable|string|max:32',
         ]);
 
