@@ -6,7 +6,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.6">
-<link rel="stylesheet" href="{{ asset('css/users-page.css') }}?v=1.1">
+<link rel="stylesheet" href="{{ asset('css/users-page.css') }}?v=1.3">
 <style>
     .password-strength { font-size: 0.875rem; margin-top: 0.25rem; }
 </style>

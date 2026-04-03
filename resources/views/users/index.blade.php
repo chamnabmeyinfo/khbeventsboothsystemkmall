@@ -7,7 +7,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.6">
-<link rel="stylesheet" href="{{ asset('css/users-page.css') }}?v=1.2">
+<link rel="stylesheet" href="{{ asset('css/users-page.css') }}?v=1.3">
 @endpush
 
 @push('body-class', 'ios-dashboard-mode users-page')

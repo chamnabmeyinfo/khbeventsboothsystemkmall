@@ -6,174 +6,24 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.6">
-<link rel="stylesheet" href="{{ asset('css/users-page.css') }}?v=1.1">
-<style>
-    /* Profile Header with Cover and Avatar */
-    .profile-header {
-        position: relative;
-        margin-bottom: 32px;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-    }
-
-    .profile-cover {
-        width: 100%;
-        height: 300px;
-        background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
-        position: relative;
-        overflow: hidden;
-        cursor: move;
-        user-select: none;
-    }
-
-    .profile-cover img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center center;
-        cursor: move;
-        transition: transform 0.1s ease-out;
-        user-select: none;
-        -webkit-user-drag: none;
-    }
-    
-    .profile-cover.dragging img {
-        cursor: grabbing;
-    }
-    
-    .profile-cover.dragging {
-        cursor: grabbing;
-    }
-
-    .profile-cover-upload {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-
-    .profile-cover:hover .profile-cover-upload {
-        display: flex;
-    }
-
-    .profile-avatar-wrapper {
-        position: absolute;
-        bottom: -64px;
-        left: 32px;
-        z-index: 10;
-    }
-
-    .profile-avatar {
-        width: 128px;
-        height: 128px;
-        border-radius: 50%;
-        border: 4px solid white;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        position: relative;
-        cursor: pointer;
-        transition: transform 0.3s;
-    }
-
-    .profile-avatar:hover {
-        transform: scale(1.05);
-    }
-
-    .profile-avatar-upload {
-        position: absolute;
-        bottom: 8px;
-        right: 8px;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
-        border: 3px solid white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        transition: transform 0.2s;
-    }
-
-    .profile-avatar-upload:hover {
-        transform: scale(1.1);
-    }
-
-    .profile-avatar-upload i {
-        color: white;
-        font-size: 16px;
-    }
-
-    .profile-info {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        padding: 80px 32px 32px 32px;
-        border-top: 1px solid rgba(255, 255, 255, 0.18);
-    }
-
-    .profile-actions {
-        position: absolute;
-        top: 24px;
-        right: 24px;
-        z-index: 20;
-    }
-
-    .detail-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-        border-left: 4px solid;
-        transition: transform 0.2s;
-        margin-bottom: 24px;
-    }
-
-    .detail-card:hover {
-        transform: translateX(4px);
-    }
-
-    .detail-card.primary { border-left-color: var(--accent-blue); }
-    .detail-card.success { border-left-color: #84fab0; }
-    .detail-card.warning { border-left-color: #fa709a; }
-
-    .info-row {
-        padding: 0.75rem 0;
-        border-bottom: 1px solid rgba(0,0,0,0.05);
-    }
-
-    .info-row:last-child {
-        border-bottom: none;
-    }
-
-</style>
+<link rel="stylesheet" href="{{ asset('css/users-page.css') }}?v=1.4">
 @endpush
 
 @push('body-class', 'ios-dashboard-mode users-show-page')
 
 @section('content')
 <div class="looker-dashboard">
-<div class="container-fluid">
-    <!-- Breadcrumb Navigation -->
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}"><i class="fas fa-home"></i> Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('users.index') }}">Users</a></li>
-            <li class="breadcrumb-item active">{{ $user->username }}</li>
-        </ol>
+<div class="container-fluid px-0">
+    <nav class="users-show-breadcrumb animate-slide-up delay-1" aria-label="Breadcrumb">
+        <a href="{{ route('dashboard') }}">Dashboard</a>
+        <span class="users-show-breadcrumb__sep" aria-hidden="true">/</span>
+        <a href="{{ route('users.index') }}">Users</a>
+        <span class="users-show-breadcrumb__sep" aria-hidden="true">/</span>
+        <span class="users-show-breadcrumb__current">{{ $user->username }}</span>
     </nav>
 
-    <!-- Profile Header with Cover and Avatar -->
+    <!-- Facebook-style profile: cover + toolbar (avatar, name, actions) + section tabs -->
     <div class="profile-header">
-        <!-- Cover Image -->
         <div class="profile-cover" id="profileCover">
             @php
                 $coverPosition = $user->cover_position ?? null;
@@ -188,89 +38,108 @@
                      data-initial-position="{{ $coverPosition }}">
             @endif
             <div class="profile-cover-upload" onclick="openCoverUploadModal()">
-                <div style="text-align: center; color: white;">
-                    <i class="fas fa-camera fa-2x mb-2"></i>
-                    <p class="mb-0">Change Cover</p>
+                <div class="users-show-cover-upload-inner">
+                    <i class="fas fa-camera fa-2x mb-2" aria-hidden="true"></i>
+                    <p class="mb-0">Change cover</p>
                 </div>
             </div>
-            <div class="profile-cover-drag-hint" style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; display: none; pointer-events: none;">
-                <i class="fas fa-arrows-alt mr-1"></i> Drag to reposition
-            </div>
-        </div>
-
-        <!-- Avatar -->
-        <div class="profile-avatar-wrapper">
-            <div class="profile-avatar" onclick="openAvatarUploadModal()">
-                <x-avatar 
-                    :avatar="$user->avatar" 
-                    :name="$user->username" 
-                    :size="'xl'" 
-                    :type="$user->isAdmin() ? 'admin' : 'user'"
-                    :shape="'circle'"
-                />
-                <div class="profile-avatar-upload" onclick="event.stopPropagation(); openAvatarUploadModal()">
-                    <i class="fas fa-camera"></i>
-                </div>
+            <div class="profile-cover-drag-hint users-show-cover-hint">
+                <i class="fas fa-arrows-alt me-1" aria-hidden="true"></i> Drag to reposition
             </div>
         </div>
 
-        <!-- Profile Info Bar -->
-        <div class="profile-info">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h2 class="fw-bold text-dark mb-2">
-                        {{ $user->username }}
-                    </h2>
-                    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-                        @if($user->isAdmin())
-                            <span class="status-badge status-badge-purple">
-                                <i class="fas fa-shield-alt me-1" aria-hidden="true"></i>Administrator
-                            </span>
-                        @else
-                            <span class="status-badge status-badge-neutral">
-                                <i class="fas fa-user-tie me-1" aria-hidden="true"></i>Sale staff
-                            </span>
-                        @endif
-                        @if($user->role)
-                            <span class="status-badge status-badge-blue">
-                                <i class="fas fa-shield me-1" aria-hidden="true"></i>{{ $user->role->name }}
-                            </span>
-                        @endif
-                        @if($user->isActive())
-                            <span class="status-badge status-badge-green">
-                                <i class="fas fa-check-circle me-1" aria-hidden="true"></i>Active
-                            </span>
-                        @else
-                            <span class="status-badge status-badge-orange">
-                                <i class="fas fa-times-circle me-1" aria-hidden="true"></i>Inactive
-                            </span>
-                        @endif
+        <div class="profile-header__bar">
+            <div class="profile-header__bar-inner">
+                <div class="profile-header__identity">
+                    <div class="profile-avatar-wrapper">
+                        <div class="profile-avatar" onclick="openAvatarUploadModal()">
+                            <x-avatar
+                                :avatar="$user->avatar"
+                                :name="$user->username"
+                                :size="'xl'"
+                                :type="$user->isAdmin() ? 'admin' : 'user'"
+                                :shape="'circle'"
+                            />
+                            <div class="profile-avatar-upload" onclick="event.stopPropagation(); openAvatarUploadModal()">
+                                <i class="fas fa-camera" aria-hidden="true"></i>
+                            </div>
+                        </div>
                     </div>
-                    <p class="text-muted mb-0">
-                        <i class="fas fa-hashtag mr-1"></i>User ID: #{{ $user->id }}
-                        @if($user->last_login)
-                            <span class="ml-3">
-                                <i class="fas fa-clock mr-1"></i>Last Login: {{ $user->last_login }}
-                            </span>
-                        @endif
-                    </p>
+                    <div class="profile-header__text">
+                        <h1 class="profile-header__name">{{ $user->username }}</h1>
+                        <div class="profile-header__badges">
+                            @if($user->isAdmin())
+                                <span class="status-badge status-badge-purple">
+                                    <i class="fas fa-shield-alt me-1" aria-hidden="true"></i>Administrator
+                                </span>
+                            @else
+                                <span class="status-badge status-badge-neutral">
+                                    <i class="fas fa-user-tie me-1" aria-hidden="true"></i>Sale staff
+                                </span>
+                            @endif
+                            @if($user->role)
+                                <span class="status-badge status-badge-blue">
+                                    <i class="fas fa-shield me-1" aria-hidden="true"></i>{{ $user->role->name }}
+                                </span>
+                            @endif
+                            @if($user->isActive())
+                                <span class="status-badge status-badge-green">
+                                    <i class="fas fa-check-circle me-1" aria-hidden="true"></i>Active
+                                </span>
+                            @else
+                                <span class="status-badge status-badge-orange">
+                                    <i class="fas fa-times-circle me-1" aria-hidden="true"></i>Inactive
+                                </span>
+                            @endif
+                        </div>
+                        <p class="profile-header__meta">
+                            <span class="status-badge status-badge-blue">#{{ $user->id }}</span>
+                            @if($user->last_login)
+                                <span class="profile-header__meta-extra"><i class="fas fa-clock me-1" aria-hidden="true"></i>Last login: {{ $user->last_login }}</span>
+                            @endif
+                        </p>
+                    </div>
                 </div>
-                <div class="col-md-4 text-md-end">
-                    <div class="profile-actions d-flex flex-wrap justify-content-md-end gap-2">
-                        <a href="{{ route('users.index') }}" class="action-btn action-btn-secondary">
-                            <i class="fas fa-arrow-left text-tertiary" aria-hidden="true"></i> Back
-                        </a>
-                        <a href="{{ route('users.edit', $user) }}" class="action-btn action-btn-primary">
-                            <i class="fas fa-edit" aria-hidden="true"></i> Edit
-                        </a>
-                        @if(auth()->user()->isAdmin() && $user->id != auth()->id())
-                        <button type="button" class="action-btn action-btn-secondary text-danger border-danger-subtle" onclick="deleteUser({{ $user->id }}, {{ json_encode($user->username) }})">
-                            <i class="fas fa-trash" aria-hidden="true"></i> Delete
-                        </button>
-                        @endif
-                    </div>
+                <div class="profile-header__actions">
+                    <a href="{{ route('users.index') }}" class="action-btn action-btn-secondary">
+                        <i class="fas fa-arrow-left text-tertiary" aria-hidden="true"></i> Back
+                    </a>
+                    <a href="{{ route('users.edit', $user) }}" class="action-btn action-btn-primary">
+                        <i class="fas fa-edit" aria-hidden="true"></i> Edit profile
+                    </a>
+                    @if(auth()->user()->isAdmin() && $user->id != auth()->id())
+                    <button type="button" class="action-btn action-btn-secondary text-danger border-danger-subtle" onclick="deleteUser({{ $user->id }}, {{ json_encode($user->username) }})">
+                        <i class="fas fa-trash" aria-hidden="true"></i> Delete
+                    </button>
+                    @endif
                 </div>
             </div>
+            <nav class="profile-header__subnav" aria-label="Profile sections">
+                <ul class="profile-header__tabs list-unstyled mb-0">
+                    <li>
+                        <span class="profile-header__tab profile-header__tab--active" aria-current="page">Profile</span>
+                    </li>
+                    <li>
+                        <a class="profile-header__tab" href="#section-stats">Overview</a>
+                    </li>
+                    <li>
+                        <a class="profile-header__tab" href="#section-account">Account</a>
+                    </li>
+                    @if($user->role)
+                    <li>
+                        <a class="profile-header__tab" href="#section-permissions">Permissions</a>
+                    </li>
+                    @endif
+                    <li>
+                        <a class="profile-header__tab" href="#section-password">Security</a>
+                    </li>
+                    @if(isset($affiliateStats) && $affiliateStats['total_bookings'] > 0)
+                    <li>
+                        <a class="profile-header__tab" href="#section-affiliate">Affiliate</a>
+                    </li>
+                    @endif
+                </ul>
+            </nav>
         </div>
     </div>
 
@@ -291,7 +160,7 @@
             $permissionsCount = 0;
         }
     @endphp
-    <div class="kpi-wrapper mb-4">
+    <div class="kpi-wrapper mb-4" id="section-stats">
         <div class="kpi-card-looker">
             <div class="kpi-top">
                 <div class="kpi-title">Booths</div>
@@ -328,233 +197,204 @@
         @endif
     </div>
 
-    <!-- Affiliate Benefits & Commission Section -->
     @if(isset($affiliateStats) && $affiliateStats['total_bookings'] > 0)
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card detail-card success" style="border-left-color: #43e97b;">
-                <div class="card-header" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; border-radius: 12px 12px 0 0;">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-chart-line mr-2"></i>Affiliate Benefits & Commission Summary</h5>
-                        <a href="{{ route('affiliates.show', $user->id) }}" class="btn btn-light btn-sm">
-                            <i class="fas fa-external-link-alt mr-1"></i>View Full Report
-                        </a>
+    <div class="canvas-panel users-show-panel users-show-panel--affiliate mb-4" id="section-affiliate">
+        <div class="panel-header flex-wrap gap-2">
+            <h2 class="panel-title mb-0"><i class="fas fa-chart-line" aria-hidden="true"></i> Affiliate &amp; commission</h2>
+            <a href="{{ route('affiliates.show', $user->id) }}" class="action-btn action-btn-secondary">
+                <i class="fas fa-external-link-alt text-tertiary" aria-hidden="true"></i> Full report
+            </a>
+        </div>
+        <div class="users-show-panel__body px-2 px-md-0 pb-2">
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-lg-3">
+                    <div class="users-show-metric-tile">
+                        <i class="fas fa-shopping-cart users-show-metric-tile__icon" style="color: var(--accent-blue);" aria-hidden="true"></i>
+                        <div class="users-show-metric-tile__value">{{ number_format($affiliateStats['total_bookings']) }}</div>
+                        <div class="users-show-metric-tile__label">Affiliate bookings</div>
                     </div>
                 </div>
-                <div class="card-body" style="padding: 24px;">
-                    <!-- Key Metrics -->
-                    <div class="row mb-4">
-                        <div class="col-md-3 col-sm-6 mb-3">
-                            <div class="text-center p-3" style="background: #f8f9fa; border-radius: 12px;">
-                                <i class="fas fa-shopping-cart fa-2x text-primary mb-2"></i>
-                                <h4 class="mb-1" style="font-weight: 700; color: #495057;">{{ number_format($affiliateStats['total_bookings']) }}</h4>
-                                <small class="text-muted">Total Affiliate Bookings</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-sm-6 mb-3">
-                            <div class="text-center p-3" style="background: #f8f9fa; border-radius: 12px;">
-                                <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
-                                <h4 class="mb-1" style="font-weight: 700; color: #495057;">${{ number_format($affiliateStats['total_revenue'], 2) }}</h4>
-                                <small class="text-muted">Total Revenue Generated</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-sm-6 mb-3">
-                            <div class="text-center p-3" style="background: #f8f9fa; border-radius: 12px;">
-                                <i class="fas fa-users fa-2x text-info mb-2"></i>
-                                <h4 class="mb-1" style="font-weight: 700; color: #495057;">{{ number_format($affiliateStats['unique_clients']) }}</h4>
-                                <small class="text-muted">Unique Clients</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-sm-6 mb-3">
-                            <div class="text-center p-3" style="background: #f8f9fa; border-radius: 12px;">
-                                <i class="fas fa-mouse-pointer fa-2x text-warning mb-2"></i>
-                                <h4 class="mb-1" style="font-weight: 700; color: #495057;">{{ number_format($affiliateStats['total_clicks']) }}</h4>
-                                <small class="text-muted">Total Link Clicks</small>
-                            </div>
-                        </div>
+                <div class="col-6 col-lg-3">
+                    <div class="users-show-metric-tile">
+                        <i class="fas fa-dollar-sign users-show-metric-tile__icon" style="color: var(--accent-green);" aria-hidden="true"></i>
+                        <div class="users-show-metric-tile__value">${{ number_format($affiliateStats['total_revenue'], 2) }}</div>
+                        <div class="users-show-metric-tile__label">Revenue generated</div>
                     </div>
-
-                    <!-- Additional Stats -->
-                    <div class="row mb-4">
-                        <div class="col-md-4 mb-3">
-                            <div class="p-3 rounded-3 border-start border-4" style="background: linear-gradient(135deg, rgba(0, 122, 255, 0.08) 0%, rgba(175, 82, 222, 0.08) 100%); border-left-color: var(--accent-blue) !important;">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <small class="text-muted d-block mb-1">Average Booking Value</small>
-                                        <h5 class="mb-0 fw-bold" style="color: var(--accent-blue);">${{ number_format($affiliateStats['avg_booking_value'], 2) }}</h5>
-                                    </div>
-                                    <i class="fas fa-chart-bar fa-2x text-muted"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="p-3" style="background: linear-gradient(135deg, #43e97b15 0%, #38f9d715 100%); border-radius: 12px; border-left: 4px solid #43e97b;">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <small class="text-muted d-block mb-1">Conversion Rate</small>
-                                        <h5 class="mb-0" style="font-weight: 700; color: #43e97b;">{{ number_format($affiliateStats['conversion_rate'], 1) }}%</h5>
-                                    </div>
-                                    <i class="fas fa-percentage fa-2x text-muted"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="p-3" style="background: linear-gradient(135deg, #f093fb15 0%, #f5576c15 100%); border-radius: 12px; border-left: 4px solid #f093fb;">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <small class="text-muted d-block mb-1">Floor Plans Worked</small>
-                                        <h5 class="mb-0" style="font-weight: 700; color: #f093fb;">{{ number_format($affiliateStats['unique_floor_plans']) }}</h5>
-                                    </div>
-                                    <i class="fas fa-map fa-2x text-muted"></i>
-                                </div>
-                            </div>
-                        </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="users-show-metric-tile">
+                        <i class="fas fa-users users-show-metric-tile__icon" style="color: var(--accent-purple);" aria-hidden="true"></i>
+                        <div class="users-show-metric-tile__value">{{ number_format($affiliateStats['unique_clients']) }}</div>
+                        <div class="users-show-metric-tile__label">Unique clients</div>
                     </div>
-
-                    <!-- Timeline -->
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <div class="p-3" style="background: #f8f9fa; border-radius: 12px;">
-                                <small class="text-muted d-block mb-2"><i class="fas fa-calendar-check mr-1"></i>First Booking</small>
-                                <strong>
-                                    @if($affiliateStats['first_booking_at'])
-                                        {{ \Carbon\Carbon::parse($affiliateStats['first_booking_at'])->format('M d, Y') }}
-                                    @else
-                                        <span class="text-muted">No bookings yet</span>
-                                    @endif
-                                </strong>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="p-3" style="background: #f8f9fa; border-radius: 12px;">
-                                <small class="text-muted d-block mb-2"><i class="fas fa-clock mr-1"></i>Last Booking</small>
-                                <strong>
-                                    @if($affiliateStats['last_booking_at'])
-                                        {{ \Carbon\Carbon::parse($affiliateStats['last_booking_at'])->format('M d, Y') }}
-                                    @else
-                                        <span class="text-muted">No bookings yet</span>
-                                    @endif
-                                </strong>
-                            </div>
-                        </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="users-show-metric-tile">
+                        <i class="fas fa-mouse-pointer users-show-metric-tile__icon" style="color: var(--accent-orange);" aria-hidden="true"></i>
+                        <div class="users-show-metric-tile__value">{{ number_format($affiliateStats['total_clicks']) }}</div>
+                        <div class="users-show-metric-tile__label">Link clicks</div>
                     </div>
-
-                    <!-- Recent Bookings -->
-                    @if($affiliateStats['recent_bookings']->count() > 0)
-                    <div class="mt-4">
-                        <h6 class="mb-3" style="font-weight: 600; color: #495057;">
-                            <i class="fas fa-history mr-2"></i>Recent Affiliate Bookings
-                        </h6>
-                        <div class="table-responsive">
-                            <table class="table table-sm table-hover">
-                                <thead style="background: #f8f9fa;">
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Client</th>
-                                        <th>Floor Plan</th>
-                                        <th class="text-right">Revenue</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($affiliateStats['recent_bookings'] as $booking)
-                                    <tr>
-                                        <td>{{ \Carbon\Carbon::parse($booking->date_book)->format('M d, Y') }}</td>
-                                        <td>
-                                            @if($booking->client)
-                                                {{ $booking->client->company ?? $booking->client->name }}
-                                            @else
-                                                Client #{{ $booking->clientid }}
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if($booking->floorPlan)
-                                                {{ $booking->floorPlan->name }}
-                                            @else
-                                                N/A
-                                            @endif
-                                        </td>
-                                        <td class="text-right">
-                                            <strong class="text-success">
-                                                ${{ number_format($booking->booths()->sum('price') ?? 0, 2) }}
-                                            </strong>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    @endif
                 </div>
             </div>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="users-show-highlight users-show-highlight--blue">
+                        <div class="d-flex justify-content-between align-items-center gap-2">
+                            <div>
+                                <small class="text-muted d-block mb-1">Avg. booking value</small>
+                                <span class="fs-5 fw-bold" style="color: var(--accent-blue);">${{ number_format($affiliateStats['avg_booking_value'], 2) }}</span>
+                            </div>
+                            <i class="fas fa-chart-bar fa-2x text-secondary opacity-50" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="users-show-highlight users-show-highlight--green">
+                        <div class="d-flex justify-content-between align-items-center gap-2">
+                            <div>
+                                <small class="text-muted d-block mb-1">Conversion rate</small>
+                                <span class="fs-5 fw-bold" style="color: var(--accent-green);">{{ number_format($affiliateStats['conversion_rate'], 1) }}%</span>
+                            </div>
+                            <i class="fas fa-percentage fa-2x text-secondary opacity-50" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="users-show-highlight users-show-highlight--purple">
+                        <div class="d-flex justify-content-between align-items-center gap-2">
+                            <div>
+                                <small class="text-muted d-block mb-1">Floor plans worked</small>
+                                <span class="fs-5 fw-bold" style="color: var(--accent-purple);">{{ number_format($affiliateStats['unique_floor_plans']) }}</span>
+                            </div>
+                            <i class="fas fa-map fa-2x text-secondary opacity-50" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="users-show-timeline-box">
+                        <small class="text-muted d-block mb-2"><i class="fas fa-calendar-check me-1" aria-hidden="true"></i>First booking</small>
+                        <strong>
+                            @if($affiliateStats['first_booking_at'])
+                                {{ \Carbon\Carbon::parse($affiliateStats['first_booking_at'])->format('M d, Y') }}
+                            @else
+                                <span class="text-muted">No bookings yet</span>
+                            @endif
+                        </strong>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="users-show-timeline-box">
+                        <small class="text-muted d-block mb-2"><i class="fas fa-clock me-1" aria-hidden="true"></i>Last booking</small>
+                        <strong>
+                            @if($affiliateStats['last_booking_at'])
+                                {{ \Carbon\Carbon::parse($affiliateStats['last_booking_at'])->format('M d, Y') }}
+                            @else
+                                <span class="text-muted">No bookings yet</span>
+                            @endif
+                        </strong>
+                    </div>
+                </div>
+            </div>
+            @if($affiliateStats['recent_bookings']->count() > 0)
+            <div class="mt-2">
+                <h3 class="h6 fw-bold text-secondary mb-3"><i class="fas fa-history me-2" aria-hidden="true"></i>Recent affiliate bookings</h3>
+                <div class="looker-table-wrapper overflow-x-auto">
+                    <table class="looker-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Client</th>
+                                <th>Floor plan</th>
+                                <th class="text-end">Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($affiliateStats['recent_bookings'] as $booking)
+                            <tr>
+                                <td>{{ \Carbon\Carbon::parse($booking->date_book)->format('M d, Y') }}</td>
+                                <td>
+                                    @if($booking->client)
+                                        {{ $booking->client->company ?? $booking->client->name }}
+                                    @else
+                                        Client #{{ $booking->clientid }}
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($booking->floorPlan)
+                                        {{ $booking->floorPlan->name }}
+                                    @else
+                                        N/A
+                                    @endif
+                                </td>
+                                <td class="text-end fw-semibold" style="color: var(--accent-green);">
+                                    ${{ number_format($booking->booths()->sum('price') ?? 0, 2) }}
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            @endif
         </div>
     </div>
     @endif
 
-    <div class="row">
-        <!-- User Information -->
-        <div class="col-md-6 mb-4">
-            <div class="card detail-card primary">
-                <div class="card-header users-modal-header rounded-top">
-                    <h5 class="mb-0"><i class="fas fa-user mr-2"></i>User Information</h5>
+    <div class="row g-4" id="section-account">
+        <div class="{{ $user->role ? 'col-lg-6' : 'col-12' }}">
+            <div class="canvas-panel users-show-panel h-100">
+                <div class="panel-header">
+                    <h2 class="panel-title"><i class="fas fa-id-card" aria-hidden="true"></i> Account details</h2>
                 </div>
-                <div class="card-body" style="padding: 24px;">
-                    <div class="info-row">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted"><i class="fas fa-hashtag mr-2"></i>User ID:</span>
-                            <strong class="text-primary">#{{ $user->id }}</strong>
+                <div class="users-show-panel__body">
+                    <div class="users-show-info-row">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <span class="text-muted"><i class="fas fa-hashtag me-2" aria-hidden="true"></i>User ID</span>
+                            <span class="status-badge status-badge-blue">#{{ $user->id }}</span>
                         </div>
                     </div>
-                    <div class="info-row">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted"><i class="fas fa-user mr-2"></i>Username:</span>
+                    <div class="users-show-info-row">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <span class="text-muted"><i class="fas fa-user me-2" aria-hidden="true"></i>Username</span>
                             <strong>{{ $user->username }}</strong>
                         </div>
                     </div>
-                    <div class="info-row">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted"><i class="fas fa-user-tag mr-2"></i>Type:</span>
+                    <div class="users-show-info-row">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <span class="text-muted"><i class="fas fa-user-tag me-2" aria-hidden="true"></i>Type</span>
                             @if($user->isAdmin())
-                                <span class="badge badge-danger">
-                                    <i class="fas fa-shield-alt mr-1"></i>Administrator
-                                </span>
+                                <span class="status-badge status-badge-purple"><i class="fas fa-shield-alt me-1" aria-hidden="true"></i>Administrator</span>
                             @else
-                                <span class="badge badge-secondary">
-                                    <i class="fas fa-user-tie mr-1"></i>Sale Staff
-                                </span>
+                                <span class="status-badge status-badge-neutral"><i class="fas fa-user-tie me-1" aria-hidden="true"></i>Sale staff</span>
                             @endif
                         </div>
                     </div>
-                    <div class="info-row">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted"><i class="fas fa-user-shield mr-2"></i>Role:</span>
+                    <div class="users-show-info-row">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <span class="text-muted"><i class="fas fa-user-shield me-2" aria-hidden="true"></i>Role</span>
                             @if($user->role)
-                                <span class="badge badge-info">
-                                    <i class="fas fa-shield mr-1"></i>{{ $user->role->name }}
-                                </span>
+                                <span class="status-badge status-badge-blue"><i class="fas fa-shield me-1" aria-hidden="true"></i>{{ $user->role->name }}</span>
                             @else
-                                <span class="badge badge-light">No Role Assigned</span>
+                                <span class="status-badge status-badge-neutral">No role</span>
                             @endif
                         </div>
                     </div>
-                    <div class="info-row">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted"><i class="fas fa-toggle-on mr-2"></i>Status:</span>
+                    <div class="users-show-info-row">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <span class="text-muted"><i class="fas fa-toggle-on me-2" aria-hidden="true"></i>Status</span>
                             @if($user->isActive())
-                                <span class="badge badge-success">
-                                    <i class="fas fa-check-circle mr-1"></i>Active
-                                </span>
+                                <span class="status-badge status-badge-green"><i class="fas fa-check-circle me-1" aria-hidden="true"></i>Active</span>
                             @else
-                                <span class="badge badge-warning">
-                                    <i class="fas fa-times-circle mr-1"></i>Inactive
-                                </span>
+                                <span class="status-badge status-badge-orange"><i class="fas fa-times-circle me-1" aria-hidden="true"></i>Inactive</span>
                             @endif
                         </div>
                     </div>
                     @if($user->last_login)
-                    <div class="info-row">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted"><i class="fas fa-clock mr-2"></i>Last Login:</span>
+                    <div class="users-show-info-row">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <span class="text-muted"><i class="fas fa-clock me-2" aria-hidden="true"></i>Last login</span>
                             <span>{{ $user->last_login }}</span>
                         </div>
                     </div>
@@ -562,36 +402,32 @@
                 </div>
             </div>
         </div>
-
-        <!-- Permissions -->
         @if($user->role)
-        <div class="col-md-6 mb-4">
-            <div class="card detail-card warning">
-                <div class="card-header" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; border-radius: 12px 12px 0 0;">
-                    <h5 class="mb-0"><i class="fas fa-key mr-2"></i>Role Permissions</h5>
+        <div class="col-lg-6" id="section-permissions">
+            <div class="canvas-panel users-show-panel users-show-panel--permissions h-100">
+                <div class="panel-header">
+                    <h2 class="panel-title"><i class="fas fa-key" aria-hidden="true"></i> Role permissions</h2>
                 </div>
-                <div class="card-body" style="padding: 24px; max-height: 400px; overflow-y: auto;">
+                <div class="users-show-panel__body" style="max-height: 420px; overflow-y: auto;">
                     @php
                         $permissions = $user->getPermissions()->groupBy('module');
                     @endphp
                     @if($permissions->count() > 0)
                         @foreach($permissions as $module => $modulePermissions)
-                        <div class="mb-3">
-                            <h6 class="text-muted mb-2" style="font-weight: 600;">
-                                <i class="fas fa-folder mr-1"></i>{{ ucfirst($module ?: 'General') }}
-                                <span class="badge badge-secondary ml-2">{{ $modulePermissions->count() }}</span>
+                        <div class="users-show-permission-module">
+                            <h6>
+                                <i class="fas fa-folder me-1" aria-hidden="true"></i>{{ ucfirst($module ?: 'General') }}
+                                <span class="status-badge status-badge-neutral ms-1">{{ $modulePermissions->count() }}</span>
                             </h6>
-                            <div class="d-flex flex-wrap">
+                            <div class="d-flex flex-wrap gap-1">
                                 @foreach($modulePermissions as $permission)
-                                <span class="badge badge-primary mr-2 mb-2" style="font-size: 0.75rem; padding: 0.35rem 0.65rem;">
-                                    {{ $permission->name }}
-                                </span>
+                                <span class="status-badge status-badge-blue text-start text-wrap" style="text-transform: none; letter-spacing: normal; font-weight: 600; white-space: normal;">{{ $permission->name }}</span>
                                 @endforeach
                             </div>
                         </div>
                         @endforeach
                     @else
-                        <p class="text-muted mb-0">No permissions assigned</p>
+                        <p class="text-muted mb-0">No permissions assigned.</p>
                     @endif
                 </div>
             </div>
@@ -599,72 +435,57 @@
         @endif
     </div>
 
-    <!-- Change Password -->
-    <div class="row">
-        <div class="col-md-12 mb-4">
-            <div class="card detail-card primary">
-                <div class="card-header users-modal-header rounded-top">
-                    <h5 class="mb-0"><i class="fas fa-key mr-2"></i>Change Password</h5>
-                </div>
-                <div class="card-body" style="padding: 24px;">
-                    <form action="{{ route('users.password.update', $user->id) }}" method="POST" id="passwordForm">
-                        @csrf
-                        @method('POST')
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="password" class="form-label"><i class="fas fa-lock mr-1"></i>New Password <span class="text-danger">*</span></label>
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                        </div>
-                                        <input type="password" class="form-control @error('password') is-invalid @enderror" 
-                                               id="password" name="password" placeholder="Enter new password" required>
-                                        <div class="input-group-append">
-                                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password')">
-                                                <i class="fas fa-eye" id="passwordToggleIcon"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    @error('password')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                    <small class="form-text text-muted">Minimum 6 characters</small>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="password_confirmation" class="form-label"><i class="fas fa-lock mr-1"></i>Confirm Password <span class="text-danger">*</span></label>
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                        </div>
-                                        <input type="password" class="form-control" 
-                                               id="password_confirmation" name="password_confirmation" 
-                                               placeholder="Confirm new password" required>
-                                        <div class="input-group-append">
-                                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password_confirmation')">
-                                                <i class="fas fa-eye" id="passwordConfirmationToggleIcon"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div id="passwordMatch" class="mt-2"></div>
-                                </div>
-                            </div>
+    <div class="canvas-panel users-show-panel mt-4" id="section-password">
+        <div class="panel-header">
+            <h2 class="panel-title"><i class="fas fa-lock" aria-hidden="true"></i> Change password</h2>
+        </div>
+        <div class="users-show-panel__body">
+            <form action="{{ route('users.password.update', $user->id) }}" method="POST" id="passwordForm">
+                @csrf
+                @method('POST')
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="password" class="form-label fw-semibold text-secondary"><i class="fas fa-lock me-1" aria-hidden="true"></i>New password <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="fas fa-lock text-muted" aria-hidden="true"></i></span>
+                            <input type="password" class="form-control @error('password') is-invalid @enderror"
+                                   id="password" name="password" placeholder="Enter new password" required autocomplete="new-password">
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password')" aria-label="Show password">
+                                <i class="fas fa-eye" id="passwordToggleIcon" aria-hidden="true"></i>
+                            </button>
                         </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-key mr-1"></i>Update Password
-                        </button>
-                    </form>
+                        @error('password')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                        <small class="text-muted">Minimum 6 characters</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="password_confirmation" class="form-label fw-semibold text-secondary"><i class="fas fa-lock me-1" aria-hidden="true"></i>Confirm password <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="fas fa-lock text-muted" aria-hidden="true"></i></span>
+                            <input type="password" class="form-control"
+                                   id="password_confirmation" name="password_confirmation"
+                                   placeholder="Confirm new password" required autocomplete="new-password">
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password_confirmation')" aria-label="Show password">
+                                <i class="fas fa-eye" id="password_confirmationToggleIcon" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div id="passwordMatch" class="mt-2"></div>
+                    </div>
                 </div>
-            </div>
+                <div class="mt-4">
+                    <button type="submit" class="action-btn action-btn-primary">
+                        <i class="fas fa-key" aria-hidden="true"></i> Update password
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
     <!-- Avatar Upload Modal -->
     <div class="modal fade" id="avatarUploadModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
+            <div class="modal-content users-modal-content">
                 <div class="modal-header users-modal-header">
                     <h5 class="modal-title d-flex align-items-center gap-2">
                         <i class="fas fa-camera" aria-hidden="true"></i>Upload avatar
@@ -687,7 +508,7 @@
     <!-- Cover Upload Modal -->
     <div class="modal fade" id="coverUploadModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-            <div class="modal-content">
+            <div class="modal-content users-modal-content">
                 <div class="modal-header users-modal-header">
                     <h5 class="modal-title d-flex align-items-center gap-2">
                         <i class="fas fa-image" aria-hidden="true"></i>Upload cover image
