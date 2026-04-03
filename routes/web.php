@@ -378,6 +378,7 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/{landingPage:slug}/set-active', [LandingPageController::class, 'setActive'])->name('set-active');
             Route::post('/{landingPage:slug}/visual-inline', [LandingPageController::class, 'updateVisualInline'])->name('visual-inline');
             Route::post('/{landingPage:slug}/translate-from-english', [LandingPageController::class, 'translateFromEnglish'])->name('translate-from-english');
+            Route::post('/parse-agenda-days', [LandingPageController::class, 'parseAgendaDays'])->name('parse-agenda-days');
             Route::get('/{landingPage:slug}/analytics', [LandingPageTrackingController::class, 'analytics'])->name('analytics');
             Route::get('/{landingPage:slug}/reporting', [LandingPageController::class, 'leads'])->name('reporting');
             Route::get('/{landingPage:slug}/bookings', function (\App\Models\LandingPage $landingPage) {

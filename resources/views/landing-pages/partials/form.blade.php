@@ -101,6 +101,10 @@
         border-top-left-radius: 0;
         border-top-right-radius: 0;
     }
+    /* Agenda: per-day tabs (admin); same 3 columns as public table */
+    .lp-agenda-by-day-editor .lp-agenda-admin-nav{border-bottom:1px solid #dee2e6}
+    .lp-agenda-by-day-editor .lp-agenda-admin-content{border:1px solid #dee2e6;border-top:0;border-radius:0 0 .25rem .25rem;padding:.75rem;background:#fff}
+    .lp-agenda-by-day-editor .lp-agenda-add-day-li .btn{min-height:38px}
 </style>
 @endpush
 @endonce
@@ -363,6 +367,36 @@
                     $agendaFromDb = collect($vloc['agenda_items'] ?? [])->map(fn ($row) => trim(($row['slot'] ?? '').'|'.($row['activity'] ?? '').'|'.($row['detail'] ?? '')))->implode("\n");
                     $agendaDemoPrefill = ($landingPage === null && $agendaFromDb === '') ? LandingPage::defaultDemoAgendaItemsText($loc) : '';
                     $agendaItemsText = old('visual.i18n.'.$loc.'.agenda_items_text', $agendaFromDb !== '' ? $agendaFromDb : $agendaDemoPrefill);
+                    $oldAgendaText = old('visual.i18n.'.$loc.'.agenda_items_text');
+                    $agendaDaysForForm = [];
+                    if ($oldAgendaText !== null && (string) $oldAgendaText !== '') {
+                        $agendaDaysForForm = \App\Models\LandingPage::buildAgendaDaysFromItems(
+                            \App\Models\LandingPage::parseAgendaItemsFromText((string) $oldAgendaText),
+                            $loc
+                        );
+                    } elseif (! empty($vloc['agenda_days']) && is_array($vloc['agenda_days'])) {
+                        $agendaDaysForForm = \App\Models\LandingPage::sanitizeAgendaDays($vloc['agenda_days']);
+                    } elseif (! empty($vloc['agenda_items']) && is_array($vloc['agenda_items'])) {
+                        $agendaDaysForForm = \App\Models\LandingPage::buildAgendaDaysFromItems($vloc['agenda_items'], $loc);
+                    } else {
+                        $agendaDaysForForm = \App\Models\LandingPage::buildAgendaDaysFromItems(
+                            \App\Models\LandingPage::parseAgendaItemsFromText((string) $agendaItemsText),
+                            $loc
+                        );
+                    }
+                    if ($agendaDaysForForm === []) {
+                        $agendaDaysForForm = [['day' => 1, 'label' => $loc === 'zh' ? '第1天' : 'Day 1', 'rows' => []]];
+                    }
+                    $agendaDayRowTexts = [];
+                    foreach ($agendaDaysForForm as $di => $dayBlock) {
+                        $agendaDayRowTexts[$di] = collect($dayBlock['rows'] ?? [])->map(function ($r) {
+                            if (! is_array($r)) {
+                                return '';
+                            }
+
+                            return trim(($r['slot'] ?? '').'|'.($r['activity'] ?? '').'|'.($r['detail'] ?? ''));
+                        })->filter(fn ($l) => $l !== '')->implode("\n");
+                    }
                     $faqItemsText = old('visual.i18n.'.$loc.'.faq_items_text', collect($vloc['faq_items'] ?? [])->map(fn ($row) => trim(($row['question'] ?? '').'|'.($row['answer'] ?? '')))->implode("\n"));
                     $contactPhonesText = old('visual.i18n.'.$loc.'.contact_phones_text', collect($vloc['contact_phones'] ?? [])->implode("\n"));
                     $pfx = 'visual[i18n]['.$loc.']';
@@ -650,11 +684,37 @@
                             </div>
                             <div class="form-group mb-0">
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-                                    <label class="mb-0">Agenda rows</label>
+                                    <label class="mb-0" for="lp-agenda-items-text-{{ $loc }}">Agenda by day</label>
                                     @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'agenda_items_text', 'canAutoTranslate' => $canAutoTranslate])
                                 </div>
-                                <textarea name="{{ $pfx }}[agenda_items_text]" class="form-control" rows="8" placeholder="Day 1 · Morning|Canton Fair visit|Halls 1–3&#10;Day 2|Factory tour|Optional">{{ $agendaItemsText }}</textarea>
-                                <small class="text-muted d-block mt-1">One table row per line: <code>slot|activity|detail</code>. For <strong>Day 1 / Day 2</strong> tabs on the public page, start the <strong>slot</strong> (or the activity) with <code>Day 1</code>, <code>Day 2</code>, … (e.g. <code>Day 1 · 08:00|Airport meet|</code> or <code>08:00|Day 1 · Airport meet|</code>).</small>
+                                <p class="small text-muted mb-2">Use a <strong>tab per day</strong> (Day 1, Day 2, …). Each tab uses the same columns as the public page: <code>time/slot|activity|details</code> — you can omit the &ldquo;Day 1 ·&rdquo; prefix in the first column; it is added when saving. <strong>Add day</strong> adds another tab.</p>
+                                <div class="lp-agenda-by-day-editor mb-2" id="lp-agenda-days-editor-{{ $loc }}" data-locale="{{ $loc }}">
+                                    <ul class="nav nav-tabs flex-wrap lp-agenda-admin-nav mb-0" role="tablist">
+                                        @foreach($agendaDaysForForm as $di => $dayBlock)
+                                            <li class="nav-item lp-agenda-day-li" role="presentation">
+                                                <a class="nav-link py-2 px-3 {{ $di === 0 ? 'active' : '' }}" id="lp-agenda-{{ $loc }}-nav-{{ $di }}" data-toggle="tab" href="#lp-agenda-{{ $loc }}-pane-{{ $di }}" role="tab" aria-controls="lp-agenda-{{ $loc }}-pane-{{ $di }}" aria-selected="{{ $di === 0 ? 'true' : 'false' }}">{{ $dayBlock['label'] ?? ('Day '.($di + 1)) }}</a>
+                                            </li>
+                                        @endforeach
+                                        <li class="nav-item lp-agenda-add-day-li align-self-center ml-1" role="presentation">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary lp-agenda-add-day" data-locale="{{ $loc }}">+ Add day</button>
+                                        </li>
+                                    </ul>
+                                    <div class="tab-content lp-agenda-admin-content">
+                                        @foreach($agendaDaysForForm as $di => $dayBlock)
+                                            <div class="tab-pane fade lp-agenda-day-pane {{ $di === 0 ? 'show active' : '' }}" id="lp-agenda-{{ $loc }}-pane-{{ $di }}" role="tabpanel" aria-labelledby="lp-agenda-{{ $loc }}-nav-{{ $di }}">
+                                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                                                    <span class="small text-muted mb-0">One row per line: <code>time or slot|activity|details</code></span>
+                                                    @if(count($agendaDaysForForm) > 1)
+                                                        <button type="button" class="btn btn-sm btn-outline-danger lp-agenda-remove-day" data-locale="{{ $loc }}">Remove this day</button>
+                                                    @endif
+                                                </div>
+                                                <textarea class="form-control font-monospace lp-agenda-day-rows" rows="8" placeholder="06:00|Airport meet|&#10;12:00|Canton Fair|Halls 1–3">{{ $agendaDayRowTexts[$di] ?? '' }}</textarea>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                <textarea name="{{ $pfx }}[agenda_items_text]" class="d-none lp-agenda-items-hidden" id="lp-agenda-items-text-{{ $loc }}" autocomplete="off">{{ $agendaItemsText }}</textarea>
+                                <small class="text-muted d-block mt-1">Saved data is merged into one list for the API; the public page shows <strong>Day 1 / Day 2</strong> tabs when there are multiple days.</small>
                             </div>
                         </div>
                     </div>
@@ -793,3 +853,306 @@
         </div>
     </div>
 </div>
+@once
+@push('scripts')
+<script>
+(function () {
+    var parseAgendaDaysUrl = @json(route('landing-pages.parse-agenda-days'));
+    var adminLocales = @json($adminLocales);
+    var tokenEl = document.querySelector('meta[name="csrf-token"]');
+    var csrf = tokenEl ? tokenEl.getAttribute('content') : '';
+
+    function escapeHtml(s) {
+        var d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+
+    function lpAgendaTabLabel(locale, index0) {
+        var n = index0 + 1;
+        return locale === 'zh' ? ('第' + n + '天') : ('Day ' + n);
+    }
+
+    function lpAgendaSlotPrefix(locale, index0) {
+        var n = index0 + 1;
+        if (locale === 'zh') {
+            return '第' + n + '天 · ';
+        }
+        return 'Day ' + n + ' · ';
+    }
+
+    function lpAgendaSlotHasDayPrefix(s) {
+        s = (s || '').trim();
+        if (/^day\s*\d+/i.test(s)) {
+            return true;
+        }
+        if (/^第\d+天/.test(s)) {
+            return true;
+        }
+        if (/^第[一二三四五六七八九十]+天/.test(s)) {
+            return true;
+        }
+        return false;
+    }
+
+    function lpAgendaSerializeLocale(locale) {
+        var root = document.getElementById('lp-agenda-days-editor-' + locale);
+        var hidden = document.getElementById('lp-agenda-items-text-' + locale);
+        if (!root || !hidden) {
+            return;
+        }
+        var panes = root.querySelectorAll('.lp-agenda-day-pane');
+        var lines = [];
+        panes.forEach(function (pane, idx) {
+            var prefix = lpAgendaSlotPrefix(locale, idx);
+            var ta = pane.querySelector('.lp-agenda-day-rows');
+            if (!ta) {
+                return;
+            }
+            (ta.value || '').split(/\r?\n/).forEach(function (line) {
+                line = line.trim();
+                if (!line) {
+                    return;
+                }
+                var parts = line.split('|');
+                var slot = (parts[0] || '').trim();
+                var activity = (parts[1] || '').trim();
+                var detail = (parts[2] || '').trim();
+                if (!slot && !activity && !detail) {
+                    return;
+                }
+                if (!lpAgendaSlotHasDayPrefix(slot)) {
+                    slot = slot ? (prefix + slot) : prefix.replace(/\s+$/,'');
+                }
+                lines.push(slot + '|' + activity + '|' + detail);
+            });
+        });
+        hidden.value = lines.join('\n');
+    }
+
+    function lpAgendaEnsureRemoveButtons(locale) {
+        var root = document.getElementById('lp-agenda-days-editor-' + locale);
+        if (!root) {
+            return;
+        }
+        var panes = root.querySelectorAll('.lp-agenda-day-pane');
+        var show = panes.length > 1;
+        panes.forEach(function (pane) {
+            var flex = pane.querySelector('.d-flex.justify-content-between');
+            var btn = pane.querySelector('.lp-agenda-remove-day');
+            if (show && !btn && flex) {
+                var b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'btn btn-sm btn-outline-danger lp-agenda-remove-day';
+                b.setAttribute('data-locale', locale);
+                b.textContent = 'Remove this day';
+                flex.appendChild(b);
+            }
+            if (!show && btn) {
+                btn.remove();
+            }
+        });
+    }
+
+    function lpAgendaRebuildFromGroups(locale, groups) {
+        var root = document.getElementById('lp-agenda-days-editor-' + locale);
+        if (!root || !groups || !groups.length) {
+            return;
+        }
+        var nav = root.querySelector('.lp-agenda-admin-nav');
+        var content = root.querySelector('.lp-agenda-admin-content');
+        var addLi = nav.querySelector('.lp-agenda-add-day-li');
+        nav.querySelectorAll('.lp-agenda-day-li').forEach(function (li) { li.remove(); });
+        content.innerHTML = '';
+        groups.forEach(function (g, di) {
+            var label = g.label || lpAgendaTabLabel(locale, di);
+            var li = document.createElement('li');
+            li.className = 'nav-item lp-agenda-day-li';
+            li.setAttribute('role', 'presentation');
+            var a = document.createElement('a');
+            a.className = 'nav-link py-2 px-3' + (di === 0 ? ' active' : '');
+            a.id = 'lp-agenda-' + locale + '-nav-' + di;
+            a.setAttribute('data-toggle', 'tab');
+            a.href = '#lp-agenda-' + locale + '-pane-' + di;
+            a.setAttribute('role', 'tab');
+            a.setAttribute('aria-controls', 'lp-agenda-' + locale + '-pane-' + di);
+            a.setAttribute('aria-selected', di === 0 ? 'true' : 'false');
+            a.textContent = label;
+            li.appendChild(a);
+            nav.insertBefore(li, addLi);
+
+            var rowLines = (g.rows || []).map(function (r) {
+                return [r.slot || '', r.activity || '', r.detail || ''].join('|');
+            }).join('\n');
+
+            var pane = document.createElement('div');
+            pane.className = 'tab-pane fade lp-agenda-day-pane' + (di === 0 ? ' show active' : '');
+            pane.id = 'lp-agenda-' + locale + '-pane-' + di;
+            pane.setAttribute('role', 'tabpanel');
+            pane.setAttribute('aria-labelledby', 'lp-agenda-' + locale + '-nav-' + di);
+
+            var flex = document.createElement('div');
+            flex.className = 'd-flex justify-content-between align-items-center flex-wrap gap-2 mb-2';
+            var hint = document.createElement('span');
+            hint.className = 'small text-muted mb-0';
+            hint.innerHTML = 'One row per line: <code>time or slot|activity|details</code>';
+            flex.appendChild(hint);
+            if (groups.length > 1) {
+                var rb = document.createElement('button');
+                rb.type = 'button';
+                rb.className = 'btn btn-sm btn-outline-danger lp-agenda-remove-day';
+                rb.setAttribute('data-locale', locale);
+                rb.textContent = 'Remove this day';
+                flex.appendChild(rb);
+            }
+            var ta = document.createElement('textarea');
+            ta.className = 'form-control font-monospace lp-agenda-day-rows';
+            ta.rows = 8;
+            ta.placeholder = '06:00|Airport meet|\n12:00|Canton Fair|Halls 1–3';
+            ta.value = rowLines;
+            pane.appendChild(flex);
+            pane.appendChild(ta);
+            content.appendChild(pane);
+        });
+        if (window.jQuery) {
+            jQuery(nav.querySelector('.lp-agenda-day-li a')).tab('show');
+        }
+        lpAgendaSerializeLocale(locale);
+    }
+
+    function lpAgendaFetchAndRebuild(locale) {
+        var hidden = document.getElementById('lp-agenda-items-text-' + locale);
+        if (!hidden) {
+            return;
+        }
+        fetch(parseAgendaDaysUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrf,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ text: hidden.value || '', locale: locale })
+        })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data && data.groups && data.groups.length) {
+                    lpAgendaRebuildFromGroups(locale, data.groups);
+                }
+            })
+            .catch(function () {});
+    }
+
+    function initAgendaByDay() {
+        adminLocales.forEach(function (loc) {
+            lpAgendaSerializeLocale(loc);
+        });
+        var form = document.getElementById('lpLandingPageAdminForm');
+        if (form) {
+            form.addEventListener('submit', function () {
+                adminLocales.forEach(function (loc) {
+                    lpAgendaSerializeLocale(loc);
+                });
+            });
+        }
+        document.addEventListener('input', function (e) {
+            if (e.target.classList && e.target.classList.contains('lp-agenda-day-rows')) {
+                var root = e.target.closest('.lp-agenda-by-day-editor');
+                if (root) {
+                    lpAgendaSerializeLocale(root.getAttribute('data-locale'));
+                }
+            }
+            if (e.target.classList && e.target.classList.contains('lp-agenda-items-hidden')) {
+                var loc = e.target.id.replace('lp-agenda-items-text-', '');
+                lpAgendaFetchAndRebuild(loc);
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            var add = e.target.closest('.lp-agenda-add-day');
+            if (add) {
+                e.preventDefault();
+                var root = add.closest('.lp-agenda-by-day-editor');
+                var locale = root.getAttribute('data-locale');
+                var nav = root.querySelector('.lp-agenda-admin-nav');
+                var content = root.querySelector('.lp-agenda-admin-content');
+                var addLi = nav.querySelector('.lp-agenda-add-day-li');
+                var n = root.querySelectorAll('.lp-agenda-day-pane').length;
+                var li = document.createElement('li');
+                li.className = 'nav-item lp-agenda-day-li';
+                li.setAttribute('role', 'presentation');
+                var a = document.createElement('a');
+                a.className = 'nav-link py-2 px-3';
+                a.id = 'lp-agenda-' + locale + '-nav-' + n;
+                a.setAttribute('data-toggle', 'tab');
+                a.href = '#lp-agenda-' + locale + '-pane-' + n;
+                a.setAttribute('role', 'tab');
+                a.textContent = lpAgendaTabLabel(locale, n);
+                li.appendChild(a);
+                nav.insertBefore(li, addLi);
+                var pane = document.createElement('div');
+                pane.className = 'tab-pane fade lp-agenda-day-pane';
+                pane.id = 'lp-agenda-' + locale + '-pane-' + n;
+                pane.setAttribute('role', 'tabpanel');
+                var flex = document.createElement('div');
+                flex.className = 'd-flex justify-content-between align-items-center flex-wrap gap-2 mb-2';
+                var hintAdd = document.createElement('span');
+                hintAdd.className = 'small text-muted mb-0';
+                hintAdd.innerHTML = 'One row per line: <code>time or slot|activity|details</code>';
+                var rb = document.createElement('button');
+                rb.type = 'button';
+                rb.className = 'btn btn-sm btn-outline-danger lp-agenda-remove-day';
+                rb.setAttribute('data-locale', locale);
+                rb.textContent = 'Remove this day';
+                flex.appendChild(hintAdd);
+                flex.appendChild(rb);
+                var ta = document.createElement('textarea');
+                ta.className = 'form-control font-monospace lp-agenda-day-rows';
+                ta.rows = 8;
+                ta.placeholder = '06:00|Airport meet|\n12:00|Canton Fair|Halls 1–3';
+                pane.appendChild(flex);
+                pane.appendChild(ta);
+                content.appendChild(pane);
+                lpAgendaEnsureRemoveButtons(locale);
+                if (window.jQuery) {
+                    jQuery(a).tab('show');
+                }
+                lpAgendaSerializeLocale(locale);
+                return;
+            }
+            var rem = e.target.closest('.lp-agenda-remove-day');
+            if (rem) {
+                e.preventDefault();
+                var pane = rem.closest('.lp-agenda-day-pane');
+                var root = rem.closest('.lp-agenda-by-day-editor');
+                var locale = root.getAttribute('data-locale');
+                var panes = root.querySelectorAll('.lp-agenda-day-pane');
+                if (panes.length <= 1) {
+                    return;
+                }
+                var href = '#' + pane.id;
+                var link = root.querySelector('a[href="' + href + '"]');
+                if (link && link.closest('li')) {
+                    link.closest('li').remove();
+                }
+                pane.remove();
+                lpAgendaEnsureRemoveButtons(locale);
+                var first = root.querySelector('.lp-agenda-day-li a');
+                if (first && window.jQuery) {
+                    jQuery(first).tab('show');
+                }
+                lpAgendaSerializeLocale(locale);
+            }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAgendaByDay);
+    } else {
+        initAgendaByDay();
+    }
+})();
+</script>
+@endpush
+@endonce

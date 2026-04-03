@@ -375,6 +375,25 @@ class LandingPageController extends Controller
         ]);
     }
 
+    /**
+     * Rebuild agenda day groups from merged pipe text (admin UI + translate-from-English).
+     */
+    public function parseAgendaDays(Request $request)
+    {
+        $validated = $request->validate([
+            'text' => 'nullable|string|max:12000',
+            'locale' => 'required|string|max:12',
+        ]);
+        $locale = strtolower(trim($validated['locale']));
+        $rows = LandingPage::parseAgendaItemsFromText((string) ($validated['text'] ?? ''));
+        $groups = LandingPage::buildAgendaDaysFromItems($rows, $locale);
+        if ($groups === []) {
+            $groups = [['day' => 1, 'label' => $locale === 'zh' ? '第1天' : 'Day 1', 'rows' => []]];
+        }
+
+        return response()->json(['groups' => $groups]);
+    }
+
     public function setActive(LandingPage $landingPage)
     {
         if (! $landingPage->is_published) {
