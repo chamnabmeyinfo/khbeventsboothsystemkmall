@@ -10,6 +10,8 @@
     $packagePrice = $visual['package_price'] ?? '$499';
     $bookingTitle = $visual['booking_title'] ?? 'Book Your Seat Now';
     $faqTitle = $visual['faq_title'] ?? 'Frequently Asked Questions';
+    $termsTitle = $visual['terms_title'] ?? 'Terms & Conditions';
+    $termsText = $visual['terms_text'] ?? '';
     $tripSectionTitle = $visual['trip_section_title'] ?? 'Choose Your Trip Date';
     $perPersonLabel = $visual['per_person_label'] ?? 'per person';
     $seatsLeftSuffix = $visual['seats_left_suffix'] ?? 'seats left';
@@ -233,6 +235,10 @@
     .lv-section--trip{background:var(--lv-surface)}
     .lv-section--booking{background:var(--lv-surface-2)}
     .lv-section--faq{background:linear-gradient(180deg,#f1f5f9 0%,var(--lv-surface-2) 100%)}
+    .lv-section--terms{background:var(--lv-surface);border-top:1px solid var(--lv-border)}
+    .lv-terms-prose{max-width:min(72ch,100%);margin:0 auto;text-align:left;font-size:1rem;line-height:1.65;color:var(--lv-body)}
+    .lv-terms-prose p{margin:0 0 1em}
+    .lv-terms-prose p:last-child{margin-bottom:0}
     .lv-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,40px);align-items:center}
     .lv-image{min-height:min(360px,50vh);border-radius:var(--lv-radius);background-size:cover;background-position:center;box-shadow:var(--lv-shadow-lg);border:1px solid var(--lv-border)}
     .lv-card{
@@ -423,7 +429,8 @@
             </div>
         </header>
     @endif
-    <section class="lv-hero" data-lv-image-key="hero_background_image" data-lv-image-current="{{ $heroBg }}" style="background-image:url('{{ $heroBg }}')">
+    {{-- Section 1 — Hero (admin form card 1); shared images set above --}}
+    <section class="lv-hero" data-lp-section="hero" data-lv-image-key="hero_background_image" data-lv-image-current="{{ $heroBg }}" style="background-image:url('{{ $heroBg }}')">
         <div class="lv-content lv-container">
             @if($logo)<span class="lv-logo"><img src="{{ $logo }}" alt="Logo" data-lv-image-key="logo_image" data-lv-image-current="{{ $logo }}"></span>@endif
             <h1 data-lv-key="hero_title">{{ $heroTitle }}</h1>
@@ -445,7 +452,8 @@
         </div>
     </section>
 
-    <section class="lv-section lv-section--about">
+    {{-- Section 2 — About --}}
+    <section class="lv-section lv-section--about" data-lp-section="about">
         <div class="lv-container lv-grid">
             <div class="lv-image" data-lv-image-key="about_image" data-lv-image-current="{{ $aboutImage }}" style="background-image:url('{{ $aboutImage }}')"></div>
             <div>
@@ -456,7 +464,8 @@
         </div>
     </section>
 
-    <section class="lv-section lv-section--package">
+    {{-- Section 3 — Package & pricing --}}
+    <section class="lv-section lv-section--package" data-lp-section="package">
         <div class="lv-container">
             <h2 data-lv-key="package_title">{{ $packageTitle }}</h2>
             <div class="lv-package-grid">
@@ -487,7 +496,8 @@
         </div>
     </section>
 
-    <section class="lv-section lv-section--trip">
+    {{-- Section 4 — Trip dates --}}
+    <section class="lv-section lv-section--trip" data-lp-section="trip">
         <div class="lv-container">
             <h2 data-lv-key="trip_section_title">{{ $tripSectionTitle }}</h2>
             <div class="lv-three">
@@ -502,7 +512,8 @@
         </div>
     </section>
 
-    <section class="lv-section lv-section--booking">
+    {{-- Section 5 — Booking --}}
+    <section class="lv-section lv-section--booking" data-lp-section="booking">
         <div class="lv-container lv-grid">
             <div>
                 <h2 data-lv-key="booking_title">{{ $bookingTitle }}</h2>
@@ -525,7 +536,8 @@
         </div>
     </section>
 
-    <section class="lv-section lv-section--faq">
+    {{-- Section 6 — FAQ & contact --}}
+    <section class="lv-section lv-section--faq" data-lp-section="faq">
         <div class="lv-container">
             <h2 data-lv-key="faq_title">{{ $faqTitle }}</h2>
             @foreach($faqItems as $idx => $faq)
@@ -541,6 +553,16 @@
             </div>
         </div>
     </section>
+
+    @if(trim((string) $termsText) !== '')
+        {{-- Section 7 — Terms & Conditions --}}
+        <section class="lv-section lv-section--terms" data-lp-section="terms" aria-labelledby="lvTermsHeading">
+            <div class="lv-container">
+                <h2 id="lvTermsHeading" data-lv-key="terms_title">{{ $termsTitle }}</h2>
+                <div class="lv-card lv-terms-prose"><div class="mb-0" data-lv-key="terms_text" style="white-space:pre-wrap;">{{ $termsText }}</div></div>
+            </div>
+        </section>
+    @endif
 </main>
 
 <script>

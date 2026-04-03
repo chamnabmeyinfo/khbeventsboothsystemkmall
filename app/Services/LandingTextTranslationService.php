@@ -26,9 +26,9 @@ class LandingTextTranslationService
             'hero_title', 'hero_cta_text', 'hero_subtitle',
             'about_title', 'package_title',
             'about_text_en', 'about_text_kh',
-            'package_price', 'booking_title', 'faq_title',
+            'package_price', 'booking_title', 'faq_title', 'terms_title',
             'trip_section_title', 'per_person_label', 'seats_left_suffix',
-            'hero_stats_text', 'package_items_text', 'trip_dates_text', 'faq_items_text', 'contact_phones_text',
+            'hero_stats_text', 'package_items_text', 'trip_dates_text', 'faq_items_text', 'contact_phones_text', 'terms_text',
             'booking_name_placeholder', 'booking_email_placeholder', 'booking_phone_placeholder',
             'booking_trip_placeholder', 'booking_submit_text',
         ];

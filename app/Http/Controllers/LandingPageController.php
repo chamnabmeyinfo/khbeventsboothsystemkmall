@@ -228,6 +228,8 @@ class LandingPageController extends Controller
             'package_price' => 120,
             'booking_title' => 255,
             'faq_title' => 255,
+            'terms_title' => 255,
+            'terms_text' => 8000,
             'trip_section_title' => 255,
             'per_person_label' => 120,
             'seats_left_suffix' => 120,
@@ -374,6 +376,8 @@ class LandingPageController extends Controller
             'visual.i18n.*.package_price' => 'nullable|string|max:120',
             'visual.i18n.*.booking_title' => 'nullable|string|max:255',
             'visual.i18n.*.faq_title' => 'nullable|string|max:255',
+            'visual.i18n.*.terms_title' => 'nullable|string|max:255',
+            'visual.i18n.*.terms_text' => 'nullable|string|max:8000',
             'visual.i18n.*.trip_section_title' => 'nullable|string|max:255',
             'visual.i18n.*.per_person_label' => 'nullable|string|max:120',
             'visual.i18n.*.seats_left_suffix' => 'nullable|string|max:120',
@@ -583,11 +587,11 @@ class LandingPageController extends Controller
     {
         $block = $prevBlock;
 
-        $multiline = ['hero_subtitle', 'about_text_en', 'about_text_kh'];
+        $multiline = ['hero_subtitle', 'about_text_en', 'about_text_kh', 'terms_text'];
         $stringFields = [
             'hero_title', 'hero_subtitle', 'hero_cta_text',
             'about_title', 'about_text_en', 'about_text_kh',
-            'package_title', 'package_price', 'booking_title', 'faq_title',
+            'package_title', 'package_price', 'booking_title', 'faq_title', 'terms_title', 'terms_text',
             'trip_section_title', 'per_person_label', 'seats_left_suffix',
             'booking_name_placeholder', 'booking_email_placeholder', 'booking_phone_placeholder',
             'booking_trip_placeholder', 'booking_submit_text',

@@ -126,50 +126,69 @@
         <small class="text-muted d-block mt-1">Only checked languages appear in the visitor language switcher. All tabs below are saved so you can prepare copy before enabling a language.</small>
     </div>
 
-    <div class="border rounded p-3 mb-4">
-        <h5 class="mb-3">Page content</h5>
-        <p class="text-muted small mb-3">Shared images and button link apply to every language. Use a tab for each language&rsquo;s text.</p>
+    <div class="mb-4">
+        <h5 class="mb-2">Visual page (Canton Fair template)</h5>
+        <p class="text-muted small mb-3">Content is grouped <strong>by section</strong> below. Each section describes what appears on the public page and how it is designed. Shared images apply to every language; use a tab per language for copy.</p>
         <input type="hidden" name="template_key" value="canton_fair_visual">
 
-        <div class="form-group">
-            <label>Hero CTA target (shared)</label>
-            <input type="text" name="visual[hero_cta_target]" class="form-control" value="{{ $heroCtaShared }}" placeholder="/login">
+        <div class="card card-outline-primary mb-3">
+            <div class="card-header py-2">
+                <strong class="d-block">Shared: brand, hero &amp; CTA link</strong>
+                <small class="text-muted">Logo and hero background power the <em>Hero</em> section. The CTA button uses the same destination for all languages.</small>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label>Hero CTA target (shared)</label>
+                    <input type="text" name="visual[hero_cta_target]" class="form-control" value="{{ $heroCtaShared }}" placeholder="/login">
+                </div>
+                <div class="row">
+                    <div class="col-12 col-md-6">
+                        <div class="form-group mb-md-0">
+                            <label>Logo image</label>
+                            <input type="file" name="visual_logo_image" class="form-control-file" accept="image/*">
+                            @if(!empty($visualForm['logo_image']))<small class="text-muted d-block mt-1">Current: {{ $visualForm['logo_image'] }}</small>@endif
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="form-group mb-0">
+                            <label>Hero background image</label>
+                            <input type="file" name="visual_hero_background_image" class="form-control-file" accept="image/*">
+                            @if(!empty($visualForm['hero_background_image']))<small class="text-muted d-block mt-1">Current: {{ $visualForm['hero_background_image'] }}</small>@endif
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="row">
-            <div class="col-12 col-md-6">
-                <div class="form-group">
-                    <label>Logo Image</label>
-                    <input type="file" name="visual_logo_image" class="form-control-file" accept="image/*">
-                    @if(!empty($visualForm['logo_image']))<small class="text-muted d-block mt-1">Current: {{ $visualForm['logo_image'] }}</small>@endif
-                </div>
+        <div class="card card-outline-secondary mb-3">
+            <div class="card-header py-2">
+                <strong class="d-block">Shared: About section image</strong>
+                <small class="text-muted">Left column image beside the <em>About</em> text block (two-column layout on desktop).</small>
             </div>
-            <div class="col-12 col-md-6">
-                <div class="form-group">
-                    <label>Hero Background Image</label>
-                    <input type="file" name="visual_hero_background_image" class="form-control-file" accept="image/*">
-                    @if(!empty($visualForm['hero_background_image']))<small class="text-muted d-block mt-1">Current: {{ $visualForm['hero_background_image'] }}</small>@endif
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12 col-md-6">
-                <div class="form-group">
-                    <label>About Section Image</label>
+            <div class="card-body py-3">
+                <div class="form-group mb-0">
+                    <label>About section image</label>
                     <input type="file" name="visual_about_image" class="form-control-file" accept="image/*">
                     @if(!empty($visualForm['about_image']))<small class="text-muted d-block mt-1">Current: {{ $visualForm['about_image'] }}</small>@endif
                 </div>
             </div>
-            <div class="col-12 col-md-6">
-                <div class="form-group">
-                    <label>Why Choose Section Image</label>
+        </div>
+
+        <div class="card card-outline-secondary mb-3">
+            <div class="card-header py-2">
+                <strong class="d-block">Shared: Booking / &ldquo;Why&rdquo; section image</strong>
+                <small class="text-muted">Right column image next to the booking form (paired layout).</small>
+            </div>
+            <div class="card-body py-3">
+                <div class="form-group mb-0">
+                    <label>Why / booking side image</label>
                     <input type="file" name="visual_why_image" class="form-control-file" accept="image/*">
                     @if(!empty($visualForm['why_image']))<small class="text-muted d-block mt-1">Current: {{ $visualForm['why_image'] }}</small>@endif
                 </div>
             </div>
         </div>
 
-        <h6 class="mt-4 mb-2">Text by language</h6>
+        <h6 class="mt-2 mb-2">Text by language</h6>
         @if(!empty($canAutoTranslate))
             <div class="alert alert-info border mb-3 d-flex flex-column flex-md-row align-items-md-center justify-content-md-between">
                 <div class="mb-2 mb-md-0 pr-md-3">
@@ -211,35 +230,59 @@
                     $pfx = 'visual[i18n]['.$loc.']';
                 @endphp
                 <div class="tab-pane fade {{ $i === 0 ? 'show active' : '' }}" id="pane-{{ $loc }}" role="tabpanel" aria-labelledby="tab-{{ $loc }}">
-                    <div class="row">
-                        <div class="col-12 col-md-6">
-                            <div class="form-group">
-                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-                                    <label class="mb-0">Hero Title</label>
-                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'hero_title', 'canAutoTranslate' => $canAutoTranslate])
-                                </div>
-                                <input type="text" name="{{ $pfx }}[hero_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.hero_title', $vloc['hero_title'] ?? '') }}">
-                            </div>
+
+                    {{-- Section: Hero (full-bleed image + headline + CTA + stats) --}}
+                    <div class="card card-outline-secondary mb-3">
+                        <div class="card-header py-2">
+                            <strong class="d-block">1. Hero</strong>
+                            <small class="text-muted">Full-width banner: dark overlay on the shared background image, optional logo, headline, subtitle, primary CTA, then a row of stat cards. Keep copy scannable; stats use <code>value|label|icon</code> per line.</small>
                         </div>
-                        <div class="col-12 col-md-6">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12 col-md-6">
+                                    <div class="form-group">
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                            <label class="mb-0">Hero title</label>
+                                            @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'hero_title', 'canAutoTranslate' => $canAutoTranslate])
+                                        </div>
+                                        <input type="text" name="{{ $pfx }}[hero_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.hero_title', $vloc['hero_title'] ?? '') }}">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="form-group">
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                            <label class="mb-0">Hero CTA Text</label>
+                                            @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'hero_cta_text', 'canAutoTranslate' => $canAutoTranslate])
+                                        </div>
+                                        <input type="text" name="{{ $pfx }}[hero_cta_text]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.hero_cta_text', $vloc['hero_cta_text'] ?? '') }}" placeholder="Reserve Your Seat Now">
+                                    </div>
+                                </div>
+                            </div>
                             <div class="form-group">
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-                                    <label class="mb-0">Hero CTA Text</label>
-                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'hero_cta_text', 'canAutoTranslate' => $canAutoTranslate])
+                                    <label class="mb-0">Hero subtitle</label>
+                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'hero_subtitle', 'canAutoTranslate' => $canAutoTranslate])
                                 </div>
-                                <input type="text" name="{{ $pfx }}[hero_cta_text]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.hero_cta_text', $vloc['hero_cta_text'] ?? '') }}" placeholder="Reserve Your Seat Now">
+                                <textarea name="{{ $pfx }}[hero_subtitle]" class="form-control" rows="3">{{ old('visual.i18n.'.$loc.'.hero_subtitle', $vloc['hero_subtitle'] ?? '') }}</textarea>
+                            </div>
+                            <div class="form-group mb-0">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                    <label class="mb-0">Hero stats</label>
+                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'hero_stats_text', 'canAutoTranslate' => $canAutoTranslate])
+                                </div>
+                                <textarea name="{{ $pfx }}[hero_stats_text]" class="form-control" rows="4" placeholder="200+|Countries|globe&#10;70,000+|Exhibition Booths|store&#10;500,000+|Annual Visitors|users">{{ $heroStatsText }}</textarea>
+                                <small class="text-muted d-block mt-1">One stat per line: <code>value|label|icon</code> (icon keys: globe, store, users, plane, hotel, etc.).</small>
                             </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-                            <label class="mb-0">Hero Subtitle</label>
-                            @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'hero_subtitle', 'canAutoTranslate' => $canAutoTranslate])
+
+                    {{-- Section: About --}}
+                    <div class="card card-outline-secondary mb-3">
+                        <div class="card-header py-2">
+                            <strong class="d-block">2. About</strong>
+                            <small class="text-muted">Two columns on large screens: shared <strong>About image</strong> (left) + title, main paragraph, and a highlighted callout box. Use the highlight for a second language or key message.</small>
                         </div>
-                        <textarea name="{{ $pfx }}[hero_subtitle]" class="form-control" rows="3">{{ old('visual.i18n.'.$loc.'.hero_subtitle', $vloc['hero_subtitle'] ?? '') }}</textarea>
-                    </div>
-                    <div class="row">
-                        <div class="col-12 col-md-6">
+                        <div class="card-body">
                             <div class="form-group">
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
                                     <label class="mb-0">About Title</label>
@@ -247,8 +290,30 @@
                                 </div>
                                 <input type="text" name="{{ $pfx }}[about_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.about_title', $vloc['about_title'] ?? '') }}">
                             </div>
+                            <div class="form-group">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                    <label class="mb-0">About text (main paragraph)</label>
+                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'about_text_en', 'canAutoTranslate' => $canAutoTranslate])
+                                </div>
+                                <textarea name="{{ $pfx }}[about_text_en]" class="form-control" rows="3">{{ old('visual.i18n.'.$loc.'.about_text_en', $vloc['about_text_en'] ?? '') }}</textarea>
+                            </div>
+                            <div class="form-group mb-0">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                    <label class="mb-0">About text (highlight box)</label>
+                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'about_text_kh', 'canAutoTranslate' => $canAutoTranslate])
+                                </div>
+                                <textarea name="{{ $pfx }}[about_text_kh]" class="form-control" rows="3">{{ old('visual.i18n.'.$loc.'.about_text_kh', $vloc['about_text_kh'] ?? '') }}</textarea>
+                            </div>
                         </div>
-                        <div class="col-12 col-md-6">
+                    </div>
+
+                    {{-- Section: Package & pricing --}}
+                    <div class="card card-outline-secondary mb-3">
+                        <div class="card-header py-2">
+                            <strong class="d-block">3. Package &amp; pricing</strong>
+                            <small class="text-muted">Warm gradient section: section title, responsive grid of benefit rows with optional icons, then a large red price panel with price + &ldquo;per person&rdquo; line.</small>
+                        </div>
+                        <div class="card-body">
                             <div class="form-group">
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
                                     <label class="mb-0">Package Title</label>
@@ -256,33 +321,81 @@
                                 </div>
                                 <input type="text" name="{{ $pfx }}[package_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.package_title', $vloc['package_title'] ?? '') }}">
                             </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-                            <label class="mb-0">About text (main paragraph)</label>
-                            @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'about_text_en', 'canAutoTranslate' => $canAutoTranslate])
-                        </div>
-                        <textarea name="{{ $pfx }}[about_text_en]" class="form-control" rows="3">{{ old('visual.i18n.'.$loc.'.about_text_en', $vloc['about_text_en'] ?? '') }}</textarea>
-                    </div>
-                    <div class="form-group">
-                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-                            <label class="mb-0">About text (highlight box)</label>
-                            @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'about_text_kh', 'canAutoTranslate' => $canAutoTranslate])
-                        </div>
-                        <textarea name="{{ $pfx }}[about_text_kh]" class="form-control" rows="3">{{ old('visual.i18n.'.$loc.'.about_text_kh', $vloc['about_text_kh'] ?? '') }}</textarea>
-                    </div>
-                    <div class="row">
-                        <div class="col-12 col-md-4">
-                            <div class="form-group">
-                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-                                    <label class="mb-0">Package Price</label>
-                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'package_price', 'canAutoTranslate' => $canAutoTranslate])
+                            <div class="row">
+                                <div class="col-12 col-md-6">
+                                    <div class="form-group">
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                            <label class="mb-0">Package price</label>
+                                            @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'package_price', 'canAutoTranslate' => $canAutoTranslate])
+                                        </div>
+                                        <input type="text" name="{{ $pfx }}[package_price]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.package_price', $vloc['package_price'] ?? '$499') }}">
+                                    </div>
                                 </div>
-                                <input type="text" name="{{ $pfx }}[package_price]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.package_price', $vloc['package_price'] ?? '$499') }}">
+                                <div class="col-12 col-md-6">
+                                    <div class="form-group">
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                            <label class="mb-0">&ldquo;Per person&rdquo; label</label>
+                                            @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'per_person_label', 'canAutoTranslate' => $canAutoTranslate])
+                                        </div>
+                                        <input type="text" name="{{ $pfx }}[per_person_label]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.per_person_label', $vloc['per_person_label'] ?? '') }}" placeholder="per person">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group mb-0">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                    <label class="mb-0">Package items (benefits)</label>
+                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'package_items_text', 'canAutoTranslate' => $canAutoTranslate])
+                                </div>
+                                <textarea name="{{ $pfx }}[package_items_text]" class="form-control" rows="10" placeholder="Round-trip flight tickets|plane&#10;3 nights / 4 days hotel accommodation|hotel">{{ $packageItemsText }}</textarea>
+                                <small class="text-muted d-block mt-1">One benefit per line. Optional: <code>text|icon</code> (e.g. <code>text|plane</code>).</small>
                             </div>
                         </div>
-                        <div class="col-12 col-md-4">
+                    </div>
+
+                    {{-- Section: Trip dates --}}
+                    <div class="card card-outline-secondary mb-3">
+                        <div class="card-header py-2">
+                            <strong class="d-block">4. Trip dates</strong>
+                            <small class="text-muted">Neutral background: centered title, then a row of cards (stacked on mobile). Each line is <code>date|status|seats_left</code>; the seats number is followed by the &ldquo;seats&rdquo; suffix below.</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12 col-md-8">
+                                    <div class="form-group">
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                            <label class="mb-0">Trip dates section title</label>
+                                            @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'trip_section_title', 'canAutoTranslate' => $canAutoTranslate])
+                                        </div>
+                                        <input type="text" name="{{ $pfx }}[trip_section_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.trip_section_title', $vloc['trip_section_title'] ?? '') }}" placeholder="Choose Your Trip Date">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group">
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                            <label class="mb-0">Seats suffix</label>
+                                            @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'seats_left_suffix', 'canAutoTranslate' => $canAutoTranslate])
+                                        </div>
+                                        <input type="text" name="{{ $pfx }}[seats_left_suffix]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.seats_left_suffix', $vloc['seats_left_suffix'] ?? '') }}" placeholder="seats left">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group mb-0">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                    <label class="mb-0">Trip date rows</label>
+                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'trip_dates_text', 'canAutoTranslate' => $canAutoTranslate])
+                                </div>
+                                <textarea name="{{ $pfx }}[trip_dates_text]" class="form-control" rows="4" placeholder="17 - 20 October 2025|Available|18&#10;25 - 28 October 2025|Almost Full|7">{{ $tripDatesText }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Section: Booking --}}
+                    <div class="card card-outline-secondary mb-3">
+                        <div class="card-header py-2">
+                            <strong class="d-block">5. Booking</strong>
+                            <small class="text-muted">Split layout: form + fields on one side, shared <strong>Why / booking image</strong> on the other. Set the section heading and all form control labels for this language.</small>
+                        </div>
+                        <div class="card-body">
                             <div class="form-group">
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
                                     <label class="mb-0">Booking Section Title</label>
@@ -290,8 +403,64 @@
                                 </div>
                                 <input type="text" name="{{ $pfx }}[booking_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.booking_title', $vloc['booking_title'] ?? '') }}">
                             </div>
+                            <p class="text-muted small mb-2">Form labels (this language)</p>
+                            <div class="row">
+                                <div class="col-12 col-md-6">
+                                    <div class="form-group">
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                            <label class="mb-0">Name placeholder</label>
+                                            @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'booking_name_placeholder', 'canAutoTranslate' => $canAutoTranslate])
+                                        </div>
+                                        <input type="text" name="{{ $pfx }}[booking_name_placeholder]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.booking_name_placeholder', $vloc['booking_name_placeholder'] ?? '') }}">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="form-group">
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                            <label class="mb-0">Email placeholder</label>
+                                            @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'booking_email_placeholder', 'canAutoTranslate' => $canAutoTranslate])
+                                        </div>
+                                        <input type="text" name="{{ $pfx }}[booking_email_placeholder]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.booking_email_placeholder', $vloc['booking_email_placeholder'] ?? '') }}">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="form-group">
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                            <label class="mb-0">Phone placeholder</label>
+                                            @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'booking_phone_placeholder', 'canAutoTranslate' => $canAutoTranslate])
+                                        </div>
+                                        <input type="text" name="{{ $pfx }}[booking_phone_placeholder]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.booking_phone_placeholder', $vloc['booking_phone_placeholder'] ?? '') }}">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="form-group">
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                            <label class="mb-0">Trip dropdown label</label>
+                                            @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'booking_trip_placeholder', 'canAutoTranslate' => $canAutoTranslate])
+                                        </div>
+                                        <input type="text" name="{{ $pfx }}[booking_trip_placeholder]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.booking_trip_placeholder', $vloc['booking_trip_placeholder'] ?? '') }}">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="form-group">
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                            <label class="mb-0">Submit button</label>
+                                            @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'booking_submit_text', 'canAutoTranslate' => $canAutoTranslate])
+                                        </div>
+                                        <input type="text" name="{{ $pfx }}[booking_submit_text]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.booking_submit_text', $vloc['booking_submit_text'] ?? '') }}">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-12 col-md-4">
+                    </div>
+
+                    {{-- Section: FAQ & contact --}}
+                    <div class="card card-outline-secondary mb-3">
+                        <div class="card-header py-2">
+                            <strong class="d-block">6. FAQ &amp; contact</strong>
+                            <small class="text-muted">Stacked Q&amp;A cards, then a single contact bar with phone links (one number per line).</small>
+                        </div>
+                        <div class="card-body">
                             <div class="form-group">
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
                                     <label class="mb-0">FAQ Section Title</label>
@@ -299,122 +468,47 @@
                                 </div>
                                 <input type="text" name="{{ $pfx }}[faq_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.faq_title', $vloc['faq_title'] ?? '') }}">
                             </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12 col-md-6">
                             <div class="form-group">
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-                                    <label class="mb-0">Trip dates section title</label>
-                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'trip_section_title', 'canAutoTranslate' => $canAutoTranslate])
+                                    <label class="mb-0">FAQ Items (one per line: question|answer)</label>
+                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'faq_items_text', 'canAutoTranslate' => $canAutoTranslate])
                                 </div>
-                                <input type="text" name="{{ $pfx }}[trip_section_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.trip_section_title', $vloc['trip_section_title'] ?? '') }}" placeholder="Choose Your Trip Date">
+                                <textarea name="{{ $pfx }}[faq_items_text]" class="form-control" rows="5" placeholder="Do I need visa for China?|Yes, and we provide guidance.">{{ $faqItemsText }}</textarea>
                             </div>
-                        </div>
-                        <div class="col-12 col-md-3">
-                            <div class="form-group">
+                            <div class="form-group mb-0">
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-                                    <label class="mb-0">&ldquo;Per person&rdquo; label</label>
-                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'per_person_label', 'canAutoTranslate' => $canAutoTranslate])
+                                    <label class="mb-0">Contact Phones (one per line)</label>
+                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'contact_phones_text', 'canAutoTranslate' => $canAutoTranslate])
                                 </div>
-                                <input type="text" name="{{ $pfx }}[per_person_label]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.per_person_label', $vloc['per_person_label'] ?? '') }}" placeholder="per person">
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-3">
-                            <div class="form-group">
-                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-                                    <label class="mb-0">Seats suffix</label>
-                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'seats_left_suffix', 'canAutoTranslate' => $canAutoTranslate])
-                                </div>
-                                <input type="text" name="{{ $pfx }}[seats_left_suffix]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.seats_left_suffix', $vloc['seats_left_suffix'] ?? '') }}" placeholder="seats left">
+                                <textarea name="{{ $pfx }}[contact_phones_text]" class="form-control" rows="3" placeholder="060 815 515&#10;010 94 76 40">{{ $contactPhonesText }}</textarea>
                             </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-                            <label class="mb-0">Hero Stats (one per line: value|label)</label>
-                            @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'hero_stats_text', 'canAutoTranslate' => $canAutoTranslate])
+
+                    {{-- Section: Terms & Conditions --}}
+                    <div class="card card-outline-secondary mb-3">
+                        <div class="card-header py-2">
+                            <strong class="d-block">7. Terms &amp; Conditions</strong>
+                            <small class="text-muted">Placed after FAQ on the public page: section heading plus readable legal or policy copy. Leave body empty to hide this block on the live page.</small>
                         </div>
-                        <textarea name="{{ $pfx }}[hero_stats_text]" class="form-control" rows="4" placeholder="200+|Countries|globe&#10;70,000+|Exhibition Booths|store&#10;500,000+|Annual Visitors|users">{{ $heroStatsText }}</textarea>
-                        <small class="text-muted d-block mt-1">Format per line: <code>value|label|icon</code> (icon keys: globe, store, users, plane, hotel, etc.).</small>
-                    </div>
-                    <div class="form-group">
-                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-                            <label class="mb-0">Package Items (one per line)</label>
-                            @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'package_items_text', 'canAutoTranslate' => $canAutoTranslate])
-                        </div>
-                        <textarea name="{{ $pfx }}[package_items_text]" class="form-control" rows="10" placeholder="Round-trip flight tickets|plane&#10;3 nights / 4 days hotel accommodation|hotel">{{ $packageItemsText }}</textarea>
-                        <small class="text-muted d-block mt-1">One benefit per line. Optional: <code>text|icon</code> (e.g. <code>|plane</code>).</small>
-                    </div>
-                    <div class="form-group">
-                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-                            <label class="mb-0">Trip Dates (one per line: date|status|seats_left)</label>
-                            @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'trip_dates_text', 'canAutoTranslate' => $canAutoTranslate])
-                        </div>
-                        <textarea name="{{ $pfx }}[trip_dates_text]" class="form-control" rows="4" placeholder="17 - 20 October 2025|Available|18&#10;25 - 28 October 2025|Almost Full|7">{{ $tripDatesText }}</textarea>
-                    </div>
-                    <div class="form-group">
-                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-                            <label class="mb-0">FAQ Items (one per line: question|answer)</label>
-                            @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'faq_items_text', 'canAutoTranslate' => $canAutoTranslate])
-                        </div>
-                        <textarea name="{{ $pfx }}[faq_items_text]" class="form-control" rows="5" placeholder="Do I need visa for China?|Yes, and we provide guidance.">{{ $faqItemsText }}</textarea>
-                    </div>
-                    <div class="form-group">
-                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-                            <label class="mb-0">Contact Phones (one per line)</label>
-                            @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'contact_phones_text', 'canAutoTranslate' => $canAutoTranslate])
-                        </div>
-                        <textarea name="{{ $pfx }}[contact_phones_text]" class="form-control" rows="3" placeholder="060 815 515&#10;010 94 76 40">{{ $contactPhonesText }}</textarea>
-                    </div>
-                    <p class="text-muted small mb-2">Booking form labels (this language)</p>
-                    <div class="row">
-                        <div class="col-12 col-md-6">
+                        <div class="card-body">
                             <div class="form-group">
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-                                    <label class="mb-0">Name placeholder</label>
-                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'booking_name_placeholder', 'canAutoTranslate' => $canAutoTranslate])
+                                    <label class="mb-0">Terms section title</label>
+                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'terms_title', 'canAutoTranslate' => $canAutoTranslate])
                                 </div>
-                                <input type="text" name="{{ $pfx }}[booking_name_placeholder]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.booking_name_placeholder', $vloc['booking_name_placeholder'] ?? '') }}">
+                                <input type="text" name="{{ $pfx }}[terms_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.terms_title', $vloc['terms_title'] ?? '') }}" placeholder="Terms &amp; Conditions">
                             </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="form-group">
+                            <div class="form-group mb-0">
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-                                    <label class="mb-0">Email placeholder</label>
-                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'booking_email_placeholder', 'canAutoTranslate' => $canAutoTranslate])
+                                    <label class="mb-0">Terms &amp; Conditions text</label>
+                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'terms_text', 'canAutoTranslate' => $canAutoTranslate])
                                 </div>
-                                <input type="text" name="{{ $pfx }}[booking_email_placeholder]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.booking_email_placeholder', $vloc['booking_email_placeholder'] ?? '') }}">
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="form-group">
-                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-                                    <label class="mb-0">Phone placeholder</label>
-                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'booking_phone_placeholder', 'canAutoTranslate' => $canAutoTranslate])
-                                </div>
-                                <input type="text" name="{{ $pfx }}[booking_phone_placeholder]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.booking_phone_placeholder', $vloc['booking_phone_placeholder'] ?? '') }}">
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="form-group">
-                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-                                    <label class="mb-0">Trip dropdown label</label>
-                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'booking_trip_placeholder', 'canAutoTranslate' => $canAutoTranslate])
-                                </div>
-                                <input type="text" name="{{ $pfx }}[booking_trip_placeholder]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.booking_trip_placeholder', $vloc['booking_trip_placeholder'] ?? '') }}">
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="form-group">
-                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-                                    <label class="mb-0">Submit button</label>
-                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'booking_submit_text', 'canAutoTranslate' => $canAutoTranslate])
-                                </div>
-                                <input type="text" name="{{ $pfx }}[booking_submit_text]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.booking_submit_text', $vloc['booking_submit_text'] ?? '') }}">
+                                <textarea name="{{ $pfx }}[terms_text]" class="form-control" rows="8" placeholder="Booking rules, cancellation policy, liability, visas, etc.">{{ old('visual.i18n.'.$loc.'.terms_text', $vloc['terms_text'] ?? '') }}</textarea>
                             </div>
                         </div>
                     </div>
+
                 </div>
             @endforeach
         </div>
