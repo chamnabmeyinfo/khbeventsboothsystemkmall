@@ -632,7 +632,7 @@
                                     <label class="mb-0">Agenda section title</label>
                                     @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'agenda_title', 'canAutoTranslate' => $canAutoTranslate])
                                 </div>
-                                <input type="text" name="{{ $pfx }}[agenda_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.agenda_title', $vloc['agenda_title'] ?? '') }}" placeholder="Trip agenda">
+                                <input type="text" name="{{ $pfx }}[agenda_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.agenda_title', $vloc['agenda_title'] ?? '') }}" placeholder="Business Tour Itinerary">
                             </div>
                             <div class="form-row">
                                 <div class="form-group col-md-4">

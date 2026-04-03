@@ -534,6 +534,163 @@ TXT;
     }
 
     /**
+     * Label for agenda rows that do not start with a recognized day prefix (slot column).
+     */
+    public static function agendaFallbackGroupLabel(string $locale): string
+    {
+        $loc = strtolower(trim($locale));
+
+        return match ($loc) {
+            'zh' => '其他',
+            'km' => 'កាលវិភាគ',
+            default => 'Schedule',
+        };
+    }
+
+    /**
+     * Detect "Day 1 · …", "Day 2 …", "第一天 · …", "第2天 · …" in the slot column for tabbed itinerary.
+     *
+     * @return array{day: int, label: string, slot_display: string}|null
+     */
+    public static function parseAgendaSlotDayPrefix(string $slot): ?array
+    {
+        $s = trim($slot);
+        if ($s === '') {
+            return null;
+        }
+
+        if (preg_match('/^day\s*(\d+)(?:\s*[·•]\s*|\s+)(.+)$/iu', $s, $m)) {
+            $d = (int) $m[1];
+
+            return [
+                'day' => $d,
+                'label' => 'Day '.$d,
+                'slot_display' => trim((string) $m[2]) !== '' ? trim((string) $m[2]) : '—',
+            ];
+        }
+
+        if (preg_match('/^day\s*(\d+)$/iu', $s, $m)) {
+            $d = (int) $m[1];
+
+            return [
+                'day' => $d,
+                'label' => 'Day '.$d,
+                'slot_display' => '—',
+            ];
+        }
+
+        if (preg_match('/^第(\d+)天(?:\s*[·•]\s*|\s+)(.+)$/u', $s, $m)) {
+            $d = (int) $m[1];
+
+            return [
+                'day' => $d,
+                'label' => '第'.$m[1].'天',
+                'slot_display' => trim((string) $m[2]) !== '' ? trim((string) $m[2]) : '—',
+            ];
+        }
+
+        if (preg_match('/^第(\d+)天$/u', $s, $m)) {
+            $d = (int) $m[1];
+
+            return [
+                'day' => $d,
+                'label' => '第'.$m[1].'天',
+                'slot_display' => '—',
+            ];
+        }
+
+        $hanToInt = [
+            '一' => 1, '二' => 2, '三' => 3, '四' => 4, '五' => 5,
+            '六' => 6, '七' => 7, '八' => 8, '九' => 9, '十' => 10,
+        ];
+
+        if (preg_match('/^(第[一二三四五六七八九十]+天)(?:\s*[·•]\s*|\s+)(.+)$/u', $s, $m)) {
+            $han = preg_replace('/^第|天$/u', '', $m[1]);
+            $d = $hanToInt[$han] ?? null;
+            if ($d === null) {
+                return null;
+            }
+
+            return [
+                'day' => $d,
+                'label' => $m[1],
+                'slot_display' => trim((string) $m[2]) !== '' ? trim((string) $m[2]) : '—',
+            ];
+        }
+
+        if (preg_match('/^(第[一二三四五六七八九十]+天)$/u', $s, $m)) {
+            $han = preg_replace('/^第|天$/u', '', $m[1]);
+            $d = $hanToInt[$han] ?? null;
+            if ($d === null) {
+                return null;
+            }
+
+            return [
+                'day' => $d,
+                'label' => $m[1],
+                'slot_display' => '—',
+            ];
+        }
+
+        return null;
+    }
+
+    /**
+     * Group agenda rows by day for public tab UI. Uses slot prefixes (Day 1, 第一天, …).
+     *
+     * @param  list<array{slot: string, activity: string, detail: string}>  $rows
+     * @return array{use_tabs: bool, groups: list<array{day: int, label: string, rows: list<array{slot: string, activity: string, detail: string}>}>}
+     */
+    public static function groupAgendaItemsByDayForDisplay(array $rows, string $locale): array
+    {
+        $buckets = [];
+
+        foreach ($rows as $row) {
+            $slot = trim((string) ($row['slot'] ?? ''));
+            $act = trim((string) ($row['activity'] ?? ''));
+            $det = trim((string) ($row['detail'] ?? ''));
+            if ($slot === '' && $act === '' && $det === '') {
+                continue;
+            }
+
+            $parsed = self::parseAgendaSlotDayPrefix($slot);
+            if ($parsed === null) {
+                $day = 0;
+                if (! isset($buckets[$day])) {
+                    $buckets[$day] = ['day' => $day, 'label' => self::agendaFallbackGroupLabel($locale), 'rows' => []];
+                }
+                $buckets[$day]['rows'][] = ['slot' => $slot, 'activity' => $act, 'detail' => $det];
+            } else {
+                $day = $parsed['day'];
+                if (! isset($buckets[$day])) {
+                    $buckets[$day] = ['day' => $day, 'label' => $parsed['label'], 'rows' => []];
+                }
+                $buckets[$day]['rows'][] = [
+                    'slot' => $parsed['slot_display'],
+                    'activity' => $act,
+                    'detail' => $det,
+                ];
+            }
+        }
+
+        $groups = array_values($buckets);
+        usort($groups, function ($a, $b) {
+            if ($a['day'] === 0) {
+                return 1;
+            }
+            if ($b['day'] === 0) {
+                return -1;
+            }
+
+            return $a['day'] <=> $b['day'];
+        });
+
+        $useTabs = count($groups) >= 2;
+
+        return ['use_tabs' => $useTabs, 'groups' => $groups];
+    }
+
+    /**
      * Rich trip phases: each phase has intro + subsections (sub-categories with detail).
      *
      * @return list<array{label: string, date: string, status: string, seats_left: string, intro: string, subsections: list<array{title: string, detail: string}>}>

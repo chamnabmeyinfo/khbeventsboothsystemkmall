@@ -13,9 +13,10 @@
     $termsTitle = $visual['terms_title'] ?? 'Terms & Conditions';
     $termsText = $visual['terms_text'] ?? '';
     $currentLocale = $currentLocale ?? 'en';
-    $agendaTitle = $visual['agenda_title'] ?? 'Trip agenda';
+    $agendaTitle = $visual['agenda_title'] ?? 'Business Tour Itinerary';
     $rawAgendaItems = is_array($visual['agenda_items'] ?? null) ? $visual['agenda_items'] : [];
     $agendaItems = \App\Models\LandingPage::resolveAgendaItemsForDisplay($rawAgendaItems, $currentLocale);
+    $agendaDayBundle = \App\Models\LandingPage::groupAgendaItemsByDayForDisplay($agendaItems, $currentLocale);
     $agendaHdrSlot = trim((string) ($visual['agenda_hdr_slot'] ?? '')) ?: 'Time / slot';
     $agendaHdrActivity = trim((string) ($visual['agenda_hdr_activity'] ?? '')) ?: 'Activity';
     $agendaHdrDetail = trim((string) ($visual['agenda_hdr_detail'] ?? '')) ?: 'Details';
@@ -394,6 +395,31 @@
     .lv-agenda-table .lv-agenda-slot{font-weight:700;color:var(--lv-primary);font-size:.95rem}
     .lv-agenda-table .lv-agenda-activity{font-weight:600;color:var(--lv-ink)}
     .lv-agenda-table .lv-agenda-detail{color:var(--lv-body);line-height:1.55}
+    /* Itinerary: Day 1 / Day 2 / … tabs (CSS-only; no Bootstrap on public page) */
+    .lv-agenda-tabs{margin-top:8px}
+    .lv-agenda-tab-input{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .lv-agenda-tablist{display:flex;flex-wrap:nowrap;gap:10px;align-items:stretch;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:4px 2px 14px;margin:0 0 -1px;border-bottom:1px solid rgba(15,23,42,.1);scrollbar-width:thin}
+    .lv-agenda-tab{
+        flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 18px;margin:0;
+        font:inherit;font-weight:600;font-size:.92rem;color:var(--lv-ink);
+        background:rgba(255,255,255,.55);border:1px solid rgba(15,23,42,.12);border-radius:var(--lv-radius-sm);
+        cursor:pointer;transition:background .2s ease,color .2s ease,border-color .2s ease,box-shadow .2s ease;
+        box-shadow:0 1px 0 rgba(255,255,255,.6) inset;
+    }
+    .lv-agenda-tab:hover{background:rgba(255,255,255,.85);border-color:rgba(196,30,30,.25)}
+    .lv-agenda-tab:focus{outline:2px solid var(--lv-primary);outline-offset:2px}
+    .lv-agenda-panels{position:relative}
+    .lv-agenda-panel{display:none;margin-top:0}
+    .lv-agenda-panel .lv-agenda-table-wrap{margin-top:0}
+@if(!empty($agendaDayBundle['use_tabs']))
+@foreach($agendaDayBundle['groups'] as $ti => $_g)
+    #lv-agenda-{{ $landingPage->id }}-{{ $ti }}:checked~.lv-agenda-panels .lv-agenda-panel:nth-child({{ $ti + 1 }}){display:block}
+    #lv-agenda-{{ $landingPage->id }}-{{ $ti }}:checked~.lv-agenda-tablist .lv-agenda-tab[for="lv-agenda-{{ $landingPage->id }}-{{ $ti }}"]{
+        background:linear-gradient(180deg,rgba(196,30,30,.12) 0%,rgba(255,255,255,.75) 100%);
+        border-color:var(--lv-primary);color:var(--lv-primary);box-shadow:0 0 0 1px rgba(196,30,30,.15) inset;
+    }
+@endforeach
+@endif
     .lv-section--booking{background:linear-gradient(180deg,rgba(241,245,249,.5) 0%,rgba(255,255,255,.2) 100%)}
     .lv-section--faq{
         background:
@@ -1057,36 +1083,81 @@
         </div>
     </section>
 
-    {{-- Section 6 — Agenda (table; uses saved rows or LandingPage::defaultDemoAgendaItemsForLocale) --}}
+    {{-- Section 6 — Business tour itinerary: Day 1 / Day 2 / … tabs when slot column uses day prefixes --}}
     <section class="lv-section lv-section--agenda" data-lp-section="agenda" aria-labelledby="lvAgendaHeading">
         <div class="lv-container">
             <h2 id="lvAgendaHeading" data-lv-key="agenda_title">{{ $agendaTitle }}</h2>
-            <div class="lv-agenda-table-wrap">
-                <table class="lv-agenda-table">
-                    <caption class="sr-only">{{ $agendaTitle }}</caption>
-                    <thead>
-                        <tr>
-                            <th scope="col">{{ $agendaHdrSlot }}</th>
-                            <th scope="col">{{ $agendaHdrActivity }}</th>
-                            <th scope="col">{{ $agendaHdrDetail }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($agendaItems as $row)
-                            @php
-                                $slot = trim((string) ($row['slot'] ?? ''));
-                                $act = trim((string) ($row['activity'] ?? ''));
-                                $det = trim((string) ($row['detail'] ?? ''));
-                            @endphp
-                            <tr>
-                                <td class="lv-agenda-slot">{{ $slot !== '' ? $slot : '—' }}</td>
-                                <td class="lv-agenda-activity">{{ $act !== '' ? $act : '—' }}</td>
-                                <td class="lv-agenda-detail">{{ $det !== '' ? $det : '—' }}</td>
-                            </tr>
+            @if(!empty($agendaDayBundle['use_tabs']))
+                <div class="lv-agenda-tabs" role="region" aria-label="{{ $agendaTitle }}">
+                    @foreach($agendaDayBundle['groups'] as $ti => $_tabGroup)
+                        <input class="lv-agenda-tab-input" type="radio" name="lv-agenda-itinerary-{{ $landingPage->id }}" id="lv-agenda-{{ $landingPage->id }}-{{ $ti }}" {{ $ti === 0 ? 'checked' : '' }}>
+                    @endforeach
+                    <div class="lv-agenda-tablist" role="tablist">
+                        @foreach($agendaDayBundle['groups'] as $ti => $tabGroup)
+                            <label class="lv-agenda-tab" for="lv-agenda-{{ $landingPage->id }}-{{ $ti }}" id="lv-agenda-tablabel-{{ $landingPage->id }}-{{ $ti }}" role="tab">{{ $tabGroup['label'] }}</label>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
+                    </div>
+                    <div class="lv-agenda-panels">
+                        @foreach($agendaDayBundle['groups'] as $ti => $tabGroup)
+                            <div class="lv-agenda-panel" role="tabpanel" aria-labelledby="lv-agenda-tablabel-{{ $landingPage->id }}-{{ $ti }}">
+                                <div class="lv-agenda-table-wrap">
+                                    <table class="lv-agenda-table">
+                                        <caption class="sr-only">{{ $agendaTitle }} — {{ $tabGroup['label'] }}</caption>
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">{{ $agendaHdrSlot }}</th>
+                                                <th scope="col">{{ $agendaHdrActivity }}</th>
+                                                <th scope="col">{{ $agendaHdrDetail }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($tabGroup['rows'] as $row)
+                                                @php
+                                                    $slot = trim((string) ($row['slot'] ?? ''));
+                                                    $act = trim((string) ($row['activity'] ?? ''));
+                                                    $det = trim((string) ($row['detail'] ?? ''));
+                                                @endphp
+                                                <tr>
+                                                    <td class="lv-agenda-slot">{{ $slot !== '' ? $slot : '—' }}</td>
+                                                    <td class="lv-agenda-activity">{{ $act !== '' ? $act : '—' }}</td>
+                                                    <td class="lv-agenda-detail">{{ $det !== '' ? $det : '—' }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @else
+                <div class="lv-agenda-table-wrap">
+                    <table class="lv-agenda-table">
+                        <caption class="sr-only">{{ $agendaTitle }}</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">{{ $agendaHdrSlot }}</th>
+                                <th scope="col">{{ $agendaHdrActivity }}</th>
+                                <th scope="col">{{ $agendaHdrDetail }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($agendaItems as $row)
+                                @php
+                                    $slot = trim((string) ($row['slot'] ?? ''));
+                                    $act = trim((string) ($row['activity'] ?? ''));
+                                    $det = trim((string) ($row['detail'] ?? ''));
+                                @endphp
+                                <tr>
+                                    <td class="lv-agenda-slot">{{ $slot !== '' ? $slot : '—' }}</td>
+                                    <td class="lv-agenda-activity">{{ $act !== '' ? $act : '—' }}</td>
+                                    <td class="lv-agenda-detail">{{ $det !== '' ? $det : '—' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
         </div>
     </section>
 
