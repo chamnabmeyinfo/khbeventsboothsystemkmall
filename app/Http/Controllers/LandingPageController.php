@@ -410,7 +410,7 @@ class LandingPageController extends Controller
             'html_content' => 'nullable|string',
             'css_content' => 'nullable|string',
             'js_content' => 'nullable|string',
-            'redirect_url' => 'required|string|max:1024',
+            'redirect_url' => 'nullable|string|max:1024',
             'show_once_mode' => 'required|in:cookie_once,session_once,entry_url_once',
             'default_locale' => ['required', 'string', 'max:12', Rule::in(LandingPage::allowedLocaleCodes())],
             'enabled_locales' => ['required', 'array', 'min:1'],

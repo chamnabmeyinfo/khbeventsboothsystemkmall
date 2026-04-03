@@ -1316,14 +1316,26 @@ document.addEventListener('DOMContentLoaded', function () {
                     locale: (window.LandingPageConfig && window.LandingPageConfig.currentLocale) ? window.LandingPageConfig.currentLocale : 'en'
                 }
             };
-            if (typeof submitLandingLead === 'function') {
-                submitLandingLead(payload);
-            }
-            if (typeof trackLandingEvent === 'function') {
-                trackLandingEvent('lead_submit', { cta_label: 'VisualFormSubmit', source: 'visual-builder-form' });
-            }
-            alert('Lead submitted successfully.');
-            form.reset();
+            var leadReq = (typeof submitLandingLead === 'function') ? submitLandingLead(payload) : Promise.resolve({ ok: false, data: null });
+            leadReq.then(function (res) {
+                if (!res || !res.ok || (res.data && res.data.ok === false)) {
+                    var msg = (res && res.data && res.data.message) ? res.data.message : 'Could not save your submission. Please try again.';
+                    alert(msg);
+                    return;
+                }
+                if (typeof trackLandingEvent === 'function') {
+                    trackLandingEvent('lead_submit', { cta_label: 'VisualFormSubmit', source: 'visual-builder-form' });
+                }
+                var thx = window.LandingPageConfig && window.LandingPageConfig.thankYouUrl;
+                if (thx) {
+                    window.location.href = thx;
+                    return;
+                }
+                alert('Lead submitted successfully.');
+                form.reset();
+            }).catch(function () {
+                alert('Network error. Please try again.');
+            });
         });
     }
 
@@ -1435,20 +1447,32 @@ document.addEventListener('DOMContentLoaded', function () {
                         locale: (window.LandingPageConfig && window.LandingPageConfig.currentLocale) ? window.LandingPageConfig.currentLocale : 'en'
                     }
                 };
-                if (typeof submitLandingLead === 'function') {
-                    submitLandingLead(payload);
-                }
-                if (typeof trackLandingEvent === 'function') {
-                    trackLandingEvent('lead_submit', {
-                        cta_label: 'TripPhaseModal',
-                        source: 'trip-phase-modal',
-                        phase_label: lvTripPhaseLastMeta.phaseLabel || '',
-                        trip_date: payload.meta.tripDate || ''
-                    });
-                }
-                alert('Lead submitted successfully.');
-                tripForm.reset();
-                closeLvTripPhaseModal();
+                var leadReq = (typeof submitLandingLead === 'function') ? submitLandingLead(payload) : Promise.resolve({ ok: false, data: null });
+                leadReq.then(function (res) {
+                    if (!res || !res.ok || (res.data && res.data.ok === false)) {
+                        var msg = (res && res.data && res.data.message) ? res.data.message : 'Could not save your submission. Please try again.';
+                        alert(msg);
+                        return;
+                    }
+                    if (typeof trackLandingEvent === 'function') {
+                        trackLandingEvent('lead_submit', {
+                            cta_label: 'TripPhaseModal',
+                            source: 'trip-phase-modal',
+                            phase_label: lvTripPhaseLastMeta.phaseLabel || '',
+                            trip_date: payload.meta.tripDate || ''
+                        });
+                    }
+                    var thx = window.LandingPageConfig && window.LandingPageConfig.thankYouUrl;
+                    if (thx) {
+                        window.location.href = thx;
+                        return;
+                    }
+                    alert('Lead submitted successfully.');
+                    tripForm.reset();
+                    closeLvTripPhaseModal();
+                }).catch(function () {
+                    alert('Network error. Please try again.');
+                });
             });
         }
     })();

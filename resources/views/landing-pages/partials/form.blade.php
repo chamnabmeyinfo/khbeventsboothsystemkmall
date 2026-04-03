@@ -55,6 +55,57 @@
         border-top: 1px solid rgba(0, 0, 0, 0.125);
         box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
     }
+    /* Landing page admin: primary + section tab folders (single responsive template) */
+    .lp-visual-primary-tabs .nav-link {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+    }
+    .lp-visual-primary-tabs .nav-link:focus {
+        outline: 2px solid #007bff;
+        outline-offset: 2px;
+    }
+    .lp-visual-primary-panels {
+        border-top-left-radius: 0;
+    }
+    .lp-landing-section-nav {
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        padding: 0.35rem;
+        background: #f8f9fa;
+    }
+    .lp-landing-section-nav .nav-link {
+        text-align: left;
+        border-radius: 0.2rem;
+        margin-bottom: 0.25rem;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        color: #495057;
+        font-size: 0.9rem;
+    }
+    .lp-landing-section-nav .nav-link:last-child {
+        margin-bottom: 0;
+    }
+    .lp-landing-section-nav .nav-link:hover {
+        background: #e9ecef;
+        color: #212529;
+    }
+    .lp-landing-section-nav .nav-link.active {
+        background: #007bff;
+        color: #fff;
+    }
+    .lp-landing-section-nav .nav-link:focus {
+        outline: 2px solid #007bff;
+        outline-offset: 2px;
+        z-index: 1;
+    }
+    @media (min-width: 992px) {
+        .lp-landing-section-layout .lp-landing-section-nav {
+            position: sticky;
+            top: 0.75rem;
+        }
+    }
 </style>
 @endpush
 @endonce
@@ -97,8 +148,9 @@
     </div>
 
     <div class="form-group">
-        <label>Redirect URL after Continue <span class="text-danger">*</span></label>
-        <input type="text" name="redirect_url" class="form-control" required value="{{ old('redirect_url', optional($landingPage)->redirect_url ?? '/login') }}" placeholder="/login or https://example.com">
+        <label>Redirect URL after Continue</label>
+        <input type="text" name="redirect_url" class="form-control" value="{{ old('redirect_url', optional($landingPage)->redirect_url ?? '') }}" placeholder="/l/{{ optional($landingPage)->slug ?? 'your-slug' }}/thank-you">
+        <small class="text-muted d-block mt-1">After visitors submit the lead form or continue, they go here. Leave empty to use the built-in <strong>Thank you</strong> page for this page, or enter any path or full URL (e.g. <code>/login</code>, <code>https://example.com</code>).</small>
     </div>
 
     <input type="hidden" name="use_visual_builder" value="1">
@@ -149,11 +201,21 @@
         <small class="text-muted d-block mt-1">Only checked languages appear in the visitor language switcher. All tabs below are saved so you can prepare copy before enabling a language.</small>
     </div>
 
-    <div class="mb-4">
+    <div class="mb-4 lp-landing-visual-builder">
         <h5 class="mb-2">Visual page (Canton Fair template)</h5>
-        <p class="text-muted small mb-3">Content is grouped <strong>by section</strong> below. Each section describes what appears on the public page and how it is designed. Shared images apply to every language; use a tab per language for copy.</p>
+        <p class="text-muted small mb-3">Open <strong>Shared images &amp; hero</strong> for logos and media. Open <strong>Section copy</strong>, pick a <strong>language</strong> tab, then choose a <strong>section</strong> on the left to edit that block—less scrolling, clearer focus.</p>
         <input type="hidden" name="template_key" value="canton_fair_visual">
 
+        <ul class="nav nav-tabs flex-wrap border-0 lp-visual-primary-tabs" id="lpVisualPrimaryTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active py-2 px-3" id="lp-tab-shared" data-toggle="tab" href="#lp-pane-shared" role="tab" aria-controls="lp-pane-shared" aria-selected="true"><i class="fas fa-images mr-1" aria-hidden="true"></i>Shared images &amp; hero</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link py-2 px-3" id="lp-tab-copy" data-toggle="tab" href="#lp-pane-copy" role="tab" aria-controls="lp-pane-copy" aria-selected="false"><i class="fas fa-language mr-1" aria-hidden="true"></i>Section copy (by language)</a>
+            </li>
+        </ul>
+        <div class="tab-content border rounded-bottom bg-white lp-visual-primary-panels">
+            <div class="tab-pane fade show active p-3" id="lp-pane-shared" role="tabpanel" aria-labelledby="lp-tab-shared" tabindex="0">
         <div class="card card-outline-primary mb-3">
             <div class="card-header py-2">
                 <strong class="d-block">Shared: brand, hero &amp; CTA link</strong>
@@ -234,7 +296,9 @@
             </div>
         </div>
 
-        <h6 class="mt-2 mb-2">Text by language</h6>
+            </div>
+            <div class="tab-pane fade p-3" id="lp-pane-copy" role="tabpanel" aria-labelledby="lp-tab-copy" tabindex="0">
+        <h6 class="mt-0 mb-2">Text by language</h6>
         @if(!empty($canAutoTranslate))
             <div class="alert alert-info border mb-3 d-flex flex-column flex-md-row align-items-md-center justify-content-md-between">
                 <div class="mb-2 mb-md-0 pr-md-3">
@@ -309,8 +373,25 @@
                     $pfx = 'visual[i18n]['.$loc.']';
                 @endphp
                 <div class="tab-pane fade {{ $i === 0 ? 'show active' : '' }}" id="pane-{{ $loc }}" role="tabpanel" aria-labelledby="tab-{{ $loc }}">
+                    <div class="row lp-landing-section-layout">
+                        <div class="col-12 col-lg-3 mb-3 mb-lg-0">
+                            <nav class="nav nav-pills flex-column lp-landing-section-nav" id="lp-section-nav-{{ $loc }}" role="tablist" aria-label="Page sections — {{ $localeLabels[$loc] ?? $loc }}">
+                                <a class="nav-link active" id="lp-{{ $loc }}-t1" data-toggle="pill" href="#lp-{{ $loc }}-s1" role="tab" aria-controls="lp-{{ $loc }}-s1" aria-selected="true">1. Hero</a>
+                                <a class="nav-link" id="lp-{{ $loc }}-t2" data-toggle="pill" href="#lp-{{ $loc }}-s2" role="tab" aria-controls="lp-{{ $loc }}-s2" aria-selected="false">2. About</a>
+                                <a class="nav-link" id="lp-{{ $loc }}-t3" data-toggle="pill" href="#lp-{{ $loc }}-s3" role="tab" aria-controls="lp-{{ $loc }}-s3" aria-selected="false">3. Package</a>
+                                <a class="nav-link" id="lp-{{ $loc }}-t4" data-toggle="pill" href="#lp-{{ $loc }}-s4" role="tab" aria-controls="lp-{{ $loc }}-s4" aria-selected="false">4. Promotion</a>
+                                <a class="nav-link" id="lp-{{ $loc }}-t5" data-toggle="pill" href="#lp-{{ $loc }}-s5" role="tab" aria-controls="lp-{{ $loc }}-s5" aria-selected="false">5. Trip dates</a>
+                                <a class="nav-link" id="lp-{{ $loc }}-t6" data-toggle="pill" href="#lp-{{ $loc }}-s6" role="tab" aria-controls="lp-{{ $loc }}-s6" aria-selected="false">6. Agenda</a>
+                                <a class="nav-link" id="lp-{{ $loc }}-t7" data-toggle="pill" href="#lp-{{ $loc }}-s7" role="tab" aria-controls="lp-{{ $loc }}-s7" aria-selected="false">7. Booking</a>
+                                <a class="nav-link" id="lp-{{ $loc }}-t8" data-toggle="pill" href="#lp-{{ $loc }}-s8" role="tab" aria-controls="lp-{{ $loc }}-s8" aria-selected="false">8. FAQ</a>
+                                <a class="nav-link" id="lp-{{ $loc }}-t9" data-toggle="pill" href="#lp-{{ $loc }}-s9" role="tab" aria-controls="lp-{{ $loc }}-s9" aria-selected="false">9. Terms</a>
+                            </nav>
+                        </div>
+                        <div class="col-12 col-lg-9">
+                            <div class="tab-content lp-landing-section-panels" id="lp-section-panels-{{ $loc }}">
 
                     {{-- Section: Hero (full-bleed image + headline + CTA + stats) --}}
+                    <div class="tab-pane fade show active" id="lp-{{ $loc }}-s1" role="tabpanel" aria-labelledby="lp-{{ $loc }}-t1" tabindex="0">
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
                             <strong class="d-block">1. Hero</strong>
@@ -354,8 +435,10 @@
                             </div>
                         </div>
                     </div>
+                    </div>
 
                     {{-- Section: About --}}
+                    <div class="tab-pane fade" id="lp-{{ $loc }}-s2" role="tabpanel" aria-labelledby="lp-{{ $loc }}-t2" tabindex="0">
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
                             <strong class="d-block">2. About</strong>
@@ -385,8 +468,10 @@
                             </div>
                         </div>
                     </div>
+                    </div>
 
                     {{-- Section: Package & pricing --}}
+                    <div class="tab-pane fade" id="lp-{{ $loc }}-s3" role="tabpanel" aria-labelledby="lp-{{ $loc }}-t3" tabindex="0">
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
                             <strong class="d-block">3. Package &amp; pricing</strong>
@@ -430,8 +515,10 @@
                             </div>
                         </div>
                     </div>
+                    </div>
 
                     {{-- Section: Promotion discounts --}}
+                    <div class="tab-pane fade" id="lp-{{ $loc }}-s4" role="tabpanel" aria-labelledby="lp-{{ $loc }}-t4" tabindex="0">
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
                             <strong class="d-block">4. Promotion discounts</strong>
@@ -452,8 +539,10 @@
                             </div>
                         </div>
                     </div>
+                    </div>
 
                     {{-- Section: Trip dates --}}
+                    <div class="tab-pane fade" id="lp-{{ $loc }}-s5" role="tabpanel" aria-labelledby="lp-{{ $loc }}-t5" tabindex="0">
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
                             <strong class="d-block">5. Trip dates</strong>
@@ -516,8 +605,10 @@
                             </div>
                         </div>
                     </div>
+                    </div>
 
                     {{-- Section: Agenda --}}
+                    <div class="tab-pane fade" id="lp-{{ $loc }}-s6" role="tabpanel" aria-labelledby="lp-{{ $loc }}-t6" tabindex="0">
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
                             <strong class="d-block">6. Agenda</strong>
@@ -555,8 +646,10 @@
                             </div>
                         </div>
                     </div>
+                    </div>
 
                     {{-- Section: Booking --}}
+                    <div class="tab-pane fade" id="lp-{{ $loc }}-s7" role="tabpanel" aria-labelledby="lp-{{ $loc }}-t7" tabindex="0">
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
                             <strong class="d-block">7. Booking</strong>
@@ -620,8 +713,10 @@
                             </div>
                         </div>
                     </div>
+                    </div>
 
                     {{-- Section: FAQ & contact --}}
+                    <div class="tab-pane fade" id="lp-{{ $loc }}-s8" role="tabpanel" aria-labelledby="lp-{{ $loc }}-t8" tabindex="0">
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
                             <strong class="d-block">8. FAQ &amp; contact</strong>
@@ -651,8 +746,10 @@
                             </div>
                         </div>
                     </div>
+                    </div>
 
                     {{-- Section: Terms & Conditions --}}
+                    <div class="tab-pane fade" id="lp-{{ $loc }}-s9" role="tabpanel" aria-labelledby="lp-{{ $loc }}-t9" tabindex="0">
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
                             <strong class="d-block">9. Terms &amp; Conditions</strong>
@@ -675,7 +772,11 @@
                             </div>
                         </div>
                     </div>
+                    </div>
 
+                            </div>
+                        </div>
+                    </div>
                 </div>
             @endforeach
         </div>
