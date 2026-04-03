@@ -352,6 +352,20 @@ class LandingPageController extends Controller
             }
         }
 
+        if (array_key_exists('agenda_items_text', $validated['fields'] ?? [])) {
+            if (! isset($visual['i18n'][$locale]) || ! is_array($visual['i18n'][$locale])) {
+                $visual['i18n'][$locale] = [];
+            }
+            $text = (string) ($visual['i18n'][$locale]['agenda_items_text'] ?? '');
+            $items = LandingPage::parseAgendaItemsFromText($text);
+            if ($items === []) {
+                unset($visual['i18n'][$locale]['agenda_items'], $visual['i18n'][$locale]['agenda_days']);
+            } else {
+                $visual['i18n'][$locale]['agenda_items'] = $items;
+                $visual['i18n'][$locale]['agenda_days'] = LandingPage::buildAgendaDaysFromItems($items, $locale);
+            }
+        }
+
         $landingPage->update(['visual_content' => $visual]);
 
         return response()->json([
@@ -793,6 +807,11 @@ class LandingPageController extends Controller
             ['slot', 'activity', 'detail'],
             is_array($prevBlock['agenda_items'] ?? null) ? $prevBlock['agenda_items'] : []
         );
+        if ($block['agenda_items'] === []) {
+            unset($block['agenda_days']);
+        } else {
+            $block['agenda_days'] = LandingPage::buildAgendaDaysFromItems($block['agenda_items'], $locale);
+        }
 
         $faqRaw = array_key_exists('faq_items_text', $locIn) ? (string) $locIn['faq_items_text'] : null;
         $block['faq_items'] = $this->parsePipeList(

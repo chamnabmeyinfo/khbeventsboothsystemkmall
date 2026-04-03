@@ -692,6 +692,90 @@ TXT;
     }
 
     /**
+     * Persisted per-locale structure: list of { day, label, rows[] } stored in visual i18n as agenda_days.
+     *
+     * @param  list<array{slot: string, activity: string, detail: string}>  $rows
+     * @return list<array{day: int, label: string, rows: list<array{slot: string, activity: string, detail: string}>}>
+     */
+    public static function buildAgendaDaysFromItems(array $rows, string $locale): array
+    {
+        $bundle = self::groupAgendaItemsByDayForDisplay($rows, $locale);
+
+        return $bundle['groups'];
+    }
+
+    /**
+     * Sanitize agenda_days from JSON / DB before use on the public page.
+     *
+     * @param  array<int, mixed>  $days
+     * @return list<array{day: int, label: string, rows: list<array{slot: string, activity: string, detail: string}>}>
+     */
+    public static function sanitizeAgendaDays(array $days): array
+    {
+        $out = [];
+        foreach ($days as $dayBlock) {
+            if (! is_array($dayBlock)) {
+                continue;
+            }
+            $day = (int) ($dayBlock['day'] ?? 0);
+            $label = trim((string) ($dayBlock['label'] ?? ''));
+            $rows = [];
+            foreach (($dayBlock['rows'] ?? []) as $r) {
+                if (! is_array($r)) {
+                    continue;
+                }
+                $rows[] = [
+                    'slot' => trim((string) ($r['slot'] ?? '')),
+                    'activity' => trim((string) ($r['activity'] ?? '')),
+                    'detail' => trim((string) ($r['detail'] ?? '')),
+                ];
+            }
+            if ($rows === []) {
+                continue;
+            }
+            if ($label === '') {
+                $label = $day === 0 ? 'Schedule' : 'Day '.$day;
+            }
+            $out[] = ['day' => $day, 'label' => $label, 'rows' => $rows];
+        }
+
+        usort($out, function ($a, $b) {
+            if (($a['day'] ?? 0) === 0) {
+                return 1;
+            }
+            if (($b['day'] ?? 0) === 0) {
+                return -1;
+            }
+
+            return ($a['day'] ?? 0) <=> ($b['day'] ?? 0);
+        });
+
+        return array_values($out);
+    }
+
+    /**
+     * Prefer stored agenda_days (backend-separated by day); otherwise derive from flat rows.
+     *
+     * @param  array<int, mixed>|null  $agendaDaysStored
+     * @param  list<array{slot: string, activity: string, detail: string}>  $flatRowsForDisplay
+     * @return array{use_tabs: bool, groups: list<array{day: int, label: string, rows: list<array{slot: string, activity: string, detail: string}>}>}
+     */
+    public static function resolveAgendaDayBundleForDisplay(?array $agendaDaysStored, array $flatRowsForDisplay, string $locale): array
+    {
+        if ($agendaDaysStored !== null && $agendaDaysStored !== []) {
+            $groups = self::sanitizeAgendaDays($agendaDaysStored);
+            if ($groups !== []) {
+                return [
+                    'use_tabs' => count($groups) >= 2,
+                    'groups' => $groups,
+                ];
+            }
+        }
+
+        return self::groupAgendaItemsByDayForDisplay($flatRowsForDisplay, $locale);
+    }
+
+    /**
      * Rich trip phases: each phase has intro + subsections (sub-categories with detail).
      *
      * @return list<array{label: string, date: string, status: string, seats_left: string, intro: string, subsections: list<array{title: string, detail: string}>}>

@@ -16,7 +16,8 @@
     $agendaTitle = $visual['agenda_title'] ?? 'Business Tour Itinerary';
     $rawAgendaItems = is_array($visual['agenda_items'] ?? null) ? $visual['agenda_items'] : [];
     $agendaItems = \App\Models\LandingPage::resolveAgendaItemsForDisplay($rawAgendaItems, $currentLocale);
-    $agendaDayBundle = \App\Models\LandingPage::groupAgendaItemsByDayForDisplay($agendaItems, $currentLocale);
+    $agendaDaysStored = is_array($visual['agenda_days'] ?? null) ? $visual['agenda_days'] : null;
+    $agendaDayBundle = \App\Models\LandingPage::resolveAgendaDayBundleForDisplay($agendaDaysStored, $agendaItems, $currentLocale);
     $agendaHdrSlot = trim((string) ($visual['agenda_hdr_slot'] ?? '')) ?: 'Time / slot';
     $agendaHdrActivity = trim((string) ($visual['agenda_hdr_activity'] ?? '')) ?: 'Activity';
     $agendaHdrDetail = trim((string) ($visual['agenda_hdr_detail'] ?? '')) ?: 'Details';
