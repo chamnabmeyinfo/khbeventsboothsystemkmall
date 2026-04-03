@@ -13,7 +13,7 @@
                 <i class="fas fa-chart-line mr-1"></i>Leads &amp; reporting ({{ (int) ($landingPage->leads_count ?? 0) }})
             </a>
         </div>
-        <form action="{{ route('landing-pages.update', $landingPage) }}" method="POST" enctype="multipart/form-data">
+        <form id="lpLandingPageAdminForm" action="{{ route('landing-pages.update', $landingPage) }}" method="POST" enctype="multipart/form-data" novalidate>
             @csrf
             @method('PUT')
             @include('landing-pages.partials.form', ['landingPage' => $landingPage])

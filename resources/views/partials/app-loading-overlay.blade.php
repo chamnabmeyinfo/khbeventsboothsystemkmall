@@ -64,4 +64,16 @@
         }
     };
 })();
+// Reset overlay on every paint: prevents a stuck full-screen blocker if navigation was interrupted
+// or the page was restored from bfcache after submit (global $('form').submit shows loading).
+document.addEventListener('DOMContentLoaded', function () {
+    if (typeof window.hideLoading === 'function') {
+        window.hideLoading();
+    }
+});
+window.addEventListener('pageshow', function () {
+    if (typeof window.hideLoading === 'function') {
+        window.hideLoading();
+    }
+});
 </script>

@@ -111,11 +111,8 @@
     if ($packageItems === []) {
         $packageItems = $packageItemsDefault;
     }
-    $tripDates = is_array($visual['trip_dates'] ?? null) ? $visual['trip_dates'] : [
-        ['date' => '17 - 20 October 2025', 'status' => 'Available', 'seats_left' => '18'],
-        ['date' => '25 - 28 October 2025', 'status' => 'Almost Full', 'seats_left' => '7'],
-        ['date' => '2 - 5 November 2025', 'status' => 'Available', 'seats_left' => '23'],
-    ];
+    $tripPhases = \App\Models\LandingPage::resolveTripPhasesForDisplay($visual);
+    $tripDates = \App\Models\LandingPage::tripPhasesToFlatRows($tripPhases);
     $faqItems = is_array($visual['faq_items'] ?? null) ? $visual['faq_items'] : [
         ['question' => 'Do I need visa for China?', 'answer' => 'Yes, and we provide guidance.'],
         ['question' => 'Is translation support included?', 'answer' => 'Yes, Khmer + English assistance is included.'],
@@ -296,10 +293,25 @@
     .lv-price-panel--clickable:active{transform:translateY(0)}
     .lv-price-panel .lv-price-num{font-size:clamp(2.25rem,6vw,3.25rem);font-weight:800;font-family:"Roboto","Hanuman",sans-serif;line-height:1}
     .lv-price-panel .lv-price-sub{color:rgba(255,255,255,.95);margin-top:10px;font-size:1.05rem;text-shadow:0 1px 2px rgba(0,0,0,.2)}
-    .lv-trip-card{text-align:left}
-    .lv-trip-date{font-weight:700;font-size:1.05rem;color:var(--lv-ink)}
-    .lv-trip-status{display:inline-block;margin-top:8px;font-size:.9rem;font-weight:700;color:var(--lv-primary)}
-    .lv-trip-meta{margin-top:6px;font-size:.92rem;color:var(--lv-body);font-weight:500}
+    /* Section 4 — Trip dates: Phase I / II / III cards */
+    .lv-trip-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:8px}
+    .lv-trip-card{text-align:left;position:relative;padding:20px 18px 18px;border-radius:var(--lv-radius-sm);border:1px solid var(--lv-border);background:var(--lv-surface);box-shadow:var(--lv-shadow);border-top:4px solid var(--lv-trip-accent,var(--lv-primary))}
+    .lv-trip-grid .lv-trip-card:nth-child(3n+1){--lv-trip-accent:#b45309}
+    .lv-trip-grid .lv-trip-card:nth-child(3n+2){--lv-trip-accent:#c41e1e}
+    .lv-trip-grid .lv-trip-card:nth-child(3n+3){--lv-trip-accent:#1d4ed8}
+    .lv-trip-phase{margin:0 0 10px;line-height:1.2}
+    .lv-trip-phase-badge{display:inline-block;padding:5px 11px;border-radius:999px;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+    .lv-trip-grid .lv-trip-card:nth-child(3n+1) .lv-trip-phase-badge{color:#b45309;background:rgba(180,83,9,.12)}
+    .lv-trip-grid .lv-trip-card:nth-child(3n+2) .lv-trip-phase-badge{color:#c41e1e;background:rgba(196,30,30,.1)}
+    .lv-trip-grid .lv-trip-card:nth-child(3n+3) .lv-trip-phase-badge{color:#1d4ed8;background:rgba(29,78,216,.1)}
+    .lv-trip-date{font-weight:700;font-size:clamp(1.05rem,2.2vw,1.2rem);color:var(--lv-ink);line-height:1.35;margin:0 0 10px}
+    .lv-trip-status{display:inline-block;margin:0;font-size:.9rem;font-weight:700;color:var(--lv-primary)}
+    .lv-trip-meta{margin:8px 0 0;font-size:.92rem;color:var(--lv-body);font-weight:500}
+    .lv-trip-intro{margin:10px 0 0;font-size:.94rem;line-height:1.55;color:var(--lv-body)}
+    .lv-trip-subs{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:0.75rem}
+    .lv-trip-sub{border-left:3px solid var(--lv-trip-accent,var(--lv-primary));padding:0 0 0 12px;margin:0}
+    .lv-trip-sub-title{margin:0 0 4px;font-size:.82rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--lv-muted)}
+    .lv-trip-sub-detail{margin:0;font-size:.9rem;line-height:1.5;color:var(--lv-body)}
     .lv-card.lv-about-highlight{background:var(--lv-accent-soft);border-left:4px solid var(--lv-accent);padding:16px 18px;border-radius:0 var(--lv-radius-sm) var(--lv-radius-sm) 0;color:var(--lv-ink)}
     .lv-booking{background:var(--lv-surface);border-radius:var(--lv-radius);padding:24px;border:1px solid var(--lv-border);box-shadow:var(--lv-shadow)}
     .lv-booking form{display:grid;gap:12px}
@@ -313,7 +325,7 @@
     .lv-faq-a{color:var(--lv-body);font-size:1rem;line-height:1.55}
     .lv-contact-bar a{color:var(--lv-primary);text-decoration:none;font-weight:700}
     .lv-contact-bar a:hover{text-decoration:underline}
-    @media (max-width:991.98px){.lv-grid,.lv-three{grid-template-columns:1fr}}
+    @media (max-width:991.98px){.lv-grid,.lv-three,.lv-trip-grid{grid-template-columns:1fr}}
     /* Site header: simple language row (no nested pills / glass) */
     .lv-site-header{
         position:sticky;top:0;z-index:100;
@@ -516,17 +528,49 @@
         </div>
     </section>
 
-    {{-- Section 4 — Trip dates --}}
+    {{-- Section 4 — Trip phases (Phase I–III: intro + subsections + seats; booking options sync from flat rows) --}}
     <section class="lv-section lv-section--trip" data-lp-section="trip">
         <div class="lv-container">
             <h2 data-lv-key="trip_section_title">{{ $tripSectionTitle }}</h2>
-            <div class="lv-three">
-                @foreach($tripDates as $trip)
-                    <div class="lv-card lv-trip-card">
-                        <div class="lv-trip-date">{{ $trip['date'] ?? '' }}</div>
-                        <div class="lv-trip-status">{{ $trip['status'] ?? '' }}</div>
-                        <div class="lv-trip-meta">{{ $trip['seats_left'] ?? '' }} {{ $seatsLeftSuffix }}</div>
-                    </div>
+            <div class="lv-trip-grid">
+                @foreach($tripPhases as $ph)
+                    @php
+                        $tripPhase = trim((string) ($ph['label'] ?? ''));
+                        $tripDate = trim((string) ($ph['date'] ?? ''));
+                        $intro = trim((string) ($ph['intro'] ?? ''));
+                        $subs = is_array($ph['subsections'] ?? null) ? $ph['subsections'] : [];
+                    @endphp
+                    <article class="lv-trip-card">
+                        @if($tripPhase !== '')
+                            <p class="lv-trip-phase"><span class="lv-trip-phase-badge">{{ $tripPhase }}</span></p>
+                        @endif
+                        <p class="lv-trip-date">{{ $tripDate }}</p>
+                        <p class="lv-trip-status">{{ $ph['status'] ?? '' }}</p>
+                        <p class="lv-trip-meta">{{ $ph['seats_left'] ?? '' }} {{ $seatsLeftSuffix }}</p>
+                        @if($intro !== '')
+                            <p class="lv-trip-intro">{{ $intro }}</p>
+                        @endif
+                        @if($subs !== [])
+                            <ul class="lv-trip-subs">
+                                @foreach($subs as $sub)
+                                    @php
+                                        $st = trim((string) (is_array($sub) ? ($sub['title'] ?? '') : ''));
+                                        $sd = trim((string) (is_array($sub) ? ($sub['detail'] ?? '') : ''));
+                                    @endphp
+                                    @if($st !== '' || $sd !== '')
+                                        <li class="lv-trip-sub">
+                                            @if($st !== '')
+                                                <p class="lv-trip-sub-title">{{ $st }}</p>
+                                            @endif
+                                            @if($sd !== '')
+                                                <p class="lv-trip-sub-detail">{{ $sd }}</p>
+                                            @endif
+                                        </li>
+                                    @endif
+                                @endforeach
+                            </ul>
+                        @endif
+                    </article>
                 @endforeach
             </div>
         </div>
@@ -578,7 +622,12 @@
                         <select name="tripDate" aria-label="{{ $bookingTripPh }}">
                             <option value="">{{ $bookingTripPh }}</option>
                             @foreach($tripDates as $trip)
-                                <option value="{{ $trip['date'] ?? '' }}">{{ $trip['date'] ?? '' }}</option>
+                                @php
+                                    $optPhase = trim((string) ($trip['phase'] ?? ''));
+                                    $optDate = trim((string) ($trip['date'] ?? ''));
+                                    $optLabel = $optPhase !== '' ? $optPhase.' — '.$optDate : $optDate;
+                                @endphp
+                                <option value="{{ $optDate }}">{{ $optLabel }}</option>
                             @endforeach
                         </select>
                         <button type="submit" class="lv-btn" data-lv-key="booking_submit_text">{{ $bookingSubmitText }}</button>

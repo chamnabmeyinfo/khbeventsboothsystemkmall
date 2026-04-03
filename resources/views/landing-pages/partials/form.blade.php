@@ -224,7 +224,26 @@
 
                         return $i !== '' ? $t.'|'.$i : $t;
                     })->implode("\n"));
-                    $tripDatesText = old('visual.i18n.'.$loc.'.trip_dates_text', collect($vloc['trip_dates'] ?? [])->map(fn ($row) => trim(($row['date'] ?? '').'|'.($row['status'] ?? '').'|'.($row['seats_left'] ?? '')))->implode("\n"));
+                    $tripFromDb = collect($vloc['trip_dates'] ?? [])->map(fn ($row) => trim(($row['phase'] ?? '').'|'.($row['date'] ?? '').'|'.($row['status'] ?? '').'|'.($row['seats_left'] ?? '')))->implode("\n");
+                    $tripDemoPrefill = ($landingPage === null && $tripFromDb === '') ? \App\Models\LandingPage::defaultTripDatesText() : '';
+                    $tripDatesText = old('visual.i18n.'.$loc.'.trip_dates_text', $tripFromDb !== '' ? $tripFromDb : $tripDemoPrefill);
+                    $tripPhasesJsonOld = old('visual.i18n.'.$loc.'.trip_phases_json');
+                    if ($tripPhasesJsonOld !== null) {
+                        $tripPhasesJson = $tripPhasesJsonOld;
+                    } elseif (isset($vloc['trip_phases']) && is_array($vloc['trip_phases']) && $vloc['trip_phases'] !== []) {
+                        $enc = json_encode($vloc['trip_phases'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                        $tripPhasesJson = $enc !== false ? $enc : '[]';
+                    } else {
+                        $flatRows = \App\Models\LandingPage::parseTripDateRowsFromText($tripDatesText, []);
+                        $defaultFlat = \App\Models\LandingPage::defaultTripDateRows();
+                        if ($flatRows === [] || json_encode($flatRows) === json_encode($defaultFlat)) {
+                            $tripPhasesJson = \App\Models\LandingPage::defaultTripPhasesJson();
+                        } else {
+                            $tp = \App\Models\LandingPage::tripPhasesFromFlatTripDates($flatRows);
+                            $enc = json_encode($tp, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                            $tripPhasesJson = $enc !== false ? $enc : '[]';
+                        }
+                    }
                     $agendaFromDb = collect($vloc['agenda_items'] ?? [])->map(fn ($row) => trim(($row['slot'] ?? '').'|'.($row['activity'] ?? '').'|'.($row['detail'] ?? '')))->implode("\n");
                     $agendaDemoPrefill = ($landingPage === null && $agendaFromDb === '') ? LandingPage::defaultDemoAgendaItemsText($loc) : '';
                     $agendaItemsText = old('visual.i18n.'.$loc.'.agenda_items_text', $agendaFromDb !== '' ? $agendaFromDb : $agendaDemoPrefill);
@@ -359,7 +378,7 @@
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
                             <strong class="d-block">4. Trip dates</strong>
-                            <small class="text-muted">Neutral background: centered title, then a row of cards (stacked on mobile). Each line is <code>date|status|seats_left</code>; the seats number is followed by the &ldquo;seats&rdquo; suffix below.</small>
+                            <small class="text-muted">Centered title, then one card per phase with date, status, seats, optional intro, and sub-categories (<code>subsections</code> with title + detail). Use <strong>Trip phases (JSON)</strong> for full content; <strong>Trip date rows</strong> stays as a quick pipe list and is synced from JSON when JSON is saved.</small>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -382,12 +401,18 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="form-group">
+                                <label class="mb-0">Trip phases (JSON)</label>
+                                <textarea name="{{ $pfx }}[trip_phases_json]" class="form-control font-monospace" rows="14" spellcheck="false" placeholder='[{"label":"Phase I","date":"…","status":"…","seats_left":"…","intro":"…","subsections":[{"title":"…","detail":"…"}]}]'>{{ $tripPhasesJson }}</textarea>
+                                <small class="text-muted d-block mt-1">Array of objects: <code>label</code>, <code>date</code>, <code>status</code>, <code>seats_left</code>, optional <code>intro</code>, and <code>subsections</code> as <code>[{&quot;title&quot;,&quot;detail&quot;}, …]</code>. Invalid JSON cannot be saved. Clear the field to drop rich content and use only the pipe list below.</small>
+                            </div>
                             <div class="form-group mb-0">
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-                                    <label class="mb-0">Trip date rows</label>
+                                    <label class="mb-0">Trip date rows (pipe list)</label>
                                     @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'trip_dates_text', 'canAutoTranslate' => $canAutoTranslate])
                                 </div>
-                                <textarea name="{{ $pfx }}[trip_dates_text]" class="form-control" rows="4" placeholder="17 - 20 October 2025|Available|18&#10;25 - 28 October 2025|Almost Full|7">{{ $tripDatesText }}</textarea>
+                                <textarea name="{{ $pfx }}[trip_dates_text]" class="form-control" rows="5" placeholder="Phase I|15 - 19 April 2026|Available|18&#10;Phase II|23 - 27 April 2026|Available|22&#10;Phase III|1 - 5 May 2026|Available|25">{{ $tripDatesText }}</textarea>
+                                <small class="text-muted d-block mt-1">When you save with valid JSON above, these rows are overwritten from the JSON. Edit the pipe list alone if you are not using JSON.</small>
                             </div>
                         </div>
                     </div>

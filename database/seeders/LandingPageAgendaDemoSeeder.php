@@ -6,19 +6,25 @@ use App\Models\LandingPage;
 use Illuminate\Database\Seeder;
 
 /**
- * Seeds a published visual landing page with sample agenda table rows.
+ * Seeds the current Canton Fair visual landing page (agenda table rows).
  * Run: php artisan db:seed --class=LandingPageAgendaDemoSeeder
+ *
+ * Legacy slug demo-canton-agenda is renamed to canton-fair only if canton-fair does not already exist.
  */
 class LandingPageAgendaDemoSeeder extends Seeder
 {
     public function run(): void
     {
+        if (! LandingPage::query()->where('slug', 'canton-fair')->exists()) {
+            LandingPage::query()->where('slug', 'demo-canton-agenda')->update(['slug' => 'canton-fair']);
+        }
+
         LandingPage::updateOrCreate(
-            ['slug' => 'demo-canton-agenda'],
+            ['slug' => 'canton-fair'],
             [
-                'name' => 'Demo — Canton Fair (sample agenda)',
+                'name' => 'Canton Fair — KHB Events',
                 'industry' => 'Events / Trips',
-                'headline' => 'Sample trip agenda (demo)',
+                'headline' => 'Canton Fair business trip',
                 'html_content' => '',
                 'css_content' => '',
                 'js_content' => '',

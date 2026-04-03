@@ -11,6 +11,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class LandingPageController extends Controller
 {
@@ -448,6 +449,7 @@ class LandingPageController extends Controller
             'visual.i18n.*.hero_stats_text' => 'nullable|string|max:8000',
             'visual.i18n.*.package_items_text' => 'nullable|string|max:12000',
             'visual.i18n.*.trip_dates_text' => 'nullable|string|max:12000',
+            'visual.i18n.*.trip_phases_json' => 'nullable|string|max:50000',
             'visual.i18n.*.faq_items_text' => 'nullable|string|max:16000',
             'visual.i18n.*.contact_phones_text' => 'nullable|string|max:4000',
             'visual_logo_image' => 'nullable|image|max:8192',
@@ -603,7 +605,7 @@ class LandingPageController extends Controller
         foreach ($adminLocales as $loc) {
             $locIn = is_array($reqI18n[$loc] ?? null) ? $reqI18n[$loc] : [];
             $prevBlock = is_array($prevI18n[$loc] ?? null) ? $prevI18n[$loc] : [];
-            $visual['i18n'][$loc] = $this->buildLocaleVisualBlock($locIn, $prevBlock);
+            $visual['i18n'][$loc] = $this->buildLocaleVisualBlock($loc, $locIn, $prevBlock);
         }
 
         foreach (array_keys($visual) as $k) {
@@ -642,7 +644,7 @@ class LandingPageController extends Controller
      * @param  array<string, mixed>  $prevBlock
      * @return array<string, mixed>
      */
-    private function buildLocaleVisualBlock(array $locIn, array $prevBlock): array
+    private function buildLocaleVisualBlock(string $locale, array $locIn, array $prevBlock): array
     {
         $block = $prevBlock;
 
@@ -679,11 +681,35 @@ class LandingPageController extends Controller
         );
 
         $tripRaw = array_key_exists('trip_dates_text', $locIn) ? (string) $locIn['trip_dates_text'] : null;
-        $block['trip_dates'] = $this->parsePipeList(
+        $block['trip_dates'] = LandingPage::parseTripDateRowsFromText(
             $tripRaw,
-            ['date', 'status', 'seats_left'],
             is_array($prevBlock['trip_dates'] ?? null) ? $prevBlock['trip_dates'] : []
         );
+
+        if (array_key_exists('trip_phases_json', $locIn)) {
+            $jsonRaw = trim((string) $locIn['trip_phases_json']);
+            if ($jsonRaw === '') {
+                unset($block['trip_phases']);
+            } else {
+                $decoded = json_decode($jsonRaw, true);
+                if (json_last_error() !== JSON_ERROR_NONE || ! is_array($decoded)) {
+                    throw ValidationException::withMessages([
+                        'visual.i18n.'.$locale.'.trip_phases_json' => ['Trip phases must be valid JSON (array of phases).'],
+                    ]);
+                }
+                $phases = LandingPage::sanitizeTripPhases($decoded);
+                $nonEmpty = array_filter(
+                    $phases,
+                    static fn (array $p) => trim((string) ($p['label'] ?? '')) !== '' || trim((string) ($p['date'] ?? '')) !== ''
+                );
+                if ($nonEmpty !== []) {
+                    $block['trip_phases'] = array_values($nonEmpty);
+                    $block['trip_dates'] = LandingPage::tripPhasesToFlatRows($block['trip_phases']);
+                } else {
+                    unset($block['trip_phases']);
+                }
+            }
+        }
 
         $agendaRaw = array_key_exists('agenda_items_text', $locIn) ? (string) $locIn['agenda_items_text'] : null;
         $block['agenda_items'] = $this->parsePipeList(

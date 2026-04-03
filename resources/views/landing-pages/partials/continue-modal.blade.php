@@ -2,7 +2,8 @@
     $v = is_array($visual ?? null) ? $visual : [];
     $modalTitle = $v['continue_modal_title'] ?? 'Before you continue';
     $modalSubtitle = $v['continue_modal_subtitle'] ?? '';
-    $tripDates = is_array($v['trip_dates'] ?? null) ? $v['trip_dates'] : [];
+    $tripDatesRaw = is_array($v['trip_dates'] ?? null) ? $v['trip_dates'] : [];
+    $tripDates = \App\Models\LandingPage::resolveTripDatesForDisplay($tripDatesRaw);
     $phName = $v['booking_name_placeholder'] ?? 'Full name';
     $phEmail = $v['booking_email_placeholder'] ?? 'Email';
     $phPhone = $v['booking_phone_placeholder'] ?? 'Phone';
@@ -74,7 +75,12 @@
                 <select id="lpContinueTrip" name="tripDate" aria-label="{{ $phTrip }}">
                     <option value="">{{ $phTrip }}</option>
                     @foreach($tripDates as $trip)
-                        <option value="{{ $trip['date'] ?? '' }}">{{ $trip['date'] ?? '' }}</option>
+                        @php
+                            $optPhase = trim((string) ($trip['phase'] ?? ''));
+                            $optDate = trim((string) ($trip['date'] ?? ''));
+                            $optLabel = $optPhase !== '' ? $optPhase.' — '.$optDate : $optDate;
+                        @endphp
+                        <option value="{{ $optDate }}">{{ $optLabel }}</option>
                     @endforeach
                 </select>
             </div>

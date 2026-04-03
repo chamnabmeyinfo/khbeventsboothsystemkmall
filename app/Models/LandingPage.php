@@ -375,4 +375,282 @@ TXT;
 
         return self::defaultDemoAgendaItemsForLocale($locale);
     }
+
+    /**
+     * Rich trip phases: each phase has intro + subsections (sub-categories with detail).
+     *
+     * @return list<array{label: string, date: string, status: string, seats_left: string, intro: string, subsections: list<array{title: string, detail: string}>}>
+     */
+    public static function defaultTripPhases(): array
+    {
+        return [
+            [
+                'label' => 'Phase I',
+                'date' => '15 – 19 April 2026',
+                'status' => 'Available',
+                'seats_left' => '18',
+                'intro' => 'Opening phase: electronics, lighting, machinery, hardware, and tools—ideal for sourcing and factory connections.',
+                'subsections' => [
+                    ['title' => 'Electronics & lighting', 'detail' => 'Consumer electronics, LED lighting, smart devices, and electrical components across main halls.'],
+                    ['title' => 'Machinery, hardware & tools', 'detail' => 'Industrial machinery, power tools, hardware, and building materials—meet manufacturers directly.'],
+                ],
+            ],
+            [
+                'label' => 'Phase II',
+                'date' => '23 – 27 April 2026',
+                'status' => 'Available',
+                'seats_left' => '22',
+                'intro' => 'Consumer goods, gifts, home décor, and houseware—strong for retail and wholesale buyers.',
+                'subsections' => [
+                    ['title' => 'Home & gifts', 'detail' => 'Houseware, décor, seasonal gifts, and daily-use products for retail assortments.'],
+                    ['title' => 'Toys, recreation & personal care', 'detail' => 'Toys, sports, outdoor items, and health & beauty suppliers.'],
+                ],
+            ],
+            [
+                'label' => 'Phase III',
+                'date' => '1 – 5 May 2026',
+                'status' => 'Available',
+                'seats_left' => '25',
+                'intro' => 'Textiles, garments, footwear, office supplies, medical devices, and chemicals—closing phase for fashion and B2B essentials.',
+                'subsections' => [
+                    ['title' => 'Textiles, apparel & footwear', 'detail' => 'Fabrics, fashion, bags, and footwear—sampling and MOQ discussions with exhibitors.'],
+                    ['title' => 'Office, medical & chemical', 'detail' => 'Stationery, medical equipment, and chemical/industrial materials for specialized buyers.'],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Pretty JSON for admin create / prefill.
+     */
+    public static function defaultTripPhasesJson(): string
+    {
+        $json = json_encode(self::defaultTripPhases(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+        return $json !== false ? $json : '[]';
+    }
+
+    /**
+     * Flat rows for booking dropdown & legacy trip_dates (phase key matches existing templates).
+     *
+     * @param  list<array{label?: string, date?: string, status?: string, seats_left?: string}>  $phases
+     * @return list<array{phase: string, date: string, status: string, seats_left: string}>
+     */
+    public static function tripPhasesToFlatRows(array $phases): array
+    {
+        $out = [];
+        foreach ($phases as $p) {
+            if (! is_array($p)) {
+                continue;
+            }
+            $label = trim((string) ($p['label'] ?? $p['phase'] ?? ''));
+            $out[] = [
+                'phase' => $label,
+                'date' => trim((string) ($p['date'] ?? '')),
+                'status' => trim((string) ($p['status'] ?? '')),
+                'seats_left' => trim((string) ($p['seats_left'] ?? '')),
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  list<array{phase?: string, date?: string, status?: string, seats_left?: string}>  $rows
+     * @return list<array{label: string, date: string, status: string, seats_left: string, intro: string, subsections: list<array{title: string, detail: string}>}>
+     */
+    public static function tripPhasesFromFlatTripDates(array $rows): array
+    {
+        $out = [];
+        foreach ($rows as $r) {
+            if (! is_array($r)) {
+                continue;
+            }
+            $out[] = [
+                'label' => trim((string) ($r['phase'] ?? '')),
+                'date' => trim((string) ($r['date'] ?? '')),
+                'status' => trim((string) ($r['status'] ?? '')),
+                'seats_left' => trim((string) ($r['seats_left'] ?? '')),
+                'intro' => '',
+                'subsections' => [],
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  array<int, mixed>  $input
+     * @return list<array{label: string, date: string, status: string, seats_left: string, intro: string, subsections: list<array{title: string, detail: string}>}>
+     */
+    public static function sanitizeTripPhases(array $input): array
+    {
+        $out = [];
+        foreach ($input as $ph) {
+            if (! is_array($ph)) {
+                continue;
+            }
+            $subs = [];
+            $subsectionsRaw = is_array($ph['subsections'] ?? null) ? $ph['subsections'] : [];
+            foreach ($subsectionsRaw as $s) {
+                if (! is_array($s)) {
+                    continue;
+                }
+                $t = trim((string) ($s['title'] ?? ''));
+                $d = trim((string) ($s['detail'] ?? ''));
+                if ($t === '' && $d === '') {
+                    continue;
+                }
+                $subs[] = ['title' => $t, 'detail' => $d];
+            }
+            $out[] = [
+                'label' => trim((string) ($ph['label'] ?? $ph['phase'] ?? '')),
+                'date' => trim((string) ($ph['date'] ?? '')),
+                'status' => trim((string) ($ph['status'] ?? '')),
+                'seats_left' => trim((string) ($ph['seats_left'] ?? '')),
+                'intro' => trim((string) ($ph['intro'] ?? '')),
+                'subsections' => $subs,
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Merge trip_phases when present; else flat trip_dates; else built-in Phase I–III demo.
+     *
+     * @param  array<string, mixed>  $visual
+     * @return list<array{label: string, date: string, status: string, seats_left: string, intro: string, subsections: list<array{title: string, detail: string}>}>
+     */
+    public static function resolveTripPhasesForDisplay(array $visual): array
+    {
+        $tp = $visual['trip_phases'] ?? null;
+        if (is_array($tp) && $tp !== []) {
+            $san = self::sanitizeTripPhases($tp);
+            $nonEmpty = array_filter($san, static fn (array $p) => ($p['label'] ?? '') !== '' || ($p['date'] ?? '') !== '');
+            if ($nonEmpty !== []) {
+                return array_values($nonEmpty);
+            }
+        }
+
+        $flat = self::resolveTripDatesForDisplay(is_array($visual['trip_dates'] ?? null) ? $visual['trip_dates'] : []);
+
+        $defaultFlat = self::defaultTripDateRows();
+        if (json_encode($flat) === json_encode($defaultFlat)) {
+            return self::defaultTripPhases();
+        }
+
+        return self::tripPhasesFromFlatTripDates($flat);
+    }
+
+    /**
+     * Canton Fair trip rows (Phase I / II / III) for Section 4 when none saved — derived from defaultTripPhases().
+     *
+     * @return list<array{phase: string, date: string, status: string, seats_left: string}>
+     */
+    public static function defaultTripDateRows(): array
+    {
+        return self::tripPhasesToFlatRows(self::defaultTripPhases());
+    }
+
+    /**
+     * Admin textarea default (phase|date|status|seats_left per line).
+     */
+    public static function defaultTripDatesText(): string
+    {
+        return collect(self::defaultTripDateRows())
+            ->map(fn (array $r) => $r['phase'].'|'.$r['date'].'|'.$r['status'].'|'.$r['seats_left'])
+            ->implode("\n");
+    }
+
+    /**
+     * Parse trip_dates_text: 4 columns (phase|date|status|seats_left) or legacy 3 (date|status|seats_left).
+     *
+     * @param  array<int, mixed>  $fallback
+     * @return list<array{phase: string, date: string, status: string, seats_left: string}>
+     */
+    public static function parseTripDateRowsFromText(?string $raw, array $fallback = []): array
+    {
+        $normalize = static function (array $rows): array {
+            $out = [];
+            foreach ($rows as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                $out[] = [
+                    'phase' => trim((string) ($row['phase'] ?? '')),
+                    'date' => trim((string) ($row['date'] ?? '')),
+                    'status' => trim((string) ($row['status'] ?? '')),
+                    'seats_left' => trim((string) ($row['seats_left'] ?? '')),
+                ];
+            }
+
+            return $out;
+        };
+
+        if ($raw === null) {
+            return $normalize($fallback);
+        }
+
+        $lines = preg_split('/\r\n|\r|\n/', $raw) ?: [];
+        $items = [];
+        foreach ($lines as $line) {
+            $line = trim((string) $line);
+            if ($line === '') {
+                continue;
+            }
+            $parts = array_map(static fn ($v) => trim(strip_tags((string) $v)), explode('|', $line));
+            if (count($parts) >= 4) {
+                $items[] = [
+                    'phase' => $parts[0] ?? '',
+                    'date' => $parts[1] ?? '',
+                    'status' => $parts[2] ?? '',
+                    'seats_left' => $parts[3] ?? '',
+                ];
+            } elseif (count($parts) === 3) {
+                $items[] = [
+                    'phase' => '',
+                    'date' => $parts[0] ?? '',
+                    'status' => $parts[1] ?? '',
+                    'seats_left' => $parts[2] ?? '',
+                ];
+            }
+        }
+
+        return $items;
+    }
+
+    /**
+     * Use saved trip rows when present; otherwise Phase I–III defaults.
+     *
+     * @param  array<int, mixed>  $rows
+     * @return list<array{phase: string, date: string, status: string, seats_left: string}>
+     */
+    public static function resolveTripDatesForDisplay(array $rows): array
+    {
+        $filtered = [];
+        foreach ($rows as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $phase = trim((string) ($row['phase'] ?? ''));
+            $date = trim((string) ($row['date'] ?? ''));
+            $status = trim((string) ($row['status'] ?? ''));
+            $seats = trim((string) ($row['seats_left'] ?? ''));
+            if ($phase !== '' || $date !== '' || $status !== '' || $seats !== '') {
+                $filtered[] = [
+                    'phase' => $phase,
+                    'date' => $date,
+                    'status' => $status,
+                    'seats_left' => $seats,
+                ];
+            }
+        }
+
+        if ($filtered !== []) {
+            return $filtered;
+        }
+
+        return self::defaultTripDateRows();
+    }
 }
