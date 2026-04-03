@@ -1,10 +1,12 @@
-@extends('layouts.adminlte')
+@extends('layouts.admin')
 
 @section('title', 'User Details')
 @section('page-title', 'User Details')
 @section('breadcrumb', 'Staff Management / Users / View')
 
 @push('styles')
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.6">
+<link rel="stylesheet" href="{{ asset('css/users-page.css') }}?v=1.1">
 <style>
     /* Profile Header with Cover and Avatar */
     .profile-header {
@@ -18,7 +20,7 @@
     .profile-cover {
         width: 100%;
         height: 300px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
         position: relative;
         overflow: hidden;
         cursor: move;
@@ -91,7 +93,7 @@
         width: 40px;
         height: 40px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
         border: 3px solid white;
         display: flex;
         align-items: center;
@@ -139,7 +141,7 @@
         transform: translateX(4px);
     }
 
-    .detail-card.primary { border-left-color: #667eea; }
+    .detail-card.primary { border-left-color: var(--accent-blue); }
     .detail-card.success { border-left-color: #84fab0; }
     .detail-card.warning { border-left-color: #fa709a; }
 
@@ -152,24 +154,13 @@
         border-bottom: none;
     }
 
-    .stat-card {
-        text-align: center;
-        padding: 1.5rem;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        transition: transform 0.3s;
-        height: 100%;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
-    }
 </style>
 @endpush
 
+@push('body-class', 'ios-dashboard-mode users-show-page')
+
 @section('content')
+<div class="looker-dashboard">
 <div class="container-fluid">
     <!-- Breadcrumb Navigation -->
     <nav aria-label="breadcrumb" class="mb-3">
@@ -227,31 +218,31 @@
         <div class="profile-info">
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <h2 style="font-weight: 700; color: #2d3748; margin-bottom: 8px;">
+                    <h2 class="fw-bold text-dark mb-2">
                         {{ $user->username }}
                     </h2>
-                    <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
                         @if($user->isAdmin())
-                            <span class="badge badge-danger" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
-                                <i class="fas fa-shield-alt mr-1"></i>Administrator
+                            <span class="status-badge status-badge-purple">
+                                <i class="fas fa-shield-alt me-1" aria-hidden="true"></i>Administrator
                             </span>
                         @else
-                            <span class="badge badge-secondary" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
-                                <i class="fas fa-user-tie mr-1"></i>Sale Staff
+                            <span class="status-badge status-badge-neutral">
+                                <i class="fas fa-user-tie me-1" aria-hidden="true"></i>Sale staff
                             </span>
                         @endif
                         @if($user->role)
-                            <span class="badge badge-info" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
-                                <i class="fas fa-shield mr-1"></i>{{ $user->role->name }}
+                            <span class="status-badge status-badge-blue">
+                                <i class="fas fa-shield me-1" aria-hidden="true"></i>{{ $user->role->name }}
                             </span>
                         @endif
                         @if($user->isActive())
-                            <span class="badge badge-success" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
-                                <i class="fas fa-check-circle mr-1"></i>Active
+                            <span class="status-badge status-badge-green">
+                                <i class="fas fa-check-circle me-1" aria-hidden="true"></i>Active
                             </span>
                         @else
-                            <span class="badge badge-warning" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
-                                <i class="fas fa-times-circle mr-1"></i>Inactive
+                            <span class="status-badge status-badge-orange">
+                                <i class="fas fa-times-circle me-1" aria-hidden="true"></i>Inactive
                             </span>
                         @endif
                     </div>
@@ -264,74 +255,75 @@
                         @endif
                     </p>
                 </div>
-                <div class="col-md-4 text-right">
-                    <div class="profile-actions">
-                        <div class="btn-group" role="group">
-                            <a href="{{ route('users.index') }}" class="btn btn-secondary btn-sm">
-                                <i class="fas fa-arrow-left mr-1"></i>Back
-                            </a>
-                            <a href="{{ route('users.edit', $user) }}" class="btn btn-warning btn-sm">
-                                <i class="fas fa-edit mr-1"></i>Edit
-                            </a>
-                            @if(auth()->user()->isAdmin() && $user->id != auth()->id())
-                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteUser({{ $user->id }}, '{{ $user->username }}')">
-                                <i class="fas fa-trash mr-1"></i>Delete
-                            </button>
-                            @endif
-                        </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="profile-actions d-flex flex-wrap justify-content-md-end gap-2">
+                        <a href="{{ route('users.index') }}" class="action-btn action-btn-secondary">
+                            <i class="fas fa-arrow-left text-tertiary" aria-hidden="true"></i> Back
+                        </a>
+                        <a href="{{ route('users.edit', $user) }}" class="action-btn action-btn-primary">
+                            <i class="fas fa-edit" aria-hidden="true"></i> Edit
+                        </a>
+                        @if(auth()->user()->isAdmin() && $user->id != auth()->id())
+                        <button type="button" class="action-btn action-btn-secondary text-danger border-danger-subtle" onclick="deleteUser({{ $user->id }}, {{ json_encode($user->username) }})">
+                            <i class="fas fa-trash" aria-hidden="true"></i> Delete
+                        </button>
+                        @endif
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Statistics Cards -->
-    <div class="row mb-4">
-        @php
-            try {
-                $boothCount = $user->booths()->count();
-            } catch (\Exception $e) {
-                $boothCount = 0;
-            }
-            try {
-                $bookingCount = $user->books()->count();
-            } catch (\Exception $e) {
-                $bookingCount = 0;
-            }
-            try {
-                $permissionsCount = $user->getPermissions()->count();
-            } catch (\Exception $e) {
-                $permissionsCount = 0;
-            }
-        @endphp
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <i class="fas fa-cube fa-2x mb-2"></i>
-                <h3 class="mb-1" style="font-weight: 700;">{{ number_format($boothCount) }}</h3>
-                <small style="opacity: 0.9;">Total Booths</small>
+    @php
+        try {
+            $boothCount = $user->booths()->count();
+        } catch (\Exception $e) {
+            $boothCount = 0;
+        }
+        try {
+            $bookingCount = $user->books()->count();
+        } catch (\Exception $e) {
+            $bookingCount = 0;
+        }
+        try {
+            $permissionsCount = $user->getPermissions()->count();
+        } catch (\Exception $e) {
+            $permissionsCount = 0;
+        }
+    @endphp
+    <div class="kpi-wrapper mb-4">
+        <div class="kpi-card-looker">
+            <div class="kpi-top">
+                <div class="kpi-title">Booths</div>
+                <div class="kpi-icon-wrapper primary-icon"><i class="fas fa-cube" aria-hidden="true"></i></div>
             </div>
+            <div class="kpi-value-looker">{{ number_format($boothCount) }}</div>
+            <div class="kpi-bottom trend-neutral"><i class="fas fa-fw fa-circle" style="font-size: 6px;" aria-hidden="true"></i> Linked booths</div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                <i class="fas fa-calendar-check fa-2x mb-2"></i>
-                <h3 class="mb-1" style="font-weight: 700;">{{ number_format($bookingCount) }}</h3>
-                <small style="opacity: 0.9;">Total Bookings</small>
+        <div class="kpi-card-looker success">
+            <div class="kpi-top">
+                <div class="kpi-title">Bookings</div>
+                <div class="kpi-icon-wrapper success-icon"><i class="fas fa-calendar-check" aria-hidden="true"></i></div>
             </div>
+            <div class="kpi-value-looker">{{ number_format($bookingCount) }}</div>
+            <div class="kpi-bottom trend-positive"><i class="fas fa-fw fa-link" aria-hidden="true"></i> Total bookings</div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                <i class="fas fa-key fa-2x mb-2"></i>
-                <h3 class="mb-1" style="font-weight: 700;">{{ number_format($permissionsCount) }}</h3>
-                <small style="opacity: 0.9;">Total Permissions</small>
+        <div class="kpi-card-looker purple">
+            <div class="kpi-top">
+                <div class="kpi-title">Permissions</div>
+                <div class="kpi-icon-wrapper purple-icon"><i class="fas fa-key" aria-hidden="true"></i></div>
             </div>
+            <div class="kpi-value-looker">{{ number_format($permissionsCount) }}</div>
+            <div class="kpi-bottom trend-neutral"><i class="fas fa-fw fa-shield-alt" aria-hidden="true"></i> Effective access</div>
         </div>
         @if(isset($affiliateStats) && $affiliateStats['total_bookings'] > 0)
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
-                <i class="fas fa-dollar-sign fa-2x mb-2"></i>
-                <h3 class="mb-1" style="font-weight: 700;">${{ number_format($affiliateStats['total_revenue'], 0) }}</h3>
-                <small style="opacity: 0.9;">Affiliate Revenue</small>
+        <div class="kpi-card-looker warning">
+            <div class="kpi-top">
+                <div class="kpi-title">Affiliate revenue</div>
+                <div class="kpi-icon-wrapper warning-icon"><i class="fas fa-dollar-sign" aria-hidden="true"></i></div>
             </div>
+            <div class="kpi-value-looker">${{ number_format($affiliateStats['total_revenue'], 0) }}</div>
+            <div class="kpi-bottom trend-warning"><i class="fas fa-fw fa-chart-line" aria-hidden="true"></i> From affiliate</div>
         </div>
         @endif
     </div>
@@ -385,11 +377,11 @@
                     <!-- Additional Stats -->
                     <div class="row mb-4">
                         <div class="col-md-4 mb-3">
-                            <div class="p-3" style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-radius: 12px; border-left: 4px solid #667eea;">
+                            <div class="p-3 rounded-3 border-start border-4" style="background: linear-gradient(135deg, rgba(0, 122, 255, 0.08) 0%, rgba(175, 82, 222, 0.08) 100%); border-left-color: var(--accent-blue) !important;">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <small class="text-muted d-block mb-1">Average Booking Value</small>
-                                        <h5 class="mb-0" style="font-weight: 700; color: #667eea;">${{ number_format($affiliateStats['avg_booking_value'], 2) }}</h5>
+                                        <h5 class="mb-0 fw-bold" style="color: var(--accent-blue);">${{ number_format($affiliateStats['avg_booking_value'], 2) }}</h5>
                                     </div>
                                     <i class="fas fa-chart-bar fa-2x text-muted"></i>
                                 </div>
@@ -503,7 +495,7 @@
         <!-- User Information -->
         <div class="col-md-6 mb-4">
             <div class="card detail-card primary">
-                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px 12px 0 0;">
+                <div class="card-header users-modal-header rounded-top">
                     <h5 class="mb-0"><i class="fas fa-user mr-2"></i>User Information</h5>
                 </div>
                 <div class="card-body" style="padding: 24px;">
@@ -611,7 +603,7 @@
     <div class="row">
         <div class="col-md-12 mb-4">
             <div class="card detail-card primary">
-                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px 12px 0 0;">
+                <div class="card-header users-modal-header rounded-top">
                     <h5 class="mb-0"><i class="fas fa-key mr-2"></i>Change Password</h5>
                 </div>
                 <div class="card-body" style="padding: 24px;">
@@ -673,13 +665,11 @@
     <div class="modal fade" id="avatarUploadModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
-                <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                    <h5 class="modal-title">
-                        <i class="fas fa-camera mr-2"></i>Upload Avatar
+                <div class="modal-header users-modal-header">
+                    <h5 class="modal-title d-flex align-items-center gap-2">
+                        <i class="fas fa-camera" aria-hidden="true"></i>Upload avatar
                     </h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <x-image-upload 
@@ -698,13 +688,11 @@
     <div class="modal fade" id="coverUploadModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content">
-                <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                    <h5 class="modal-title">
-                        <i class="fas fa-image mr-2"></i>Upload Cover Image
+                <div class="modal-header users-modal-header">
+                    <h5 class="modal-title d-flex align-items-center gap-2">
+                        <i class="fas fa-image" aria-hidden="true"></i>Upload cover image
                     </h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <x-image-upload 
@@ -719,16 +707,27 @@
         </div>
     </div>
 </div>
+</div>
 @endsection
 
 @push('scripts')
 <script>
 function openAvatarUploadModal() {
-    $('#avatarUploadModal').modal('show');
+    const el = document.getElementById('avatarUploadModal');
+    if (window.bootstrap && bootstrap.Modal && el) {
+        bootstrap.Modal.getOrCreateInstance(el).show();
+    } else if (typeof $ !== 'undefined') {
+        $('#avatarUploadModal').modal('show');
+    }
 }
 
 function openCoverUploadModal() {
-    $('#coverUploadModal').modal('show');
+    const el = document.getElementById('coverUploadModal');
+    if (window.bootstrap && bootstrap.Modal && el) {
+        bootstrap.Modal.getOrCreateInstance(el).show();
+    } else if (typeof $ !== 'undefined') {
+        $('#coverUploadModal').modal('show');
+    }
 }
 
 // Cover Image Drag to Reposition
@@ -964,7 +963,7 @@ $('#passwordForm').on('submit', function(e) {
             icon: 'error',
             title: 'Password Mismatch',
             text: 'Password and confirmation password do not match.',
-            confirmButtonColor: '#667eea'
+            confirmButtonColor: '#007AFF'
         });
         return false;
     }

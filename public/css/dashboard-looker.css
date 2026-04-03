@@ -718,6 +718,12 @@ body.ios-dashboard-mode .breadcrumb-item a:active {
 
 .status-badge-blue { background: var(--accent-blue-light); color: var(--accent-blue); }
 .status-badge-green { background: var(--accent-green-light); color: var(--accent-green); }
+.status-badge-orange { background: var(--accent-orange-light); color: var(--accent-orange); }
+.status-badge-purple { background: var(--accent-purple-light); color: var(--accent-purple); }
+.status-badge-neutral {
+    background: rgba(142, 142, 147, 0.14);
+    color: var(--text-secondary);
+}
 
 /* Progress Bars */
 .progress-bar-container {

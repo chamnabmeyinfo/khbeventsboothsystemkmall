@@ -42,6 +42,11 @@
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="access-roles-tab" data-bs-toggle="tab" data-bs-target="#access-roles-settings" type="button" role="tab" aria-controls="access-roles-settings" aria-selected="false">
+                            <i class="fas fa-user-shield me-1 me-md-2"></i><span class="d-none d-xl-inline">Roles &amp; features</span><span class="d-xl-none">Roles</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
                         <button class="nav-link" id="company-tab" data-bs-toggle="tab" data-bs-target="#company" type="button" role="tab" aria-controls="company" aria-selected="false">
                             <i class="fas fa-building me-1 me-md-2"></i><span>Company</span>
                         </button>
@@ -291,6 +296,49 @@
                                         <td>{{ config('app.locale') }}</td>
                                     </tr>
                                 </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Roles, permissions (features), and staff assignment -->
+                <div class="tab-pane fade" id="access-roles-settings" role="tabpanel" aria-labelledby="access-roles-tab" tabindex="0">
+                    <div class="p-4">
+                        <h5 class="mb-2 h6 text-dark fw-bold"><i class="fas fa-user-shield me-2"></i>Roles &amp; features (access control)</h5>
+                        <p class="text-muted mb-4">Manage who can do what: roles bundle permissions (features such as bookings, booths, settings). Assign roles to staff under Security &amp; Staff.</p>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="card border h-100">
+                                    <div class="p-4 d-flex flex-column h-100">
+                                        <h6 class="fw-bold text-dark mb-2"><i class="fas fa-users-cog me-2 text-primary"></i>Roles</h6>
+                                        <p class="text-muted small flex-grow-1">Create and edit roles, and attach permissions to each role.</p>
+                                        <a href="{{ route('roles.index') }}" class="btn btn-primary mt-2 align-self-start">
+                                            <i class="fas fa-arrow-right me-1"></i>Open roles
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border h-100">
+                                    <div class="p-4 d-flex flex-column h-100">
+                                        <h6 class="fw-bold text-dark mb-2"><i class="fas fa-key me-2 text-primary"></i>Permissions (features)</h6>
+                                        <p class="text-muted small flex-grow-1">View and maintain permission records (feature flags per module).</p>
+                                        <a href="{{ route('permissions.index') }}" class="btn btn-primary mt-2 align-self-start">
+                                            <i class="fas fa-arrow-right me-1"></i>Open permissions
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border h-100">
+                                    <div class="p-4 d-flex flex-column h-100">
+                                        <h6 class="fw-bold text-dark mb-2"><i class="fas fa-shield-alt me-2 text-primary"></i>Security &amp; Staff</h6>
+                                        <p class="text-muted small flex-grow-1">Create users and assign a role so permissions apply to each account.</p>
+                                        <a href="{{ route('users.index') }}" class="btn btn-outline-primary mt-2 align-self-start">
+                                            <i class="fas fa-arrow-right me-1"></i>Open staff directory
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1599,6 +1647,7 @@
             'cache-management': 'cache-tab',
             'push-notifications': 'push-tab',
             'system-information': 'system-info-tab',
+            'access-roles-settings': 'access-roles-tab',
             'company': 'company-tab',
             'appearance': 'appearance-tab',
             'cdn': 'cdn-tab'

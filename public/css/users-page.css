@@ -1,0 +1,394 @@
+/**
+ * Users module (/users) — single responsive sheet (Bootstrap 5 breakpoints).
+ * Visual system: dashboard-looker.css tokens on body.ios-dashboard-mode.
+ */
+body.users-page .looker-dashboard {
+    padding: 0 1rem 2rem;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+    body.users-page .looker-dashboard {
+        padding: 0 1.25rem 2.5rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    body.users-page .looker-dashboard {
+        padding: 0 1.5rem 3rem;
+    }
+}
+
+/* View mode toggle (matches clients-page pattern) */
+body.users-page .users-view-toggle {
+    display: inline-flex;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+}
+
+body.users-page .users-view-toggle .btn {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0;
+    border: none;
+    line-height: 1;
+    min-width: 44px;
+    min-height: 44px;
+    background: rgba(255, 255, 255, 0.5);
+    color: var(--text-secondary);
+}
+
+body.users-page .users-view-toggle .btn:hover {
+    background: rgba(255, 255, 255, 0.85);
+    color: var(--text-primary);
+}
+
+body.users-page .users-view-toggle .btn.active {
+    background: var(--accent-blue);
+    color: #fff;
+}
+
+body.users-page .users-view-toggle .btn + .btn {
+    border-left: 1px solid var(--border-light);
+}
+
+/*
+ * Filter toolbar — visually separate from the data table panel:
+ * accent rail, no hover “lift”, header + actions row, frosted field well.
+ * Single responsive sheet (sm/md/lg breakpoints).
+ */
+body.users-page .users-filter-panel {
+    position: relative;
+    padding: 0;
+    overflow: hidden;
+}
+
+body.users-page .users-filter-panel::before {
+    content: '';
+    display: block;
+    height: 4px;
+    width: 100%;
+    background: linear-gradient(
+        90deg,
+        var(--accent-blue) 0%,
+        var(--accent-purple) 55%,
+        var(--accent-orange) 100%
+    );
+    opacity: 0.92;
+}
+
+/* Forms shouldn’t “float” on hover like analytics cards */
+body.users-page .users-filter-panel:hover {
+    transform: none !important;
+    box-shadow: var(--shadow-md) !important;
+    background: var(--bg-card) !important;
+}
+
+body.users-page .users-filter-panel__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem 1.25rem;
+    padding: 1.1rem 1.25rem 1rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+@media (min-width: 768px) {
+    body.users-page .users-filter-panel__header {
+        align-items: center;
+        padding: 1.2rem 1.5rem 1.05rem;
+    }
+}
+
+body.users-page .users-filter-panel__intro {
+    flex: 1;
+    min-width: min(100%, 240px);
+}
+
+body.users-page .users-filter-panel .panel-title {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 1.125rem;
+}
+
+body.users-page .users-filter-panel__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--radius-md);
+    background: var(--accent-blue-light);
+    color: var(--accent-blue);
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+body.users-page .users-filter-panel__hint {
+    margin: 0.4rem 0 0;
+    font-size: 0.875rem;
+    line-height: 1.45;
+    color: var(--text-tertiary);
+    max-width: 40rem;
+}
+
+body.users-page .users-filter-panel__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+body.users-page .users-filter-panel__actions .action-btn {
+    min-height: 44px;
+}
+
+body.users-page .users-filter-panel__badge {
+    flex-basis: 100%;
+}
+
+@media (min-width: 576px) {
+    body.users-page .users-filter-panel__badge {
+        flex-basis: auto;
+    }
+}
+
+body.users-page .users-filter-panel__surface {
+    padding: 1.15rem 1.25rem 1.35rem;
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.48) 0%,
+        rgba(255, 255, 255, 0.2) 100%
+    );
+    border-top: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+@media (min-width: 768px) {
+    body.users-page .users-filter-panel__surface {
+        padding: 1.3rem 1.5rem 1.5rem;
+    }
+}
+
+/* Same structure as Type / Role / Status: label + one full-width control, shared height */
+body.users-page .users-filter-panel__field {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 0.4rem;
+}
+
+body.users-page .users-filter-panel__label {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    margin: 0;
+    flex-shrink: 0;
+}
+
+body.users-page .users-filter-panel__label i {
+    font-size: 0.65rem;
+    color: var(--accent-blue);
+    opacity: 0.9;
+}
+
+body.users-page .users-filter-panel__control {
+    width: 100%;
+    margin-top: auto;
+    flex-shrink: 0;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    background: rgba(255, 255, 255, 0.75);
+    font-size: 0.9375rem;
+    min-height: 3rem;
+    padding: 0.5rem 0.875rem;
+    line-height: 1.5;
+    box-sizing: border-box;
+}
+
+body.users-page .users-filter-panel__surface select.users-filter-panel__control {
+    line-height: 1.35;
+}
+
+body.users-page .users-filter-panel__control:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px var(--accent-blue-light);
+    background: #fff;
+    outline: none;
+}
+
+/* Table: horizontal scroll on small viewports */
+body.users-page .users-lazy-trigger {
+    height: 20px;
+    margin: 10px 0;
+}
+
+body.users-page .users-th-shrink {
+    width: 1%;
+    white-space: nowrap;
+}
+
+body.users-page .users-table-scroll {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+body.users-page .users-table-action-btn {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+    body.users-page .users-table-action-btn {
+        min-height: auto;
+    }
+}
+
+/* Card grid entity cards */
+body.users-page .users-entity-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    transition: var(--transition-all);
+    cursor: pointer;
+    overflow: hidden;
+    height: 100%;
+}
+
+body.users-page .users-entity-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+    background: var(--bg-card-hover);
+}
+
+body.users-page .users-entity-card .users-entity-head {
+    padding: 1.25rem 1.35rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+body.users-page .users-entity-card .users-entity-body {
+    padding: 1.25rem 1.35rem;
+}
+
+body.users-page .users-entity-card .users-entity-foot {
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.35);
+    border-top: 1px solid var(--border-light);
+}
+
+body.users-page .users-entity-card .users-entity-foot .btn {
+    border-radius: var(--radius-md);
+}
+
+/* Create user modal */
+body.users-page .users-modal-content {
+    border: none;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+}
+
+body.users-page .users-modal-header {
+    background: linear-gradient(
+        135deg,
+        var(--accent-blue) 0%,
+        var(--accent-purple) 100%
+    );
+    color: #fff;
+    border-bottom: none;
+    padding: 1.25rem 1.5rem;
+}
+
+body.users-page .users-modal-header .modal-title {
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+body.users-page .users-modal-header .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.9;
+}
+
+/* Forms on user edit/create */
+body.users-page .users-form-section,
+body.users-form-page .users-form-section {
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1.25rem;
+    border: 1px solid var(--border-light);
+    border-left: 4px solid var(--accent-blue);
+}
+
+body.users-page .users-form-section h6,
+body.users-form-page .users-form-section h6 {
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+}
+
+/* User profile (show) — avatar upload chip uses system accents */
+body.users-show-page .profile-avatar-upload {
+    background: linear-gradient(
+        135deg,
+        var(--accent-blue) 0%,
+        var(--accent-purple) 100%
+    );
+}
+
+body.users-show-page .detail-card.primary {
+    border-left-color: var(--accent-blue);
+}
+
+body.users-show-page .users-modal-header {
+    background: linear-gradient(
+        135deg,
+        var(--accent-blue) 0%,
+        var(--accent-purple) 100%
+    );
+    color: #fff;
+    border-bottom: none;
+}
+
+body.users-show-page .looker-dashboard {
+    padding: 0 1rem 2rem;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+    body.users-show-page .looker-dashboard {
+        padding: 0 1.25rem 2.5rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    body.users-show-page .looker-dashboard {
+        padding: 0 1.5rem 3rem;
+    }
+}
+
+body.users-page .status-toggle,
+body.users-show-page .status-toggle {
+    cursor: pointer;
+}

@@ -7,224 +7,193 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.6">
-<style>
-    .looker-dashboard { padding: 0 !important; }
-    .glass-card {
-        background: rgba(255, 255, 255, 0.45);
-        backdrop-filter: blur(40px) saturate(180%);
-        -webkit-backdrop-filter: blur(40px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        border-radius: 24px;
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-        margin-bottom: 24px;
-        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        overflow: hidden;
-    }
-    .glass-card:hover {
-        transform: translateY(-5px);
-        background: rgba(255, 255, 255, 0.55);
-        box-shadow: 0 15px 45px rgba(31, 38, 135, 0.2);
-    }
-    .kpi-card-looker {
-        margin-bottom: 24px;
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('css/users-page.css') }}?v=1.2">
 @endpush
 
-@push('body-class', 'ios-dashboard-mode')
+@push('body-class', 'ios-dashboard-mode users-page')
 
 
 @section('content')
-<div class='looker-dashboard'>
-<div class="container-fluid">
-    <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="kpi-card-looker">
-                <div class="p-4" style="padding: 24px;">
-                    <div class="kpi-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="kpi-title">Total Users</div>
-                    <div class="kpi-value-looker">{{ number_format(\App\Models\User::count()) }}</div>
-                </div>
+@php
+    /**
+     * Default filter preset for “Default filters” (GET query only).
+     * Change keys to match your workspace norm, e.g. type => 2, role_id => id, or [] for “show all” (same as Reset).
+     */
+    $usersIndexDefaultFilters = [
+        'status' => '1',
+    ];
+@endphp
+<div class="looker-dashboard">
+    <header class="looker-header animate-slide-up delay-1">
+        <div class="looker-header-title">
+            <h1>Users</h1>
+            <p>Manage staff accounts, roles, and status. Filter the directory, then open a user for full details.</p>
+        </div>
+        <div class="looker-actions flex-wrap align-items-center gap-2">
+            <button type="button" class="action-btn action-btn-primary" onclick="showCreateUserModal()">
+                <i class="fas fa-plus" aria-hidden="true"></i> New user
+            </button>
+            <button type="button" class="action-btn action-btn-secondary" onclick="refreshPage()">
+                <i class="fas fa-sync-alt text-tertiary" aria-hidden="true"></i> Refresh
+            </button>
+            <div class="btn-group users-view-toggle" role="group" aria-label="View mode">
+                <button type="button" class="btn active" onclick="switchView('table')" id="viewTable" title="Table view" aria-pressed="true">
+                    <i class="fas fa-table" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="btn" onclick="switchView('cards')" id="viewCards" title="Card view" aria-pressed="false">
+                    <i class="fas fa-th-large" aria-hidden="true"></i>
+                </button>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="kpi-card-looker">
-                <div class="p-4" style="padding: 24px;">
-                    <div class="kpi-icon">
-                        <i class="fas fa-user-check"></i>
-                    </div>
-                    <div class="kpi-title">Active Users</div>
-                    <div class="kpi-value-looker">{{ number_format(\App\Models\User::where('status', 1)->count()) }}</div>
-                </div>
+    </header>
+
+    <div class="kpi-wrapper">
+        <div class="kpi-card-looker animate-slide-up delay-2">
+            <div class="kpi-top">
+                <div class="kpi-title">Total users</div>
+                <div class="kpi-icon-wrapper primary-icon"><i class="fas fa-users" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format(\App\Models\User::count()) }}</div>
+            <div class="kpi-bottom trend-neutral">
+                <i class="fas fa-fw fa-circle" style="font-size: 6px;" aria-hidden="true"></i> All accounts
             </div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card kpi-card danger">
-                <div class="p-4" style="padding: 24px;">
-                    <div class="kpi-icon">
-                        <i class="fas fa-user-shield"></i>
-                    </div>
-                    <div class="kpi-title">Admins</div>
-                    <div class="kpi-value-looker">{{ number_format(\App\Models\User::where('type', 1)->count()) }}</div>
-                </div>
+        <div class="kpi-card-looker success animate-slide-up delay-3">
+            <div class="kpi-top">
+                <div class="kpi-title">Active</div>
+                <div class="kpi-icon-wrapper success-icon"><i class="fas fa-user-check" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format(\App\Models\User::where('status', 1)->count()) }}</div>
+            <div class="kpi-bottom trend-positive">
+                <i class="fas fa-fw fa-check" aria-hidden="true"></i> Can sign in
             </div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="kpi-card-looker">
-                <div class="p-4" style="padding: 24px;">
-                    <div class="kpi-icon">
-                        <i class="fas fa-user-tie"></i>
-                    </div>
-                    <div class="kpi-title">Sales Staff</div>
-                    <div class="kpi-value-looker">{{ number_format(\App\Models\User::where('type', 2)->count()) }}</div>
-                </div>
+        <div class="kpi-card-looker purple animate-slide-up delay-4">
+            <div class="kpi-top">
+                <div class="kpi-title">Administrators</div>
+                <div class="kpi-icon-wrapper purple-icon"><i class="fas fa-user-shield" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format(\App\Models\User::where('type', 1)->count()) }}</div>
+            <div class="kpi-bottom trend-neutral">
+                <i class="fas fa-fw fa-shield-alt" aria-hidden="true"></i> Type = admin
+            </div>
+        </div>
+        <div class="kpi-card-looker warning animate-slide-up delay-5">
+            <div class="kpi-top">
+                <div class="kpi-title">Sales staff</div>
+                <div class="kpi-icon-wrapper warning-icon"><i class="fas fa-user-tie" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format(\App\Models\User::where('type', 2)->count()) }}</div>
+            <div class="kpi-bottom trend-warning">
+                <i class="fas fa-fw fa-briefcase" aria-hidden="true"></i> Type = sale
             </div>
         </div>
     </div>
 
-    <!-- Action Bar -->
-    <div class="glass-card mb-4">
-        <div class="p-4">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-primary" onclick="showCreateUserModal()">
-                            <i class="fas fa-plus mr-1"></i>New User
-                        </button>
-                        <button type="button" class="btn btn-info" onclick="refreshPage()">
-                            <i class="fas fa-sync-alt mr-1"></i>Refresh
-                        </button>
-                    </div>
-                </div>
-                <div class="col-md-6 text-right">
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-sm btn-primary active" onclick="switchView('table')" id="viewTable">
-                            <i class="fas fa-table mr-1"></i>Table
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="switchView('cards')" id="viewCards">
-                            <i class="fas fa-th-large mr-1"></i>Cards
-                        </button>
-                    </div>
-                </div>
+    <div class="canvas-panel users-filter-panel animate-slide-up delay-3 mb-3" aria-labelledby="users-filter-heading">
+        <div class="users-filter-panel__header">
+            <div class="users-filter-panel__intro">
+                <h2 class="panel-title mb-0" id="users-filter-heading">
+                    <span class="users-filter-panel__icon" aria-hidden="true"><i class="fas fa-sliders-h"></i></span>
+                    Refine directory
+                </h2>
+                <p class="users-filter-panel__hint">Match username, role, type, or status—then apply.@if(! empty($usersIndexDefaultFilters)) Use <strong>Default filters</strong> for the usual workspace preset.@endif</p>
+            </div>
+            <div class="users-filter-panel__actions">
+                @if(request()->hasAny(['search', 'type', 'role_id', 'status']))
+                    <span class="status-badge status-badge-blue users-filter-panel__badge">{{ number_format($total) }} match(es)</span>
+                @endif
+                @if(! empty($usersIndexDefaultFilters))
+                <a href="{{ route('users.index', $usersIndexDefaultFilters) }}" class="action-btn action-btn-secondary"
+                   title="Apply workspace default filters (clears search and other criteria)">
+                    <i class="fas fa-bookmark text-tertiary" aria-hidden="true"></i> <span class="d-none d-sm-inline">Default filters</span>
+                </a>
+                @endif
+                <a href="{{ route('users.index') }}" class="action-btn action-btn-secondary">
+                    <i class="fas fa-rotate-left text-tertiary" aria-hidden="true"></i> <span class="d-none d-sm-inline">Reset</span>
+                </a>
+                <button type="submit" form="filterForm" class="action-btn action-btn-primary">
+                    <i class="fas fa-check" aria-hidden="true"></i> <span class="d-none d-sm-inline">Apply</span>
+                </button>
             </div>
         </div>
-    </div>
-
-    <!-- Advanced Search and Filter -->
-    <div class="filter-bar">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3 style="font-weight: 600; color: #2d3748;">
-                <i class="fas fa-filter mr-2 text-primary"></i>Search & Filters
-            </h3>
-        </div>
-        </div>
-        <div id="filterSection">
+        <div class="users-filter-panel__surface">
             <form method="GET" action="{{ route('users.index') }}" id="filterForm">
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label><i class="fas fa-search mr-1"></i>Search</label>
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text"><i class="fas fa-search"></i></span>
-                            </div>
-                            <input type="text" name="search" class="form-control" 
-                                   placeholder="Search by username or role..." 
-                                   value="{{ request('search') }}">
-                        </div>
+                <div class="row g-3 g-md-4">
+                    <div class="col-12 col-lg-4 users-filter-panel__field">
+                        <label class="users-filter-panel__label" for="users_filter_search"><i class="fas fa-search" aria-hidden="true"></i> Search</label>
+                        <input type="text" name="search" id="users_filter_search" class="form-control users-filter-panel__control"
+                               placeholder="Username or role…"
+                               value="{{ request('search') }}"
+                               autocomplete="off">
                     </div>
-                    <div class="col-md-2 mb-3">
-                        <label><i class="fas fa-user-tag mr-1"></i>Type</label>
-                        <select name="type" class="form-control">
-                            <option value="">All Types</option>
+                    <div class="col-6 col-md-4 col-lg-2 users-filter-panel__field">
+                        <label class="users-filter-panel__label" for="users_filter_type"><i class="fas fa-user-tag" aria-hidden="true"></i> Type</label>
+                        <select name="type" id="users_filter_type" class="form-select users-filter-panel__control">
+                            <option value="">All types</option>
                             <option value="1" {{ request('type') == '1' ? 'selected' : '' }}>Admin</option>
                             <option value="2" {{ request('type') == '2' ? 'selected' : '' }}>Sale</option>
                         </select>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <label><i class="fas fa-user-shield mr-1"></i>Role</label>
-                        <select name="role_id" class="form-control">
-                            <option value="">All Roles</option>
+                    <div class="col-12 col-md-4 col-lg-3 users-filter-panel__field">
+                        <label class="users-filter-panel__label" for="users_filter_role"><i class="fas fa-user-shield" aria-hidden="true"></i> Role</label>
+                        <select name="role_id" id="users_filter_role" class="form-select users-filter-panel__control">
+                            <option value="">All roles</option>
                             @foreach($roles as $role)
                                 <option value="{{ $role->id }}" {{ request('role_id') == $role->id ? 'selected' : '' }}>
                                     {{ $role->name }}
                                 </option>
                             @endforeach
-                            <option value="0" {{ request('role_id') === '0' ? 'selected' : '' }}>No Role</option>
+                            <option value="0" {{ request('role_id') === '0' ? 'selected' : '' }}>No role</option>
                         </select>
                     </div>
-                    <div class="col-md-2 mb-3">
-                        <label><i class="fas fa-toggle-on mr-1"></i>Status</label>
-                        <select name="status" class="form-control">
-                            <option value="">All Status</option>
+                    <div class="col-6 col-md-4 col-lg-3 users-filter-panel__field">
+                        <label class="users-filter-panel__label" for="users_filter_status"><i class="fas fa-toggle-on" aria-hidden="true"></i> Status</label>
+                        <select name="status" id="users_filter_status" class="form-select users-filter-panel__control">
+                            <option value="">All</option>
                             <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Active</option>
                             <option value="0" {{ request('status') == '0' ? 'selected' : '' }}>Inactive</option>
                         </select>
-                    </div>
-                    <div class="col-md-1 mb-3">
-                        <label>&nbsp;</label>
-                        <div>
-                            <button type="submit" class="btn btn-primary btn-block">
-                                <i class="fas fa-filter"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-12">
-                        <a href="{{ route('users.index') }}" class="btn btn-secondary btn-sm">
-                            <i class="fas fa-times mr-1"></i>Clear Filters
-                        </a>
-                        @if(request()->hasAny(['search', 'type', 'role_id', 'status']))
-                        <span class="badge badge-info ml-2">
-                            {{ $users->total() }} result(s) found
-                        </span>
-                        @endif
                     </div>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Table View -->
     <div id="tableView" class="view-content">
-        <div class="glass-card">
-            <div class="p-4 border-bottom">
-                <h3 class="h5 fw-bold mb-0 text-dark"><i class="fas fa-list mr-2"></i>All Users</h3>
-                <div class="card-tools">
-                    <span class="badge badge-primary">{{ $total ?? count($users) }} Total</span>
-                </div>
+        <div class="canvas-panel animate-slide-up delay-4">
+            <div class="panel-header">
+                <h2 class="panel-title"><i class="fas fa-list-ul" aria-hidden="true"></i> All users</h2>
+                <span class="status-badge status-badge-green">{{ number_format($total) }} total</span>
             </div>
-            <div class="card-body p-0">
-                <div class="looker-table-container">
-                    <table class="looker-table text-nowrap mb-0">
-                        <thead class="thead-light">
+            <div class="users-table-scroll px-2 px-md-3 pb-2">
+                <div class="looker-table-wrapper">
+                    <table class="looker-table mb-0">
+                        <thead>
                             <tr>
-                                <th style="width: 50px;">
-                                    <input type="checkbox" id="selectAllUsers" class="form-check-input">
+                                <th class="users-th-shrink">
+                                    <input type="checkbox" id="selectAllUsers" class="form-check-input" title="Select all" aria-label="Select all users">
                                 </th>
-                                <th style="width: 80px;">ID</th>
+                                <th class="users-th-shrink">ID</th>
                                 <th>Username</th>
-                                <th style="width: 120px;">Type</th>
-                                <th style="width: 150px;">Role</th>
-                                <th style="width: 120px;">Status</th>
-                                <th style="width: 150px;">Activity</th>
-                                <th style="width: 150px;">Actions</th>
+                                <th class="users-th-shrink">Type</th>
+                                <th>Role</th>
+                                <th class="users-th-shrink">Status</th>
+                                <th>Activity</th>
+                                <th class="users-th-shrink">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="tableUsersBody">
                             @forelse($users as $user)
                                 @include('users.partials.table-row', ['user' => $user])
                             @empty
-                            <tr>
+                            <tr class="table-row-no-press">
                                 <td colspan="8" class="text-center py-5">
-                                    <div class="text-muted">
-                                        <i class="fas fa-user-slash fa-3x mb-3"></i>
-                                        <p class="mb-0">No users found</p>
-                                        <button type="button" class="btn btn-primary btn-sm mt-3" onclick="showCreateUserModal()">
-                                            <i class="fas fa-plus mr-1"></i>Create First User
+                                    <div class="text-tertiary">
+                                        <i class="fas fa-user-slash fa-3x mb-3 text-secondary opacity-50" aria-hidden="true"></i>
+                                        <p class="mb-0 fw-semibold text-secondary">No users found</p>
+                                        <button type="button" class="action-btn action-btn-primary mt-3" onclick="showCreateUserModal()">
+                                            <i class="fas fa-plus" aria-hidden="true"></i> Create first user
                                         </button>
                                     </div>
                                 </td>
@@ -233,16 +202,13 @@
                         </tbody>
                     </table>
                 </div>
-                <!-- Lazy Loading Trigger -->
-                <div id="usersLazyLoadTrigger" style="height: 20px; margin: 10px 0;"></div>
-                <!-- Lazy Loading Spinner -->
+                <div id="usersLazyLoadTrigger" class="users-lazy-trigger" aria-hidden="true"></div>
                 <div id="usersLazyLoadSpinner" class="text-center py-3" style="display: none;">
                     <div class="spinner-border spinner-border-sm text-primary" role="status">
-                        <span class="sr-only">Loading...</span>
+                        <span class="visually-hidden">Loading</span>
                     </div>
-                    <span class="ml-2 text-muted">Loading more users...</span>
+                    <span class="ms-2 text-muted">Loading more users…</span>
                 </div>
-                <!-- Lazy Loading End -->
                 <div id="usersLazyLoadEnd" class="text-center py-3" style="display: none;">
                     <span class="text-muted">No more users to load</span>
                 </div>
@@ -250,59 +216,55 @@
         </div>
     </div>
 
-    <!-- Card View -->
-    <div id="cardView" class="view-content" style="display: none;">
-        <div class="row">
+    <div id="cardView" class="view-content d-none">
+        <div class="row g-4">
             @forelse($users as $user)
-            @php
-                $typeClass = $user->isAdmin() ? 'admin' : 'sale';
-            @endphp
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card user-card {{ $typeClass }}" onclick="window.location='{{ route('users.show', $user) }}'">
-                    <div class="p-4 border-bottom">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0">
-                                <x-avatar 
-                                    :avatar="$user->avatar" 
-                                    :name="$user->username" 
-                                    :size="'xs'" 
+            <div class="col-md-6 col-xl-4">
+                <div class="users-entity-card" role="link" tabindex="0" data-user-url="{{ route('users.show', $user) }}"
+                     onclick="window.location=this.getAttribute('data-user-url')"
+                     onkeydown="if(event.key==='Enter'){ window.location=this.getAttribute('data-user-url'); }">
+                    <div class="users-entity-head">
+                        <div class="d-flex justify-content-between align-items-center gap-2">
+                            <div class="d-flex align-items-center gap-2 min-w-0">
+                                <x-avatar
+                                    :avatar="$user->avatar"
+                                    :name="$user->username"
+                                    :size="'xs'"
                                     :type="$user->isAdmin() ? 'admin' : 'user'"
                                     :shape="'circle'"
                                 />
-                                <span class="ml-2">{{ $user->username }}</span>
-                            </h6>
+                                <h3 class="h6 mb-0 text-truncate">{{ $user->username }}</h3>
+                            </div>
                             @if($user->isAdmin())
-                                <span class="badge badge-danger">Admin</span>
+                                <span class="status-badge status-badge-purple flex-shrink-0">Admin</span>
                             @else
-                                <span class="badge badge-secondary">Sale</span>
+                                <span class="status-badge status-badge-neutral flex-shrink-0">Sale</span>
                             @endif
                         </div>
                     </div>
-                    <div class="p-4">
-                        <div class="mb-3">
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="fas fa-hashtag text-muted mr-2"></i>
-                                <strong>ID: #{{ $user->id }}</strong>
-                            </div>
+                    <div class="users-entity-body">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <i class="fas fa-hashtag text-muted" aria-hidden="true"></i>
+                            <span class="status-badge status-badge-blue">#{{ $user->id }}</span>
                         </div>
                         <div class="mb-3">
-                            <div class="d-flex align-items-center mb-1">
-                                <i class="fas fa-user-shield text-muted mr-2"></i>
+                            <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+                                <i class="fas fa-user-shield text-muted" aria-hidden="true"></i>
                                 @if($user->role)
-                                    <span class="badge badge-info">{{ $user->role->name }}</span>
-                                    <small class="text-muted ml-2">{{ $user->role->permissions->count() }} permissions</small>
+                                    <span class="status-badge status-badge-blue">{{ $user->role->name }}</span>
+                                    <small class="text-muted">{{ $user->role->permissions->count() }} permissions</small>
                                 @else
-                                    <span class="badge badge-light">No Role</span>
+                                    <span class="status-badge status-badge-neutral">No role</span>
                                 @endif
                             </div>
                         </div>
                         <div class="mb-3">
-                            <div class="d-flex align-items-center mb-1">
-                                <i class="fas fa-toggle-on text-muted mr-2"></i>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <i class="fas fa-toggle-on text-muted" aria-hidden="true"></i>
                                 @if($user->isActive())
-                                    <span class="badge badge-success">Active</span>
+                                    <span class="status-badge status-badge-green">Active</span>
                                 @else
-                                    <span class="badge badge-warning">Inactive</span>
+                                    <span class="status-badge status-badge-orange">Inactive</span>
                                 @endif
                             </div>
                         </div>
@@ -317,24 +279,24 @@
                                 }
                             @endphp
                             <small class="text-muted">
-                                <i class="fas fa-cube mr-1"></i>{{ $boothCount }} booths
+                                <i class="fas fa-cube me-1" aria-hidden="true"></i>{{ $boothCount }} booths
                             </small>
                             <small class="text-muted">
-                                <i class="fas fa-calendar mr-1"></i>{{ $bookingCount }} bookings
+                                <i class="fas fa-calendar me-1" aria-hidden="true"></i>{{ $bookingCount }} bookings
                             </small>
                         </div>
                     </div>
-                    <div class="card-footer bg-white">
+                    <div class="users-entity-foot">
                         <div class="btn-group btn-group-sm w-100" role="group">
-                            <a href="{{ route('users.show', $user) }}" class="btn btn-info" onclick="event.stopPropagation()">
-                                <i class="fas fa-eye mr-1"></i>View
+                            <a href="{{ route('users.show', $user) }}" class="btn btn-outline-primary" onclick="event.stopPropagation()">
+                                <i class="fas fa-eye me-1" aria-hidden="true"></i>View
                             </a>
-                            <a href="{{ route('users.edit', $user) }}" class="btn btn-warning" onclick="event.stopPropagation()">
-                                <i class="fas fa-edit mr-1"></i>Edit
+                            <a href="{{ route('users.edit', $user) }}" class="btn btn-outline-secondary" onclick="event.stopPropagation()">
+                                <i class="fas fa-edit me-1" aria-hidden="true"></i>Edit
                             </a>
                             @if(auth()->user()->isAdmin() && $user->id != auth()->id())
-                            <button type="button" class="btn btn-danger" onclick="event.stopPropagation(); deleteUser({{ $user->id }}, '{{ $user->username }}');">
-                                <i class="fas fa-trash mr-1"></i>Delete
+                            <button type="button" class="btn btn-outline-danger" onclick="event.stopPropagation(); deleteUser({{ $user->id }}, {{ json_encode($user->username) }});">
+                                <i class="fas fa-trash me-1" aria-hidden="true"></i>Delete
                             </button>
                             @endif
                         </div>
@@ -343,91 +305,59 @@
             </div>
             @empty
             <div class="col-12">
-                <div class="glass-card">
-                    <div class="card-body text-center py-5">
-                        <i class="fas fa-user-slash fa-3x text-muted mb-3"></i>
-                        <p class="text-muted mb-3">No users found</p>
-                        <button type="button" class="btn btn-primary" onclick="showCreateUserModal()">
-                            <i class="fas fa-plus mr-1"></i>Create First User
-                        </button>
-                    </div>
+                <div class="canvas-panel text-center py-5">
+                    <i class="fas fa-user-slash fa-3x text-secondary opacity-50 mb-3" aria-hidden="true"></i>
+                    <p class="text-muted mb-3">No users found</p>
+                    <button type="button" class="action-btn action-btn-primary" onclick="showCreateUserModal()">
+                        <i class="fas fa-plus" aria-hidden="true"></i> Create first user
+                    </button>
                 </div>
             </div>
             @endforelse
         </div>
-        @if(method_exists($users, 'hasPages') && $users->hasPages())
-        <div class="row mt-3">
-            <div class="col-12">
-                <div class="glass-card">
-                    <div class="card-footer">
-                        <div class="row align-items-center">
-                            <div class="col-md-6">
-                                <div class="text-muted">
-                                    @if($users->firstItem())
-                                    Showing {{ $users->firstItem() }} to {{ $users->lastItem() }} of {{ $users->total() }} users
-                                    @else
-                                    {{ $users->total() }} user(s) total
-                                    @endif
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="float-right">
-                                    {{ $users->links() }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        @endif
     </div>
 </div>
 
 <!-- Create User Modal -->
-<div class="modal fade" id="createUserModal" tabindex="-1" role="dialog" aria-labelledby="createUserModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-    <div class="modal-dialog modal-lg" role="document" style="max-width: 800px;">
-        <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);">
-            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 20px 20px 0 0; padding: 24px 32px;">
-                <h5 class="modal-title" id="createUserModalLabel" style="font-size: 1.5rem; font-weight: 700;">
-                    <i class="fas fa-user-plus mr-2"></i>Create New User
+<div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content users-modal-content">
+            <div class="modal-header users-modal-header">
+                <h5 class="modal-title d-flex align-items-center gap-2" id="createUserModalLabel">
+                    <i class="fas fa-user-plus" aria-hidden="true"></i> Create new user
                 </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; opacity: 0.9; font-size: 1.5rem;">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="createUserForm" method="POST" action="{{ route('users.store') }}">
                 @csrf
-                <div class="modal-body" style="padding: 32px; max-height: calc(100vh - 200px); overflow-y: auto;">
-                    <div id="createUserError" class="alert alert-danger" style="display: none; border-radius: 12px;"></div>
-                    
-                    <!-- Basic Information -->
-                    <div class="form-group mb-4">
-                        <h6 style="font-weight: 600; margin-bottom: 16px; color: #495057;"><i class="fas fa-user mr-2 text-primary"></i>Basic Information</h6>
-                        <div class="row">
+                <div class="modal-body p-4">
+                    <div id="createUserError" class="alert alert-danger d-none rounded-3" role="alert"></div>
+
+                    <div class="mb-4">
+                        <h6 class="fw-semibold text-secondary mb-3"><i class="fas fa-user me-2 text-primary" aria-hidden="true"></i>Basic information</h6>
+                        <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="modal_user_username" class="form-label">Username <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="modal_user_username" name="username" required placeholder="Enter username" style="border-radius: 8px;">
-                                <small class="form-text text-muted">Username must be unique</small>
+                                <input type="text" class="form-control rounded-3" id="modal_user_username" name="username" required placeholder="Enter username" autocomplete="username">
+                                <small class="text-muted">Username must be unique</small>
                             </div>
                             <div class="col-md-6">
-                                <label for="modal_user_type" class="form-label">User Type <span class="text-danger">*</span></label>
-                                <select class="form-control" id="modal_user_type" name="type" required style="border-radius: 8px;">
-                                    <option value="2" selected>Sale Staff</option>
+                                <label for="modal_user_type" class="form-label">User type <span class="text-danger">*</span></label>
+                                <select class="form-select rounded-3" id="modal_user_type" name="type" required>
+                                    <option value="2" selected>Sale staff</option>
                                     <option value="1">Administrator</option>
                                 </select>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Role & Status -->
-                    <div class="form-group mb-4">
-                        <h6 style="font-weight: 600; margin-bottom: 16px; color: #495057;"><i class="fas fa-user-shield mr-2 text-primary"></i>Role & Status</h6>
-                        <div class="row">
+                    <div class="mb-4">
+                        <h6 class="fw-semibold text-secondary mb-3"><i class="fas fa-user-shield me-2 text-primary" aria-hidden="true"></i>Role &amp; status</h6>
+                        <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="modal_user_role_id" class="form-label">Assign Role</label>
-                                <select class="form-control" id="modal_user_role_id" name="role_id" style="border-radius: 8px;">
-                                    <option value="">No Role Assigned</option>
+                                <label for="modal_user_role_id" class="form-label">Assign role</label>
+                                <select class="form-select rounded-3" id="modal_user_role_id" name="role_id">
+                                    <option value="">No role assigned</option>
                                     @foreach(\App\Models\Role::where('is_active', true)->orderBy('name')->get() as $role)
                                     <option value="{{ $role->id }}">
                                         {{ $role->name }}
@@ -437,11 +367,11 @@
                                     </option>
                                     @endforeach
                                 </select>
-                                <small class="form-text text-muted">Optional: Assign a role for permission-based access control</small>
+                                <small class="text-muted">Optional role for permission-based access</small>
                             </div>
                             <div class="col-md-6">
                                 <label for="modal_user_status" class="form-label">Status <span class="text-danger">*</span></label>
-                                <select class="form-control" id="modal_user_status" name="status" required style="border-radius: 8px;">
+                                <select class="form-select rounded-3" id="modal_user_status" name="status" required>
                                     <option value="1" selected>Active</option>
                                     <option value="0">Inactive</option>
                                 </select>
@@ -449,35 +379,32 @@
                         </div>
                     </div>
 
-                    <!-- Password -->
-                    <div class="form-group mb-0">
-                        <h6 style="font-weight: 600; margin-bottom: 16px; color: #495057;"><i class="fas fa-key mr-2 text-primary"></i>Password</h6>
-                        <div class="row">
+                    <div class="mb-0">
+                        <h6 class="fw-semibold text-secondary mb-3"><i class="fas fa-key me-2 text-primary" aria-hidden="true"></i>Password</h6>
+                        <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="modal_user_password" class="form-label">Password <span class="text-danger">*</span></label>
-                                <input type="password" class="form-control" id="modal_user_password" name="password" required placeholder="Enter password" style="border-radius: 8px;">
-                                <small class="form-text text-muted">Minimum 6 characters</small>
+                                <input type="password" class="form-control rounded-3" id="modal_user_password" name="password" required placeholder="Enter password" autocomplete="new-password">
+                                <small class="text-muted">Minimum 6 characters</small>
                             </div>
                             <div class="col-md-6">
-                                <label for="modal_user_password_confirmation" class="form-label">Confirm Password <span class="text-danger">*</span></label>
-                                <input type="password" class="form-control" id="modal_user_password_confirmation" name="password_confirmation" required placeholder="Confirm password" style="border-radius: 8px;">
+                                <label for="modal_user_password_confirmation" class="form-label">Confirm password <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control rounded-3" id="modal_user_password_confirmation" name="password_confirmation" required placeholder="Confirm password" autocomplete="new-password">
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer" style="border-top: 1px solid #e2e8f0; padding: 20px 32px; border-radius: 0 0 20px 20px;">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" style="border-radius: 12px; padding: 10px 24px;">
-                        <i class="fas fa-times mr-1"></i>Cancel
+                <div class="modal-footer border-top bg-light bg-opacity-50">
+                    <button type="button" class="action-btn action-btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times text-tertiary" aria-hidden="true"></i> Cancel
                     </button>
-                    <button type="submit" class="btn btn-primary" id="createUserSubmitBtn" style="border-radius: 12px; padding: 10px 24px;">
-                        <i class="fas fa-save mr-1"></i>Create User
+                    <button type="submit" class="action-btn action-btn-primary" id="createUserSubmitBtn">
+                        <i class="fas fa-save" aria-hidden="true"></i> Create user
                     </button>
                 </div>
             </form>
         </div>
     </div>
-</div>
-
 </div>
 @endsection
 
@@ -485,17 +412,25 @@
 <script>
 // View Toggle
 function switchView(view) {
+    const tableEl = document.getElementById('tableView');
+    const cardEl = document.getElementById('cardView');
+    const btnTable = document.getElementById('viewTable');
+    const btnCards = document.getElementById('viewCards');
     if (view === 'table') {
-        $('#tableView').show();
-        $('#cardView').hide();
-        $('#viewTable').addClass('active').removeClass('btn-outline-secondary').addClass('btn-primary');
-        $('#viewCards').removeClass('active').removeClass('btn-primary').addClass('btn-outline-secondary');
+        tableEl.classList.remove('d-none');
+        cardEl.classList.add('d-none');
+        btnTable.classList.add('active');
+        btnTable.setAttribute('aria-pressed', 'true');
+        btnCards.classList.remove('active');
+        btnCards.setAttribute('aria-pressed', 'false');
         localStorage.setItem('usersView', 'table');
     } else {
-        $('#tableView').hide();
-        $('#cardView').show();
-        $('#viewTable').removeClass('active').removeClass('btn-primary').addClass('btn-outline-secondary');
-        $('#viewCards').addClass('active').removeClass('btn-outline-secondary').addClass('btn-primary');
+        tableEl.classList.add('d-none');
+        cardEl.classList.remove('d-none');
+        btnTable.classList.remove('active');
+        btnTable.setAttribute('aria-pressed', 'false');
+        btnCards.classList.add('active');
+        btnCards.setAttribute('aria-pressed', 'true');
         localStorage.setItem('usersView', 'cards');
     }
 }
@@ -505,13 +440,6 @@ $(document).ready(function() {
     const savedView = localStorage.getItem('usersView') || 'table';
     switchView(savedView);
 });
-
-// Toggle Filters
-function toggleFilters() {
-    $('#filterSection').slideToggle();
-    const icon = $('#filterToggleIcon');
-    icon.toggleClass('fa-chevron-down fa-chevron-up');
-}
 
 // Select All Checkboxes
 $('#selectAllUsers').on('change', function() {
@@ -631,9 +559,19 @@ function refreshPage() {
 
 // Show Create User Modal
 function showCreateUserModal() {
-    $('#createUserModal').modal('show');
-    $('#createUserForm')[0].reset();
-    $('#createUserError').hide();
+    const el = document.getElementById('createUserModal');
+    if (window.bootstrap && bootstrap.Modal) {
+        bootstrap.Modal.getOrCreateInstance(el).show();
+    } else if (typeof $ !== 'undefined' && $(el).modal) {
+        $(el).modal('show');
+    }
+    const form = document.getElementById('createUserForm');
+    if (form) form.reset();
+    const err = document.getElementById('createUserError');
+    if (err) {
+        err.classList.add('d-none');
+        err.textContent = '';
+    }
     $('#modal_user_type').val('2');
     $('#modal_user_status').val('1');
 }
@@ -648,13 +586,13 @@ $(document).ready(function() {
         const errorDiv = $('#createUserError');
         const originalText = submitBtn.html();
         
-        errorDiv.hide();
+        errorDiv.addClass('d-none');
         
         // Validate password match
         const password = $('#modal_user_password').val();
         const passwordConfirmation = $('#modal_user_password_confirmation').val();
         if (password !== passwordConfirmation) {
-            errorDiv.html('<i class="fas fa-exclamation-triangle mr-1"></i>Password and confirmation password do not match.').show();
+            errorDiv.html('<i class="fas fa-exclamation-triangle mr-1"></i>Password and confirmation password do not match.').removeClass('d-none');
             return;
         }
         
@@ -676,9 +614,14 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if (response.success) {
-                    $('#createUserModal').modal('hide');
+                    const modalEl = document.getElementById('createUserModal');
+                    if (window.bootstrap && bootstrap.Modal && modalEl) {
+                        bootstrap.Modal.getInstance(modalEl)?.hide();
+                    } else if (typeof $ !== 'undefined') {
+                        $('#createUserModal').modal('hide');
+                    }
                     form[0].reset();
-                    errorDiv.hide();
+                    errorDiv.addClass('d-none');
                     
                     if (typeof toastr !== 'undefined') {
                         toastr.success(response.message || 'User created successfully');
@@ -708,7 +651,7 @@ $(document).ready(function() {
                     const firstError = Object.values(errors)[0];
                     errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
                 }
-                errorDiv.html('<i class="fas fa-exclamation-triangle mr-1"></i>' + errorMessage).show();
+                errorDiv.html('<i class="fas fa-exclamation-triangle mr-1"></i>' + errorMessage).removeClass('d-none');
                 errorDiv[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             },
             complete: function() {
@@ -721,7 +664,7 @@ $(document).ready(function() {
     // Reset form when modal is closed
     $('#createUserModal').on('hidden.bs.modal', function() {
         $('#createUserForm')[0].reset();
-        $('#createUserError').hide();
+        $('#createUserError').addClass('d-none').text('');
         $('#modal_user_type').val('2');
         $('#modal_user_status').val('1');
     });
