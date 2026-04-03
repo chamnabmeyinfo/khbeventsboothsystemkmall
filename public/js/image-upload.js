@@ -90,12 +90,16 @@
 
         // Validate file type
         if (!file.type.match('image.*')) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Invalid File Type',
-                text: 'Please select an image file (JPEG, PNG, GIF)',
-                confirmButtonColor: '#667eea'
-            });
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid File Type',
+                    text: 'Please select an image file (JPEG, PNG, GIF)',
+                    confirmButtonColor: '#667eea'
+                });
+            } else {
+                alert('Please select an image file (JPEG, PNG, GIF)');
+            }
             return;
         }
 
@@ -103,12 +107,16 @@
         const maxSize = input.dataset.type === 'avatar' ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
         if (file.size > maxSize) {
             const maxSizeMB = maxSize / (1024 * 1024);
-            Swal.fire({
-                icon: 'error',
-                title: 'File Too Large',
-                text: `Image size must be less than ${maxSizeMB}MB`,
-                confirmButtonColor: '#667eea'
-            });
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'File Too Large',
+                    text: `Image size must be less than ${maxSizeMB}MB`,
+                    confirmButtonColor: '#667eea'
+                });
+            } else {
+                alert(`Image size must be less than ${maxSizeMB}MB`);
+            }
             return;
         }
 
@@ -132,16 +140,20 @@
         const entityId = component.dataset.entityId;
         const type = component.dataset.type;
 
-        Swal.fire({
-            title: 'Remove Image?',
-            text: `Are you sure you want to remove this ${type}?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Yes, remove it!',
-            cancelButtonText: 'Cancel'
-        }).then((result) => {
+        const confirmRemove = typeof Swal !== 'undefined'
+            ? Swal.fire({
+                title: 'Remove Image?',
+                text: `Are you sure you want to remove this ${type}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, remove it!',
+                cancelButtonText: 'Cancel'
+            })
+            : Promise.resolve({ isConfirmed: window.confirm(`Remove this ${type}?`) });
+
+        confirmRemove.then((result) => {
             if (result.isConfirmed) {
                 showLoading();
                 const url = type === 'avatar' ? '/images/avatar/remove' : '/images/cover/remove';
@@ -161,15 +173,25 @@
                 .then(data => {
                     hideLoading();
                     if (data.success) {
-                        toastr.success(data.message || 'Image removed successfully');
+                        if (typeof toastr !== 'undefined') {
+                            toastr.success(data.message || 'Image removed successfully');
+                        }
                         location.reload();
                     } else {
-                        toastr.error(data.message || 'Error removing image');
+                        if (typeof toastr !== 'undefined') {
+                            toastr.error(data.message || 'Error removing image');
+                        } else {
+                            alert(data.message || 'Error removing image');
+                        }
                     }
                 })
                 .catch(error => {
                     hideLoading();
-                    toastr.error('Error removing image: ' + error.message);
+                    if (typeof toastr !== 'undefined') {
+                        toastr.error('Error removing image: ' + error.message);
+                    } else {
+                        alert('Error removing image: ' + error.message);
+                    }
                     console.error('Error:', error);
                 });
             }
@@ -203,12 +225,16 @@
         const type = component.dataset.type;
 
         if (!fileInput || !fileInput.files || !fileInput.files[0]) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'No File Selected',
-                text: 'Please select an image file first',
-                confirmButtonColor: '#667eea'
-            });
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No File Selected',
+                    text: 'Please select an image file first',
+                    confirmButtonColor: '#667eea'
+                });
+            } else {
+                alert('Please select an image file first');
+            }
             return;
         }
 
@@ -248,19 +274,29 @@
             }
 
             if (data.success) {
-                toastr.success(data.message || 'Image uploaded successfully');
+                if (typeof toastr !== 'undefined') {
+                    toastr.success(data.message || 'Image uploaded successfully');
+                }
                 setTimeout(() => {
                     location.reload();
                 }, 1000);
             } else {
-                toastr.error(data.message || 'Error uploading image');
+                if (typeof toastr !== 'undefined') {
+                    toastr.error(data.message || 'Error uploading image');
+                } else {
+                    alert(data.message || 'Error uploading image');
+                }
             }
         })
         .catch(error => {
             saveBtn.disabled = false;
             saveBtn.innerHTML = originalText;
             if (uploadProgress) uploadProgress.style.display = 'none';
-            toastr.error('Error uploading image: ' + error.message);
+            if (typeof toastr !== 'undefined') {
+                toastr.error('Error uploading image: ' + error.message);
+            } else {
+                alert('Error uploading image: ' + error.message);
+            }
             console.error('Error:', error);
         });
     }

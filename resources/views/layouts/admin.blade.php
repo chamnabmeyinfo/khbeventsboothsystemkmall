@@ -19,7 +19,9 @@
     <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}?v=3.2">
     <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=3.0">
     <link rel="stylesheet" href="{{ asset('css/app-shell-layout.css') }}?v=1.2">
+    <link rel="stylesheet" href="{{ asset('vendor/sweetalert2/css/sweetalert2.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/sweetalert2-custom.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('vendor/toastr/css/toastr.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/app-loading-overlay.css') }}?v=2">
     
     @stack('styles')
@@ -66,6 +68,20 @@
     <script src="{{ asset('vendor/bootstrap5/js/bootstrap.bundle.min.js') }}"></script>
     <!-- jQuery - Local -->
     <script src="{{ asset('vendor/jquery/jquery-3.7.0.min.js') }}"></script>
+    <script src="{{ asset('vendor/sweetalert2/js/sweetalert2.min.js') }}"></script>
+    <script src="{{ asset('vendor/toastr/js/toastr.min.js') }}"></script>
+    <script>
+        if (typeof toastr !== 'undefined') {
+            toastr.options = {
+                closeButton: true,
+                progressBar: true,
+                positionClass: 'toast-top-right',
+                timeOut: 3500,
+                extendedTimeOut: 1000
+            };
+        }
+    </script>
+    <script src="{{ asset('js/image-upload.js') }}"></script>
     
     @stack('scripts')
     @include('partials.app-loading-overlay')
