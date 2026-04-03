@@ -244,4 +244,53 @@ class LandingPage extends Model
 
         return $visual;
     }
+
+    /**
+     * Sample agenda rows for the Canton Fair visual template (table: slot | activity | detail).
+     * Used for new-page form defaults and optional seeders.
+     *
+     * @return list<array{slot: string, activity: string, detail: string}>
+     */
+    public static function defaultDemoAgendaItems(): array
+    {
+        return [
+            ['slot' => 'Day 1 · Morning', 'activity' => 'Arrival in Guangzhou', 'detail' => 'Airport meet & hotel check-in'],
+            ['slot' => 'Day 1 · Afternoon', 'activity' => 'Canton Fair Phase 1', 'detail' => 'Registration & halls 1–3 orientation'],
+            ['slot' => 'Day 2 · Full day', 'activity' => 'Exhibitor visits & sourcing', 'detail' => 'Guided floor plan with KHB'],
+            ['slot' => 'Day 3 · Morning', 'activity' => 'Optional factory tour', 'detail' => 'Pre-booked visits'],
+            ['slot' => 'Day 3 · Afternoon', 'activity' => 'Return to Phnom Penh', 'detail' => 'Group departure'],
+        ];
+    }
+
+    /**
+     * Multiline agenda text for admin create form defaults (one locale per tab).
+     */
+    public static function defaultDemoAgendaItemsText(string $locale = 'en'): string
+    {
+        $loc = strtolower(trim($locale));
+
+        if ($loc === 'km') {
+            return <<<'TXT'
+ថ្ងៃទី 1 · ព្រឹក|មកដល់ Guangzhou|ទទួលនៅអាកាសយានដ្ឋាន និងចូលសណ្ឋាគា
+ថ្ងៃទី 1 · រសៀល|Canton Fair ដំណាក់ទី 1|ចុះឈ្មោះ និងស្គាល់រោងទិញ 1–3
+ថ្ងៃទី 2 · ពេញមួយថ្ងៃ|ទស្សនា​ស្តង់ និងមានការណែនាំ|ជាមួយ KHB
+ថ្ងៃទី 3 · ព្រឹក|ជម្រើសទៅរោងចក្រ|ចុះឈ្មោះមុន
+ថ្ងៃទី 3 · រសៀល|ត្រឡប់ទៅភ្នំពេញ|ចេញដំណើរការជាក្រុម
+TXT;
+        }
+
+        if ($loc === 'zh') {
+            return <<<'TXT'
+第一天 · 上午|抵达广州|接机与酒店入住
+第一天 · 下午|广交会第一期|办证与展馆 1–3 区导览
+第二天 · 全天|展商拜访与采购对接|KHB 向导陪同
+第三天 · 上午|可选工厂参观|需提前预约
+第三天 · 下午|返回金边|团队出发
+TXT;
+        }
+
+        return collect(self::defaultDemoAgendaItems())
+            ->map(fn (array $row) => $row['slot'].'|'.$row['activity'].'|'.$row['detail'])
+            ->implode("\n");
+    }
 }

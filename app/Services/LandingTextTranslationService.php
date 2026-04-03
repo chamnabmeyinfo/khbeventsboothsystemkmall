@@ -27,6 +27,7 @@ class LandingTextTranslationService
             'about_title', 'package_title',
             'about_text_en', 'about_text_kh',
             'package_price', 'booking_title', 'faq_title', 'terms_title', 'agenda_title',
+            'agenda_hdr_slot', 'agenda_hdr_activity', 'agenda_hdr_detail',
             'trip_section_title', 'per_person_label', 'seats_left_suffix',
             'hero_stats_text', 'package_items_text', 'trip_dates_text', 'agenda_items_text', 'faq_items_text', 'contact_phones_text', 'terms_text',
             'booking_name_placeholder', 'booking_email_placeholder', 'booking_phone_placeholder',

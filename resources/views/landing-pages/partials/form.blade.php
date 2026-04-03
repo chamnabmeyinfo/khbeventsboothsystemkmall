@@ -225,7 +225,9 @@
                         return $i !== '' ? $t.'|'.$i : $t;
                     })->implode("\n"));
                     $tripDatesText = old('visual.i18n.'.$loc.'.trip_dates_text', collect($vloc['trip_dates'] ?? [])->map(fn ($row) => trim(($row['date'] ?? '').'|'.($row['status'] ?? '').'|'.($row['seats_left'] ?? '')))->implode("\n"));
-                    $agendaItemsText = old('visual.i18n.'.$loc.'.agenda_items_text', collect($vloc['agenda_items'] ?? [])->map(fn ($row) => trim(($row['slot'] ?? '').'|'.($row['activity'] ?? '').'|'.($row['detail'] ?? '')))->implode("\n"));
+                    $agendaFromDb = collect($vloc['agenda_items'] ?? [])->map(fn ($row) => trim(($row['slot'] ?? '').'|'.($row['activity'] ?? '').'|'.($row['detail'] ?? '')))->implode("\n");
+                    $agendaDemoPrefill = ($landingPage === null && $agendaFromDb === '') ? LandingPage::defaultDemoAgendaItemsText($loc) : '';
+                    $agendaItemsText = old('visual.i18n.'.$loc.'.agenda_items_text', $agendaFromDb !== '' ? $agendaFromDb : $agendaDemoPrefill);
                     $faqItemsText = old('visual.i18n.'.$loc.'.faq_items_text', collect($vloc['faq_items'] ?? [])->map(fn ($row) => trim(($row['question'] ?? '').'|'.($row['answer'] ?? '')))->implode("\n"));
                     $contactPhonesText = old('visual.i18n.'.$loc.'.contact_phones_text', collect($vloc['contact_phones'] ?? [])->implode("\n"));
                     $pfx = 'visual[i18n]['.$loc.']';
@@ -394,7 +396,7 @@
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
                             <strong class="d-block">5. Agenda</strong>
-                            <small class="text-muted">Shown after trip dates on the public page: schedule rows (time slot, activity, optional note). Format each line: <code>slot|activity|detail</code> (detail can be empty).</small>
+                            <small class="text-muted">Shown after trip dates as a <strong>table</strong> on the public page. Each line is one row: <code>slot|activity|detail</code> (detail can be empty). Optional column titles below override the default English headers.</small>
                         </div>
                         <div class="card-body">
                             <div class="form-group">
@@ -404,13 +406,27 @@
                                 </div>
                                 <input type="text" name="{{ $pfx }}[agenda_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.agenda_title', $vloc['agenda_title'] ?? '') }}" placeholder="Trip agenda">
                             </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label class="small text-muted mb-0">Table column: time / slot</label>
+                                    <input type="text" name="{{ $pfx }}[agenda_hdr_slot]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.agenda_hdr_slot', $vloc['agenda_hdr_slot'] ?? '') }}" placeholder="Time / slot" maxlength="120">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label class="small text-muted mb-0">Table column: activity</label>
+                                    <input type="text" name="{{ $pfx }}[agenda_hdr_activity]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.agenda_hdr_activity', $vloc['agenda_hdr_activity'] ?? '') }}" placeholder="Activity" maxlength="120">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label class="small text-muted mb-0">Table column: details</label>
+                                    <input type="text" name="{{ $pfx }}[agenda_hdr_detail]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.agenda_hdr_detail', $vloc['agenda_hdr_detail'] ?? '') }}" placeholder="Details" maxlength="120">
+                                </div>
+                            </div>
                             <div class="form-group mb-0">
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
                                     <label class="mb-0">Agenda rows</label>
                                     @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'agenda_items_text', 'canAutoTranslate' => $canAutoTranslate])
                                 </div>
                                 <textarea name="{{ $pfx }}[agenda_items_text]" class="form-control" rows="8" placeholder="Day 1 · Morning|Canton Fair visit|Halls 1–3&#10;Day 2|Factory tour|Optional">{{ $agendaItemsText }}</textarea>
-                                <small class="text-muted d-block mt-1">One row per line: <code>slot|activity|detail</code>.</small>
+                                <small class="text-muted d-block mt-1">One table row per line: <code>slot|activity|detail</code>.</small>
                             </div>
                         </div>
                     </div>
