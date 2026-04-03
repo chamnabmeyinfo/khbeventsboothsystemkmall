@@ -47,7 +47,8 @@ window.LandingPageConfig = {
     setActiveUrl: @json($canInlineEdit ? route('landing-pages.set-active', $landingPage) : null),
     inlineLocale: @json($canInlineEdit ? ($currentLocale ?? 'en') : null),
     useContinueModal: @json($landingPage->use_visual_builder && $landingPage->template_key === 'canton_fair_visual'),
-    continueDefaultTarget: @json($landingPage->redirect_url ?? '/login')
+    continueDefaultTarget: @json($landingPage->redirect_url ?? '/login'),
+    currentLocale: @json($currentLocale ?? 'en')
 };
 
 window.trackLandingEvent = function(eventType, payload) {
@@ -156,7 +157,10 @@ window.landingContinue = function(targetUrl) {
                 lead_email: (modalForm.email && modalForm.email.value) ? modalForm.email.value.trim() : '',
                 lead_phone: (modalForm.phone && modalForm.phone.value) ? modalForm.phone.value.trim() : '',
                 source: 'continue-modal',
-                meta: { tripDate: (modalForm.tripDate && modalForm.tripDate.value) ? modalForm.tripDate.value : '' }
+                meta: {
+                    tripDate: (modalForm.tripDate && modalForm.tripDate.value) ? modalForm.tripDate.value : '',
+                    locale: (window.LandingPageConfig && window.LandingPageConfig.currentLocale) ? window.LandingPageConfig.currentLocale : 'en'
+                }
             };
             var p = (typeof submitLandingLead === 'function') ? submitLandingLead(payload) : Promise.resolve(null);
             p.catch(function() { return null; }).then(function() {

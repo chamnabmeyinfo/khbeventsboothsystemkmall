@@ -43,8 +43,15 @@
 
     <div class="card mb-3">
         <div class="card-body d-flex flex-wrap align-items-center gap-2">
+            <span class="text-muted small mr-auto mb-2 mb-md-0">
+                Marketing leads (all pages): <strong>{{ number_format($stats['total_leads'] ?? 0) }}</strong>
+                <span class="d-none d-md-inline"> — stored under <code>/landing-pages/reporting</code></span>
+            </span>
             <a href="{{ route('landing-pages.create') }}" class="btn btn-primary" style="min-height:44px;">
                 <i class="fas fa-plus mr-1"></i>Create Landing Page
+            </a>
+            <a href="{{ route('landing-pages.reporting.index') }}" class="btn btn-outline-primary" style="min-height:44px;">
+                <i class="fas fa-chart-line mr-1"></i>Leads &amp; reporting
             </a>
             <a href="{{ route('landing-pages.index') }}" class="btn btn-default" style="min-height:44px;">
                 <i class="fas fa-sync-alt mr-1"></i>Refresh
@@ -96,6 +103,7 @@
                         <th>Status</th>
                         <th>Priority</th>
                         <th>Updated</th>
+                        <th class="text-nowrap">Leads</th>
                         <th class="text-right">Actions</th>
                     </tr>
                 </thead>
@@ -119,6 +127,10 @@
                             </td>
                             <td>{{ $landingPage->priority }}</td>
                             <td>{{ optional($landingPage->updated_at)->format('Y-m-d H:i') }}</td>
+                            <td>
+                                <span class="badge badge-light">{{ (int) ($landingPage->leads_count ?? 0) }}</span>
+                                <a href="{{ route('landing-pages.reporting', $landingPage) }}" class="small d-inline-block ml-1">Reporting</a>
+                            </td>
                             <td class="text-right">
                                 <div class="btn-group btn-group-sm">
                                     <a href="{{ route('landing-pages.preview', $landingPage) }}" class="btn btn-warning" target="_blank">Preview</a>
@@ -152,7 +164,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center py-4 text-muted">No landing pages found.</td>
+                            <td colspan="8" class="text-center py-4 text-muted">No landing pages found.</td>
                         </tr>
                     @endforelse
                 </tbody>

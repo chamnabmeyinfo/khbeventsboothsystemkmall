@@ -26,9 +26,9 @@ class LandingTextTranslationService
             'hero_title', 'hero_cta_text', 'hero_subtitle',
             'about_title', 'package_title',
             'about_text_en', 'about_text_kh',
-            'package_price', 'booking_title', 'faq_title', 'terms_title',
+            'package_price', 'booking_title', 'faq_title', 'terms_title', 'agenda_title',
             'trip_section_title', 'per_person_label', 'seats_left_suffix',
-            'hero_stats_text', 'package_items_text', 'trip_dates_text', 'faq_items_text', 'contact_phones_text', 'terms_text',
+            'hero_stats_text', 'package_items_text', 'trip_dates_text', 'agenda_items_text', 'faq_items_text', 'contact_phones_text', 'terms_text',
             'booking_name_placeholder', 'booking_email_placeholder', 'booking_phone_placeholder',
             'booking_trip_placeholder', 'booking_submit_text',
         ];
@@ -45,7 +45,7 @@ class LandingTextTranslationService
 
         return match ($fieldKey) {
             'hero_stats_text' => $this->translateHeroStatsPipeLines($text, $sourceLocale, $targetLocale),
-            'trip_dates_text', 'faq_items_text' => $this->translatePipeDelimitedMultiline($text, $sourceLocale, $targetLocale),
+            'trip_dates_text', 'faq_items_text', 'agenda_items_text' => $this->translatePipeDelimitedMultiline($text, $sourceLocale, $targetLocale),
             'package_items_text' => $this->translatePackageItemsLines($text, $sourceLocale, $targetLocale),
             'contact_phones_text' => $this->translateContactPhones($text, $sourceLocale, $targetLocale),
             default => $this->translatePlain($text, $sourceLocale, $targetLocale),

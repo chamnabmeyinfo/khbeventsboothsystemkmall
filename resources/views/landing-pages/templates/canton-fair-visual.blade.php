@@ -12,6 +12,8 @@
     $faqTitle = $visual['faq_title'] ?? 'Frequently Asked Questions';
     $termsTitle = $visual['terms_title'] ?? 'Terms & Conditions';
     $termsText = $visual['terms_text'] ?? '';
+    $agendaTitle = $visual['agenda_title'] ?? 'Trip agenda';
+    $agendaItems = is_array($visual['agenda_items'] ?? null) ? $visual['agenda_items'] : [];
     $tripSectionTitle = $visual['trip_section_title'] ?? 'Choose Your Trip Date';
     $perPersonLabel = $visual['per_person_label'] ?? 'per person';
     $seatsLeftSuffix = $visual['seats_left_suffix'] ?? 'seats left';
@@ -233,6 +235,17 @@
     .lv-section--about{background:var(--lv-surface)}
     .lv-section--package{background:linear-gradient(180deg,var(--lv-accent-soft) 0%,#fff 100%)}
     .lv-section--trip{background:var(--lv-surface)}
+    .lv-section--agenda{background:linear-gradient(180deg,#fff 0%,var(--lv-surface-2) 100%)}
+    .lv-agenda-grid{display:grid;gap:12px;margin-top:8px}
+    .lv-agenda-item{display:flex;flex-direction:column;gap:10px;padding:16px 18px;text-align:left}
+    @media (min-width:768px){
+        .lv-agenda-item{flex-direction:row;align-items:flex-start;gap:20px}
+        .lv-agenda-slot{flex:0 0 minmax(120px,26%);max-width:280px}
+        .lv-agenda-main{flex:1;min-width:0}
+    }
+    .lv-agenda-slot{font-weight:700;color:var(--lv-primary);font-size:.95rem;line-height:1.35}
+    .lv-agenda-activity{font-weight:600;color:var(--lv-ink);line-height:1.45}
+    .lv-agenda-detail{font-size:.95rem;color:var(--lv-body);margin-top:4px;line-height:1.55}
     .lv-section--booking{background:var(--lv-surface-2)}
     .lv-section--faq{background:linear-gradient(180deg,#f1f5f9 0%,var(--lv-surface-2) 100%)}
     .lv-section--terms{background:var(--lv-surface);border-top:1px solid var(--lv-border)}
@@ -512,7 +525,38 @@
         </div>
     </section>
 
-    {{-- Section 5 — Booking --}}
+    {{-- Section 5 — Agenda --}}
+    <section class="lv-section lv-section--agenda" data-lp-section="agenda" aria-labelledby="lvAgendaHeading">
+        <div class="lv-container">
+            <h2 id="lvAgendaHeading" data-lv-key="agenda_title">{{ $agendaTitle }}</h2>
+            <div class="lv-agenda-grid">
+                @foreach($agendaItems as $row)
+                    @php
+                        $slot = trim((string) ($row['slot'] ?? ''));
+                        $act = trim((string) ($row['activity'] ?? ''));
+                        $det = trim((string) ($row['detail'] ?? ''));
+                    @endphp
+                    @if($slot !== '' || $act !== '' || $det !== '')
+                        <div class="lv-card lv-agenda-item">
+                            @if($slot !== '')
+                                <div class="lv-agenda-slot">{{ $slot }}</div>
+                            @endif
+                            <div class="lv-agenda-main">
+                                @if($act !== '')
+                                    <div class="lv-agenda-activity">{{ $act }}</div>
+                                @endif
+                                @if($det !== '')
+                                    <div class="lv-agenda-detail">{{ $det }}</div>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    {{-- Section 6 — Booking --}}
     <section class="lv-section lv-section--booking" data-lp-section="booking">
         <div class="lv-container lv-grid">
             <div>
@@ -536,7 +580,7 @@
         </div>
     </section>
 
-    {{-- Section 6 — FAQ & contact --}}
+    {{-- Section 7 — FAQ & contact --}}
     <section class="lv-section lv-section--faq" data-lp-section="faq">
         <div class="lv-container">
             <h2 data-lv-key="faq_title">{{ $faqTitle }}</h2>
@@ -554,7 +598,7 @@
         </div>
     </section>
 
-    {{-- Section 7 — Terms & Conditions (always visible on public page) --}}
+    {{-- Section 8 — Terms & Conditions (always visible on public page) --}}
     <section class="lv-section lv-section--terms" data-lp-section="terms" aria-labelledby="lvTermsHeading">
         <div class="lv-container">
             <h2 id="lvTermsHeading" data-lv-key="terms_title">{{ $termsTitle }}</h2>
@@ -576,7 +620,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 lead_email: form.email.value || '',
                 lead_phone: form.phone.value || '',
                 source: 'visual-builder-form',
-                meta: { tripDate: form.tripDate.value || '' }
+                meta: {
+                    tripDate: form.tripDate.value || '',
+                    locale: (window.LandingPageConfig && window.LandingPageConfig.currentLocale) ? window.LandingPageConfig.currentLocale : 'en'
+                }
             };
             if (typeof submitLandingLead === 'function') {
                 submitLandingLead(payload);

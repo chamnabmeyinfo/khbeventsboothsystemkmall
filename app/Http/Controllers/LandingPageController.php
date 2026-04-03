@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LandingPage;
+use App\Models\LandingPageLead;
 use App\Models\LandingPageEvent;
 use App\Services\LandingTextTranslationService;
 use Illuminate\Http\Request;
@@ -15,7 +16,7 @@ class LandingPageController extends Controller
 {
     public function index(Request $request)
     {
-        $query = LandingPage::query();
+        $query = LandingPage::query()->withCount('leads');
 
         if ($request->filled('search')) {
             $search = trim((string) $request->input('search'));
@@ -54,6 +55,7 @@ class LandingPageController extends Controller
             'published_pages' => LandingPage::where('is_published', true)->count(),
             'active_page' => LandingPage::where('is_active', true)->where('is_published', true)->count(),
             'total_events' => LandingPageEvent::count(),
+            'total_leads' => LandingPageLead::count(),
         ];
 
         $industries = LandingPage::query()
@@ -94,6 +96,8 @@ class LandingPageController extends Controller
 
     public function edit(LandingPage $landingPage)
     {
+        $landingPage->loadCount('leads');
+
         return view('landing-pages.edit', compact('landingPage'));
     }
 
@@ -203,6 +207,51 @@ class LandingPageController extends Controller
         return view('landing-pages.preview', compact('landingPage'));
     }
 
+    /**
+     * Admin: all marketing leads across landing pages (under /landing-pages/reporting).
+     */
+    public function reportingIndex(Request $request)
+    {
+        $query = LandingPageLead::query()
+            ->with(['landingPage:id,name,slug'])
+            ->orderByDesc('created_at');
+
+        if ($request->filled('landing_page_id')) {
+            $query->where('landing_page_id', (int) $request->input('landing_page_id'));
+        }
+
+        if ($request->filled('search')) {
+            $searchLike = '%'.trim((string) $request->input('search')).'%';
+            $query->where(function ($q) use ($searchLike) {
+                $q->where('name', 'like', $searchLike)
+                    ->orWhere('email', 'like', $searchLike)
+                    ->orWhere('phone', 'like', $searchLike);
+            });
+        }
+
+        $leads = $query->paginate(40)->withQueryString();
+
+        $landingPageOptions = LandingPage::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug']);
+
+        return view('landing-pages.reporting-index', compact('leads', 'landingPageOptions'));
+    }
+
+    /**
+     * Admin: marketing leads / form submissions for this landing page (not floor-plan booth bookings).
+     */
+    public function leads(LandingPage $landingPage)
+    {
+        $leads = LandingPageLead::query()
+            ->where('landing_page_id', $landingPage->id)
+            ->orderByDesc('created_at')
+            ->paginate(30)
+            ->withQueryString();
+
+        return view('landing-pages.leads', compact('landingPage', 'leads'));
+    }
+
     public function updateVisualInline(Request $request, LandingPage $landingPage)
     {
         if (! $landingPage->use_visual_builder) {
@@ -230,6 +279,8 @@ class LandingPageController extends Controller
             'faq_title' => 255,
             'terms_title' => 255,
             'terms_text' => 8000,
+            'agenda_title' => 255,
+            'agenda_items_text' => 12000,
             'trip_section_title' => 255,
             'per_person_label' => 120,
             'seats_left_suffix' => 120,
@@ -378,6 +429,8 @@ class LandingPageController extends Controller
             'visual.i18n.*.faq_title' => 'nullable|string|max:255',
             'visual.i18n.*.terms_title' => 'nullable|string|max:255',
             'visual.i18n.*.terms_text' => 'nullable|string|max:8000',
+            'visual.i18n.*.agenda_title' => 'nullable|string|max:255',
+            'visual.i18n.*.agenda_items_text' => 'nullable|string|max:12000',
             'visual.i18n.*.trip_section_title' => 'nullable|string|max:255',
             'visual.i18n.*.per_person_label' => 'nullable|string|max:120',
             'visual.i18n.*.seats_left_suffix' => 'nullable|string|max:120',
@@ -591,7 +644,7 @@ class LandingPageController extends Controller
         $stringFields = [
             'hero_title', 'hero_subtitle', 'hero_cta_text',
             'about_title', 'about_text_en', 'about_text_kh',
-            'package_title', 'package_price', 'booking_title', 'faq_title', 'terms_title', 'terms_text',
+            'package_title', 'package_price', 'booking_title', 'faq_title', 'terms_title', 'terms_text', 'agenda_title',
             'trip_section_title', 'per_person_label', 'seats_left_suffix',
             'booking_name_placeholder', 'booking_email_placeholder', 'booking_phone_placeholder',
             'booking_trip_placeholder', 'booking_submit_text',
@@ -623,6 +676,13 @@ class LandingPageController extends Controller
             $tripRaw,
             ['date', 'status', 'seats_left'],
             is_array($prevBlock['trip_dates'] ?? null) ? $prevBlock['trip_dates'] : []
+        );
+
+        $agendaRaw = array_key_exists('agenda_items_text', $locIn) ? (string) $locIn['agenda_items_text'] : null;
+        $block['agenda_items'] = $this->parsePipeList(
+            $agendaRaw,
+            ['slot', 'activity', 'detail'],
+            is_array($prevBlock['agenda_items'] ?? null) ? $prevBlock['agenda_items'] : []
         );
 
         $faqRaw = array_key_exists('faq_items_text', $locIn) ? (string) $locIn['faq_items_text'] : null;

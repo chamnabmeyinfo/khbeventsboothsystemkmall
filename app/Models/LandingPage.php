@@ -62,6 +62,11 @@ class LandingPage extends Model
         return $this->hasMany(LandingPageEvent::class);
     }
 
+    public function leads(): HasMany
+    {
+        return $this->hasMany(LandingPageLead::class);
+    }
+
     public function scopePublished($query)
     {
         return $query->where('is_published', true);

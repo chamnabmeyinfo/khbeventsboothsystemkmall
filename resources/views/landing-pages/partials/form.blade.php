@@ -225,6 +225,7 @@
                         return $i !== '' ? $t.'|'.$i : $t;
                     })->implode("\n"));
                     $tripDatesText = old('visual.i18n.'.$loc.'.trip_dates_text', collect($vloc['trip_dates'] ?? [])->map(fn ($row) => trim(($row['date'] ?? '').'|'.($row['status'] ?? '').'|'.($row['seats_left'] ?? '')))->implode("\n"));
+                    $agendaItemsText = old('visual.i18n.'.$loc.'.agenda_items_text', collect($vloc['agenda_items'] ?? [])->map(fn ($row) => trim(($row['slot'] ?? '').'|'.($row['activity'] ?? '').'|'.($row['detail'] ?? '')))->implode("\n"));
                     $faqItemsText = old('visual.i18n.'.$loc.'.faq_items_text', collect($vloc['faq_items'] ?? [])->map(fn ($row) => trim(($row['question'] ?? '').'|'.($row['answer'] ?? '')))->implode("\n"));
                     $contactPhonesText = old('visual.i18n.'.$loc.'.contact_phones_text', collect($vloc['contact_phones'] ?? [])->implode("\n"));
                     $pfx = 'visual[i18n]['.$loc.']';
@@ -389,10 +390,35 @@
                         </div>
                     </div>
 
+                    {{-- Section: Agenda --}}
+                    <div class="card card-outline-secondary mb-3">
+                        <div class="card-header py-2">
+                            <strong class="d-block">5. Agenda</strong>
+                            <small class="text-muted">Shown after trip dates on the public page: schedule rows (time slot, activity, optional note). Format each line: <code>slot|activity|detail</code> (detail can be empty).</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                    <label class="mb-0">Agenda section title</label>
+                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'agenda_title', 'canAutoTranslate' => $canAutoTranslate])
+                                </div>
+                                <input type="text" name="{{ $pfx }}[agenda_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.agenda_title', $vloc['agenda_title'] ?? '') }}" placeholder="Trip agenda">
+                            </div>
+                            <div class="form-group mb-0">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                    <label class="mb-0">Agenda rows</label>
+                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'agenda_items_text', 'canAutoTranslate' => $canAutoTranslate])
+                                </div>
+                                <textarea name="{{ $pfx }}[agenda_items_text]" class="form-control" rows="8" placeholder="Day 1 · Morning|Canton Fair visit|Halls 1–3&#10;Day 2|Factory tour|Optional">{{ $agendaItemsText }}</textarea>
+                                <small class="text-muted d-block mt-1">One row per line: <code>slot|activity|detail</code>.</small>
+                            </div>
+                        </div>
+                    </div>
+
                     {{-- Section: Booking --}}
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
-                            <strong class="d-block">5. Booking</strong>
+                            <strong class="d-block">6. Booking</strong>
                             <small class="text-muted">Split layout: form + fields on one side, shared <strong>Why / booking image</strong> on the other. Set the section heading and all form control labels for this language.</small>
                         </div>
                         <div class="card-body">
@@ -457,7 +483,7 @@
                     {{-- Section: FAQ & contact --}}
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
-                            <strong class="d-block">6. FAQ &amp; contact</strong>
+                            <strong class="d-block">7. FAQ &amp; contact</strong>
                             <small class="text-muted">Stacked Q&amp;A cards, then a single contact bar with phone links (one number per line).</small>
                         </div>
                         <div class="card-body">
@@ -488,7 +514,7 @@
                     {{-- Section: Terms & Conditions --}}
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
-                            <strong class="d-block">7. Terms &amp; Conditions</strong>
+                            <strong class="d-block">8. Terms &amp; Conditions</strong>
                             <small class="text-muted">Always shown after FAQ on the public page. Add your legal or policy copy below; the section heading still appears if the body is empty.</small>
                         </div>
                         <div class="card-body">

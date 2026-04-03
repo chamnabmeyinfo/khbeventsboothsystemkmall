@@ -7,8 +7,11 @@
 @section('content')
 <div class="container-fluid">
     <div class="card">
-        <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-edit mr-2"></i>Edit Landing Page: {{ $landingPage->name }}</h3>
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <h3 class="card-title mb-0"><i class="fas fa-edit mr-2"></i>Edit Landing Page: {{ $landingPage->name }}</h3>
+            <a href="{{ route('landing-pages.reporting', $landingPage) }}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-chart-line mr-1"></i>Leads &amp; reporting ({{ (int) ($landingPage->leads_count ?? 0) }})
+            </a>
         </div>
         <form action="{{ route('landing-pages.update', $landingPage) }}" method="POST" enctype="multipart/form-data">
             @csrf

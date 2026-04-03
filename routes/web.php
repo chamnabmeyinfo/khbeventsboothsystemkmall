@@ -46,7 +46,9 @@ Route::get('/', function () {
 Route::get('/l/{landingPage:slug}', [LandingPagePublicController::class, 'show'])->name('landing-pages.public.show');
 Route::post('/l/{landingPage:slug}/continue', [LandingPagePublicController::class, 'continue'])->name('landing-pages.public.continue');
 Route::post('/l/{landingPage:slug}/track', [LandingPageTrackingController::class, 'track'])->name('landing-pages.track');
-Route::post('/l/{landingPage:slug}/lead', [LandingPageTrackingController::class, 'lead'])->name('landing-pages.lead');
+Route::post('/l/{landingPage:slug}/lead', [LandingPageTrackingController::class, 'lead'])
+    ->middleware('throttle:40,1')
+    ->name('landing-pages.lead');
 
 // Client Portal (Public)
 Route::prefix('client-portal')->name('client-portal.')->group(function () {
@@ -365,6 +367,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', [LandingPageController::class, 'index'])->name('index');
             Route::get('/create', [LandingPageController::class, 'create'])->name('create');
             Route::post('/', [LandingPageController::class, 'store'])->name('store');
+            Route::get('/reporting', [LandingPageController::class, 'reportingIndex'])->name('reporting.index');
             Route::get('/{landingPage:slug}/edit', [LandingPageController::class, 'edit'])->name('edit');
             Route::put('/{landingPage:slug}', [LandingPageController::class, 'update'])->name('update');
             Route::delete('/{landingPage:slug}', [LandingPageController::class, 'destroy'])->name('destroy');
@@ -375,6 +378,13 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/{landingPage:slug}/visual-inline', [LandingPageController::class, 'updateVisualInline'])->name('visual-inline');
             Route::post('/{landingPage:slug}/translate-from-english', [LandingPageController::class, 'translateFromEnglish'])->name('translate-from-english');
             Route::get('/{landingPage:slug}/analytics', [LandingPageTrackingController::class, 'analytics'])->name('analytics');
+            Route::get('/{landingPage:slug}/reporting', [LandingPageController::class, 'leads'])->name('reporting');
+            Route::get('/{landingPage:slug}/bookings', function (\App\Models\LandingPage $landingPage) {
+                return redirect()->route('landing-pages.reporting', $landingPage, 301);
+            });
+            Route::get('/{landingPage:slug}/leads', function (\App\Models\LandingPage $landingPage) {
+                return redirect()->route('landing-pages.reporting', $landingPage, 301);
+            });
         });
         Route::post('/settings/cache/clear', [SettingsController::class, 'clearCache'])->name('settings.cache.clear');
         Route::post('/settings/config/clear', [SettingsController::class, 'clearConfig'])->name('settings.config.clear');
