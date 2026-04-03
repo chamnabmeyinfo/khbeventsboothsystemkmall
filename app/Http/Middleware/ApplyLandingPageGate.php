@@ -11,6 +11,10 @@ class ApplyLandingPageGate
 {
     public function handle(Request $request, Closure $next): Response
     {
+        if (! config('landing.gate_root_and_login')) {
+            return $next($request);
+        }
+
         if (! $this->shouldGateRequest($request)) {
             return $next($request);
         }
