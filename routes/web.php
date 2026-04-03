@@ -384,6 +384,9 @@ Route::middleware(['auth'])->group(function () {
                 ->whereNumber('lead')
                 ->name('reporting.destroy');
             Route::get('/analytics', [LandingPageController::class, 'analyticsIndex'])->name('analytics.index');
+            Route::post('/analytics/clear', [LandingPageController::class, 'analyticsClear'])
+                ->middleware('throttle:30,1')
+                ->name('analytics.clear');
             Route::get('/{landingPage:slug}/edit', [LandingPageController::class, 'edit'])->name('edit');
             Route::put('/{landingPage:slug}', [LandingPageController::class, 'update'])->name('update');
             Route::delete('/{landingPage:slug}', [LandingPageController::class, 'destroy'])->name('destroy');
@@ -395,6 +398,9 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/{landingPage:slug}/translate-from-english', [LandingPageController::class, 'translateFromEnglish'])->name('translate-from-english');
             Route::post('/parse-agenda-days', [LandingPageController::class, 'parseAgendaDays'])->name('parse-agenda-days');
             Route::get('/{landingPage:slug}/analytics', [LandingPageTrackingController::class, 'analytics'])->name('analytics');
+            Route::post('/{landingPage:slug}/analytics/clear', [LandingPageTrackingController::class, 'analyticsClear'])
+                ->middleware('throttle:30,1')
+                ->name('analytics.clear-page');
             Route::get('/{landingPage:slug}/reporting', [LandingPageController::class, 'leads'])->name('reporting');
             Route::get('/{landingPage:slug}/bookings', function (\App\Models\LandingPage $landingPage) {
                 return redirect()->route('landing-pages.reporting', $landingPage, 301);

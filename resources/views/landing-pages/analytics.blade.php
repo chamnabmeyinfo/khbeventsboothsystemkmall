@@ -22,6 +22,13 @@
 
 @section('content')
 <div class="container-fluid">
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+    @endif
+
     <div class="alert alert-light border mb-3">
         <strong>Visitor &amp; engagement analytics.</strong>
         Data comes from the public page (<code>/l/{{ $landingPage->slug }}</code>) via the tracking endpoint. JSON API:
@@ -101,6 +108,12 @@
             </div>
         </div>
     </div>
+
+    @include('landing-pages.partials.analytics-clear-form', [
+        'actionUrl' => route('landing-pages.analytics.clear-page', $landingPage),
+        'showPageSelector' => false,
+        'formId' => 'lp-an-clear-single',
+    ])
 
     <div class="row">
         <div class="col-12 col-lg-6 mb-3">

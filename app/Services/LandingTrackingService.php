@@ -6,6 +6,7 @@ use App\Models\LandingPage;
 use App\Models\LandingTrackingEvent;
 use App\Models\LandingTrackingVisitor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -323,5 +324,40 @@ class LandingTrackingService
             'last_utm_term' => $utm['utm_term'],
             'last_utm_content' => $utm['utm_content'],
         ]);
+    }
+
+    /**
+     * Hard-delete tracking events whose occurred_at falls in the selected calendar day, month, or year (app timezone).
+     * Does not delete marketing leads; lead rows may lose their tracking_event link (nullOnDelete).
+     *
+     * @param  'day'|'month'|'year'  $scope
+     */
+    public function purgeTrackingEvents(?int $landingPageId, string $scope, string $value): int
+    {
+        [$start, $end] = match ($scope) {
+            'day' => [
+                Carbon::parse($value)->startOfDay(),
+                Carbon::parse($value)->endOfDay(),
+            ],
+            'month' => [
+                Carbon::createFromFormat('Y-m', $value)->startOfMonth(),
+                Carbon::createFromFormat('Y-m', $value)->endOfMonth(),
+            ],
+            'year' => [
+                Carbon::parse((int) $value.'-01-01')->startOfDay(),
+                Carbon::parse((int) $value.'-12-31')->endOfDay(),
+            ],
+            default => throw new \InvalidArgumentException('Invalid scope'),
+        };
+
+        $q = LandingTrackingEvent::query()
+            ->where('occurred_at', '>=', $start)
+            ->where('occurred_at', '<=', $end);
+
+        if ($landingPageId !== null) {
+            $q->where('landing_page_id', $landingPageId);
+        }
+
+        return $q->delete();
     }
 }

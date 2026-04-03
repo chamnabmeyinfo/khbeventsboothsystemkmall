@@ -6,6 +6,13 @@
 
 @section('content')
 <div class="container-fluid">
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+    @endif
+
     <div class="alert alert-light border mb-3">
         <strong>Per-page detail.</strong>
         Open a landing page’s full funnel, daily chart, UTM breakdown, and recent events from the <strong>Analytics</strong> link in each row. Public traffic is tracked from <code>/l/{slug}</code> (views, CTA, leads, language, thank-you).
@@ -21,6 +28,13 @@
             </a>
         </div>
     </div>
+
+    @include('landing-pages.partials.analytics-clear-form', [
+        'actionUrl' => route('landing-pages.analytics.clear'),
+        'showPageSelector' => true,
+        'landingPageOptions' => $landingPageOptions ?? collect(),
+        'formId' => 'lp-an-clear-all',
+    ])
 
     <div class="card">
         <div class="card-header">

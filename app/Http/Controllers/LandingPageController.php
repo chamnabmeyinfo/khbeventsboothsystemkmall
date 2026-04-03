@@ -370,7 +370,44 @@ class LandingPageController extends Controller
             ];
         }
 
-        return view('landing-pages.analytics-index', compact('rows'));
+        $landingPageOptions = LandingPage::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug']);
+
+        return view('landing-pages.analytics-index', compact('rows', 'landingPageOptions'));
+    }
+
+    /**
+     * Admin: delete tracking events (not leads) for a chosen day, month, or year — optionally one landing page or all.
+     */
+    public function analyticsClear(Request $request, LandingTrackingService $tracking)
+    {
+        if (! $request->filled('landing_page_id')) {
+            $request->merge(['landing_page_id' => null]);
+        }
+
+        $validated = $request->validate([
+            'scope' => 'required|in:day,month,year',
+            'day' => 'required_if:scope,day|nullable|date_format:Y-m-d',
+            'month' => 'required_if:scope,month|nullable|date_format:Y-m',
+            'year' => 'required_if:scope,year|nullable|integer|min:2000|max:2100',
+            'landing_page_id' => 'nullable|integer|exists:landing_pages,id',
+            'confirm' => 'required|accepted',
+        ]);
+
+        $value = match ($validated['scope']) {
+            'day' => $validated['day'],
+            'month' => $validated['month'],
+            'year' => (string) $validated['year'],
+        };
+
+        $pageId = $validated['landing_page_id'] ?? null;
+        $pageId = $pageId !== null ? (int) $pageId : null;
+
+        $deleted = $tracking->purgeTrackingEvents($pageId, $validated['scope'], $value);
+
+        return redirect()->route('landing-pages.analytics.index')
+            ->with('success', "Deleted {$deleted} tracking event(s) for the selected period. Marketing lead records were not removed.");
     }
 
     /**

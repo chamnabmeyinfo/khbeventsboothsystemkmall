@@ -128,4 +128,29 @@ class LandingPageTrackingController extends Controller
 
         return view('landing-pages.analytics', compact('landingPage', 'report'));
     }
+
+    /**
+     * Admin: delete tracking events for this landing page only (day, month, or year).
+     */
+    public function analyticsClear(Request $request, LandingPage $landingPage)
+    {
+        $validated = $request->validate([
+            'scope' => 'required|in:day,month,year',
+            'day' => 'required_if:scope,day|nullable|date_format:Y-m-d',
+            'month' => 'required_if:scope,month|nullable|date_format:Y-m',
+            'year' => 'required_if:scope,year|nullable|integer|min:2000|max:2100',
+            'confirm' => 'required|accepted',
+        ]);
+
+        $value = match ($validated['scope']) {
+            'day' => $validated['day'],
+            'month' => $validated['month'],
+            'year' => (string) $validated['year'],
+        };
+
+        $deleted = $this->tracking->purgeTrackingEvents($landingPage->id, $validated['scope'], $value);
+
+        return redirect()->route('landing-pages.analytics', $landingPage)
+            ->with('success', "Deleted {$deleted} tracking event(s) for this page in the selected period. Marketing lead records were not removed.");
+    }
 }
