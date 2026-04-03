@@ -124,15 +124,19 @@
     $logo = !empty($visual['logo_image']) ? asset($visual['logo_image']) : '';
     $heroBg = !empty($visual['hero_background_image']) ? asset($visual['hero_background_image']) : 'https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1600&auto=format&fit=crop';
     $heroVideoRaw = trim((string) ($visual['hero_background_video'] ?? ''));
+    $heroVideoYoutubeId = null;
     $heroVideoSrc = '';
     $heroVideoMime = 'video/mp4';
     if ($heroVideoRaw !== '') {
-        if (preg_match('#^https?://#i', $heroVideoRaw)) {
-            $heroVideoSrc = $heroVideoRaw;
-        } else {
-            $heroVideoSrc = asset($heroVideoRaw);
+        $heroVideoYoutubeId = \App\Models\LandingPage::parseYouTubeVideoId($heroVideoRaw);
+        if ($heroVideoYoutubeId === null) {
+            if (preg_match('#^https?://#i', $heroVideoRaw)) {
+                $heroVideoSrc = $heroVideoRaw;
+            } else {
+                $heroVideoSrc = asset($heroVideoRaw);
+            }
+            $heroVideoMime = str_ends_with(strtolower($heroVideoRaw), '.webm') ? 'video/webm' : 'video/mp4';
         }
-        $heroVideoMime = str_ends_with(strtolower($heroVideoRaw), '.webm') ? 'video/webm' : 'video/mp4';
     }
     $aboutImage = !empty($visual['about_image']) ? asset($visual['about_image']) : 'https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=1400&auto=format&fit=crop';
     $whyImage = !empty($visual['why_image']) ? asset($visual['why_image']) : 'https://images.unsplash.com/photo-1549692520-acc6669e2f0c?q=80&w=1400&auto=format&fit=crop';
@@ -188,6 +192,13 @@
     .lv-hero__bg-video{
         position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;
         z-index:0;pointer-events:none;
+    }
+    /* YouTube: iframe cannot use object-fit; scale to cover hero (16:9) */
+    .lv-hero__bg-video--youtube{overflow:hidden}
+    .lv-hero__bg-video--youtube iframe{
+        position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+        width:100vw;height:56.25vw;min-width:177.77vh;min-height:100%;
+        border:0;pointer-events:none;
     }
     /* Stronger scrim so hero copy stays readable on bright or busy photos */
     .lv-hero:before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(165deg,rgba(15,23,42,.9) 0%,rgba(30,27,75,.68) 42%,rgba(196,30,30,.42) 100%)}
@@ -347,15 +358,82 @@
             radial-gradient(ellipse 70% 40% at 20% 100%,rgba(196,30,30,.05) 0%,transparent 50%),
             linear-gradient(180deg,rgba(241,245,249,.55) 0%,rgba(248,250,252,.35) 100%);
     }
+    /* Terms — editorial panel: gradient band, glass card, accent spine */
     .lv-section--terms{
-        background:rgba(255,255,255,.4);
-        border-top:1px solid rgba(255,255,255,.5);
-        backdrop-filter:blur(12px);
-        -webkit-backdrop-filter:blur(12px);
+        position:relative;
+        overflow:hidden;
+        background:
+            radial-gradient(ellipse 95% 55% at 50% -10%,rgba(201,162,39,.14) 0%,transparent 58%),
+            radial-gradient(ellipse 70% 45% at 100% 100%,rgba(196,30,30,.07) 0%,transparent 52%),
+            linear-gradient(185deg,rgba(252,252,253,.97) 0%,rgba(241,245,249,.92) 42%,rgba(255,255,255,.94) 100%);
+        border-top:1px solid rgba(255,255,255,.72);
+        backdrop-filter:blur(14px) saturate(1.15);
+        -webkit-backdrop-filter:blur(14px) saturate(1.15);
+        padding-bottom:clamp(56px,9vw,88px);
     }
-    .lv-terms-prose{max-width:min(72ch,100%);margin:0 auto;text-align:left;font-size:1rem;line-height:1.65;color:var(--lv-body);min-height:3rem}
+    .lv-section--terms::before{
+        content:"";
+        position:absolute;left:0;right:0;top:0;height:3px;
+        background:linear-gradient(90deg,transparent 0%,rgba(196,30,30,.85) 22%,var(--lv-accent) 50%,rgba(196,30,30,.85) 78%,transparent 100%);
+        opacity:.92;
+    }
+    .lv-terms-header{
+        text-align:center;
+        max-width:min(48ch,100%);
+        margin:0 auto 28px;
+    }
+    .lv-section--terms .lv-terms-header h2{
+        margin:0 0 14px;
+        font-size:clamp(1.45rem,3.2vw,1.9rem);
+        letter-spacing:-0.03em;
+        color:var(--lv-ink);
+    }
+    .lv-terms-header__rule{
+        width:min(140px,42%);
+        height:4px;
+        margin:0 auto;
+        border-radius:999px;
+        background:linear-gradient(90deg,var(--lv-primary),var(--lv-accent),var(--lv-primary));
+        box-shadow:0 2px 12px rgba(196,30,30,.2);
+    }
+    .lv-terms-panel{
+        position:relative;
+        max-width:min(820px,100%);
+        margin:0 auto;
+        border-radius:var(--lv-radius);
+        border:1px solid rgba(255,255,255,.88);
+        background:linear-gradient(155deg,rgba(255,255,255,.94) 0%,rgba(248,250,252,.9) 48%,rgba(255,255,255,.92) 100%);
+        box-shadow:
+            var(--lv-glass-shadow),
+            0 20px 48px rgba(15,23,42,.08),
+            0 0 0 1px var(--lv-glass-edge-out),
+            inset 0 1px 0 rgba(255,255,255,.98);
+        backdrop-filter:blur(var(--lv-glass-blur)) saturate(var(--lv-glass-saturate));
+        -webkit-backdrop-filter:blur(var(--lv-glass-blur)) saturate(var(--lv-glass-saturate));
+    }
+    .lv-terms-panel__accent{
+        position:absolute;
+        left:0;top:0;bottom:0;width:5px;
+        border-radius:var(--lv-radius) 0 0 var(--lv-radius);
+        background:linear-gradient(180deg,var(--lv-primary) 0%,#8f1818 48%,var(--lv-accent) 100%);
+        box-shadow:inset -1px 0 0 rgba(0,0,0,.06);
+    }
+    .lv-terms-prose{
+        margin:0;
+        padding:clamp(22px,4.5vw,36px) clamp(20px,4vw,40px) clamp(24px,4.5vw,38px) clamp(26px,4.5vw,44px);
+        text-align:left;
+        font-size:1rem;
+        line-height:1.72;
+        color:var(--lv-body);
+        min-height:3rem;
+    }
     .lv-terms-prose p{margin:0 0 1em}
     .lv-terms-prose p:last-child{margin-bottom:0}
+    .lv-terms-prose strong{color:var(--lv-ink);font-weight:600}
+    @media (max-width:575.98px){
+        .lv-terms-panel__accent{width:4px}
+        .lv-terms-prose{padding-left:clamp(22px,5vw,32px)}
+    }
     .lv-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,40px);align-items:center}
     .lv-image{
         min-height:min(360px,50vh);border-radius:var(--lv-radius);background-size:cover;background-position:center;
@@ -738,7 +816,17 @@
     @endif
     {{-- Section 1 — Hero (admin form card 1); shared images set above --}}
     <section class="lv-hero" data-lp-section="hero" data-lv-image-key="hero_background_image" data-lv-image-current="{{ $heroBg }}" style="background-image:url('{{ $heroBg }}')">
-        @if($heroVideoSrc !== '')
+        @if($heroVideoYoutubeId !== null)
+            <div class="lv-hero__bg-video lv-hero__bg-video--youtube" aria-hidden="true">
+                <iframe
+                    src="https://www.youtube-nocookie.com/embed/{{ $heroVideoYoutubeId }}?autoplay=1&amp;mute=1&amp;playsinline=1&amp;controls=0&amp;rel=0&amp;loop=1&amp;playlist={{ $heroVideoYoutubeId }}&amp;modestbranding=1"
+                    title="Hero background video"
+                    loading="eager"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                ></iframe>
+            </div>
+        @elseif($heroVideoSrc !== '')
             <video class="lv-hero__bg-video" autoplay muted loop playsinline poster="{{ $heroBg }}" aria-hidden="true">
                 <source src="{{ $heroVideoSrc }}" type="{{ $heroVideoMime }}">
             </video>
@@ -983,9 +1071,15 @@
     {{-- Section 9 — Terms & Conditions (always visible on public page) --}}
     <section class="lv-section lv-section--terms" data-lp-section="terms" aria-labelledby="lvTermsHeading">
         <div class="lv-container">
-            <h2 id="lvTermsHeading" data-lv-key="terms_title">{{ $termsTitle }}</h2>
-            <div class="lv-card lv-terms-prose">
-                <div class="mb-0" data-lv-key="terms_text" style="white-space:pre-wrap;">{{ $termsText }}</div>
+            <header class="lv-terms-header">
+                <h2 id="lvTermsHeading" data-lv-key="terms_title">{{ $termsTitle }}</h2>
+                <div class="lv-terms-header__rule" aria-hidden="true"></div>
+            </header>
+            <div class="lv-terms-panel">
+                <div class="lv-terms-panel__accent" aria-hidden="true"></div>
+                <div class="lv-terms-prose">
+                    <div class="mb-0" data-lv-key="terms_text" style="white-space:pre-wrap;">{{ $termsText }}</div>
+                </div>
             </div>
         </div>
     </section>

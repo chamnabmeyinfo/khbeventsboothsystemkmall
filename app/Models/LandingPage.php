@@ -107,6 +107,33 @@ class LandingPage extends Model
         return (bool) preg_match('#^images/landing-pages/[\w\-]+/[\w\-.]+\.(mp4|webm)$#i', $v);
     }
 
+    /**
+     * Extract YouTube video id from watch, youtu.be, embed, or shorts URLs (for hero iframe embed).
+     * The HTML5 video element cannot play YouTube page URLs; use iframe embed for those.
+     */
+    public static function parseYouTubeVideoId(string $url): ?string
+    {
+        $url = trim($url);
+        if ($url === '' || ! preg_match('#^https?://#i', $url)) {
+            return null;
+        }
+
+        if (preg_match('#youtu\.be/([a-zA-Z0-9_-]{11})#i', $url, $m)) {
+            return $m[1];
+        }
+        if (preg_match('#[?&]v=([a-zA-Z0-9_-]{11})#', $url, $m)) {
+            return $m[1];
+        }
+        if (preg_match('#/embed/([a-zA-Z0-9_-]{11})#i', $url, $m)) {
+            return $m[1];
+        }
+        if (preg_match('#/shorts/([a-zA-Z0-9_-]{11})#i', $url, $m)) {
+            return $m[1];
+        }
+
+        return null;
+    }
+
     public static function allowedLocaleCodes(): array
     {
         $fromConfig = config('landing_locales.allowed');

@@ -163,10 +163,10 @@
                 </div>
                 <div class="form-group mb-0 mt-3 pt-3 border-top">
                     <label class="d-block">Hero background video (optional)</label>
-                    <small class="text-muted d-block mb-2">MP4 or WebM (max 50&nbsp;MB), autoplay muted loop. Upload a file, or paste a direct file URL (<code>https://…</code>). The hero image above is the <strong>poster</strong> while the video loads and the fallback if video is removed.</small>
+                    <small class="text-muted d-block mb-2">Upload MP4/WebM (max 50&nbsp;MB), or paste a <strong>YouTube</strong> link (<code>https://youtu.be/…</code> or <code>youtube.com/watch?v=…</code>), or a <strong>direct</strong> MP4/WebM file URL. YouTube uses an embedded player (not the HTML5 video tag). The hero image above is the poster/fallback.</small>
                     <input type="file" name="visual_hero_background_video" class="form-control-file" accept="video/mp4,video/webm,.mp4,.webm">
                     <label class="small text-muted d-block mt-2 mb-0">Or video URL</label>
-                    <input type="text" name="visual[hero_background_video]" class="form-control mt-1" value="{{ $heroVideoUrl }}" placeholder="https://… or images/landing-pages/…/file.mp4" autocomplete="off">
+                    <input type="text" name="visual[hero_background_video]" class="form-control mt-1" value="{{ $heroVideoUrl }}" placeholder="YouTube URL, https://…/video.mp4, or images/landing-pages/…/file.mp4" autocomplete="off">
                     @if(!empty($visualForm['hero_background_video']))<small class="text-muted d-block mt-1">Saved: {{ $visualForm['hero_background_video'] }}</small>@endif
                     <div class="form-check mt-2">
                         <input type="checkbox" class="form-check-input" name="clear_hero_background_video" id="clear_hero_background_video" value="1" {{ old('clear_hero_background_video') ? 'checked' : '' }}>
