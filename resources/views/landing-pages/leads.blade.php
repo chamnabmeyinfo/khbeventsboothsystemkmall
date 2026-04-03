@@ -6,6 +6,13 @@
 
 @section('content')
 <div class="container-fluid">
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+    @endif
+
     <div class="alert alert-light border mb-3">
         <strong>Marketing leads only.</strong>
         Admin URL: <code>/landing-pages/{{ $landingPage->slug }}/reporting</code>. Public page: <code>/l/{{ $landingPage->slug }}</code>.
@@ -17,6 +24,7 @@
                 <i class="fas fa-chart-line mr-2"></i>Lead submissions
             </h3>
             <div class="d-flex flex-wrap gap-2">
+                <a href="{{ route('landing-pages.reporting.create', ['landing_page_id' => $landingPage->id]) }}" class="btn btn-success btn-sm">Add lead</a>
                 <a href="{{ route('landing-pages.edit', $landingPage) }}" class="btn btn-default btn-sm">Edit page</a>
                 <a href="{{ route('landing-pages.analytics', $landingPage) }}" class="btn btn-primary btn-sm">Visitor analytics</a>
                 <a href="{{ route('landing-pages.public.show', $landingPage) }}" class="btn btn-info btn-sm" target="_blank" rel="noopener">Public URL</a>
@@ -41,6 +49,7 @@
                         <th>Lang</th>
                         <th>Source</th>
                         <th>IP</th>
+                        <th class="text-right text-nowrap">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -54,10 +63,19 @@
                             <td><code>{{ $row->locale ?: '—' }}</code></td>
                             <td class="small">{{ $row->source ?: '—' }}</td>
                             <td class="small text-muted">{{ $row->ip_address ?: '—' }}</td>
+                            <td class="text-right text-nowrap">
+                                <a href="{{ route('landing-pages.reporting.show', $row) }}" class="btn btn-xs btn-default">View</a>
+                                <a href="{{ route('landing-pages.reporting.edit', $row) }}" class="btn btn-xs btn-primary">Edit</a>
+                                <form method="post" action="{{ route('landing-pages.reporting.destroy', $row) }}" class="d-inline" onsubmit="return confirm('Delete this lead?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-xs btn-outline-danger">Delete</button>
+                                </form>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center text-muted py-4">No submissions yet.</td>
+                            <td colspan="9" class="text-center text-muted py-4">No submissions yet.</td>
                         </tr>
                     @endforelse
                 </tbody>

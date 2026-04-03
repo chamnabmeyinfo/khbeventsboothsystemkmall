@@ -369,6 +369,20 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/create', [LandingPageController::class, 'create'])->name('create');
             Route::post('/', [LandingPageController::class, 'store'])->name('store');
             Route::get('/reporting', [LandingPageController::class, 'reportingIndex'])->name('reporting.index');
+            Route::get('/reporting/create', [LandingPageController::class, 'reportingCreate'])->name('reporting.create');
+            Route::post('/reporting', [LandingPageController::class, 'reportingStore'])->name('reporting.store');
+            Route::get('/reporting/{lead}', [LandingPageController::class, 'reportingShow'])
+                ->whereNumber('lead')
+                ->name('reporting.show');
+            Route::get('/reporting/{lead}/edit', [LandingPageController::class, 'reportingEdit'])
+                ->whereNumber('lead')
+                ->name('reporting.edit');
+            Route::put('/reporting/{lead}', [LandingPageController::class, 'reportingUpdate'])
+                ->whereNumber('lead')
+                ->name('reporting.update');
+            Route::delete('/reporting/{lead}', [LandingPageController::class, 'reportingDestroy'])
+                ->whereNumber('lead')
+                ->name('reporting.destroy');
             Route::get('/analytics', [LandingPageController::class, 'analyticsIndex'])->name('analytics.index');
             Route::get('/{landingPage:slug}/edit', [LandingPageController::class, 'edit'])->name('edit');
             Route::put('/{landingPage:slug}', [LandingPageController::class, 'update'])->name('update');

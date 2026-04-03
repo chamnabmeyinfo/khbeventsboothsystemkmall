@@ -240,6 +240,122 @@ class LandingPageController extends Controller
         return view('landing-pages.reporting-index', compact('leads', 'landingPageOptions'));
     }
 
+    public function reportingCreate(Request $request)
+    {
+        $landingPageOptions = LandingPage::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug']);
+
+        $prefillLandingPageId = $request->query('landing_page_id');
+
+        return view('landing-pages.reporting-form', [
+            'lead' => null,
+            'landingPageOptions' => $landingPageOptions,
+            'mode' => 'create',
+            'prefillLandingPageId' => $prefillLandingPageId,
+        ]);
+    }
+
+    public function reportingStore(Request $request)
+    {
+        $validated = $this->validateReportingLeadRequest($request);
+
+        LandingPageLead::create([
+            'landing_page_id' => $validated['landing_page_id'],
+            'landing_tracking_event_id' => null,
+            'visitor_id' => null,
+            'session_uuid' => null,
+            'name' => $validated['name'] ?? null,
+            'email' => $validated['email'] ?? null,
+            'phone' => $validated['phone'] ?? null,
+            'preferred_trip_date' => $validated['preferred_trip_date'] ?? null,
+            'locale' => $validated['locale'] ?? null,
+            'source' => $validated['source'] ?? null,
+            'meta' => $validated['meta'] ?? null,
+            'ip_address' => $request->ip(),
+            'user_agent' => Str::limit((string) $request->userAgent(), 65000, ''),
+            'referrer_url' => null,
+        ]);
+
+        return redirect()->route('landing-pages.reporting.index')
+            ->with('success', 'Lead created.');
+    }
+
+    public function reportingShow(LandingPageLead $lead)
+    {
+        $lead->load(['landingPage:id,name,slug', 'trackingEvent', 'visitor']);
+
+        return view('landing-pages.reporting-show', compact('lead'));
+    }
+
+    public function reportingEdit(LandingPageLead $lead)
+    {
+        $landingPageOptions = LandingPage::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug']);
+
+        return view('landing-pages.reporting-form', [
+            'lead' => $lead,
+            'landingPageOptions' => $landingPageOptions,
+            'mode' => 'edit',
+            'prefillLandingPageId' => null,
+        ]);
+    }
+
+    public function reportingUpdate(Request $request, LandingPageLead $lead)
+    {
+        $validated = $this->validateReportingLeadRequest($request);
+
+        $lead->update([
+            'landing_page_id' => $validated['landing_page_id'],
+            'name' => $validated['name'] ?? null,
+            'email' => $validated['email'] ?? null,
+            'phone' => $validated['phone'] ?? null,
+            'preferred_trip_date' => $validated['preferred_trip_date'] ?? null,
+            'locale' => $validated['locale'] ?? null,
+            'source' => $validated['source'] ?? null,
+            'meta' => $validated['meta'] ?? null,
+        ]);
+
+        return redirect()->route('landing-pages.reporting.show', $lead)
+            ->with('success', 'Lead updated.');
+    }
+
+    public function reportingDestroy(LandingPageLead $lead)
+    {
+        $lead->delete();
+
+        return redirect()->back(302, [], route('landing-pages.reporting.index'))
+            ->with('success', 'Lead deleted.');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function validateReportingLeadRequest(Request $request): array
+    {
+        $metaRaw = trim((string) $request->input('meta', ''));
+
+        $rules = [
+            'landing_page_id' => 'required|exists:landing_pages,id',
+            'name' => 'nullable|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:255',
+            'preferred_trip_date' => 'nullable|string|max:500',
+            'locale' => 'nullable|string|max:32',
+            'source' => 'nullable|string|max:255',
+        ];
+
+        if ($metaRaw !== '') {
+            $rules['meta'] = 'json';
+        }
+
+        $validated = $request->validate($rules);
+        $validated['meta'] = $metaRaw !== '' ? json_decode($metaRaw, true) : null;
+
+        return $validated;
+    }
+
     /**
      * Admin: visitor & engagement analytics across all landing pages (under /landing-pages/analytics).
      */
