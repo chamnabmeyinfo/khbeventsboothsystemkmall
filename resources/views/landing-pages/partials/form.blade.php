@@ -22,6 +22,9 @@
         if (isset($ov['hero_cta_target'])) {
             $visualForm['hero_cta_target'] = $ov['hero_cta_target'];
         }
+        if (array_key_exists('hero_background_video', $ov)) {
+            $visualForm['hero_background_video'] = $ov['hero_background_video'];
+        }
     }
     $defaultLocale = old('default_locale', optional($landingPage)->default_locale ?? 'en');
     $enabledLocalesInput = old('enabled_locales', optional($landingPage)->enabled_locales ?? ['en']);
@@ -32,6 +35,7 @@
         $visualForm['i18n'][$al] = $visualForm['i18n'][$al] ?? [];
     }
     $heroCtaShared = old('visual.hero_cta_target', $visualForm['hero_cta_target'] ?? '/login');
+    $heroVideoUrl = old('visual.hero_background_video', $visualForm['hero_background_video'] ?? '');
     $showOnceMode = old('show_once_mode', optional($landingPage)->show_once_mode ?? 'cookie_once');
     $canAutoTranslate = isset($landingPage) && $landingPage;
 @endphp
@@ -134,7 +138,7 @@
         <div class="card card-outline-primary mb-3">
             <div class="card-header py-2">
                 <strong class="d-block">Shared: brand, hero &amp; CTA link</strong>
-                <small class="text-muted">Logo and hero background power the <em>Hero</em> section. The CTA button uses the same destination for all languages.</small>
+                <small class="text-muted">Logo and hero background power the <em>Hero</em> section. Optional video plays behind the scrim; the hero image is still used as poster and fallback. The CTA button uses the same destination for all languages.</small>
             </div>
             <div class="card-body">
                 <div class="form-group">
@@ -155,6 +159,18 @@
                             <input type="file" name="visual_hero_background_image" class="form-control-file" accept="image/*">
                             @if(!empty($visualForm['hero_background_image']))<small class="text-muted d-block mt-1">Current: {{ $visualForm['hero_background_image'] }}</small>@endif
                         </div>
+                    </div>
+                </div>
+                <div class="form-group mb-0 mt-3 pt-3 border-top">
+                    <label class="d-block">Hero background video (optional)</label>
+                    <small class="text-muted d-block mb-2">MP4 or WebM (max 50&nbsp;MB), autoplay muted loop. Upload a file, or paste a direct file URL (<code>https://…</code>). The hero image above is the <strong>poster</strong> while the video loads and the fallback if video is removed.</small>
+                    <input type="file" name="visual_hero_background_video" class="form-control-file" accept="video/mp4,video/webm,.mp4,.webm">
+                    <label class="small text-muted d-block mt-2 mb-0">Or video URL</label>
+                    <input type="text" name="visual[hero_background_video]" class="form-control mt-1" value="{{ $heroVideoUrl }}" placeholder="https://… or images/landing-pages/…/file.mp4" autocomplete="off">
+                    @if(!empty($visualForm['hero_background_video']))<small class="text-muted d-block mt-1">Saved: {{ $visualForm['hero_background_video'] }}</small>@endif
+                    <div class="form-check mt-2">
+                        <input type="checkbox" class="form-check-input" name="clear_hero_background_video" id="clear_hero_background_video" value="1" {{ old('clear_hero_background_video') ? 'checked' : '' }}>
+                        <label class="form-check-label" for="clear_hero_background_video">Remove hero background video</label>
                     </div>
                 </div>
             </div>

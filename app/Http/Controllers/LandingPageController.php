@@ -420,6 +420,8 @@ class LandingPageController extends Controller
             'template_key' => 'nullable|in:canton_fair_visual',
             'visual' => 'nullable|array',
             'visual.hero_cta_target' => 'nullable|string|max:1024',
+            'visual.hero_background_video' => 'nullable|string|max:2048',
+            'clear_hero_background_video' => 'nullable|boolean',
             'visual.i18n' => 'nullable|array',
             'visual.i18n.*' => 'nullable|array',
             'visual.i18n.*.hero_title' => 'nullable|string|max:255',
@@ -459,6 +461,7 @@ class LandingPageController extends Controller
             'visual.i18n.*.contact_phones_text' => 'nullable|string|max:4000',
             'visual_logo_image' => 'nullable|image|max:8192',
             'visual_hero_background_image' => 'nullable|image|max:8192',
+            'visual_hero_background_video' => 'nullable|file|mimes:mp4,webm|max:51200',
             'visual_about_image' => 'nullable|image|max:8192',
             'visual_why_image' => 'nullable|image|max:8192',
             'priority' => 'nullable|integer|min:1|max:9999',
@@ -578,6 +581,20 @@ class LandingPageController extends Controller
             }
         }
 
+        $heroVideoFile = $request->file('visual_hero_background_video');
+        if ($heroVideoFile instanceof UploadedFile) {
+            $visual['hero_background_video'] = $this->storeVisualMedia($heroVideoFile, $slug, 'hero_background_video', ['mp4', 'webm']);
+        } elseif ($request->boolean('clear_hero_background_video')) {
+            unset($visual['hero_background_video']);
+        } elseif (isset($incoming['hero_background_video'])) {
+            $hv = trim((string) $incoming['hero_background_video']);
+            if ($hv !== '' && LandingPage::isValidHeroBackgroundVideoReference($hv)) {
+                $visual['hero_background_video'] = $hv;
+            }
+        } elseif (! empty($existing['hero_background_video'])) {
+            $visual['hero_background_video'] = $existing['hero_background_video'];
+        }
+
         if (array_key_exists('hero_cta_target', $incoming)) {
             $visual['hero_cta_target'] = trim((string) $incoming['hero_cta_target']);
         } elseif (! isset($visual['hero_cta_target']) || $visual['hero_cta_target'] === '') {
@@ -637,6 +654,7 @@ class LandingPageController extends Controller
             $validated['visual'],
             $validated['visual_logo_image'],
             $validated['visual_hero_background_image'],
+            $validated['visual_hero_background_video'],
             $validated['visual_about_image'],
             $validated['visual_why_image']
         );
@@ -766,6 +784,32 @@ class LandingPageController extends Controller
         }
 
         $ext = strtolower((string) $file->getClientOriginalExtension());
+        $filename = $key.'-'.time().'-'.Str::random(6).'.'.$ext;
+        $file->move($dir, $filename);
+
+        return 'images/landing-pages/'.$safeSlug.'/'.$filename;
+    }
+
+    /**
+     * Store hero background video next to landing images (public disk path returned).
+     *
+     * @param  list<string>  $allowedExt
+     */
+    private function storeVisualMedia(UploadedFile $file, string $slug, string $key, array $allowedExt): string
+    {
+        $ext = strtolower((string) $file->getClientOriginalExtension());
+        if (! in_array($ext, $allowedExt, true)) {
+            throw ValidationException::withMessages([
+                'visual_hero_background_video' => ['Video must be MP4 or WebM.'],
+            ]);
+        }
+
+        $safeSlug = Str::slug($slug);
+        $dir = public_path('images/landing-pages/'.$safeSlug);
+        if (! File::exists($dir)) {
+            File::makeDirectory($dir, 0755, true);
+        }
+
         $filename = $key.'-'.time().'-'.Str::random(6).'.'.$ext;
         $file->move($dir, $filename);
 

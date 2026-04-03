@@ -123,6 +123,17 @@
     $contactPhones = is_array($visual['contact_phones'] ?? null) ? $visual['contact_phones'] : ['060 815 515', '010 94 76 40'];
     $logo = !empty($visual['logo_image']) ? asset($visual['logo_image']) : '';
     $heroBg = !empty($visual['hero_background_image']) ? asset($visual['hero_background_image']) : 'https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1600&auto=format&fit=crop';
+    $heroVideoRaw = trim((string) ($visual['hero_background_video'] ?? ''));
+    $heroVideoSrc = '';
+    $heroVideoMime = 'video/mp4';
+    if ($heroVideoRaw !== '') {
+        if (preg_match('#^https?://#i', $heroVideoRaw)) {
+            $heroVideoSrc = $heroVideoRaw;
+        } else {
+            $heroVideoSrc = asset($heroVideoRaw);
+        }
+        $heroVideoMime = str_ends_with(strtolower($heroVideoRaw), '.webm') ? 'video/webm' : 'video/mp4';
+    }
     $aboutImage = !empty($visual['about_image']) ? asset($visual['about_image']) : 'https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=1400&auto=format&fit=crop';
     $whyImage = !empty($visual['why_image']) ? asset($visual['why_image']) : 'https://images.unsplash.com/photo-1549692520-acc6669e2f0c?q=80&w=1400&auto=format&fit=crop';
     $tripPhaseRegisterCta = trim((string) ($visual['trip_phase_register_cta'] ?? '')) !== '' ? trim((string) ($visual['trip_phase_register_cta'] ?? '')) : 'Register for this trip';
@@ -174,9 +185,13 @@
     .lv-wrap .lv-section p{color:var(--lv-body)}
     .lv-container{width:min(1140px,92vw);margin:0 auto}
     .lv-hero{position:relative;min-height:min(92vh,900px);display:flex;align-items:center;justify-content:center;background-size:cover;background-position:center}
+    .lv-hero__bg-video{
+        position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;
+        z-index:0;pointer-events:none;
+    }
     /* Stronger scrim so hero copy stays readable on bright or busy photos */
-    .lv-hero:before{content:"";position:absolute;inset:0;background:linear-gradient(165deg,rgba(15,23,42,.9) 0%,rgba(30,27,75,.68) 42%,rgba(196,30,30,.42) 100%)}
-    .lv-hero:after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 85% 55% at 50% 18%,rgba(0,0,0,.35),transparent 58%);pointer-events:none}
+    .lv-hero:before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(165deg,rgba(15,23,42,.9) 0%,rgba(30,27,75,.68) 42%,rgba(196,30,30,.42) 100%)}
+    .lv-hero:after{content:"";position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse 85% 55% at 50% 18%,rgba(0,0,0,.35),transparent 58%);pointer-events:none}
     .lv-content{position:relative;z-index:2;color:#fff;text-align:center;padding:clamp(48px,12vw,100px) 0}
     /* Logo: soft white glow + light depth (mostly white) */
     .lv-logo{display:inline-block;line-height:0}
@@ -241,17 +256,50 @@
         45%{transform:scale(1.06);text-shadow:0 0 22px rgba(255,255,255,.65),0 0 8px rgba(201,162,39,.5);filter:brightness(1.12)}
         70%{transform:scale(1.02);text-shadow:0 0 12px rgba(255,255,255,.4);filter:brightness(1.05)}
     }
+    /* Diagonal light flare sweeping across the hero CTA (behind label) */
+    @keyframes lvHeroCtaFlare{
+        0%{transform:translate3d(-120%,0,0) skewX(-22deg)}
+        100%{transform:translate3d(280%,0,0) skewX(-22deg)}
+    }
     .lv-hero .lv-btn--hero-cta{
+        position:relative;
+        overflow:hidden;
+        isolation:isolate;
         transform:translateZ(0);
         animation:lvHeroCtaPulse 1.85s ease-in-out infinite;
     }
+    .lv-hero .lv-btn--hero-cta::after{
+        content:"";
+        position:absolute;
+        top:-12%;
+        left:0;
+        width:42%;
+        height:124%;
+        pointer-events:none;
+        z-index:0;
+        background:linear-gradient(
+            105deg,
+            transparent 0%,
+            rgba(255,255,255,0) 28%,
+            rgba(255,255,255,.22) 45%,
+            rgba(255,252,235,.55) 50%,
+            rgba(255,255,255,.22) 55%,
+            rgba(255,255,255,0) 72%,
+            transparent 100%
+        );
+        animation:lvHeroCtaFlare 2.4s ease-in-out infinite;
+        animation-delay:.35s;
+    }
     .lv-hero .lv-btn--hero-cta [data-lv-key]{
+        position:relative;
+        z-index:1;
         display:inline-block;
         transform-origin:center;
         animation:lvHeroCtaText 1.85s ease-in-out infinite;
     }
     .lv-hero .lv-btn--hero-cta:hover,.lv-hero .lv-btn--hero-cta:focus-visible{animation-play-state:paused}
     .lv-hero .lv-btn--hero-cta:hover [data-lv-key],.lv-hero .lv-btn--hero-cta:focus-visible [data-lv-key]{animation-play-state:paused}
+    .lv-hero .lv-btn--hero-cta:hover::after,.lv-hero .lv-btn--hero-cta:focus-visible::after{animation-play-state:paused}
     .lv-section{padding:clamp(48px,8vw,80px) 0;position:relative}
     .lv-section--about{
         background:linear-gradient(180deg,rgba(255,255,255,.35) 0%,rgba(241,245,249,.25) 100%);
@@ -581,6 +629,8 @@
         .lv-wrap .lv-btn,.lv-card,.lv-trip-card{transition:none !important}
         .lv-wrap .lv-btn:hover,.lv-card:hover,.lv-trip-card:hover{transform:none !important}
         .lv-hero .lv-btn--hero-cta,.lv-hero .lv-btn--hero-cta [data-lv-key]{animation:none !important}
+        .lv-hero .lv-btn--hero-cta::after{animation:none !important;opacity:0}
+        .lv-hero__bg-video{display:none !important}
     }
     /* Per-phase register CTA (Section 5) */
     .lv-btn--trip-register{
@@ -688,6 +738,11 @@
     @endif
     {{-- Section 1 — Hero (admin form card 1); shared images set above --}}
     <section class="lv-hero" data-lp-section="hero" data-lv-image-key="hero_background_image" data-lv-image-current="{{ $heroBg }}" style="background-image:url('{{ $heroBg }}')">
+        @if($heroVideoSrc !== '')
+            <video class="lv-hero__bg-video" autoplay muted loop playsinline poster="{{ $heroBg }}" aria-hidden="true">
+                <source src="{{ $heroVideoSrc }}" type="{{ $heroVideoMime }}">
+            </video>
+        @endif
         <div class="lv-content lv-container">
             @if($logo)<span class="lv-logo"><img src="{{ $logo }}" alt="Logo" data-lv-image-key="logo_image" data-lv-image-current="{{ $logo }}"></span>@endif
             <h1 data-lv-key="hero_title">{{ $heroTitle }}</h1>

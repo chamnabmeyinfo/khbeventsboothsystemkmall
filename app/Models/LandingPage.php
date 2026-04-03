@@ -15,6 +15,7 @@ class LandingPage extends Model
     public const VISUAL_SHARED_KEYS = [
         'logo_image',
         'hero_background_image',
+        'hero_background_video',
         'about_image',
         'why_image',
         'hero_cta_target',
@@ -87,6 +88,25 @@ class LandingPage extends Model
      *
      * @return list<string>
      */
+    /**
+     * Accepts https? URLs or a site-relative path under public images (uploaded MP4/WebM).
+     */
+    public static function isValidHeroBackgroundVideoReference(string $v): bool
+    {
+        $v = trim($v);
+        if ($v === '') {
+            return true;
+        }
+        if (preg_match('#^https?://#i', $v)) {
+            return filter_var($v, FILTER_VALIDATE_URL) !== false;
+        }
+        if (str_contains($v, '..')) {
+            return false;
+        }
+
+        return (bool) preg_match('#^images/landing-pages/[\w\-]+/[\w\-.]+\.(mp4|webm)$#i', $v);
+    }
+
     public static function allowedLocaleCodes(): array
     {
         $fromConfig = config('landing_locales.allowed');
