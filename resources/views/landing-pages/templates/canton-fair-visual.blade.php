@@ -236,7 +236,7 @@
     .lv-section--booking{background:var(--lv-surface-2)}
     .lv-section--faq{background:linear-gradient(180deg,#f1f5f9 0%,var(--lv-surface-2) 100%)}
     .lv-section--terms{background:var(--lv-surface);border-top:1px solid var(--lv-border)}
-    .lv-terms-prose{max-width:min(72ch,100%);margin:0 auto;text-align:left;font-size:1rem;line-height:1.65;color:var(--lv-body)}
+    .lv-terms-prose{max-width:min(72ch,100%);margin:0 auto;text-align:left;font-size:1rem;line-height:1.65;color:var(--lv-body);min-height:3rem}
     .lv-terms-prose p{margin:0 0 1em}
     .lv-terms-prose p:last-child{margin-bottom:0}
     .lv-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,40px);align-items:center}
@@ -554,15 +554,15 @@
         </div>
     </section>
 
-    @if(trim((string) $termsText) !== '')
-        {{-- Section 7 — Terms & Conditions --}}
-        <section class="lv-section lv-section--terms" data-lp-section="terms" aria-labelledby="lvTermsHeading">
-            <div class="lv-container">
-                <h2 id="lvTermsHeading" data-lv-key="terms_title">{{ $termsTitle }}</h2>
-                <div class="lv-card lv-terms-prose"><div class="mb-0" data-lv-key="terms_text" style="white-space:pre-wrap;">{{ $termsText }}</div></div>
+    {{-- Section 7 — Terms & Conditions (always visible on public page) --}}
+    <section class="lv-section lv-section--terms" data-lp-section="terms" aria-labelledby="lvTermsHeading">
+        <div class="lv-container">
+            <h2 id="lvTermsHeading" data-lv-key="terms_title">{{ $termsTitle }}</h2>
+            <div class="lv-card lv-terms-prose">
+                <div class="mb-0" data-lv-key="terms_text" style="white-space:pre-wrap;">{{ $termsText }}</div>
             </div>
-        </section>
-    @endif
+        </div>
+    </section>
 </main>
 
 <script>

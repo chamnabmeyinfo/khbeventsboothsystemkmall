@@ -489,7 +489,7 @@
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
                             <strong class="d-block">7. Terms &amp; Conditions</strong>
-                            <small class="text-muted">Placed after FAQ on the public page: section heading plus readable legal or policy copy. Leave body empty to hide this block on the live page.</small>
+                            <small class="text-muted">Always shown after FAQ on the public page. Add your legal or policy copy below; the section heading still appears if the body is empty.</small>
                         </div>
                         <div class="card-body">
                             <div class="form-group">
