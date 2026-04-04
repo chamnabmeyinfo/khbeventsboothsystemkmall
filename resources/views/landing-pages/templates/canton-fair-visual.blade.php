@@ -115,6 +115,8 @@
     }
     $tripPhases = \App\Models\LandingPage::resolveTripPhasesForDisplay($visual);
     $tripDates = \App\Models\LandingPage::tripPhasesToFlatRows($tripPhases);
+    $tripActivityGalleryTitle = trim((string) ($visual['trip_activity_gallery_title'] ?? '')) ?: 'Trip activity';
+    $tripActivitySlides = \App\Models\LandingPage::parseTripActivityGallerySlides((string) ($visual['trip_activity_gallery_slides_text'] ?? ''));
     $promotionShow = ($visual['promotion_discounts_show'] ?? true) !== false;
     $promotion = \App\Models\LandingPage::resolvePromotionDiscountsForDisplay($visual);
     $promotionSectionTitle = trim((string) ($visual['promotion_section_title'] ?? '')) ?: 'Group promotion discounts';
@@ -855,6 +857,29 @@
     @media (prefers-reduced-motion:reduce){
         .lv-btn--trip-register:hover{transform:none}
     }
+    /* Trip activity image slider (single responsive implementation) */
+    .lv-trip-activity{padding:clamp(40px,8vw,72px) 0;background:linear-gradient(180deg,rgba(248,250,252,.98) 0%,rgba(241,245,249,.95) 100%);border-top:1px solid rgba(15,23,42,.06);border-bottom:1px solid rgba(15,23,42,.06)}
+    .lv-trip-activity__head{text-align:center;margin-bottom:clamp(20px,4vw,28px)}
+    .lv-trip-activity__head h2{margin:0;font-size:clamp(1.35rem,3vw,1.75rem);color:var(--lv-ink,#0f172a)}
+    .lv-trip-activity__slider{position:relative;max-width:min(960px,100%);margin:0 auto}
+    .lv-trip-activity__viewport{position:relative;border-radius:20px;overflow:hidden;box-shadow:0 20px 50px rgba(15,23,42,.12),0 0 0 1px rgba(255,255,255,.5) inset;background:#0f172a}
+    .lv-trip-activity__track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .lv-trip-activity__track::-webkit-scrollbar{display:none}
+    .lv-trip-activity__slide{flex:0 0 100%;scroll-snap-align:start;margin:0;position:relative;overflow:hidden;border-radius:20px}
+    .lv-trip-activity__img{display:block;width:100%;height:auto;max-height:min(56vh,520px);object-fit:cover;vertical-align:middle}
+    .lv-trip-activity__cap{margin:0;padding:12px 16px 18px;font-size:.95rem;line-height:1.45;color:rgba(248,250,252,.95);background:linear-gradient(180deg,transparent,rgba(15,23,42,.88));position:absolute;left:0;right:0;bottom:0}
+    .lv-trip-activity__nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.92);color:var(--lv-ink,#0f172a);box-shadow:0 4px 16px rgba(15,23,42,.15);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+    .lv-trip-activity__nav:hover{background:#fff}
+    .lv-trip-activity__nav:focus{outline:2px solid var(--lv-primary,#c41e1e);outline-offset:2px}
+    .lv-trip-activity__nav--prev{left:10px}
+    .lv-trip-activity__nav--next{right:10px}
+    .lv-trip-activity__dots{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}
+    .lv-trip-activity__dot{width:10px;height:10px;border-radius:50%;border:0;padding:0;background:rgba(15,23,42,.2);cursor:pointer}
+    .lv-trip-activity__dot[aria-current="true"]{background:var(--lv-primary,#c41e1e)}
+    @media (max-width:575.98px){
+        .lv-trip-activity__nav{width:40px;height:40px;left:6px}
+        .lv-trip-activity__nav--next{right:6px;left:auto}
+    }
 </style>
 
 <main class="lv-wrap">
@@ -893,337 +918,17 @@
             </div>
         </header>
     @endif
-    {{-- Section 1 — Hero (admin form card 1); shared images set above --}}
-    <section class="lv-hero @if($heroEnableRotation) lv-hero--rotation @endif" data-lp-section="hero" data-lv-image-key="hero_background_image" data-lv-image-current="{{ $heroBg }}" style="background-image:url('{{ $heroBg }}')" @if(!$heroEnableRotation && ($heroVideoYoutubeId !== null || $heroVideoSrc !== '')) data-hero-video-deferred="1" data-hero-video-delay="3000" @endif @if($heroEnableRotation) data-lp-hero-rotation="1" @endif>
-        @if($heroEnableRotation)
-            <div class="lv-hero__bg-slideshow" aria-hidden="true">
-                <div class="lv-hero__bg-slide" id="lvHeroBgSlide" style="background-image:url('{{ $heroBg }}')"></div>
-            </div>
+    @php
+        $__lvSectionOrder = \App\Models\LandingPage::resolvePublicSectionOrder($visual);
+    @endphp
+    @foreach($__lvSectionOrder as $__lvSec)
+        @php
+            $__lvLayout = (string) ($__lvSec['layout'] ?? '');
+        @endphp
+        @if(in_array($__lvLayout, \App\Models\LandingPage::SECTION_LAYOUT_KEYS, true))
+            @include('landing-pages.templates.partials.cfv-sections.'.$__lvLayout)
         @endif
-        @if($heroVideoYoutubeId !== null)
-            <div class="lv-hero__bg-video lv-hero__bg-video--youtube @if($heroEnableRotation) lv-hero__bg-video--rotation-deferred @else lv-hero__bg-video--deferred @endif" aria-hidden="true">
-                <iframe
-                    id="lvHeroYoutubeIframe"
-                    data-src="{{ $heroYoutubeEmbedUrl }}"
-                    title="Hero background video"
-                    loading="lazy"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    referrerpolicy="strict-origin-when-cross-origin"
-                ></iframe>
-            </div>
-        @elseif($heroVideoSrc !== '')
-            <video id="lvHeroHtml5Video" class="lv-hero__bg-video @if($heroEnableRotation) lv-hero__bg-video--rotation-deferred @else lv-hero__bg-video--deferred @endif" muted loop playsinline poster="{{ $heroBg }}" preload="none" aria-hidden="true">
-                <source src="{{ $heroVideoSrc }}" type="{{ $heroVideoMime }}">
-            </video>
-        @endif
-        <div class="lv-content lv-container">
-            @if($logo)<span class="lv-logo"><img src="{{ $logo }}" alt="Logo" data-lv-image-key="logo_image" data-lv-image-current="{{ $logo }}"></span>@endif
-            <h1 data-lv-key="hero_title">{{ $heroTitle }}</h1>
-            <h2 data-lv-key="hero_subtitle">{!! nl2br(e($heroSubtitle)) !!}</h2>
-            <button type="button" class="lv-btn lv-btn--hero-cta" onclick="trackLandingEvent('cta_click',{cta_label:'VisualHeroCTA',source:'hero'});landingContinue('{{ $heroCtaTarget }}')"><span data-lv-key="hero_cta_text">{{ $heroCtaText }}</span></button>
-            <div class="lv-three" style="margin-top:14px;">
-                @foreach($heroStats as $stat)
-                    @php
-                        $ik = trim((string) ($stat['icon'] ?? ''));
-                        $faClass = $lvFaIcons[$ik] ?? 'fa-solid fa-circle-check';
-                    @endphp
-                    <div class="lv-card lv-stat-card">
-                        <span class="lv-stat__icon" aria-hidden="true"><i class="{{ $faClass }}"></i></span>
-                        <div class="lv-stat-num">{{ $stat['value'] ?? '' }}</div>
-                        <div class="lv-stat__label">{{ $stat['label'] ?? '' }}</div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </section>
-
-    {{-- Section 2 — About --}}
-    <section class="lv-section lv-section--about" data-lp-section="about">
-        <div class="lv-container lv-grid">
-            <div class="lv-image" data-lv-image-key="about_image" data-lv-image-current="{{ $aboutImage }}" style="background-image:url('{{ $aboutImage }}')"></div>
-            <div>
-                <h2 data-lv-key="about_title">{{ $aboutTitle }}</h2>
-                <p data-lv-key="about_text_en">{{ $aboutTextEn }}</p>
-                <div class="lv-card lv-about-highlight" data-lv-key="about_text_kh">{{ $aboutTextKh }}</div>
-            </div>
-        </div>
-    </section>
-
-    {{-- Section 3 — Package & pricing --}}
-    <section class="lv-section lv-section--package" data-lp-section="package">
-        <div class="lv-container">
-            <h2 data-lv-key="package_title">{{ $packageTitle }}</h2>
-            <div class="lv-package-grid">
-                @foreach($packageItems as $item)
-                    @php
-                        $pkgText = $item['text'] ?? '';
-                        $ik = trim((string) ($item['icon'] ?? ''));
-                        $faClass = $lvFaIcons[$ik] ?? 'fa-solid fa-circle-check';
-                    @endphp
-                    <div class="lv-card lv-package-item">
-                        <span class="lv-package-item__icon" aria-hidden="true"><i class="{{ $faClass }}"></i></span>
-                        <div class="lv-package-item__text">{{ $pkgText }}</div>
-                    </div>
-                @endforeach
-            </div>
-            <div
-                class="lv-price-panel lv-price-panel--clickable"
-                style="margin-top:14px;"
-                role="button"
-                tabindex="0"
-                aria-label="Register or continue"
-                onclick="if(typeof trackLandingEvent==='function'){trackLandingEvent('cta_click',{cta_label:'PricePanel',source:'package-price'});} if(typeof landingContinue==='function'){landingContinue('{{ $heroCtaTarget }}');}"
-                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}"
-            >
-                <div class="lv-price-num" data-lv-key="package_price">{{ $packagePrice }}</div>
-                <div class="lv-price-sub" data-lv-key="per_person_label">{{ $perPersonLabel }}</div>
-            </div>
-        </div>
-    </section>
-
-    @if($promotionShow)
-    {{-- Section 4 — Group promotion discounts (JSON-driven tiers) --}}
-    <section class="lv-section lv-section--promotion" data-lp-section="promotion" aria-labelledby="lvPromoHeading">
-        <div class="lv-container">
-            <h2 id="lvPromoHeading" data-lv-key="promotion_section_title">{{ $promotionSectionTitle }}</h2>
-            @if(trim((string) ($promotion['intro_text'] ?? '')) !== '')
-                <p class="lv-promo-intro">{{ $promotion['intro_text'] }}</p>
-            @endif
-            <div class="lv-promo-base-wrap">
-                <div class="lv-card lv-promo-base">
-                    <div class="lv-promo-base__price">{{ $promotion['base_price_text'] }}</div>
-                </div>
-            </div>
-            <div class="lv-promo-tier-grid">
-                @foreach($promotion['tiers'] as $tier)
-                    @php
-                        $pN = (int) ($tier['participants'] ?? 0);
-                        $pOff = (int) ($tier['off_each'] ?? 0);
-                        $pLbl = trim((string) ($tier['label'] ?? ''));
-                        $pLine = $pLbl !== '' ? $pLbl : 'For '.$pN.' participants, get $'.$pOff.' off each';
-                    @endphp
-                    <article class="lv-card lv-promo-tier">
-                        <div class="lv-promo-tier__icon" aria-hidden="true"><i class="fa-solid fa-users"></i></div>
-                        <div class="lv-promo-tier__num">{{ $pN }}</div>
-                        <div class="lv-promo-tier__num-sub">participants</div>
-                        <p class="lv-promo-tier__off">{{ $pLine }}</p>
-                    </article>
-                @endforeach
-            </div>
-        </div>
-    </section>
-    @endif
-
-    {{-- Section 5 — Trip phases (Phase I–III: intro + subsections + seats; booking options sync from flat rows) --}}
-    <section class="lv-section lv-section--trip" data-lp-section="trip">
-        <div class="lv-container">
-            <h2 data-lv-key="trip_section_title">{{ $tripSectionTitle }}</h2>
-            <div class="lv-trip-grid">
-                @foreach($tripPhases as $ph)
-                    @php
-                        $tripPhase = trim((string) ($ph['label'] ?? ''));
-                        $tripDate = trim((string) ($ph['date'] ?? ''));
-                        $intro = trim((string) ($ph['intro'] ?? ''));
-                        $subs = is_array($ph['subsections'] ?? null) ? $ph['subsections'] : [];
-                        $tripFeaturePath = \App\Models\LandingPage::sanitizeTripPhaseFeatureImagePath((string) ($ph['feature_image'] ?? ''));
-                        $tripFeatureUrl = $tripFeaturePath !== '' ? asset($tripFeaturePath) : '';
-                        $tripFeatureAlt = trim($tripPhase.($tripDate !== '' ? ' · '.$tripDate : ''));
-                        $tripFeatureAlt = $tripFeatureAlt !== '' ? $tripFeatureAlt : $tripSectionTitle;
-                    @endphp
-                    <article class="lv-trip-card">
-                        @if($tripFeatureUrl !== '')
-                            <div class="lv-trip-card__media">
-                                <img class="lv-trip-card__media-img" src="{{ $tripFeatureUrl }}" alt="{{ $tripFeatureAlt }}" loading="lazy" decoding="async" width="800" height="500">
-                            </div>
-                        @endif
-                        <div class="lv-trip-card__body">
-                        @if($tripPhase !== '')
-                            <p class="lv-trip-phase"><span class="lv-trip-phase-badge">{{ $tripPhase }}</span></p>
-                        @endif
-                        <p class="lv-trip-date">{{ $tripDate }}</p>
-                        <p class="lv-trip-status">{{ $ph['status'] ?? '' }}</p>
-                        <p class="lv-trip-meta">{{ $ph['seats_left'] ?? '' }} {{ $seatsLeftSuffix }}</p>
-                        @if($intro !== '')
-                            <p class="lv-trip-intro">{{ $intro }}</p>
-                        @endif
-                        @if($subs !== [])
-                            <ul class="lv-trip-subs">
-                                @foreach($subs as $sub)
-                                    @php
-                                        $st = trim((string) (is_array($sub) ? ($sub['title'] ?? '') : ''));
-                                        $sd = trim((string) (is_array($sub) ? ($sub['detail'] ?? '') : ''));
-                                    @endphp
-                                    @if($st !== '' || $sd !== '')
-                                        <li class="lv-trip-sub">
-                                            @if($st !== '')
-                                                <p class="lv-trip-sub-title">{{ $st }}</p>
-                                            @endif
-                                            @if($sd !== '')
-                                                <p class="lv-trip-sub-detail">{{ $sd }}</p>
-                                            @endif
-                                        </li>
-                                    @endif
-                                @endforeach
-                            </ul>
-                        @endif
-                        @php
-                            $phaseBtnLabel = $tripPhase !== '' ? $tripPhase : ($tripDate !== '' ? $tripDate : 'Trip');
-                            $phaseAria = $tripPhaseRegisterCta.': '.$phaseBtnLabel.($tripDate !== '' ? ' · '.$tripDate : '');
-                        @endphp
-                        <button
-                            type="button"
-                            class="lv-btn lv-btn--trip-register"
-                            data-trip-date="{{ e($tripDate) }}"
-                            data-phase-label="{{ e($phaseBtnLabel) }}"
-                            aria-label="{{ e($phaseAria) }}"
-                        >{{ $tripPhaseRegisterCta }}</button>
-                        </div>
-                    </article>
-                @endforeach
-            </div>
-        </div>
-    </section>
-
-    {{-- Section 6 — Business tour itinerary: Day 1 / Day 2 / … tabs when slot column uses day prefixes --}}
-    <section class="lv-section lv-section--agenda" data-lp-section="agenda" aria-labelledby="lvAgendaHeading">
-        <div class="lv-container">
-            <h2 id="lvAgendaHeading" data-lv-key="agenda_title">{{ $agendaTitle }}</h2>
-            @if(!empty($agendaDayBundle['use_tabs']))
-                <div class="lv-agenda-tabs" role="region" aria-label="{{ $agendaTitle }}">
-                    @foreach($agendaDayBundle['groups'] as $ti => $_tabGroup)
-                        <input class="lv-agenda-tab-input" type="radio" name="lv-agenda-itinerary-{{ $landingPage->id }}" id="lv-agenda-{{ $landingPage->id }}-{{ $ti }}" {{ $ti === 0 ? 'checked' : '' }}>
-                    @endforeach
-                    <div class="lv-agenda-tablist" role="tablist">
-                        @foreach($agendaDayBundle['groups'] as $ti => $tabGroup)
-                            <label class="lv-agenda-tab" for="lv-agenda-{{ $landingPage->id }}-{{ $ti }}" id="lv-agenda-tablabel-{{ $landingPage->id }}-{{ $ti }}" role="tab">{{ $tabGroup['label'] }}</label>
-                        @endforeach
-                    </div>
-                    <div class="lv-agenda-panels">
-                        @foreach($agendaDayBundle['groups'] as $ti => $tabGroup)
-                            <div class="lv-agenda-panel" role="tabpanel" aria-labelledby="lv-agenda-tablabel-{{ $landingPage->id }}-{{ $ti }}">
-                                <div class="lv-agenda-table-wrap">
-                                    <table class="lv-agenda-table">
-                                        <caption class="sr-only">{{ $agendaTitle }} — {{ $tabGroup['label'] }}</caption>
-                                        <thead>
-                                            <tr>
-                                                <th scope="col">{{ $agendaHdrSlot }}</th>
-                                                <th scope="col">{{ $agendaHdrActivity }}</th>
-                                                <th scope="col">{{ $agendaHdrDetail }}</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach($tabGroup['rows'] as $row)
-                                                @php
-                                                    $slot = trim((string) ($row['slot'] ?? ''));
-                                                    $act = trim((string) ($row['activity'] ?? ''));
-                                                    $det = trim((string) ($row['detail'] ?? ''));
-                                                @endphp
-                                                <tr>
-                                                    <td class="lv-agenda-slot">{{ $slot !== '' ? $slot : '—' }}</td>
-                                                    <td class="lv-agenda-activity">{{ $act !== '' ? $act : '—' }}</td>
-                                                    <td class="lv-agenda-detail">{{ $det !== '' ? $det : '—' }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            @else
-                <div class="lv-agenda-table-wrap">
-                    <table class="lv-agenda-table">
-                        <caption class="sr-only">{{ $agendaTitle }}</caption>
-                        <thead>
-                            <tr>
-                                <th scope="col">{{ $agendaHdrSlot }}</th>
-                                <th scope="col">{{ $agendaHdrActivity }}</th>
-                                <th scope="col">{{ $agendaHdrDetail }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($agendaItems as $row)
-                                @php
-                                    $slot = trim((string) ($row['slot'] ?? ''));
-                                    $act = trim((string) ($row['activity'] ?? ''));
-                                    $det = trim((string) ($row['detail'] ?? ''));
-                                @endphp
-                                <tr>
-                                    <td class="lv-agenda-slot">{{ $slot !== '' ? $slot : '—' }}</td>
-                                    <td class="lv-agenda-activity">{{ $act !== '' ? $act : '—' }}</td>
-                                    <td class="lv-agenda-detail">{{ $det !== '' ? $det : '—' }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
-        </div>
-    </section>
-
-    {{-- Section 7 — Booking --}}
-    <section class="lv-section lv-section--booking" data-lp-section="booking">
-        <div class="lv-container lv-grid">
-            <div>
-                <h2 data-lv-key="booking_title">{{ $bookingTitle }}</h2>
-                <div class="lv-booking">
-                    <form id="lvBookingForm">
-                        <input type="text" name="name" placeholder="{{ $bookingNamePh }}" required>
-                        <input type="email" name="email" placeholder="{{ $bookingEmailPh }}" required>
-                        <input type="text" name="phone" placeholder="{{ $bookingPhonePh }}">
-                        <select name="tripDate" aria-label="{{ $bookingTripPh }}">
-                            <option value="">{{ $bookingTripPh }}</option>
-                            @foreach($tripDates as $trip)
-                                @php
-                                    $optPhase = trim((string) ($trip['phase'] ?? ''));
-                                    $optDate = trim((string) ($trip['date'] ?? ''));
-                                    $optLabel = $optPhase !== '' ? $optPhase.' — '.$optDate : $optDate;
-                                @endphp
-                                <option value="{{ $optDate }}">{{ $optLabel }}</option>
-                            @endforeach
-                        </select>
-                        <button type="submit" class="lv-btn" data-lv-key="booking_submit_text">{{ $bookingSubmitText }}</button>
-                    </form>
-                </div>
-            </div>
-            <div class="lv-image" data-lv-image-key="why_image" data-lv-image-current="{{ $whyImage }}" style="background-image:url('{{ $whyImage }}')"></div>
-        </div>
-    </section>
-
-    {{-- Section 8 — FAQ & contact --}}
-    <section class="lv-section lv-section--faq" data-lp-section="faq">
-        <div class="lv-container">
-            <h2 data-lv-key="faq_title">{{ $faqTitle }}</h2>
-            @foreach($faqItems as $idx => $faq)
-                <div class="lv-card" @if($idx > 0) style="margin-top:12px" @endif>
-                    <strong class="lv-faq-q">{{ $faq['question'] ?? '' }}</strong>
-                    <div class="lv-faq-a">{{ $faq['answer'] ?? '' }}</div>
-                </div>
-            @endforeach
-            <div class="lv-card lv-contact-bar" style="margin-top:14px;text-align:center;">
-                @foreach($contactPhones as $p)
-                    <a href="tel:{{ preg_replace('/\\s+/', '', $p) }}" style="margin:0 8px;display:inline-block;">{{ $p }}</a>
-                @endforeach
-            </div>
-        </div>
-    </section>
-
-    {{-- Section 9 — Terms & Conditions (always visible on public page) --}}
-    <section class="lv-section lv-section--terms" data-lp-section="terms" aria-labelledby="lvTermsHeading">
-        <div class="lv-container">
-            <header class="lv-terms-header">
-                <h2 id="lvTermsHeading" data-lv-key="terms_title">{{ $termsTitle }}</h2>
-                <div class="lv-terms-header__rule" aria-hidden="true"></div>
-            </header>
-            <div class="lv-terms-panel">
-                <div class="lv-terms-panel__accent" aria-hidden="true"></div>
-                <div class="lv-terms-prose">
-                    <div class="mb-0" data-lv-key="terms_text" style="white-space:pre-wrap;">{{ $termsText }}</div>
-                </div>
-            </div>
-        </div>
-    </section>
+    @endforeach
 
     {{-- Modal: register from a specific trip phase (Section 5 buttons) --}}
     <div id="lvTripPhaseModal" class="lv-trip-register-modal" hidden role="dialog" aria-modal="true" aria-labelledby="lvTripPhaseModalHeading">
@@ -1270,6 +975,60 @@
 <script>
 window.LpHeroRotation = @json($heroEnableRotation && count($heroRotationSegments) > 0 ? ['segments' => $heroRotationSegments, 'cycleMs' => 45000] : null);
 document.addEventListener('DOMContentLoaded', function () {
+    (function initTripActivitySlider() {
+        var root = document.querySelector('[data-lv-trip-activity-slider]');
+        if (!root) return;
+        var track = root.querySelector('[data-lv-trip-act-track]');
+        var prev = root.querySelector('[data-lv-trip-act-prev]');
+        var next = root.querySelector('[data-lv-trip-act-next]');
+        var dots = root.querySelectorAll('[data-lv-trip-act-dot]');
+        if (!track) return;
+        var slides = track.querySelectorAll('[data-lv-trip-act-slide]');
+        if (!slides.length) return;
+        var vp = track.parentElement;
+        function slideW() {
+            return vp && vp.clientWidth ? vp.clientWidth : track.clientWidth;
+        }
+        function curIdx() {
+            var w = slideW();
+            if (w < 1) return 0;
+            return Math.round(track.scrollLeft / w);
+        }
+        function go(i) {
+            var w = slideW();
+            var max = Math.max(0, slides.length - 1);
+            i = Math.max(0, Math.min(i, max));
+            var instant = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            track.scrollTo({ left: i * w, behavior: instant ? 'auto' : 'smooth' });
+            syncDots(i);
+        }
+        function syncDots(i) {
+            dots.forEach(function (d, di) {
+                d.setAttribute('aria-selected', di === i ? 'true' : 'false');
+                if (di === i) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current');
+            });
+        }
+        if (prev) prev.addEventListener('click', function () { go(curIdx() - 1); });
+        if (next) next.addEventListener('click', function () { go(curIdx() + 1); });
+        track.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowLeft') { e.preventDefault(); go(curIdx() - 1); }
+            if (e.key === 'ArrowRight') { e.preventDefault(); go(curIdx() + 1); }
+        });
+        dots.forEach(function (d) {
+            d.addEventListener('click', function () {
+                var k = parseInt(d.getAttribute('data-lv-trip-act-dot'), 10);
+                if (!isNaN(k)) go(k);
+            });
+        });
+        var scrollT;
+        track.addEventListener('scroll', function () {
+            clearTimeout(scrollT);
+            scrollT = setTimeout(function () { syncDots(curIdx()); }, 80);
+        }, { passive: true });
+        window.addEventListener('resize', function () { syncDots(curIdx()); });
+        syncDots(0);
+    })();
+
     (function initHeroRotation() {
         var cfg = window.LpHeroRotation;
         if (!cfg || !cfg.segments || !cfg.segments.length) return;

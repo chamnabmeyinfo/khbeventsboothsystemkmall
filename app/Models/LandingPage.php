@@ -21,6 +21,21 @@ class LandingPage extends Model
         'about_image',
         'why_image',
         'hero_cta_target',
+        'section_blueprint',
+    ];
+
+    /** Layout keys for Canton Fair visual dynamic section order (each may appear once per page). */
+    public const SECTION_LAYOUT_KEYS = [
+        'hero',
+        'about',
+        'package',
+        'promotion',
+        'trip',
+        'agenda',
+        'trip_activity',
+        'booking',
+        'faq',
+        'terms',
     ];
 
     protected $fillable = [
@@ -1037,6 +1052,42 @@ TXT;
     }
 
     /**
+     * Trip activity gallery: one slide per line — site image path, optional caption after first pipe.
+     *
+     * @return list<array{src: string, caption: string}>
+     */
+    public static function parseTripActivityGallerySlides(string $text): array
+    {
+        $out = [];
+        $lines = preg_split("/\r\n|\r|\n/", $text) ?: [];
+        foreach ($lines as $line) {
+            $line = trim((string) $line);
+            if ($line === '') {
+                continue;
+            }
+            $path = '';
+            $caption = '';
+            if (str_contains($line, '|')) {
+                [$p, $c] = explode('|', $line, 2);
+                $path = trim((string) $p);
+                $caption = trim(strip_tags((string) $c));
+            } else {
+                $path = $line;
+            }
+            $clean = self::sanitizeTripPhaseFeatureImagePath($path);
+            if ($clean === '') {
+                continue;
+            }
+            $out[] = [
+                'src' => asset($clean),
+                'caption' => $caption,
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
      * @param  array<int, mixed>  $input
      * @return list<array{label: string, date: string, status: string, seats_left: string, intro: string, subsections: list<array{title: string, detail: string}>, feature_image?: string}>
      */
@@ -1314,5 +1365,105 @@ TXT;
         }
 
         return self::defaultPromotionDiscountsData();
+    }
+
+    /**
+     * Human labels for section layouts (admin UI + templates).
+     *
+     * @return array<string, string>
+     */
+    public static function sectionLayoutLabels(): array
+    {
+        return [
+            'hero' => 'Hero',
+            'about' => 'About',
+            'package' => 'Package & pricing',
+            'promotion' => 'Promotion discounts',
+            'trip' => 'Trip dates',
+            'agenda' => 'Agenda',
+            'trip_activity' => 'Trip activity slider',
+            'booking' => 'Booking',
+            'faq' => 'FAQ & contact',
+            'terms' => 'Terms & conditions',
+        ];
+    }
+
+    /**
+     * Default public section order for Canton Fair visual (matches legacy single template).
+     *
+     * @return list<array{id: string, layout: string}>
+     */
+    public static function defaultSectionBlueprint(): array
+    {
+        $out = [];
+        foreach (self::SECTION_LAYOUT_KEYS as $layout) {
+            $out[] = [
+                'id' => 'sec-'.$layout,
+                'layout' => $layout,
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Normalize and validate section blueprint from stored or submitted JSON.
+     * Each layout appears at most once; hero is always included first if missing.
+     *
+     * @param  mixed  $raw
+     * @return list<array{id: string, layout: string}>
+     */
+    public static function sanitizeSectionBlueprint(mixed $raw): array
+    {
+        if (! is_array($raw) || $raw === []) {
+            return self::defaultSectionBlueprint();
+        }
+
+        $allowed = array_flip(self::SECTION_LAYOUT_KEYS);
+        $seen = [];
+        $out = [];
+
+        foreach ($raw as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $layout = strtolower(trim((string) ($row['layout'] ?? '')));
+            if ($layout === '' || ! isset($allowed[$layout])) {
+                continue;
+            }
+            if (isset($seen[$layout])) {
+                continue;
+            }
+            $seen[$layout] = true;
+            $id = trim((string) ($row['id'] ?? ''));
+            if ($id === '') {
+                $id = (string) Str::uuid();
+            }
+            $out[] = ['id' => $id, 'layout' => $layout];
+        }
+
+        if ($out === []) {
+            return self::defaultSectionBlueprint();
+        }
+
+        if (! isset($seen['hero'])) {
+            array_unshift($out, [
+                'id' => (string) Str::uuid(),
+                'layout' => 'hero',
+            ]);
+        }
+
+        return $out;
+    }
+
+    /**
+     * Ordered sections for the public Canton Fair visual template.
+     *
+     * @param  array<string, mixed>  $visual  From visualForLocale(); must include section_blueprint when present on page
+     * @return list<array{id: string, layout: string}>
+     */
+    public static function resolvePublicSectionOrder(array $visual): array
+    {
+        return self::sanitizeSectionBlueprint($visual['section_blueprint'] ?? null);
     }
 }

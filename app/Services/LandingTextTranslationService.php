@@ -30,6 +30,7 @@ class LandingTextTranslationService
             'agenda_hdr_slot', 'agenda_hdr_activity', 'agenda_hdr_detail',
             'trip_section_title', 'per_person_label', 'seats_left_suffix',
             'trip_phase_register_cta', 'trip_phase_modal_title',
+            'trip_activity_gallery_title', 'trip_activity_gallery_slides_text',
             'hero_stats_text', 'package_items_text', 'trip_dates_text', 'agenda_items_text', 'faq_items_text', 'contact_phones_text', 'terms_text',
             'booking_name_placeholder', 'booking_email_placeholder', 'booking_phone_placeholder',
             'booking_trip_placeholder', 'booking_submit_text',
@@ -49,6 +50,7 @@ class LandingTextTranslationService
             'hero_stats_text' => $this->translateHeroStatsPipeLines($text, $sourceLocale, $targetLocale),
             'trip_dates_text', 'faq_items_text', 'agenda_items_text' => $this->translatePipeDelimitedMultiline($text, $sourceLocale, $targetLocale),
             'package_items_text' => $this->translatePackageItemsLines($text, $sourceLocale, $targetLocale),
+            'trip_activity_gallery_slides_text' => $this->translateTripActivityGallerySlides($text, $sourceLocale, $targetLocale),
             'contact_phones_text' => $this->translateContactPhones($text, $sourceLocale, $targetLocale),
             default => $this->translatePlain($text, $sourceLocale, $targetLocale),
         };
@@ -103,6 +105,36 @@ class LandingTextTranslationService
             $tt = $this->translateSegment(trim($textPart), $source, $target);
             $ic = trim(strip_tags((string) $icon));
             $out[] = $ic !== '' ? $tt.'|'.$ic : $tt;
+        }
+
+        return implode("\n", $out);
+    }
+
+    /**
+     * image_path|caption — path is never translated; caption is translated when present.
+     */
+    private function translateTripActivityGallerySlides(string $text, string $source, string $target): string
+    {
+        $lines = preg_split("/\r\n|\r|\n/", $text) ?: [];
+        $out = [];
+        foreach ($lines as $line) {
+            $line = trim((string) $line);
+            if ($line === '') {
+                $out[] = '';
+
+                continue;
+            }
+            if (! str_contains($line, '|')) {
+                $out[] = $line;
+
+                continue;
+            }
+            [$pathPart, $capPart] = explode('|', $line, 2);
+            $pathPart = trim((string) $pathPart);
+            $capPart = trim(strip_tags((string) $capPart));
+            $tc = $capPart !== '' ? $this->translateSegment($capPart, $source, $target) : '';
+
+            $out[] = $tc !== '' ? $pathPart.'|'.$tc : $pathPart;
         }
 
         return implode("\n", $out);

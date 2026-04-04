@@ -50,6 +50,9 @@
             <a href="{{ route('landing-pages.create') }}" class="btn btn-primary" style="min-height:44px;">
                 <i class="fas fa-plus mr-1"></i>Create Landing Page
             </a>
+            <a href="{{ route('landing-pages.section-templates.index') }}" class="btn btn-outline-secondary" style="min-height:44px;">
+                <i class="fas fa-layer-group mr-1"></i>Section templates
+            </a>
             <a href="{{ route('landing-pages.analytics.index') }}" class="btn btn-outline-info" style="min-height:44px;">
                 <i class="fas fa-chart-area mr-1"></i>Visitor analytics
             </a>

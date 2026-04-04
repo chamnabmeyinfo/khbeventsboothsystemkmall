@@ -13,6 +13,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\FloorPlanController;
 use App\Http\Controllers\LandingPageController;
+use App\Http\Controllers\LandingPageSectionTemplateController;
 use App\Http\Controllers\LandingPagePublicController;
 use App\Http\Controllers\LandingPageTrackingController;
 use App\Http\Controllers\SettingsController;
@@ -387,6 +388,14 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/analytics/clear', [LandingPageController::class, 'analyticsClear'])
                 ->middleware('throttle:30,1')
                 ->name('analytics.clear');
+            Route::get('/section-templates', [LandingPageSectionTemplateController::class, 'index'])->name('section-templates.index');
+            Route::get('/section-templates/create', [LandingPageSectionTemplateController::class, 'create'])->name('section-templates.create');
+            Route::post('/section-templates', [LandingPageSectionTemplateController::class, 'store'])->name('section-templates.store');
+            Route::get('/section-templates/{section_template}/edit', [LandingPageSectionTemplateController::class, 'edit'])->name('section-templates.edit');
+            Route::put('/section-templates/{section_template}', [LandingPageSectionTemplateController::class, 'update'])->name('section-templates.update');
+            Route::delete('/section-templates/{section_template}', [LandingPageSectionTemplateController::class, 'destroy'])->name('section-templates.destroy');
+            Route::post('/{landingPage:slug}/apply-section-template', [LandingPageController::class, 'applySectionTemplate'])
+                ->name('apply-section-template');
             Route::get('/{landingPage:slug}/edit', [LandingPageController::class, 'edit'])->name('edit');
             Route::put('/{landingPage:slug}', [LandingPageController::class, 'update'])->name('update');
             Route::delete('/{landingPage:slug}', [LandingPageController::class, 'destroy'])->name('destroy');

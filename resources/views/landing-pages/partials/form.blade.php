@@ -42,6 +42,12 @@
     }
     $showOnceMode = old('show_once_mode', optional($landingPage)->show_once_mode ?? 'cookie_once');
     $canAutoTranslate = isset($landingPage) && $landingPage;
+    $sectionBlueprintNormalized = LandingPage::sanitizeSectionBlueprint($visualForm['section_blueprint'] ?? null);
+    $sectionBlueprintJsonDefault = json_encode($sectionBlueprintNormalized, JSON_UNESCAPED_SLASHES);
+    $sectionBlueprintJson = old('visual.section_blueprint_json', $sectionBlueprintJsonDefault);
+    $sectionTemplatesForApply = isset($landingPage) && $landingPage
+        ? \App\Models\LandingPageSectionTemplate::query()->orderBy('name')->get()
+        : collect();
 @endphp
 @once
 @push('styles')
@@ -105,6 +111,263 @@
     .lp-agenda-by-day-editor .lp-agenda-admin-nav{border-bottom:1px solid #dee2e6}
     .lp-agenda-by-day-editor .lp-agenda-admin-content{border:1px solid #dee2e6;border-top:0;border-radius:0 0 .25rem .25rem;padding:.75rem;background:#fff}
     .lp-agenda-by-day-editor .lp-agenda-add-day-li .btn{min-height:38px}
+    /* Section tab layout previews: single responsive wireframe (mobile-first; matches standard breakpoints) */
+    .lp-sec-preview {
+        border: 1px solid #dee2e6;
+        border-radius: 0.35rem;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        margin-bottom: 1rem;
+        max-width: 100%;
+        overflow: hidden;
+    }
+    .lp-sec-preview__title { font-weight: 600; }
+    .lp-sec-preview__hint { margin-top: 0.5rem; line-height: 1.4; }
+    .lp-sec-preview__frame {
+        position: relative;
+        border: 1px dashed #adb5bd;
+        border-radius: 0.25rem;
+        background: #fff;
+        padding: 0.5rem;
+        min-height: 4.5rem;
+    }
+    .lp-sec-preview__line {
+        height: 0.35rem;
+        background: #ced4da;
+        border-radius: 2px;
+        margin-bottom: 0.35rem;
+        max-width: 100%;
+    }
+    .lp-sec-preview__line--lg { width: 72%; min-width: 8rem; }
+    .lp-sec-preview__line--md { width: 55%; min-width: 6rem; }
+    .lp-sec-preview__line--sm { width: 40%; min-width: 4rem; }
+    .lp-sec-preview__line--short { width: 35%; }
+    .lp-sec-preview__cta {
+        width: 5rem;
+        height: 0.65rem;
+        background: #6c757d;
+        border-radius: 3px;
+        margin: 0.35rem 0;
+    }
+    .lp-sec-preview__cta--sm { width: 4rem; height: 0.55rem; }
+    /* Hero */
+    .lp-sec-preview__frame--hero { min-height: 6.5rem; padding: 0; overflow: hidden; }
+    .lp-sec-preview__hero-bg {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, #dee2e6 0%, #adb5bd 100%);
+        opacity: 0.85;
+    }
+    .lp-sec-preview__hero-stack {
+        position: relative;
+        z-index: 1;
+        padding: 0.5rem 0.65rem;
+    }
+    .lp-sec-preview__logo {
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.9);
+        border: 1px solid #ced4da;
+        margin-bottom: 0.35rem;
+    }
+    .lp-sec-preview__row3 {
+        display: flex;
+        gap: 0.35rem;
+        margin-top: 0.4rem;
+        flex-wrap: wrap;
+    }
+    .lp-sec-preview__row3 span {
+        flex: 1 1 22%;
+        min-width: 2.25rem;
+        height: 1.5rem;
+        background: rgba(255,255,255,0.75);
+        border: 1px solid #ced4da;
+        border-radius: 3px;
+    }
+    /* About */
+    .lp-sec-preview__frame--about {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        align-items: start;
+    }
+    @media (min-width: 576px) {
+        .lp-sec-preview__frame--about { grid-template-columns: minmax(4rem, 32%) 1fr; }
+    }
+    .lp-sec-preview__about-img {
+        aspect-ratio: 4/3;
+        background: #e9ecef;
+        border-radius: 0.25rem;
+        border: 1px solid #dee2e6;
+    }
+    .lp-sec-preview__callout {
+        margin-top: 0.35rem;
+        padding: 0.35rem;
+        background: #fff3cd;
+        border: 1px dashed #ffc107;
+        border-radius: 3px;
+        min-height: 1.25rem;
+    }
+    /* Package */
+    .lp-sec-preview__frame--package { text-align: left; }
+    .lp-sec-preview__pkg-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.3rem;
+        margin: 0.4rem 0;
+    }
+    @media (max-width: 575.98px) {
+        .lp-sec-preview__pkg-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .lp-sec-preview__pkg-grid span {
+        height: 1.1rem;
+        background: #e9ecef;
+        border-radius: 2px;
+    }
+    .lp-sec-preview__price {
+        height: 2rem;
+        background: linear-gradient(90deg, #f8d7da, #f5c6cb);
+        border-radius: 4px;
+        border: 1px solid #f1aeb5;
+    }
+    /* Promo */
+    .lp-sec-preview__frame--promo { text-align: center; }
+    .lp-sec-preview__promo-base {
+        width: 70%;
+        max-width: 10rem;
+        height: 1.75rem;
+        background: #e7f1ff;
+        border: 1px solid #b8daff;
+        border-radius: 4px;
+        margin: 0.35rem auto;
+    }
+    .lp-sec-preview__promo-tiers {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+        justify-content: center;
+        margin-top: 0.35rem;
+    }
+    .lp-sec-preview__promo-tiers span {
+        width: 2.5rem;
+        height: 1.4rem;
+        background: #fff;
+        border: 1px solid #ced4da;
+        border-radius: 3px;
+    }
+    /* Trip */
+    .lp-sec-preview__frame--trip { text-align: center; }
+    .lp-sec-preview__trip-cards {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        justify-content: center;
+        margin: 0.4rem 0;
+    }
+    .lp-sec-preview__trip-cards span {
+        flex: 1 1 28%;
+        min-width: 3rem;
+        height: 2.25rem;
+        background: #fff;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+    }
+    .lp-sec-preview__trip-slider-note {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        flex-wrap: wrap;
+        font-size: 0.65rem;
+        color: #6c757d;
+        margin-top: 0.35rem;
+        padding: 0.25rem;
+        background: #e9ecef;
+        border-radius: 3px;
+    }
+    .lp-sec-preview__slider-icon { font-size: 0.55rem; letter-spacing: 0.05em; opacity: 0.8; }
+    /* Agenda */
+    .lp-sec-preview__frame--agenda { text-align: center; }
+    .lp-sec-preview__tabs-fake {
+        display: flex;
+        gap: 0.25rem;
+        justify-content: center;
+        margin-bottom: 0.4rem;
+    }
+    .lp-sec-preview__tabs-fake span {
+        width: 2rem;
+        height: 0.45rem;
+        background: #e9ecef;
+        border-radius: 2px;
+    }
+    .lp-sec-preview__tabs-fake span.is-on { background: #007bff; opacity: 0.35; }
+    .lp-sec-preview__table { text-align: left; border: 1px solid #dee2e6; border-radius: 3px; overflow: hidden; }
+    .lp-sec-preview__th, .lp-sec-preview__tr {
+        display: grid;
+        grid-template-columns: 1fr 1.2fr 1fr;
+        gap: 2px;
+        padding: 0.2rem 0.35rem;
+        background: #f8f9fa;
+    }
+    .lp-sec-preview__th { background: #e9ecef; }
+    .lp-sec-preview__th span, .lp-sec-preview__tr span {
+        height: 0.3rem;
+        background: #ced4da;
+        border-radius: 1px;
+    }
+    .lp-sec-preview__tr { background: #fff; border-top: 1px solid #eee; }
+    /* Booking */
+    .lp-sec-preview__frame--book {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    @media (min-width: 576px) {
+        .lp-sec-preview__frame--book { grid-template-columns: 1.2fr minmax(3rem, 35%); }
+    }
+    .lp-sec-preview__book-form { padding: 0.25rem; }
+    .lp-sec-preview__inp {
+        height: 0.55rem;
+        background: #e9ecef;
+        border-radius: 2px;
+        margin-bottom: 0.3rem;
+    }
+    .lp-sec-preview__inp--sel { width: 85%; }
+    .lp-sec-preview__book-img {
+        min-height: 4rem;
+        background: #e9ecef;
+        border-radius: 0.25rem;
+        border: 1px dashed #adb5bd;
+    }
+    /* FAQ */
+    .lp-sec-preview__frame--faq { text-align: center; }
+    .lp-sec-preview__faq-card {
+        text-align: left;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 0.4rem;
+        margin-bottom: 0.35rem;
+        background: #fff;
+    }
+    .lp-sec-preview__contact {
+        height: 1.1rem;
+        max-width: 12rem;
+        margin: 0.35rem auto 0;
+        background: #d4edda;
+        border-radius: 3px;
+        border: 1px solid #c3e6cb;
+    }
+    /* Terms */
+    .lp-sec-preview__frame--terms { text-align: center; }
+    .lp-sec-preview__terms-panel {
+        text-align: left;
+        margin-top: 0.4rem;
+        padding: 0.5rem;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+    }
 </style>
 @endpush
 @endonce
@@ -210,6 +473,9 @@
                 <a class="nav-link active py-2 px-3" id="lp-tab-shared" data-toggle="tab" href="#lp-pane-shared" role="tab" aria-controls="lp-pane-shared" aria-selected="true"><i class="fas fa-images mr-1" aria-hidden="true"></i>Shared images &amp; hero</a>
             </li>
             <li class="nav-item" role="presentation">
+                <a class="nav-link py-2 px-3" id="lp-tab-sections" data-toggle="tab" href="#lp-pane-sections" role="tab" aria-controls="lp-pane-sections" aria-selected="false"><i class="fas fa-layer-group mr-1" aria-hidden="true"></i>Sections &amp; order</a>
+            </li>
+            <li class="nav-item" role="presentation">
                 <a class="nav-link py-2 px-3" id="lp-tab-copy" data-toggle="tab" href="#lp-pane-copy" role="tab" aria-controls="lp-pane-copy" aria-selected="false"><i class="fas fa-language mr-1" aria-hidden="true"></i>Section copy (by language)</a>
             </li>
         </ul>
@@ -295,6 +561,9 @@
             </div>
         </div>
 
+            </div>
+            <div class="tab-pane fade p-3" id="lp-pane-sections" role="tabpanel" aria-labelledby="lp-tab-sections" tabindex="0">
+                @include('landing-pages.partials.section-management')
             </div>
             <div class="tab-pane fade p-3" id="lp-pane-copy" role="tabpanel" aria-labelledby="lp-tab-copy" tabindex="0">
         <h6 class="mt-0 mb-2">Text by language</h6>
@@ -399,6 +668,7 @@
                     }
                     $faqItemsText = old('visual.i18n.'.$loc.'.faq_items_text', collect($vloc['faq_items'] ?? [])->map(fn ($row) => trim(($row['question'] ?? '').'|'.($row['answer'] ?? '')))->implode("\n"));
                     $contactPhonesText = old('visual.i18n.'.$loc.'.contact_phones_text', collect($vloc['contact_phones'] ?? [])->implode("\n"));
+                    $tripActivitySlidesText = old('visual.i18n.'.$loc.'.trip_activity_gallery_slides_text', (string) ($vloc['trip_activity_gallery_slides_text'] ?? ''));
                     $pfx = 'visual[i18n]['.$loc.']';
                 @endphp
                 <div class="tab-pane fade {{ $i === 0 ? 'show active' : '' }}" id="pane-{{ $loc }}" role="tabpanel" aria-labelledby="tab-{{ $loc }}">
@@ -438,6 +708,7 @@
 
                     {{-- Section: Hero (full-bleed image + headline + CTA + stats) --}}
                     <div class="tab-pane fade show active" id="lp-{{ $loc }}-s1" role="tabpanel" aria-labelledby="lp-{{ $loc }}-t1" tabindex="0">
+                    @include('landing-pages.partials.section-layout-preview', ['section' => 1, 'loc' => $loc])
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
                             <strong class="d-block">1. Hero</strong>
@@ -485,6 +756,7 @@
 
                     {{-- Section: About --}}
                     <div class="tab-pane fade" id="lp-{{ $loc }}-s2" role="tabpanel" aria-labelledby="lp-{{ $loc }}-t2" tabindex="0">
+                    @include('landing-pages.partials.section-layout-preview', ['section' => 2, 'loc' => $loc])
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
                             <strong class="d-block">2. About</strong>
@@ -518,6 +790,7 @@
 
                     {{-- Section: Package & pricing --}}
                     <div class="tab-pane fade" id="lp-{{ $loc }}-s3" role="tabpanel" aria-labelledby="lp-{{ $loc }}-t3" tabindex="0">
+                    @include('landing-pages.partials.section-layout-preview', ['section' => 3, 'loc' => $loc])
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
                             <strong class="d-block">3. Package &amp; pricing</strong>
@@ -565,6 +838,7 @@
 
                     {{-- Section: Promotion discounts --}}
                     <div class="tab-pane fade" id="lp-{{ $loc }}-s4" role="tabpanel" aria-labelledby="lp-{{ $loc }}-t4" tabindex="0">
+                    @include('landing-pages.partials.section-layout-preview', ['section' => 4, 'loc' => $loc])
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
                             <strong class="d-block">4. Promotion discounts</strong>
@@ -589,6 +863,7 @@
 
                     {{-- Section: Trip dates --}}
                     <div class="tab-pane fade" id="lp-{{ $loc }}-s5" role="tabpanel" aria-labelledby="lp-{{ $loc }}-t5" tabindex="0">
+                    @include('landing-pages.partials.section-layout-preview', ['section' => 5, 'loc' => $loc])
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
                             <strong class="d-block">5. Trip dates</strong>
@@ -651,10 +926,34 @@
                             </div>
                         </div>
                     </div>
+                    <div class="card card-outline-secondary mb-3">
+                        <div class="card-header py-2">
+                            <strong class="d-block">Trip activity — photo slider</strong>
+                            <small class="text-muted">Shown on the public page <strong>after the Agenda section</strong> as a horizontal slideshow. One image per line: site path (under <code>images/landing-pages/…</code>), optional caption after <code>|</code>. Same path rules as phase feature images.</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                    <label class="mb-0">Section title</label>
+                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'trip_activity_gallery_title', 'canAutoTranslate' => $canAutoTranslate])
+                                </div>
+                                <input type="text" name="{{ $pfx }}[trip_activity_gallery_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.trip_activity_gallery_title', $vloc['trip_activity_gallery_title'] ?? '') }}" placeholder="Trip highlights" maxlength="255">
+                            </div>
+                            <div class="form-group mb-0">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                                    <label class="mb-0">Slides (one per line)</label>
+                                    @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'trip_activity_gallery_slides_text', 'canAutoTranslate' => $canAutoTranslate])
+                                </div>
+                                <textarea name="{{ $pfx }}[trip_activity_gallery_slides_text]" class="form-control" rows="6" placeholder="images/landing-pages/your-slug/activity-1.jpg|Factory visit&#10;images/landing-pages/your-slug/activity-2.jpg|Team dinner">{{ $tripActivitySlidesText }}</textarea>
+                                <small class="text-muted d-block mt-1">Leave empty to hide this section. Format: <code>path|caption</code> or path only.</small>
+                            </div>
+                        </div>
+                    </div>
                     </div>
 
                     {{-- Section: Agenda --}}
                     <div class="tab-pane fade" id="lp-{{ $loc }}-s6" role="tabpanel" aria-labelledby="lp-{{ $loc }}-t6" tabindex="0">
+                    @include('landing-pages.partials.section-layout-preview', ['section' => 6, 'loc' => $loc])
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
                             <strong class="d-block">6. Agenda</strong>
@@ -722,6 +1021,7 @@
 
                     {{-- Section: Booking --}}
                     <div class="tab-pane fade" id="lp-{{ $loc }}-s7" role="tabpanel" aria-labelledby="lp-{{ $loc }}-t7" tabindex="0">
+                    @include('landing-pages.partials.section-layout-preview', ['section' => 7, 'loc' => $loc])
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
                             <strong class="d-block">7. Booking</strong>
@@ -789,6 +1089,7 @@
 
                     {{-- Section: FAQ & contact --}}
                     <div class="tab-pane fade" id="lp-{{ $loc }}-s8" role="tabpanel" aria-labelledby="lp-{{ $loc }}-t8" tabindex="0">
+                    @include('landing-pages.partials.section-layout-preview', ['section' => 8, 'loc' => $loc])
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
                             <strong class="d-block">8. FAQ &amp; contact</strong>
@@ -822,6 +1123,7 @@
 
                     {{-- Section: Terms & Conditions --}}
                     <div class="tab-pane fade" id="lp-{{ $loc }}-s9" role="tabpanel" aria-labelledby="lp-{{ $loc }}-t9" tabindex="0">
+                    @include('landing-pages.partials.section-layout-preview', ['section' => 9, 'loc' => $loc])
                     <div class="card card-outline-secondary mb-3">
                         <div class="card-header py-2">
                             <strong class="d-block">9. Terms &amp; Conditions</strong>

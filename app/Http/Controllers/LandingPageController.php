@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\LandingPage;
 use App\Models\LandingPageLead;
+use App\Models\LandingPageSectionTemplate;
 use App\Models\LandingPageEvent;
 use App\Services\LandingTextTranslationService;
 use App\Services\LandingTrackingService;
@@ -194,6 +195,45 @@ class LandingPageController extends Controller
 
         return redirect()->route('landing-pages.edit', $landingPage->fresh())
             ->with('success', 'Landing page updated successfully.');
+    }
+
+    /**
+     * Merge a reusable section template’s i18n payload into this page (same parsing as full form save).
+     */
+    public function applySectionTemplate(Request $request, LandingPage $landingPage)
+    {
+        $validated = $request->validate([
+            'landing_page_section_template_id' => ['required', 'integer', 'exists:landing_page_section_templates,id'],
+            'layout_key' => ['required', 'string', 'max:64', Rule::in(LandingPage::SECTION_LAYOUT_KEYS)],
+        ]);
+
+        if (! $landingPage->use_visual_builder) {
+            return back()->with('error', 'This page does not use the visual builder.');
+        }
+
+        $template = LandingPageSectionTemplate::query()->findOrFail((int) $validated['landing_page_section_template_id']);
+        if ($template->layout_key !== $validated['layout_key']) {
+            return back()->with('error', 'Template does not match the selected layout.');
+        }
+
+        $visual = is_array($landingPage->visual_content) ? $landingPage->visual_content : [];
+        $visual = LandingPage::ensureStructuredVisualContent($visual);
+
+        $content = is_array($template->content) ? $template->content : [];
+        $i18nSlice = isset($content['i18n']) && is_array($content['i18n']) ? $content['i18n'] : [];
+
+        $adminLocales = LandingPage::allowedLocaleCodes();
+        foreach ($adminLocales as $loc) {
+            if (! isset($i18nSlice[$loc]) || ! is_array($i18nSlice[$loc])) {
+                continue;
+            }
+            $prev = is_array($visual['i18n'][$loc] ?? null) ? $visual['i18n'][$loc] : [];
+            $visual['i18n'][$loc] = $this->buildLocaleVisualBlock($loc, $i18nSlice[$loc], $prev);
+        }
+
+        $landingPage->update(['visual_content' => $visual]);
+
+        return back()->with('success', 'Applied template “'.$template->name.'”. Review each language tab; submit the main form if you have other unsaved changes.');
     }
 
     public function destroy(LandingPage $landingPage)
@@ -458,6 +498,8 @@ class LandingPageController extends Controller
             'agenda_hdr_detail' => 120,
             'agenda_items_text' => 12000,
             'trip_section_title' => 255,
+            'trip_activity_gallery_title' => 255,
+            'trip_activity_gallery_slides_text' => 8000,
             'per_person_label' => 120,
             'seats_left_suffix' => 120,
             'booking_name_placeholder' => 120,
@@ -648,6 +690,8 @@ class LandingPageController extends Controller
             'visual.i18n.*.agenda_hdr_activity' => 'nullable|string|max:120',
             'visual.i18n.*.agenda_hdr_detail' => 'nullable|string|max:120',
             'visual.i18n.*.agenda_items_text' => 'nullable|string|max:12000',
+            'visual.i18n.*.trip_activity_gallery_title' => 'nullable|string|max:255',
+            'visual.i18n.*.trip_activity_gallery_slides_text' => 'nullable|string|max:8000',
             'visual.i18n.*.trip_section_title' => 'nullable|string|max:255',
             'visual.i18n.*.per_person_label' => 'nullable|string|max:120',
             'visual.i18n.*.seats_left_suffix' => 'nullable|string|max:120',
@@ -665,6 +709,7 @@ class LandingPageController extends Controller
             'visual.i18n.*.promotion_discounts_json' => 'nullable|string|max:20000',
             'visual.i18n.*.faq_items_text' => 'nullable|string|max:16000',
             'visual.i18n.*.contact_phones_text' => 'nullable|string|max:4000',
+            'visual.section_blueprint_json' => 'nullable|string|max:12000',
             'visual_logo_image' => 'nullable|image|max:8192',
             'visual_hero_background_image' => 'nullable|image|max:8192',
             'visual_hero_background_images' => 'nullable|array',
@@ -869,6 +914,16 @@ class LandingPageController extends Controller
             $visual['i18n'][$loc] = $this->buildLocaleVisualBlock($loc, $locIn, $prevBlock);
         }
 
+        $bpJson = trim((string) ($incoming['section_blueprint_json'] ?? ''));
+        if ($bpJson !== '') {
+            $decoded = json_decode($bpJson, true);
+            $visual['section_blueprint'] = LandingPage::sanitizeSectionBlueprint(is_array($decoded) ? $decoded : []);
+        } elseif (! empty($existing['section_blueprint'])) {
+            $visual['section_blueprint'] = LandingPage::sanitizeSectionBlueprint($existing['section_blueprint']);
+        } else {
+            $visual['section_blueprint'] = LandingPage::defaultSectionBlueprint();
+        }
+
         foreach (array_keys($visual) as $k) {
             if ($k === 'i18n' || in_array($k, LandingPage::VISUAL_SHARED_KEYS, true)) {
                 continue;
@@ -910,7 +965,7 @@ class LandingPageController extends Controller
     {
         $block = $prevBlock;
 
-        $multiline = ['hero_subtitle', 'about_text_en', 'about_text_kh', 'terms_text'];
+        $multiline = ['hero_subtitle', 'about_text_en', 'about_text_kh', 'terms_text', 'trip_activity_gallery_slides_text'];
         $stringFields = [
             'hero_title', 'hero_subtitle', 'hero_cta_text',
             'about_title', 'about_text_en', 'about_text_kh',
@@ -920,6 +975,7 @@ class LandingPageController extends Controller
             'booking_name_placeholder', 'booking_email_placeholder', 'booking_phone_placeholder',
             'booking_trip_placeholder', 'booking_submit_text',
             'trip_phase_register_cta', 'trip_phase_modal_title',
+            'trip_activity_gallery_title', 'trip_activity_gallery_slides_text',
         ];
 
         foreach ($stringFields as $f) {
