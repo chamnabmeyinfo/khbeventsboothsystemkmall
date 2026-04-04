@@ -58,12 +58,18 @@
             <div class="lp-sec-preview__trip-cards">
                 <span></span><span></span><span></span>
             </div>
-            <div class="lp-sec-preview__trip-slider-note">
-                <span class="lp-sec-preview__slider-icon">◀ ▶</span>
-                <span>Slider after Agenda (if you add photos below)</span>
+        </div>
+        <p class="lp-sec-preview__hint small text-muted mb-0">Trip phase cards. Add a <strong>Trip activity slider</strong> section in <em>Sections &amp; order</em> for the photo gallery (order on the public page follows your section list).</p>
+    @elseif($sid === 10)
+        <div class="lp-sec-preview__frame lp-sec-preview__frame--trip" aria-hidden="true">
+            <div class="lp-sec-preview__line lp-sec-preview__line--sm mx-auto"></div>
+            <div class="lp-sec-preview__trip-slider-note" style="margin-top:0.5rem;min-height:3rem;display:flex;align-items:center;justify-content:center;">
+                <span class="lp-sec-preview__slider-icon">◀</span>
+                <span style="flex:1;max-width:8rem;height:2rem;background:#e9ecef;border-radius:6px;margin:0 0.35rem;border:1px solid #dee2e6;"></span>
+                <span class="lp-sec-preview__slider-icon">▶</span>
             </div>
         </div>
-        <p class="lp-sec-preview__hint small text-muted mb-0">Trip phase cards; trip activity photos are configured here but <strong>display after Agenda</strong> on the live page.</p>
+        <p class="lp-sec-preview__hint small text-muted mb-0">Horizontal image slider; position in <em>Sections &amp; order</em> controls where it appears on the public page.</p>
     @elseif($sid === 6)
         <div class="lp-sec-preview__frame lp-sec-preview__frame--agenda" aria-hidden="true">
             <div class="lp-sec-preview__line lp-sec-preview__line--sm mx-auto"></div>

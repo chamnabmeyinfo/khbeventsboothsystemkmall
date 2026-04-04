@@ -33,6 +33,12 @@
             </a>
         </div>
 
+        <div class="mb-3">
+            <div class="text-muted small font-weight-bold mb-1">Quick add — one section at a time</div>
+            <p class="small text-muted mb-2 mb-md-1">Tap a layout to append it to the list (only layouts not already added). Reorder with ↑ ↓ in the table.</p>
+            <div class="d-flex flex-wrap align-items-center lp-section-quick-add" id="lpSectionQuickAdd" aria-label="Quick add section layout"></div>
+        </div>
+
         <div class="table-responsive">
             <table class="table table-sm table-bordered mb-0" id="lpSectionBlueprintTable">
                 <thead class="thead-light">
@@ -49,7 +55,7 @@
                 <tbody id="lpSectionBlueprintTbody"></tbody>
             </table>
         </div>
-        <p class="text-muted small mb-0 mt-2">Save the landing page to persist section order. Use <strong>Section templates</strong> to create reusable copy per layout, then apply from this table (saved immediately).</p>
+        <p class="text-muted small mb-0 mt-2"><strong>Section copy</strong> tabs under each language follow this order after you <strong>Update / Create</strong> the page (or reload). Use <strong>Section templates</strong> for reusable copy; <strong>Apply</strong> saves to the database immediately.</p>
     </div>
 </div>
 
@@ -61,6 +67,7 @@
     var tbody = document.getElementById('lpSectionBlueprintTbody');
     var addLayout = document.getElementById('lpSectionAddLayout');
     var addBtn = document.getElementById('lpSectionAddBtn');
+    var quickRoot = document.getElementById('lpSectionQuickAdd');
     if (!hidden || !tbody || !addLayout || !addBtn) return;
 
     var LAYOUTS = @json($lpSectionKeys);
@@ -207,10 +214,37 @@
 
             tbody.appendChild(tr);
         });
+        updateQuickAdd();
     }
 
-    addBtn.addEventListener('click', function () {
-        var layout = addLayout.value;
+    function updateQuickAdd() {
+        if (!quickRoot) return;
+        quickRoot.innerHTML = '';
+        var r = parseState();
+        var used = {};
+        r.forEach(function (x) { used[x.layout] = true; });
+        LAYOUTS.forEach(function (lk) {
+            if (used[lk]) return;
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'btn btn-sm btn-outline-primary mr-1 mb-1';
+            b.style.minHeight = '44px';
+            b.textContent = '+ ' + (LABELS[lk] || lk);
+            b.setAttribute('aria-label', 'Add section: ' + (LABELS[lk] || lk));
+            b.addEventListener('click', function () {
+                addLayoutKey(lk);
+            });
+            quickRoot.appendChild(b);
+        });
+        if (quickRoot.children.length === 0) {
+            var done = document.createElement('span');
+            done.className = 'text-muted small';
+            done.textContent = 'All layouts are in the list.';
+            quickRoot.appendChild(done);
+        }
+    }
+
+    function addLayoutKey(layout) {
         if (!layout) return;
         var r = parseState();
         var used = {};
@@ -223,6 +257,10 @@
         syncHidden(r);
         render();
         addLayout.value = '';
+    }
+
+    addBtn.addEventListener('click', function () {
+        addLayoutKey(addLayout.value);
     });
 
     var form = hidden.closest('form');

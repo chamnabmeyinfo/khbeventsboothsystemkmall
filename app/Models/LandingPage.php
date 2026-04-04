@@ -1466,4 +1466,24 @@ TXT;
     {
         return self::sanitizeSectionBlueprint($visual['section_blueprint'] ?? null);
     }
+
+    /**
+     * Maps layout key to wireframe id in section-layout-preview (1–9, 10 = trip_activity only).
+     */
+    public static function sectionLayoutPreviewSectionId(string $layout): int
+    {
+        return match ($layout) {
+            'hero' => 1,
+            'about' => 2,
+            'package' => 3,
+            'promotion' => 4,
+            'trip' => 5,
+            'agenda' => 6,
+            'booking' => 7,
+            'faq' => 8,
+            'terms' => 9,
+            'trip_activity' => 10,
+            default => 1,
+        };
+    }
 }
