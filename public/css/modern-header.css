@@ -257,9 +257,16 @@ nav.main-header.modern-header-v2 {
     display: flex;
     align-items: center;
     justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
     padding: 0.5rem;
-    border-radius: 8px;
+    border-radius: 10px;
     transition: all 0.2s ease;
+}
+
+.sidebar-toggle-btn:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
 }
 
 .sidebar-toggle-btn:hover {

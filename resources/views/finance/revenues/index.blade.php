@@ -4,285 +4,249 @@
 @section('page-title', 'Revenue Management')
 @section('breadcrumb', 'Finance / Revenues')
 
+@push('body-class', 'ios-dashboard-mode')
+
 @push('styles')
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.7">
+<link rel="stylesheet" href="{{ asset('css/hr-looker.css') }}?v=1">
 <style>
-    .kpi-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-        transition: all 0.3s;
-        position: relative;
-        overflow: hidden;
-        height: 100%;
+    /* Finance / revenues index — single responsive layer (dashboard-looker breakpoints). */
+    .revenues-index-page.looker-dashboard {
+        padding-left: 0;
+        padding-right: 0;
+        max-width: 100%;
     }
-    .kpi-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        opacity: 0;
-        transition: opacity 0.3s;
+    @media (min-width: 576px) {
+        .revenues-index-page.looker-dashboard {
+            padding-left: 0.25rem;
+            padding-right: 0.25rem;
+        }
     }
-    .kpi-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 40px rgba(31, 38, 135, 0.5);
-    }
-    .kpi-card:hover::before { opacity: 1; }
-    .kpi-card.primary::before { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-    .kpi-card.success::before { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
-    .kpi-card.warning::before { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
-    .kpi-card.danger::before { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); }
-    .kpi-icon {
-        width: 64px;
-        height: 64px;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-        color: white;
-        margin-bottom: 16px;
-    }
-    .kpi-card.primary .kpi-icon { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-    .kpi-card.success .kpi-icon { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
-    .kpi-card.warning .kpi-icon { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
-    .kpi-card.danger .kpi-icon { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); }
-    .kpi-value {
-        font-size: 2.5rem;
+    .finance-revenue-amount {
+        font-size: 1.05rem;
         font-weight: 700;
-        color: #2d3748;
-        margin: 8px 0;
-        line-height: 1;
+        color: var(--accent-green);
     }
-    .kpi-label {
-        font-size: 0.875rem;
-        color: #718096;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+    .finance-filters-body {
+        padding: 1rem 1.25rem 1.25rem;
     }
-    .table-row-hover { transition: all 0.2s; }
-    .table-row-hover:hover { background-color: #f8f9fc; }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid">
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}"><i class="fas fa-home"></i> Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('finance.payments.index') }}">Finance</a></li>
-            <li class="breadcrumb-item active">Revenues</li>
-        </ol>
-    </nav>
+<div class="looker-dashboard revenues-index-page">
+    <header class="looker-header">
+        <div class="looker-header-title">
+            <h1>Revenues</h1>
+            <p>Non-payment income lines, clients, and receipt status in one place.</p>
+        </div>
+        <div class="looker-actions flex-wrap">
+            <a href="{{ route('finance.revenues.create') }}" class="action-btn action-btn-primary">
+                <i class="fas fa-plus" aria-hidden="true"></i> Add revenue
+            </a>
+        </div>
+    </header>
 
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6">
-            <div class="card kpi-card primary">
-                <div class="card-body" style="padding: 24px;">
-                    <div class="kpi-icon"><i class="fas fa-dollar-sign"></i></div>
-                    <div class="kpi-label">Total Received</div>
-                    <div class="kpi-value">${{ number_format($stats['total_amount'] ?? 0, 2) }}</div>
-                </div>
+    <div class="kpi-wrapper">
+        <div class="kpi-card-looker">
+            <div class="kpi-top">
+                <div class="kpi-title">Total received</div>
+                <div class="kpi-icon-wrapper primary-icon"><i class="fas fa-dollar-sign" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">${{ number_format($stats['total_amount'] ?? 0, 2) }}</div>
+            <div class="kpi-bottom trend-neutral">
+                <i class="fas fa-fw fa-circle" style="font-size: 6px;" aria-hidden="true"></i> Received amounts
             </div>
         </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card kpi-card success">
-                <div class="card-body" style="padding: 24px;">
-                    <div class="kpi-icon"><i class="fas fa-file-invoice-dollar"></i></div>
-                    <div class="kpi-label">Total Revenues</div>
-                    <div class="kpi-value">{{ number_format($stats['total_revenues'] ?? 0) }}</div>
-                </div>
+        <div class="kpi-card-looker success">
+            <div class="kpi-top">
+                <div class="kpi-title">Total revenues</div>
+                <div class="kpi-icon-wrapper success-icon"><i class="fas fa-file-invoice-dollar" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format($stats['total_revenues'] ?? 0) }}</div>
+            <div class="kpi-bottom trend-positive">
+                <i class="fas fa-list" aria-hidden="true"></i> All records
             </div>
         </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card kpi-card warning">
-                <div class="card-body" style="padding: 24px;">
-                    <div class="kpi-icon"><i class="fas fa-clock"></i></div>
-                    <div class="kpi-label">Pending</div>
-                    <div class="kpi-value">${{ number_format($stats['pending_amount'] ?? 0, 2) }}</div>
-                </div>
+        <div class="kpi-card-looker warning">
+            <div class="kpi-top">
+                <div class="kpi-title">Pending amount</div>
+                <div class="kpi-icon-wrapper warning-icon"><i class="fas fa-clock" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">${{ number_format($stats['pending_amount'] ?? 0, 2) }}</div>
+            <div class="kpi-bottom trend-warning">
+                <i class="fas fa-hourglass-half" aria-hidden="true"></i> Not yet received
             </div>
         </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card kpi-card danger">
-                <div class="card-body" style="padding: 24px;">
-                    <div class="kpi-icon"><i class="fas fa-calendar"></i></div>
-                    <div class="kpi-label">This Month</div>
-                    <div class="kpi-value">${{ number_format($stats['this_month_amount'] ?? 0, 2) }}</div>
-                </div>
+        <div class="kpi-card-looker purple">
+            <div class="kpi-top">
+                <div class="kpi-title">This month</div>
+                <div class="kpi-icon-wrapper purple-icon"><i class="fas fa-calendar" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">${{ number_format($stats['this_month_amount'] ?? 0, 2) }}</div>
+            <div class="kpi-bottom trend-neutral">
+                <i class="fas fa-calendar-day" aria-hidden="true"></i> Received in current month
             </div>
         </div>
     </div>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <a href="{{ route('finance.revenues.create') }}" class="btn btn-primary">
-                        <i class="fas fa-plus mr-1"></i>Add Revenue
-                    </a>
-                </div>
-            </div>
+    <div class="canvas-panel mb-4">
+        <div class="panel-header">
+            <h2 class="panel-title"><i class="fas fa-filter" aria-hidden="true"></i> Filters</h2>
+            <button type="button" class="action-btn action-btn-secondary action-btn-icon" data-toggle="collapse" data-target="#revenuesFiltersCollapse" aria-expanded="true" aria-controls="revenuesFiltersCollapse" title="Toggle filters">
+                <i class="fas fa-chevron-down" aria-hidden="true"></i>
+            </button>
         </div>
-    </div>
-
-    <div class="filter-bar">
-        <form method="GET" action="{{ route('finance.revenues.index') }}" id="filterForm">
-            <div class="row">
-                <div class="col-md-2 mb-3">
-                    <label><i class="fas fa-search mr-1"></i>Search</label>
-                    <input type="text" name="search" class="form-control" 
-                           placeholder="Title, client..." value="{{ request('search') }}">
+        <div class="collapse show finance-filters-body" id="revenuesFiltersCollapse">
+            <form method="GET" action="{{ route('finance.revenues.index') }}" id="filterForm" class="container-fluid px-0">
+                <div class="row">
+                    <div class="col-md-2 mb-3">
+                        <label for="revenues_search" class="form-label font-weight-bold">Search</label>
+                        <input type="text" name="search" id="revenues_search" class="form-control"
+                               placeholder="Title, client…"
+                               value="{{ request('search') }}" autocomplete="off">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="revenues_status" class="form-label font-weight-bold">Status</label>
+                        <select name="status" id="revenues_status" class="form-control">
+                            <option value="">All status</option>
+                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+                            <option value="received" {{ request('status') == 'received' ? 'selected' : '' }}>Received</option>
+                            <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="revenues_category" class="form-label font-weight-bold">Category</label>
+                        <select name="category_id" id="revenues_category" class="form-control">
+                            <option value="">All categories</option>
+                            @foreach($categories ?? [] as $category)
+                                <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
+                                    {{ $category->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="revenues_date_from" class="form-label font-weight-bold">Date from</label>
+                        <input type="date" name="date_from" id="revenues_date_from" class="form-control" value="{{ request('date_from') }}">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="revenues_date_to" class="form-label font-weight-bold">Date to</label>
+                        <input type="date" name="date_to" id="revenues_date_to" class="form-control" value="{{ request('date_to') }}">
+                    </div>
+                    <div class="col-md-2 mb-3 d-flex align-items-end">
+                        <button type="submit" class="action-btn action-btn-primary w-100 justify-content-center" title="Apply filters">
+                            <i class="fas fa-search" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="col-md-2 mb-3">
-                    <label><i class="fas fa-toggle-on mr-1"></i>Status</label>
-                    <select name="status" class="form-control">
-                        <option value="">All Status</option>
-                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
-                        <option value="received" {{ request('status') == 'received' ? 'selected' : '' }}>Received</option>
-                        <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                    </select>
-                </div>
-                <div class="col-md-2 mb-3">
-                    <label><i class="fas fa-tags mr-1"></i>Category</label>
-                    <select name="category_id" class="form-control">
-                        <option value="">All Categories</option>
-                        @foreach($categories ?? [] as $category)
-                            <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
-                                {{ $category->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2 mb-3">
-                    <label><i class="fas fa-calendar-alt mr-1"></i>Date From</label>
-                    <input type="date" name="date_from" class="form-control" value="{{ request('date_from') }}">
-                </div>
-                <div class="col-md-2 mb-3">
-                    <label><i class="fas fa-calendar-check mr-1"></i>Date To</label>
-                    <input type="date" name="date_to" class="form-control" value="{{ request('date_to') }}">
-                </div>
-                <div class="col-md-2 mb-3">
-                    <label>&nbsp;</label>
-                    <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-filter"></i></button>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-12">
-                    <a href="{{ route('finance.revenues.index') }}" class="btn btn-secondary btn-sm">
-                        <i class="fas fa-times mr-1"></i>Clear Filters
-                    </a>
-                </div>
-            </div>
-        </form>
-    </div>
-
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-list mr-2"></i>Revenue Records</h3>
-            <div class="card-tools">
-                <span class="badge badge-primary">{{ $revenues->total() }} Total</span>
-            </div>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover text-nowrap mb-0">
-                    <thead class="thead-light">
-                        <tr>
-                            <th style="width: 80px;">ID</th>
-                            <th>Title</th>
-                            <th style="width: 150px;">Client</th>
-                            <th style="width: 120px;">Category</th>
-                            <th style="width: 150px;">Amount</th>
-                            <th style="width: 120px;">Status</th>
-                            <th style="width: 120px;">Date</th>
-                            <th style="width: 150px;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($revenues as $revenue)
-                        <tr class="table-row-hover">
-                            <td><strong class="text-primary">#{{ $revenue->id }}</strong></td>
-                            <td><strong>{{ $revenue->title }}</strong></td>
-                            <td>
-                                @if($revenue->client)
-                                    <a href="{{ route('clients.show', $revenue->client) }}">{{ $revenue->client->company ?? 'N/A' }}</a>
-                                @else
-                                    <span class="text-muted">N/A</span>
-                                @endif
-                            </td>
-                            <td>
-                                @if($revenue->category)
-                                    <span class="badge badge-info">{{ $revenue->category->name }}</span>
-                                @else
-                                    <span class="text-muted">N/A</span>
-                                @endif
-                            </td>
-                            <td>
-                                <strong class="text-success" style="font-size: 1.1rem;">
-                                    ${{ number_format($revenue->amount, 2) }}
-                                </strong>
-                            </td>
-                            <td>
-                                @php
-                                    $statusColors = ['pending' => 'warning', 'confirmed' => 'info', 'received' => 'success', 'cancelled' => 'secondary'];
-                                    $color = $statusColors[$revenue->status] ?? 'secondary';
-                                @endphp
-                                <span class="badge badge-{{ $color }}">{{ ucfirst($revenue->status) }}</span>
-                            </td>
-                            <td>
-                                <strong>{{ \Carbon\Carbon::parse($revenue->revenue_date)->format('M d, Y') }}</strong>
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <a href="{{ route('finance.revenues.show', $revenue) }}" class="btn btn-info" title="View"><i class="fas fa-eye"></i></a>
-                                    <a href="{{ route('finance.revenues.edit', $revenue) }}" class="btn btn-warning" title="Edit"><i class="fas fa-edit"></i></a>
-                                    <form action="{{ route('finance.revenues.destroy', $revenue) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger" title="Delete"><i class="fas fa-trash"></i></button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="8" class="text-center py-5">
-                                <div class="text-muted">
-                                    <i class="fas fa-arrow-up fa-3x mb-3"></i>
-                                    <p class="mb-0">No revenues found</p>
-                                    <a href="{{ route('finance.revenues.create') }}" class="btn btn-primary btn-sm mt-3">
-                                        <i class="fas fa-plus mr-1"></i>Add First Revenue
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        @if(method_exists($revenues, 'hasPages') && $revenues->hasPages())
-        <div class="card-footer">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <div class="text-muted">
-                        @if($revenues->firstItem())
-                        Showing {{ $revenues->firstItem() }} to {{ $revenues->lastItem() }} of {{ $revenues->total() }} revenues
-                        @else
-                        {{ $revenues->total() }} revenue(s) total
+                <div class="row">
+                    <div class="col-12 d-flex flex-wrap align-items-center">
+                        <a href="{{ route('finance.revenues.index') }}" class="action-btn action-btn-secondary mr-2 mb-2">
+                            <i class="fas fa-times" aria-hidden="true"></i> Clear filters
+                        </a>
+                        @if(request()->hasAny(['search', 'status', 'category_id', 'date_from', 'date_to']))
+                            <span class="status-badge status-badge-blue mb-2">{{ $revenues->total() }} result(s)</span>
                         @endif
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="float-right">{{ $revenues->links() }}</div>
+            </form>
+        </div>
+    </div>
+
+    <div class="canvas-panel hr-panel-flush">
+        <div class="panel-header">
+            <h2 class="panel-title"><i class="fas fa-list" aria-hidden="true"></i> Revenue records</h2>
+            <span class="status-badge status-badge-blue">{{ $revenues->total() }} total</span>
+        </div>
+        <div class="looker-table-wrapper">
+            <table class="looker-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Client</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($revenues as $revenue)
+                    <tr>
+                        <td class="text-muted small font-weight-bold">#{{ $revenue->id }}</td>
+                        <td><strong>{{ $revenue->title }}</strong></td>
+                        <td>
+                            @if($revenue->client)
+                                <a href="{{ route('clients.show', $revenue->client) }}" class="text-link-strong">{{ $revenue->client->company ?? 'N/A' }}</a>
+                            @else
+                                <span class="text-muted">N/A</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($revenue->category)
+                                <span class="status-badge status-badge-blue">{{ $revenue->category->name }}</span>
+                            @else
+                                <span class="text-muted">N/A</span>
+                            @endif
+                        </td>
+                        <td><span class="finance-revenue-amount">${{ number_format($revenue->amount, 2) }}</span></td>
+                        <td>
+                            @php
+                                $revenueStatusClass = [
+                                    'pending' => 'status-badge-orange',
+                                    'confirmed' => 'status-badge-blue',
+                                    'received' => 'status-badge-green',
+                                    'cancelled' => 'status-badge-neutral',
+                                ];
+                                $sc = $revenueStatusClass[$revenue->status] ?? 'status-badge-neutral';
+                            @endphp
+                            <span class="status-badge {{ $sc }}">{{ ucfirst($revenue->status) }}</span>
+                        </td>
+                        <td><span class="text-muted small">{{ \Carbon\Carbon::parse($revenue->revenue_date)->format('M d, Y') }}</span></td>
+                        <td>
+                            <div class="hr-table-actions">
+                                <a href="{{ route('finance.revenues.show', $revenue) }}" class="action-btn action-btn-secondary action-btn-icon" title="View"><i class="fas fa-eye" aria-hidden="true"></i></a>
+                                <a href="{{ route('finance.revenues.edit', $revenue) }}" class="action-btn action-btn-secondary action-btn-icon" title="Edit"><i class="fas fa-edit" aria-hidden="true"></i></a>
+                                <form action="{{ route('finance.revenues.destroy', $revenue) }}" method="POST" onsubmit="return confirm('Are you sure?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="action-btn action-btn-danger-soft action-btn-icon" title="Delete"><i class="fas fa-trash" aria-hidden="true"></i></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="8" class="hr-empty-cell">
+                            <i class="fas fa-arrow-trend-up" aria-hidden="true"></i>
+                            <p class="mb-2">No revenues found</p>
+                            <a href="{{ route('finance.revenues.create') }}" class="action-btn action-btn-primary">
+                                <i class="fas fa-plus" aria-hidden="true"></i> Add first revenue
+                            </a>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        @if(method_exists($revenues, 'hasPages') && $revenues->hasPages())
+        <div class="hr-panel-footer">
+            <div class="row align-items-center">
+                <div class="col-md-6 mb-2 mb-md-0">
+                    <span class="text-muted small">
+                        @if($revenues->firstItem())
+                            Showing {{ $revenues->firstItem() }}–{{ $revenues->lastItem() }} of {{ $revenues->total() }}
+                        @else
+                            {{ $revenues->total() }} revenue(s) total
+                        @endif
+                    </span>
+                </div>
+                <div class="col-md-6 text-md-right">
+                    {{ $revenues->links() }}
                 </div>
             </div>
         </div>

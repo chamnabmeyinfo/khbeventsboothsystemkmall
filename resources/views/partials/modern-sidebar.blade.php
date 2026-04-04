@@ -3,20 +3,27 @@
     if (!$user) return; // Safeguard if accessed without auth
 @endphp
 
-<aside class="modern-sidebar {{ $sidebarClass ?? '' }}" id="mainSidebar">
-    <!-- User / collapse: pinned to top of sidebar -->
-    <div class="sidebar-footer p-3 border-bottom flex-shrink-0" style="border-color: rgba(0, 0, 0, 0.05) !important;">
-        <div class="d-flex align-items-center gap-2">
-            <div class="user-avatar-modern-small" style="width: 32px; height: 32px; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.8rem;">
+{{-- Mobile: tap outside to close (desktop: hidden via CSS) --}}
+<div class="modern-sidebar-backdrop" id="modernSidebarBackdrop" aria-hidden="true"></div>
+
+<aside class="modern-sidebar {{ $sidebarClass ?? '' }}" id="mainSidebar" aria-label="Main navigation">
+    <div class="sidebar-footer flex-shrink-0">
+        <div class="sidebar-footer-inner">
+            <div class="user-avatar-modern-small" aria-hidden="true">
                 {{ strtoupper(substr($user->username ?? $user->name ?? 'U', 0, 1)) }}
             </div>
             <div class="user-info-mini overflow-hidden flex-grow-1">
-                <div class="text-dark small fw-bold text-truncate" style="font-size: 0.85rem;">{{ $user->username ?? $user->name }}</div>
-                <div class="text-muted x-small text-truncate" style="font-size: 0.7rem;">{{ $user->isAdmin() ? 'Administrator' : 'Sales Rep' }}</div>
+                <div class="user-info-mini-name text-truncate">{{ $user->username ?? $user->name }}</div>
+                <div class="user-info-mini-role text-muted text-truncate">{{ $user->isAdmin() ? 'Administrator' : 'Sales Rep' }}</div>
             </div>
-            <a href="javascript:void(0)" class="text-muted hover-dark" id="sidebarCollapseBtn">
-                <i class="fas fa-indent"></i>
-            </a>
+            <button type="button"
+                    class="sidebar-collapse-btn"
+                    id="sidebarCollapseBtn"
+                    aria-label="Collapse navigation rail"
+                    aria-expanded="true"
+                    title="Collapse sidebar">
+                <i class="fas fa-chevron-left sidebar-collapse-chevron" aria-hidden="true"></i>
+            </button>
         </div>
     </div>
 
@@ -25,31 +32,31 @@
         <h6 class="sidebar-section-label">Overview</h6>
         <ul class="sidebar-nav-list">
             <li class="sidebar-nav-item">
-                <a href="{{ route('dashboard') }}" class="sidebar-nav-link {{ request()->is('dashboard*') ? 'active' : '' }}">
-                    <i class="fas fa-chart-line"></i>
+                <a href="{{ route('dashboard') }}" class="sidebar-nav-link {{ request()->is('dashboard*') ? 'active' : '' }}" title="Dashboard">
+                    <i class="fas fa-chart-line" aria-hidden="true"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
             @if($user->hasPermission('booths.view') || $user->isAdmin())
             <li class="sidebar-nav-item">
-                <a href="{{ route('booths.index') }}" class="sidebar-nav-link {{ request()->is('booths*') && !request()->is('floor-plans*') ? 'active' : '' }}">
-                    <i class="fas fa-cube"></i>
+                <a href="{{ route('booths.index') }}" class="sidebar-nav-link {{ request()->is('booths*') && !request()->is('floor-plans*') ? 'active' : '' }}" title="Booth Inventory">
+                    <i class="fas fa-cube" aria-hidden="true"></i>
                     <span>Booth Inventory</span>
                 </a>
             </li>
             @endif
             @if($user->hasPermission('floor_plans.view') || $user->isAdmin())
             <li class="sidebar-nav-item">
-                <a href="{{ route('floor-plans.index') }}" class="sidebar-nav-link {{ request()->is('floor-plans*') ? 'active' : '' }}">
-                    <i class="fas fa-map"></i>
+                <a href="{{ route('floor-plans.index') }}" class="sidebar-nav-link {{ request()->is('floor-plans*') ? 'active' : '' }}" title="Floor Plans">
+                    <i class="fas fa-map" aria-hidden="true"></i>
                     <span>Floor Plans</span>
                 </a>
             </li>
             @endif
             @if($user->hasPermission('clients.view') || $user->isAdmin())
             <li class="sidebar-nav-item">
-                <a href="{{ route('clients.index') }}" class="sidebar-nav-link {{ request()->is('clients*') ? 'active' : '' }}">
-                    <i class="fas fa-building"></i>
+                <a href="{{ route('clients.index') }}" class="sidebar-nav-link {{ request()->is('clients*') ? 'active' : '' }}" title="Clients">
+                    <i class="fas fa-building" aria-hidden="true"></i>
                     <span>Clients</span>
                 </a>
             </li>
@@ -61,24 +68,24 @@
         <ul class="sidebar-nav-list">
             @if($user->hasPermission('bookings.view') || $user->isAdmin())
             <li class="sidebar-nav-item">
-                <a href="{{ route('books.index') }}" class="sidebar-nav-link {{ request()->is('books*') ? 'active' : '' }}">
-                    <i class="fas fa-calendar-check"></i>
+                <a href="{{ route('books.index') }}" class="sidebar-nav-link {{ request()->is('books*') ? 'active' : '' }}" title="Bookings">
+                    <i class="fas fa-calendar-check" aria-hidden="true"></i>
                     <span>Bookings</span>
                 </a>
             </li>
             @endif
             @if($user->hasPermission('affiliates.view') || $user->isAdmin())
             <li class="sidebar-nav-item">
-                <a href="{{ route('affiliates.index') }}" class="sidebar-nav-link {{ request()->is('affiliates*') ? 'active' : '' }}">
-                    <i class="fas fa-handshake"></i>
+                <a href="{{ route('affiliates.index') }}" class="sidebar-nav-link {{ request()->is('affiliates*') ? 'active' : '' }}" title="Affiliates">
+                    <i class="fas fa-handshake" aria-hidden="true"></i>
                     <span>Affiliates</span>
                 </a>
             </li>
             @endif
             @if($user->hasPermission('reports.view') || $user->isAdmin())
             <li class="sidebar-nav-item">
-                <a href="{{ route('reports.index') }}" class="sidebar-nav-link {{ request()->is('reports*') ? 'active' : '' }}">
-                    <i class="fas fa-file-invoice-dollar"></i>
+                <a href="{{ route('reports.index') }}" class="sidebar-nav-link {{ request()->is('reports*') ? 'active' : '' }}" title="Analytics">
+                    <i class="fas fa-file-invoice-dollar" aria-hidden="true"></i>
                     <span>Analytics</span>
                 </a>
             </li>
@@ -90,16 +97,39 @@
         <h6 class="sidebar-section-label">Human Resources</h6>
         <ul class="sidebar-nav-list">
             <li class="sidebar-nav-item sidebar-nav-dropdown">
-                <a href="javascript:void(0)" class="sidebar-nav-link {{ request()->is('hr*') ? 'active' : '' }}" data-bs-toggle="collapse" data-bs-target="#hrSubmenu" aria-expanded="{{ request()->is('hr*') ? 'true' : 'false' }}">
-                    <i class="fas fa-user-tie"></i>
+                <a href="javascript:void(0)" class="sidebar-nav-link {{ request()->routeIs('hr.*') || request()->routeIs('users.*') ? 'active' : '' }}" data-bs-toggle="collapse" data-bs-target="#hrSubmenu" data-toggle="collapse" data-target="#hrSubmenu" aria-expanded="{{ request()->routeIs('hr.*') ? 'true' : 'false' }}" aria-controls="hrSubmenu" role="button" title="HR Management">
+                    <i class="fas fa-user-tie" aria-hidden="true"></i>
                     <span>HR Management</span>
-                    <i class="fas fa-chevron-right dropdown-toggle-icon"></i>
+                    <i class="fas fa-chevron-right dropdown-toggle-icon" aria-hidden="true"></i>
                 </a>
-                <ul class="sidebar-sub-nav collapse {{ request()->is('hr*') ? 'show' : '' }}" id="hrSubmenu">
-                    <li><a href="{{ route('hr.dashboard') }}" class="sidebar-sub-link {{ request()->routeIs('hr.dashboard') ? 'active' : '' }}">HR Dashboard</a></li>
-                    <li><a href="{{ route('hr.employees.index') }}" class="sidebar-sub-link {{ request()->is('hr/employees*') ? 'active' : '' }}">Employees</a></li>
-                    <li><a href="{{ route('hr.attendance.index') }}" class="sidebar-sub-link {{ request()->is('hr/attendance*') ? 'active' : '' }}">Attendance</a></li>
-                    <li><a href="{{ route('hr.leaves.index') }}" class="sidebar-sub-link {{ request()->is('hr/leaves*') ? 'active' : '' }}">Leave Requests</a></li>
+                <ul class="sidebar-sub-nav collapse {{ request()->routeIs('hr.*') ? 'show' : '' }}" id="hrSubmenu" role="list">
+                    <li>
+                        <a href="{{ route('hr.dashboard') }}" class="sidebar-sub-link {{ request()->routeIs('hr.dashboard') ? 'active' : '' }}" title="HR Dashboard">
+                            <span class="sidebar-sub-bullet" aria-hidden="true"></span><span>HR Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('hr.employees.index') }}" class="sidebar-sub-link {{ request()->routeIs('hr.employees.*') ? 'active' : '' }}" title="Employees">
+                            <span class="sidebar-sub-bullet" aria-hidden="true"></span><span>Employees</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('hr.attendance.index') }}" class="sidebar-sub-link {{ request()->routeIs('hr.attendance.*') ? 'active' : '' }}" title="Attendance">
+                            <span class="sidebar-sub-bullet" aria-hidden="true"></span><span>Attendance</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('hr.leaves.index') }}" class="sidebar-sub-link {{ request()->routeIs('hr.leaves.*') || request()->routeIs('hr.leave-calendar.*') || request()->routeIs('hr.leave-types.*') ? 'active' : '' }}" title="Leave Requests">
+                            <span class="sidebar-sub-bullet" aria-hidden="true"></span><span>Leave Requests</span>
+                        </a>
+                    </li>
+                    @if($user->isAdmin())
+                    <li>
+                        <a href="{{ route('users.index') }}" class="sidebar-sub-link {{ request()->routeIs('users.*') ? 'active' : '' }}" title="Staff accounts">
+                            <span class="sidebar-sub-bullet" aria-hidden="true"></span><span>Staff</span>
+                        </a>
+                    </li>
+                    @endif
                 </ul>
             </li>
         </ul>
@@ -110,15 +140,27 @@
         <h6 class="sidebar-section-label">Finance & Assets</h6>
         <ul class="sidebar-nav-list">
             <li class="sidebar-nav-item sidebar-nav-dropdown">
-                <a href="javascript:void(0)" class="sidebar-nav-link {{ request()->is('finance*') ? 'active' : '' }}" data-bs-toggle="collapse" data-bs-target="#financeSubmenu" aria-expanded="{{ request()->is('finance*') ? 'true' : 'false' }}">
-                    <i class="fas fa-wallet"></i>
+                <a href="javascript:void(0)" class="sidebar-nav-link {{ request()->routeIs('finance.*') ? 'active' : '' }}" data-bs-toggle="collapse" data-bs-target="#financeSubmenu" data-toggle="collapse" data-target="#financeSubmenu" aria-expanded="{{ request()->routeIs('finance.*') ? 'true' : 'false' }}" aria-controls="financeSubmenu" role="button" title="Finance Hub">
+                    <i class="fas fa-wallet" aria-hidden="true"></i>
                     <span>Finance Hub</span>
-                    <i class="fas fa-chevron-right dropdown-toggle-icon"></i>
+                    <i class="fas fa-chevron-right dropdown-toggle-icon" aria-hidden="true"></i>
                 </a>
-                <ul class="sidebar-sub-nav collapse {{ request()->is('finance*') ? 'show' : '' }}" id="financeSubmenu">
-                    <li><a href="{{ route('finance.payments.index') }}" class="sidebar-sub-link {{ request()->is('finance/payments*') ? 'active' : '' }}">Payments</a></li>
-                    <li><a href="{{ route('finance.expenses.index') }}" class="sidebar-sub-link {{ request()->is('finance/expenses*') ? 'active' : '' }}">Expenses</a></li>
-                    <li><a href="{{ route('finance.revenues.index') }}" class="sidebar-sub-link {{ request()->is('finance/revenues*') ? 'active' : '' }}">Revenues</a></li>
+                <ul class="sidebar-sub-nav collapse {{ request()->routeIs('finance.*') ? 'show' : '' }}" id="financeSubmenu" role="list">
+                    <li>
+                        <a href="{{ route('finance.payments.index') }}" class="sidebar-sub-link {{ request()->routeIs('finance.payments.*') ? 'active' : '' }}" title="Payments">
+                            <span class="sidebar-sub-bullet" aria-hidden="true"></span><span>Payments</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('finance.expenses.index') }}" class="sidebar-sub-link {{ request()->routeIs('finance.expenses.*') ? 'active' : '' }}" title="Expenses">
+                            <span class="sidebar-sub-bullet" aria-hidden="true"></span><span>Expenses</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('finance.revenues.index') }}" class="sidebar-sub-link {{ request()->routeIs('finance.revenues.*') ? 'active' : '' }}" title="Revenues">
+                            <span class="sidebar-sub-bullet" aria-hidden="true"></span><span>Revenues</span>
+                        </a>
+                    </li>
                 </ul>
             </li>
         </ul>
@@ -129,20 +171,14 @@
         <h6 class="sidebar-section-label">System</h6>
         <ul class="sidebar-nav-list">
             <li class="sidebar-nav-item">
-                <a href="{{ route('users.index') }}" class="sidebar-nav-link {{ request()->is('users*') ? 'active' : '' }}">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>Security & Staff</span>
-                </a>
-            </li>
-            <li class="sidebar-nav-item">
-                <a href="{{ route('settings.index') }}" class="sidebar-nav-link {{ request()->is('settings*') ? 'active' : '' }}">
-                    <i class="fas fa-sliders-h"></i>
+                <a href="{{ route('settings.index') }}" class="sidebar-nav-link {{ request()->is('settings*') ? 'active' : '' }}" title="Global Settings">
+                    <i class="fas fa-sliders-h" aria-hidden="true"></i>
                     <span>Global Settings</span>
                 </a>
             </li>
             <li class="sidebar-nav-item">
-                <a href="{{ route('landing-pages.index') }}" class="sidebar-nav-link {{ request()->is('landing-pages*') ? 'active' : '' }}">
-                    <i class="fas fa-rocket"></i>
+                <a href="{{ route('landing-pages.index') }}" class="sidebar-nav-link {{ request()->is('landing-pages*') ? 'active' : '' }}" title="Landing Pages">
+                    <i class="fas fa-rocket" aria-hidden="true"></i>
                     <span>Landing Pages</span>
                 </a>
             </li>
@@ -154,40 +190,82 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const sidebar = document.getElementById('mainSidebar');
-    const mainContent = document.getElementById('main-content');
+    const backdrop = document.getElementById('modernSidebarBackdrop');
+    const mainContent = document.getElementById('main-content')
+        || document.querySelector('.wrapper > .content-wrapper');
+
+    const collapseBtn = document.getElementById('sidebarCollapseBtn');
+    const MOBILE_MAX = 991;
 
     function syncSidebarCollapsedBody() {
         if (!sidebar) return;
         document.body.classList.toggle('sidebar-collapsed', sidebar.classList.contains('collapsed'));
+        if (collapseBtn) {
+            const collapsed = sidebar.classList.contains('collapsed');
+            collapseBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+            collapseBtn.setAttribute('aria-label', collapsed ? 'Expand navigation rail' : 'Collapse navigation rail');
+            collapseBtn.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+        }
+    }
+
+    function setMobileOpen(open) {
+        if (!sidebar) return;
+        sidebar.classList.toggle('show', open);
+        if (backdrop) {
+            backdrop.classList.toggle('is-open', open);
+            backdrop.setAttribute('aria-hidden', open ? 'false' : 'true');
+        }
+        document.body.classList.toggle('modern-sidebar-open-mobile', open);
+    }
+
+    function isMobile() {
+        return window.innerWidth <= MOBILE_MAX;
     }
 
     syncSidebarCollapsedBody();
 
-    // Dropdown arrow rotation
-    const dropdowns = document.querySelectorAll('.sidebar-nav-dropdown [data-bs-toggle="collapse"]');
-    dropdowns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const icon = this.querySelector('.dropdown-toggle-icon');
-            if (icon) {
-                // Rotation is handled by CSS based on aria-expanded,
-                // but bootstrap 5 handles aria-expanded automatically.
-            }
+    if (backdrop) {
+        backdrop.addEventListener('click', function() {
+            setMobileOpen(false);
         });
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && isMobile() && sidebar && sidebar.classList.contains('show')) {
+            setMobileOpen(false);
+        }
     });
 
-    // Sidebar toggling (desktop: collapse width; mobile: off-canvas drawer)
+    // Close drawer after navigating (mobile)
+    if (sidebar) {
+        sidebar.querySelectorAll('.sidebar-sub-link').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (isMobile()) setMobileOpen(false);
+            });
+        });
+        sidebar.querySelectorAll('.sidebar-nav-item:not(.sidebar-nav-dropdown) > a.sidebar-nav-link').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (isMobile()) setMobileOpen(false);
+            });
+        });
+    }
+
     const toggleBtns = document.querySelectorAll('#sidebarCollapseBtn, .sidebar-toggle-btn');
-    toggleBtns.forEach(btn => {
+    toggleBtns.forEach(function(btn) {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
-            if (window.innerWidth <= 991) {
-                if (sidebar) sidebar.classList.toggle('show');
+            if (isMobile()) {
+                if (sidebar) setMobileOpen(!sidebar.classList.contains('show'));
                 return;
             }
             if (sidebar) sidebar.classList.toggle('collapsed');
             if (mainContent) mainContent.classList.toggle('expanded');
             syncSidebarCollapsedBody();
         });
+    });
+
+    window.addEventListener('resize', function() {
+        if (!isMobile()) setMobileOpen(false);
     });
 });
 </script>

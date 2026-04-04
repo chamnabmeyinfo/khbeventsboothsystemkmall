@@ -5,6 +5,7 @@
 
 :root {
     --admin-header-height: 70px;
+    /* Falls back if layout does not override (e.g. adminlte inline --sidebar-width: 250px) */
     --sidebar-width: 280px;
     --sidebar-collapsed-width: 80px;
     --sidebar-bg: rgba(255, 255, 255, 0.45);
@@ -13,6 +14,51 @@
     --sidebar-active-text: #4f46e5;
     --sidebar-border: rgba(255, 255, 255, 0.1);
     --sidebar-shadow: 8px 0 32px rgba(31, 38, 135, 0.05);
+    --sidebar-backdrop: rgba(15, 23, 42, 0.45);
+}
+
+/* Mobile drawer: dim content; hidden on desktop */
+.modern-sidebar-backdrop {
+    display: none;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: var(--admin-header-height, 70px);
+    z-index: 1035;
+    background: var(--sidebar-backdrop);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+@media (max-width: 991.98px) {
+    .modern-sidebar-backdrop.is-open {
+        display: block;
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+body.modern-sidebar-open-mobile {
+    overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .modern-sidebar,
+    .modern-sidebar-backdrop,
+    .main-content-pushed,
+    body:not(.app-shell) .wrapper > .content-wrapper,
+    body:not(.app-shell) .wrapper > .main-footer {
+        transition: none !important;
+    }
+
+    .sidebar-nav-link:hover,
+    .sidebar-sub-link:hover {
+        transform: none !important;
+    }
 }
 
 /* Default (e.g. AdminLTE): fixed sidebar + offset main. body.app-shell overrides in app-shell-layout.css */
@@ -46,7 +92,42 @@ body.app-shell .layout-wrapper {
     width: calc(100% - var(--sidebar-collapsed-width)) !important;
 }
 
+/*
+ * AdminLTE shell (body:not(.app-shell)): fixed header + fixed modern-sidebar.
+ * Push content-wrapper + footer; sync with body.sidebar-collapsed.
+ */
+body:not(.app-shell) .wrapper > .content-wrapper {
+    margin-left: var(--sidebar-width) !important;
+    width: calc(100% - var(--sidebar-width)) !important;
+    margin-top: var(--admin-header-height, 70px) !important;
+    min-height: calc(100vh - var(--admin-header-height, 70px)) !important;
+    transition:
+        margin-left 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+        width 0.45s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-sizing: border-box;
+}
 
+body:not(.app-shell) .wrapper > .main-footer {
+    margin-left: var(--sidebar-width) !important;
+    transition: margin-left 0.45s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+body.sidebar-collapsed:not(.app-shell) .wrapper > .content-wrapper {
+    margin-left: var(--sidebar-collapsed-width) !important;
+    width: calc(100% - var(--sidebar-collapsed-width)) !important;
+}
+
+body.sidebar-collapsed:not(.app-shell) .wrapper > .main-footer {
+    margin-left: var(--sidebar-collapsed-width) !important;
+}
+
+@media (max-width: 991.98px) {
+    body:not(.app-shell) .wrapper > .content-wrapper,
+    body:not(.app-shell) .wrapper > .main-footer {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
 
 .modern-sidebar {
     display: flex;
@@ -81,6 +162,21 @@ body.app-shell .layout-wrapper {
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+}
+
+.sidebar-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.35);
+    border-radius: 6px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.55);
 }
 
 .sidebar-nav-link {
@@ -123,24 +219,113 @@ body.app-shell .layout-wrapper {
     justify-content: center;
 }
 
-/* Sidebar footer (user strip): top of sidebar, separator below */
+/* Sidebar footer (user strip): top of sidebar */
 .sidebar-footer {
-    padding: 1rem;
-    border-bottom: 1px solid var(--sidebar-border);
-    transition: all 0.3s ease;
+    padding: 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    transition: padding 0.3s ease, border-color 0.3s ease;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(248, 250, 252, 0.4) 100%);
 }
 
-
-
-.modern-sidebar.collapsed .sidebar-footer {
-    padding: 1rem 0.5rem;
+.sidebar-footer-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.875rem 1rem;
 }
 
-/* Interactive Hover Effects */
-.sidebar-nav-link:hover {
-    background: rgba(255, 255, 255, 0.6) !important;
-    transform: translateX(5px);
-    color: var(--sidebar-active-text) !important;
+.modern-sidebar.collapsed .sidebar-footer-inner {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem 0.5rem;
+}
+
+.user-avatar-modern-small {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 0.85rem;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+}
+
+.user-info-mini-name {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--sidebar-text);
+    line-height: 1.2;
+}
+
+.user-info-mini-role {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.85;
+}
+
+/* Collapse control: min 44px touch target */
+.sidebar-collapse-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin: -6px -8px -6px 0;
+    padding: 0;
+    border: none;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.7);
+    color: #64748b;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.15s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.sidebar-collapse-btn:hover {
+    background: white;
+    color: var(--sidebar-active-text);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.12);
+}
+
+.sidebar-collapse-chevron {
+    font-size: 0.85rem;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modern-sidebar.collapsed .sidebar-collapse-chevron {
+    transform: rotate(180deg);
+}
+
+.modern-sidebar.collapsed .sidebar-collapse-btn {
+    margin: 0;
+}
+
+/* Hover: only when fine pointer (avoid jank on touch scroll) */
+@media (hover: hover) and (pointer: fine) {
+    .sidebar-nav-link:hover {
+        background: rgba(255, 255, 255, 0.6) !important;
+        transform: translateX(4px);
+        color: var(--sidebar-active-text) !important;
+    }
+}
+
+@media (hover: none) {
+    .sidebar-nav-link:active {
+        background: rgba(255, 255, 255, 0.55) !important;
+        color: var(--sidebar-active-text) !important;
+    }
 }
 
 .sidebar-nav-link.active {
@@ -153,6 +338,17 @@ body.app-shell .layout-wrapper {
     color: var(--sidebar-active-text);
 }
 
+.sidebar-nav-link:focus-visible,
+.sidebar-sub-link:focus-visible,
+.sidebar-collapse-btn:focus-visible {
+    outline: 2px solid var(--sidebar-active-text);
+    outline-offset: 2px;
+}
+
+.sidebar-nav-link:focus:not(:focus-visible) {
+    outline: none;
+}
+
 /* Labels */
 .sidebar-section-label {
     font-size: 0.75rem;
@@ -161,13 +357,18 @@ body.app-shell .layout-wrapper {
     text-transform: uppercase;
     letter-spacing: 0.05em;
     padding: 1.5rem 1.25rem 0.5rem;
-    transition: all 0.3s ease;
+    margin-left: 1.5rem !important;
+    margin-bottom: 0.5rem !important;
+    transition: color 0.3s ease, padding 0.3s ease;
 }
 
 /* Mobile Responsiveness */
 @media (max-width: 991.98px) {
     .modern-sidebar {
         transform: translateX(-100%);
+        top: var(--admin-header-height, 70px);
+        max-height: calc(100dvh - var(--admin-header-height, 70px));
+        box-shadow: 8px 0 40px rgba(0, 0, 0, 0.18);
     }
 
     .modern-sidebar.show {
@@ -179,24 +380,31 @@ body.app-shell .layout-wrapper {
         margin-left: 0 !important;
         width: 100% !important;
     }
+
+    .sidebar-nav-link {
+        min-height: 48px;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .sidebar-sub-link {
+        min-height: 44px;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
 }
 
-.sidebar-nav-list {
-    list-style: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-}
-.sidebar-nav-item {
-    list-style: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-}
-
-/* Aggressive Reset for Sidebar */
-.modern-sidebar ul, 
-.modern-sidebar li,
+/* Top-level nav list only — never use .modern-sidebar ul (breaks .sidebar-sub-nav padding) */
 .sidebar-nav-list,
-.sidebar-nav-item {
+.modern-sidebar .sidebar-nav-list {
+    list-style: none !important;
+    list-style-type: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.sidebar-nav-item,
+.modern-sidebar .sidebar-nav-list > .sidebar-nav-item {
     list-style: none !important;
     list-style-type: none !important;
     padding: 0 !important;
@@ -207,45 +415,130 @@ body.app-shell .layout-wrapper {
     margin: 0 1rem 0.5rem 1rem !important;
 }
 
-.sidebar-section-label {
-    margin-left: 1.5rem !important;
-    margin-bottom: 0.5rem !important;
+/* Dropdown group: parent + nested list */
+.sidebar-nav-dropdown {
+    margin-bottom: 0.15rem;
 }
 
-/* Submenu Styles */
-.sidebar-sub-nav {
-    padding: 0 0 0 3.5rem !important; /* Indentation for sub-items */
+/* Submenu — same horizontal inset as .sidebar-nav-link (full content width).
+ * Do NOT set display:block unconditionally — it overrides Bootstrap .collapse and keeps menus open. */
+.modern-sidebar .sidebar-sub-nav {
+    list-style: none !important;
+    list-style-type: none !important;
+    width: calc(100% - 2rem);
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 0.2rem 1rem 0.65rem 1rem !important;
+    padding: 0.35rem !important;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.75),
+        0 2px 8px rgba(31, 38, 135, 0.06);
+}
+
+/* Collapse visibility (BS4/BS5): hidden unless .show or animating */
+.modern-sidebar .sidebar-sub-nav.collapse:not(.show):not(.collapsing) {
+    display: none !important;
+}
+
+.modern-sidebar .sidebar-sub-nav.collapse.show,
+.modern-sidebar .sidebar-sub-nav.collapsing {
+    display: block !important;
+}
+
+.modern-sidebar .sidebar-sub-nav > li {
+    list-style: none !important;
     margin: 0 !important;
+    padding: 0 !important;
 }
 
-.sidebar-sub-nav.show {
-    margin-bottom: 0.5rem !important;
+.modern-sidebar .sidebar-sub-nav.show {
+    margin-bottom: 0.75rem !important;
 }
 
 .sidebar-sub-link {
     display: flex;
     align-items: center;
-    padding: 0.5rem 1rem;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 0.55rem 0.75rem 0.55rem 0.65rem;
+    margin: 0.1rem 0;
     text-decoration: none !important;
-    color: #64748b;
-    font-size: 0.85rem;
-    font-weight: 500;
+    color: var(--sidebar-text);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.25;
     border-radius: 10px;
-    transition: all 0.3s ease;
-    margin-bottom: 0.15rem;
-    margin-right: 1rem;
+    border-left: 3px solid transparent;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
 }
 
-.sidebar-sub-link:hover {
-    color: var(--sidebar-active-text) !important;
-    background: rgba(99, 102, 241, 0.05);
-    transform: translateX(3px);
+.sidebar-sub-link > span:last-child {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: left;
+}
+
+.sidebar-sub-link .sidebar-sub-bullet {
+    flex-shrink: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--sidebar-active-text);
+    opacity: 0.22;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .sidebar-sub-link:hover {
+        color: var(--sidebar-active-text) !important;
+        background: rgba(99, 102, 241, 0.1);
+        border-left-color: rgba(99, 102, 241, 0.35);
+        transform: translateX(2px);
+    }
+
+    .sidebar-sub-link:hover .sidebar-sub-bullet {
+        opacity: 0.55;
+    }
+}
+
+@media (hover: none) {
+    .sidebar-sub-link:active {
+        background: rgba(99, 102, 241, 0.12);
+        color: var(--sidebar-active-text) !important;
+    }
 }
 
 .sidebar-sub-link.active {
     color: var(--sidebar-active-text) !important;
-    font-weight: 600;
-    background: rgba(99, 102, 241, 0.08);
+    font-weight: 700;
+    background: rgba(99, 102, 241, 0.14);
+    border-left-color: var(--sidebar-active-text);
+    box-shadow: 0 1px 4px rgba(99, 102, 241, 0.12);
+}
+
+.sidebar-sub-link.active .sidebar-sub-bullet {
+    opacity: 1;
+    transform: scale(1.15);
+}
+
+/* Collapsed rail: hide nested menus (no room) */
+.modern-sidebar.collapsed .sidebar-sub-nav {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
 }
 
 /* Dropdown Caret Auto-Rotation */
@@ -271,5 +564,28 @@ body.ios-dashboard-mode .modern-sidebar {
 
 body.ios-dashboard-mode .sidebar-content {
     background: transparent !important;
+}
+
+/* Nested HR / Finance menus — match frosted Looker shell */
+body.ios-dashboard-mode .modern-sidebar .sidebar-sub-nav {
+    background: rgba(255, 255, 255, 0.42);
+    border-color: rgba(255, 255, 255, 0.45);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.65),
+        0 4px 16px rgba(31, 38, 135, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+body.ios-dashboard-mode .sidebar-sub-link.active {
+    background: rgba(0, 122, 255, 0.12);
+    border-left-color: var(--accent-blue, #007aff);
+    color: var(--accent-blue, #007aff) !important;
+    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.12);
+}
+
+body.ios-dashboard-mode .sidebar-sub-link.active .sidebar-sub-bullet {
+    background: var(--accent-blue, #007aff);
+    opacity: 0.85;
 }
 

@@ -47,6 +47,11 @@
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security-settings" type="button" role="tab" aria-controls="security-settings" aria-selected="false">
+                            <i class="fas fa-shield-alt me-1 me-md-2"></i><span>Security</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
                         <button class="nav-link" id="company-tab" data-bs-toggle="tab" data-bs-target="#company" type="button" role="tab" aria-controls="company" aria-selected="false">
                             <i class="fas fa-building me-1 me-md-2"></i><span>Company</span>
                         </button>
@@ -301,13 +306,13 @@
                     </div>
                 </div>
 
-                <!-- Roles, permissions (features), and staff assignment -->
+                <!-- Roles and permissions (features) -->
                 <div class="tab-pane fade" id="access-roles-settings" role="tabpanel" aria-labelledby="access-roles-tab" tabindex="0">
                     <div class="p-4">
                         <h5 class="mb-2 h6 text-dark fw-bold"><i class="fas fa-user-shield me-2"></i>Roles &amp; features (access control)</h5>
-                        <p class="text-muted mb-4">Manage who can do what: roles bundle permissions (features such as bookings, booths, settings). Assign roles to staff under Security &amp; Staff.</p>
+                        <p class="text-muted mb-4">Define roles and permission records (which features each role may use). Assign roles to staff accounts under <strong>Security</strong> in these settings, or open <strong>Staff</strong> under HR in the sidebar.</p>
                         <div class="row g-3">
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="card border h-100">
                                     <div class="p-4 d-flex flex-column h-100">
                                         <h6 class="fw-bold text-dark mb-2"><i class="fas fa-users-cog me-2 text-primary"></i>Roles</h6>
@@ -318,24 +323,34 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="card border h-100">
                                     <div class="p-4 d-flex flex-column h-100">
                                         <h6 class="fw-bold text-dark mb-2"><i class="fas fa-key me-2 text-primary"></i>Permissions (features)</h6>
-                                        <p class="text-muted small flex-grow-1">View and maintain permission records (feature flags per module).</p>
+                                        <p class="text-muted small flex-grow-1">View and maintain permission records (feature access per module).</p>
                                         <a href="{{ route('permissions.index') }}" class="btn btn-primary mt-2 align-self-start">
                                             <i class="fas fa-arrow-right me-1"></i>Open permissions
                                         </a>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security: user accounts & access administration -->
+                <div class="tab-pane fade" id="security-settings" role="tabpanel" aria-labelledby="security-tab" tabindex="0">
+                    <div class="p-4">
+                        <h5 class="mb-2 h6 text-dark fw-bold"><i class="fas fa-shield-alt me-2"></i>Security</h5>
+                        <p class="text-muted mb-4">Manage system logins: create and deactivate accounts, reset passwords, assign roles, and review access. Day-to-day staff directory access is also available under <strong>HR Management → Staff</strong>.</p>
+                        <div class="row g-3">
+                            <div class="col-md-6 col-lg-5">
                                 <div class="card border h-100">
                                     <div class="p-4 d-flex flex-column h-100">
-                                        <h6 class="fw-bold text-dark mb-2"><i class="fas fa-shield-alt me-2 text-primary"></i>Security &amp; Staff</h6>
-                                        <p class="text-muted small flex-grow-1">Create users and assign a role so permissions apply to each account.</p>
-                                        <a href="{{ route('users.index') }}" class="btn btn-outline-primary mt-2 align-self-start">
-                                            <i class="fas fa-arrow-right me-1"></i>Open staff directory
+                                        <h6 class="fw-bold text-dark mb-2"><i class="fas fa-user-lock me-2 text-primary"></i>User &amp; account security</h6>
+                                        <p class="text-muted small flex-grow-1">Staff accounts, passwords, activation status, and role assignment for system access.</p>
+                                        <a href="{{ route('users.index') }}" class="btn btn-primary mt-2 align-self-start">
+                                            <i class="fas fa-arrow-right me-1"></i>Open user administration
                                         </a>
                                     </div>
                                 </div>
@@ -1648,6 +1663,7 @@
             'push-notifications': 'push-tab',
             'system-information': 'system-info-tab',
             'access-roles-settings': 'access-roles-tab',
+            'security-settings': 'security-tab',
             'company': 'company-tab',
             'appearance': 'appearance-tab',
             'cdn': 'cdn-tab'

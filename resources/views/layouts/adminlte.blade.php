@@ -87,7 +87,7 @@
     <link rel="stylesheet" href="{{ asset('css/tablet-optimized.css') }}?v=1">
     <link rel="stylesheet" href="{{ asset('css/desktop-optimized.css') }}?v=1">
     <link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}?v=5.1">
-    <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=3.0">
+    <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=3.4">
     <link rel="stylesheet" href="{{ asset('css/global-ux-consistency.css') }}?v=1.1">
     <link rel="stylesheet" href="{{ asset('css/admin-bootstrap-polish.css') }}?v=1">
     
@@ -1587,7 +1587,6 @@
     <link rel="stylesheet" href="{{ asset('css/global-mobile-enhancements.css') }}">
     
     <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}?v=3.2">
-    <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}">
     <link rel="stylesheet" href="{{ asset('css/app-loading-overlay.css') }}?v=2">
     
     @stack('styles')

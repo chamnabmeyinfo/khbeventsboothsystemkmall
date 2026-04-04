@@ -91,7 +91,7 @@
     @endif
     
     <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}?v=3.2">
-    <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=3.0">
+    <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=3.4">
     <link rel="stylesheet" href="{{ asset('css/app-shell-layout.css') }}?v=1.2">
     <link rel="stylesheet" href="{{ asset('css/sweetalert2-custom.css') }}?v=1">
     <link rel="stylesheet" href="{{ asset('css/app-loading-overlay.css') }}?v=2">
