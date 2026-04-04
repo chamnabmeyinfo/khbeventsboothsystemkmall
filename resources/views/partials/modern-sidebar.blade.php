@@ -168,13 +168,79 @@
 
         <!-- Administration Section -->
         @if($user->isAdmin())
+        @php
+            $settingsUrl = route('settings.index');
+        @endphp
         <h6 class="sidebar-section-label">System</h6>
         <ul class="sidebar-nav-list">
-            <li class="sidebar-nav-item">
-                <a href="{{ route('settings.index') }}" class="sidebar-nav-link {{ request()->is('settings*') ? 'active' : '' }}" title="Global Settings">
+            <li class="sidebar-nav-item sidebar-nav-dropdown">
+                <a href="javascript:void(0)" class="sidebar-nav-link {{ request()->routeIs('settings.index') ? 'active' : '' }}" data-bs-toggle="collapse" data-bs-target="#settingsSubmenu" data-toggle="collapse" data-target="#settingsSubmenu" aria-expanded="{{ request()->routeIs('settings.index') ? 'true' : 'false' }}" aria-controls="settingsSubmenu" role="button" title="Settings">
                     <i class="fas fa-sliders-h" aria-hidden="true"></i>
-                    <span>Global Settings</span>
+                    <span>Settings</span>
+                    <i class="fas fa-chevron-right dropdown-toggle-icon" aria-hidden="true"></i>
                 </a>
+                <ul class="sidebar-sub-nav collapse {{ request()->routeIs('settings.index') ? 'show' : '' }}" id="settingsSubmenu" role="list">
+                    <li>
+                        <a href="{{ $settingsUrl }}#cache-management" class="sidebar-sub-link js-settings-subnav" data-settings-tab="cache-management" title="Cache">
+                            <span class="sidebar-sub-bullet" aria-hidden="true"></span><span>Cache</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ $settingsUrl }}#settings-upload-control" class="sidebar-sub-link js-settings-subnav" data-settings-tab="settings-upload-control" title="Upload">
+                            <span class="sidebar-sub-bullet" aria-hidden="true"></span><span>Upload</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ $settingsUrl }}#settings-public-view" class="sidebar-sub-link js-settings-subnav" data-settings-tab="settings-public-view" title="Public view">
+                            <span class="sidebar-sub-bullet" aria-hidden="true"></span><span>Public view</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ $settingsUrl }}#push-notifications" class="sidebar-sub-link js-settings-subnav" data-settings-tab="push-notifications" title="Push">
+                            <span class="sidebar-sub-bullet" aria-hidden="true"></span><span>Push</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ $settingsUrl }}#system-information" class="sidebar-sub-link js-settings-subnav" data-settings-tab="system-information" title="System">
+                            <span class="sidebar-sub-bullet" aria-hidden="true"></span><span>System</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ $settingsUrl }}#access-roles-settings" class="sidebar-sub-link js-settings-subnav" data-settings-tab="access-roles-settings" title="Roles &amp; features">
+                            <span class="sidebar-sub-bullet" aria-hidden="true"></span><span>Roles &amp; features</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ $settingsUrl }}#security-settings" class="sidebar-sub-link js-settings-subnav" data-settings-tab="security-settings" title="Security">
+                            <span class="sidebar-sub-bullet" aria-hidden="true"></span><span>Security</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ $settingsUrl }}#company" class="sidebar-sub-link js-settings-subnav" data-settings-tab="company" title="Company">
+                            <span class="sidebar-sub-bullet" aria-hidden="true"></span><span>Company</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ $settingsUrl }}#global-color-settings" class="sidebar-sub-link js-settings-subnav" data-settings-tab="global-color-settings" title="Color">
+                            <span class="sidebar-sub-bullet" aria-hidden="true"></span><span>Color</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ $settingsUrl }}#appearance" class="sidebar-sub-link js-settings-subnav" data-settings-tab="appearance" title="UI colors">
+                            <span class="sidebar-sub-bullet" aria-hidden="true"></span><span>UI colors</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ $settingsUrl }}#cdn" class="sidebar-sub-link js-settings-subnav" data-settings-tab="cdn" title="CDN">
+                            <span class="sidebar-sub-bullet" aria-hidden="true"></span><span>CDN</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ $settingsUrl }}#module-display" class="sidebar-sub-link js-settings-subnav" data-settings-tab="module-display" title="Modules">
+                            <span class="sidebar-sub-bullet" aria-hidden="true"></span><span>Modules</span>
+                        </a>
+                    </li>
+                </ul>
             </li>
             <li class="sidebar-nav-item">
                 <a href="{{ route('landing-pages.index') }}" class="sidebar-nav-link {{ request()->is('landing-pages*') ? 'active' : '' }}" title="Landing Pages">
@@ -267,5 +333,26 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('resize', function() {
         if (!isMobile()) setMobileOpen(false);
     });
+
+    /** Settings submenu: highlight item from URL hash (defaults to Cache). */
+    function syncSettingsSubnavActive() {
+        var links = document.querySelectorAll('.js-settings-subnav');
+        if (!links.length) {
+            return;
+        }
+        var path = (window.location.pathname || '').replace(/\/+$/, '');
+        var parts = path.split('/');
+        if (parts[parts.length - 1] !== 'settings') {
+            links.forEach(function (a) { a.classList.remove('active'); });
+            return;
+        }
+        var hash = (window.location.hash || '').replace(/^#/, '') || 'cache-management';
+        links.forEach(function (a) {
+            var tab = a.getAttribute('data-settings-tab') || '';
+            a.classList.toggle('active', tab === hash);
+        });
+    }
+    syncSettingsSubnavActive();
+    window.addEventListener('hashchange', syncSettingsSubnavActive);
 });
 </script>

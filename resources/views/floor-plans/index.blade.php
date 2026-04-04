@@ -1,16 +1,14 @@
-@extends('layouts.adminlte')
+@extends('layouts.app')
 
 @php
     $isAuthenticated = auth()->check();
     $pageTitle = $isAuthenticated ? 'Floor Plan Management' : 'Browse Floor Plans';
-    $breadcrumb = $isAuthenticated ? 'Operations / Floor Plans' : 'Floor Plans';
 @endphp
 
 @section('title', $pageTitle)
-@section('page-title', $pageTitle)
-@section('breadcrumb', $breadcrumb)
 
 @push('styles')
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.6">
 <style>
     .floor-plan-card {
         background: #ffffff;
@@ -342,8 +340,10 @@
 </style>
 @endpush
 
+@push('body-class', 'ios-dashboard-mode')
+
 @section('content')
-<div class="container-fluid">
+<div class="looker-dashboard floor-plans-page">
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-lg-4 col-md-6">
@@ -727,7 +727,6 @@
     @endif
 
 </div>
-{{-- /.container-fluid --}}
 
 @push('modals')
     <!-- Delete modal at end of body (avoids nested layout / aria-hidden focus issues) -->
@@ -738,9 +737,7 @@
                     <h5 class="modal-title" id="deleteFloorPlanModalLabel">
                         <i class="fas fa-exclamation-triangle mr-2"></i>Delete Floor Plan
                     </h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="deleteFloorPlanForm" method="POST">
                     @csrf
@@ -790,7 +787,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-danger">
                             <i class="fas fa-trash mr-1"></i>Delete Floor Plan
                         </button>
@@ -868,7 +865,9 @@ function deleteFloorPlan(floorPlanId, floorPlanName, boothCount) {
         targetFloorPlanId.required = false;
     }
 
-    if (typeof window.jQuery !== 'undefined' && window.jQuery.fn && window.jQuery.fn.modal) {
+    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    } else if (typeof window.jQuery !== 'undefined' && window.jQuery.fn && window.jQuery.fn.modal) {
         window.jQuery(modalEl).modal('show');
     } else {
         modalEl.classList.add('show');

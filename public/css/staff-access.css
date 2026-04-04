@@ -57,3 +57,134 @@ body.staff-access-page .tab-content.staff-access-tab-content {
 body.staff-access-page .tab-content.staff-access-tab-content > .tab-pane {
     outline: none;
 }
+
+/* Second-level tabs (within Roles or Permissions) */
+body.staff-access-page .staff-access-sub-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+    border-bottom: 1px solid var(--border-light);
+    padding: 0;
+    margin-bottom: 1rem;
+}
+
+body.staff-access-page .staff-access-sub-nav .nav-item {
+    margin-bottom: -1px;
+}
+
+body.staff-access-page .staff-access-sub-nav .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.95rem;
+    min-height: 44px;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+    background: transparent;
+    font-weight: 500;
+    font-size: 0.9375rem;
+    text-decoration: none;
+    transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+body.staff-access-page .staff-access-sub-nav .nav-link:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.4);
+    border-color: rgba(0, 0, 0, 0.06);
+}
+
+body.staff-access-page .staff-access-sub-nav .nav-link.active {
+    color: var(--accent-purple);
+    background: rgba(255, 255, 255, 0.72);
+    border-color: var(--border-light);
+    border-bottom-color: transparent;
+    font-weight: 700;
+}
+
+/* Permissions → By module: horizontal module tabs + one panel per module */
+body.staff-access-page .permissions-by-module-tabs {
+    box-shadow: var(--shadow-md);
+}
+
+body.staff-access-page .permissions-module-tabs-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    border-bottom: 1px solid var(--border-light);
+    background: rgba(255, 255, 255, 0.35);
+}
+
+body.staff-access-page .staff-access-module-nav {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.2rem;
+    min-height: 48px;
+    align-items: flex-end;
+}
+
+body.staff-access-page .staff-access-module-nav .nav-item {
+    flex: 0 0 auto;
+}
+
+body.staff-access-page .staff-access-module-nav .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    min-height: 44px;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+    background: transparent;
+    font-weight: 500;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+body.staff-access-page .staff-access-module-nav .nav-link:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.65);
+    border-color: rgba(0, 0, 0, 0.06);
+}
+
+body.staff-access-page .staff-access-module-nav .nav-link.active {
+    color: #fff;
+    font-weight: 700;
+    background: linear-gradient(
+        135deg,
+        var(--accent-blue) 0%,
+        var(--accent-purple) 100%
+    );
+    border-color: transparent;
+    box-shadow: var(--shadow-sm);
+}
+
+body.staff-access-page .staff-access-module-nav .permissions-module-tab-count {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.2em 0.45em;
+    background: var(--accent-blue-light);
+    color: var(--accent-blue);
+}
+
+body.staff-access-page .staff-access-module-nav .nav-link.active .permissions-module-tab-count {
+    background: rgba(255, 255, 255, 0.28);
+    color: #fff;
+}
+
+body.staff-access-page .permissions-module-tab-label {
+    max-width: 10rem;
+    vertical-align: bottom;
+}
+
+@media (min-width: 576px) {
+    body.staff-access-page .permissions-module-tab-label {
+        max-width: 14rem;
+    }
+}
+
+body.staff-access-page .permissions-module-tab-panels {
+    background: var(--bg-card);
+}

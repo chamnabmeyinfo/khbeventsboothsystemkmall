@@ -1,11 +1,15 @@
-@extends('layouts.adminlte')
+@extends('layouts.app')
 
 @section('title', 'Floor Plan Details')
-@section('page-title', 'Floor Plan: ' . $floorPlan->name)
-@section('breadcrumb', 'Operations / Floor Plans / Details')
+
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.6">
+@endpush
+
+@push('body-class', 'ios-dashboard-mode')
 
 @section('content')
-<div class="container-fluid">
+<div class="looker-dashboard">
     <div class="row">
         <div class="col-md-8">
             <div class="card">
@@ -240,9 +244,7 @@
                 <h5 class="modal-title" id="deleteFloorPlanModalLabel">
                     <i class="fas fa-exclamation-triangle mr-2"></i>Delete Floor Plan
                 </h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="deleteFloorPlanForm" method="POST">
                 @csrf
@@ -299,7 +301,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-danger">
                         <i class="fas fa-trash mr-1"></i>Delete Floor Plan
                     </button>
@@ -354,7 +356,9 @@ function deleteFloorPlan(floorPlanId, floorPlanName, boothCount) {
         }
     }
 
-    if (typeof window.jQuery !== 'undefined' && window.jQuery.fn && window.jQuery.fn.modal) {
+    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    } else if (typeof window.jQuery !== 'undefined' && window.jQuery.fn && window.jQuery.fn.modal) {
         window.jQuery(modalEl).modal('show');
     } else {
         modalEl.classList.add('show');

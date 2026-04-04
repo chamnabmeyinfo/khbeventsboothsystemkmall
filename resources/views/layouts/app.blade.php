@@ -436,6 +436,8 @@
     }
     </style>
     
+    @stack('modals')
+    
     @stack('scripts')
     
     <style>

@@ -2,7 +2,7 @@
   Module display customize form (all modules). Used on Global Settings tab and Booth list settings modal.
   @param string $moduleDisplayFormId
   @param string $moduleDisplayContainerId
-  @param bool $useGlobalResetOnclick  When true, reset button calls loadModuleDisplaySettings() (settings page only).
+  @param bool $useGlobalResetOnclick  When true, reload button calls loadModuleDisplaySettings() (settings page only).
 --}}
 @php
     $formId = $moduleDisplayFormId ?? 'moduleDisplayForm';
@@ -28,9 +28,10 @@
         <button type="button" class="action-btn action-btn-secondary" id="{{ $formId }}_resetBtn"
             @if($useGlobal)
                 onclick="loadModuleDisplaySettings()"
+                title="Fetch saved module visibility from the server and discard unsaved changes on this form. Does not change the database until you save."
             @endif
         >
-            <i class="fas fa-sync-alt" aria-hidden="true"></i>Reset to defaults
+            <i class="fas fa-sync-alt" aria-hidden="true"></i>Reload saved
         </button>
     </div>
 </form>

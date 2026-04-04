@@ -2052,8 +2052,11 @@
     function loadModuleDisplaySettings() {
         $.get('{{ route("settings.module-display") }}')
             .done(function(response) {
-                if (response.status === 200) {
+                if (response.status === 200 && response.data) {
                     renderModuleDisplaySettings(response.data);
+                } else {
+                    toastr.error(response.message || 'Failed to load module display settings');
+                    $('#moduleDisplayContainer').html('<div class="col-12"><div class="settings-callout settings-callout--danger" role="alert">Failed to load settings. Please refresh the page or open this tab again.</div></div>');
                 }
             })
             .fail(function() {
@@ -2160,9 +2163,12 @@
         });
     });
 
-    // Load module display settings when tab is shown
+    // Load module display settings when tab is shown (initial spinner state, or after a load error)
     $('#module-display-tab').on('shown.bs.tab', function() {
-        if ($('#moduleDisplayContainer').children().length === 1 && $('#moduleDisplayContainer').find('.spinner-border').length > 0) {
+        var $c = $('#moduleDisplayContainer');
+        var loading = $c.children().length === 1 && $c.find('.spinner-border').length > 0;
+        var loadError = $c.find('.settings-callout--danger').length > 0;
+        if (loading || loadError) {
             loadModuleDisplaySettings();
         }
     });
@@ -2235,17 +2241,49 @@
         }
     }
 
+    var settingsTabButtonToHash = {
+        'cache-tab': 'cache-management',
+        'upload-control-tab': 'settings-upload-control',
+        'public-view-tab': 'settings-public-view',
+        'push-tab': 'push-notifications',
+        'system-info-tab': 'system-information',
+        'access-roles-tab': 'access-roles-settings',
+        'security-tab': 'security-settings',
+        'company-tab': 'company',
+        'global-color-tab': 'global-color-settings',
+        'appearance-tab': 'appearance',
+        'cdn-tab': 'cdn',
+        'module-display-tab': 'module-display'
+    };
+
+    $('#globalSettingsTabs button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+        var btnId = e.target && e.target.id;
+        var h = settingsTabButtonToHash[btnId];
+        if (!h) {
+            return;
+        }
+        var next = '#' + h;
+        if (window.location.hash === next) {
+            return;
+        }
+        if (history.replaceState) {
+            history.replaceState(null, '', window.location.pathname + window.location.search + next);
+        } else {
+            window.location.hash = h;
+        }
+        try {
+            window.dispatchEvent(new HashChangeEvent('hashchange'));
+        } catch (err) {
+            window.dispatchEvent(new Event('hashchange'));
+        }
+    });
+
     $(document).ready(function() {
         loadCompanySettings();
         loadAppearanceSettings();
         loadCDNSettings();
         applySettingsHashTab();
         window.addEventListener('hashchange', applySettingsHashTab);
-
-        // Load module display settings if tab is active
-        if ($('#module-display-tab').hasClass('active')) {
-            loadModuleDisplaySettings();
-        }
     });
 </script>
 @endpush

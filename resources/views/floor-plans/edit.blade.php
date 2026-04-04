@@ -1,11 +1,15 @@
-@extends('layouts.adminlte')
+@extends('layouts.app')
 
 @section('title', 'Edit Floor Plan')
-@section('page-title', 'Edit Floor Plan')
-@section('breadcrumb', 'Operations / Floor Plans / Edit')
+
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.6">
+@endpush
+
+@push('body-class', 'ios-dashboard-mode')
 
 @section('content')
-<div class="container-fluid">
+<div class="looker-dashboard">
     <div class="card">
         <div class="card-header">
             <h3 class="card-title">

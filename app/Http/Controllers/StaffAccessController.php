@@ -16,6 +16,14 @@ class StaffAccessController extends Controller
     {
         $activeTab = $request->query('tab') === 'permissions' ? 'permissions' : 'roles';
 
+        $activeRoleSub = in_array($request->query('role_sub'), ['overview', 'cards', 'table'], true)
+            ? $request->query('role_sub')
+            : 'cards';
+
+        $activePermissionSub = in_array($request->query('permission_sub'), ['overview', 'modules', 'flat'], true)
+            ? $request->query('permission_sub')
+            : 'modules';
+
         $rolesQuery = Role::with(['users', 'permissions']);
         if ($request->filled('status')) {
             $rolesQuery->where('is_active', $request->status == 'active' ? 1 : 0);
@@ -63,6 +71,8 @@ class StaffAccessController extends Controller
 
         return view('staff.access', compact(
             'activeTab',
+            'activeRoleSub',
+            'activePermissionSub',
             'roles',
             'roleStats',
             'permissions',

@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.7">
 <link rel="stylesheet" href="{{ asset('css/roles-page.css') }}?v=1.0">
 <link rel="stylesheet" href="{{ asset('css/permissions-page.css') }}?v=1.0">
-<link rel="stylesheet" href="{{ asset('css/staff-access.css') }}?v=1.0">
+<link rel="stylesheet" href="{{ asset('css/staff-access.css') }}?v=1.2">
 @endpush
 
 @push('body-class', 'ios-dashboard-mode staff-access-page roles-page permissions-page')
@@ -21,7 +21,7 @@
     <header class="looker-header animate-slide-up delay-1">
         <div class="looker-header-title">
             <h1>Roles &amp; permissions</h1>
-            <p>Switch between role definitions and the permission catalog. Filters use the URL so you can bookmark or share a view.</p>
+            <p>Switch between <strong>Roles</strong> and <strong>Permissions</strong>. Each side has its own sub-tabs (overview, lists, and layouts). Filters and sub-views are kept in the URL.</p>
         </div>
     </header>
 
@@ -192,7 +192,7 @@ $(document).ready(function() {
                     }
 
                     setTimeout(function() {
-                        window.location.href = @json(route('staff.access', ['tab' => 'roles']));
+                        window.location.href = @json(route('staff.access', ['tab' => 'roles', 'role_sub' => $activeRoleSub]));
                     }, 1500);
                 }
             },
@@ -222,38 +222,6 @@ $(document).ready(function() {
         $('#modal_role_sort_order').val('0');
         $('#modal_role_name').off('input.rolesSlug');
     });
-});
-
-function switchRolesView(view) {
-    const cardEl = document.getElementById('cardView');
-    const tableEl = document.getElementById('tableView');
-    const btnCards = document.getElementById('viewCards');
-    const btnTable = document.getElementById('viewTable');
-    if (!cardEl || !tableEl || !btnCards || !btnTable) {
-        return;
-    }
-    if (view === 'cards') {
-        cardEl.classList.remove('d-none');
-        tableEl.classList.add('d-none');
-        btnCards.classList.add('active');
-        btnCards.setAttribute('aria-pressed', 'true');
-        btnTable.classList.remove('active');
-        btnTable.setAttribute('aria-pressed', 'false');
-        localStorage.setItem('rolesView', 'cards');
-    } else {
-        cardEl.classList.add('d-none');
-        tableEl.classList.remove('d-none');
-        btnCards.classList.remove('active');
-        btnCards.setAttribute('aria-pressed', 'false');
-        btnTable.classList.add('active');
-        btnTable.setAttribute('aria-pressed', 'true');
-        localStorage.setItem('rolesView', 'table');
-    }
-}
-
-$(document).ready(function() {
-    const savedView = localStorage.getItem('rolesView') || 'cards';
-    switchRolesView(savedView);
 });
 
 function deleteRole(id, name) {
@@ -293,7 +261,7 @@ function deleteRole(id, name) {
                 if (result.ok && data && data.success) {
                     Swal.fire('Deleted', data.message || 'Role has been deleted.', 'success')
                         .then(() => {
-                            window.location.href = @json(route('staff.access', ['tab' => 'roles']));
+                            window.location.href = @json(route('staff.access', ['tab' => 'roles', 'role_sub' => $activeRoleSub]));
                         });
                 } else if (data && data.error) {
                     Swal.fire('Error', data.error, 'error');
@@ -347,7 +315,7 @@ function deletePermission(id, name) {
                 if (result.ok && data && data.success) {
                     Swal.fire('Deleted', data.message || 'Permission has been deleted.', 'success')
                         .then(() => {
-                            window.location.href = @json(route('staff.access', ['tab' => 'permissions']));
+                            window.location.href = @json(route('staff.access', ['tab' => 'permissions', 'permission_sub' => $activePermissionSub]));
                         });
                 } else if (data && data.error) {
                     Swal.fire('Error', data.error, 'error');
