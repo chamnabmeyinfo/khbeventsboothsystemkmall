@@ -138,7 +138,7 @@
     -moz-osx-font-smoothing: grayscale;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
-    contain: layout style paint;
+    /* No contain:* on body — preserves vertical scroll / swipe panning. */
   }
   
   /* GPU Acceleration for Smooth Performance */

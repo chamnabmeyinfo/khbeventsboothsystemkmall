@@ -83,7 +83,7 @@
     @endif
 
     {{-- Shared KHB UI (CDN + local): previously only loaded in local-vendor mode --}}
-    <link rel="stylesheet" href="{{ asset('css/device-optimized.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/device-optimized.css') }}?v=2">
     <link rel="stylesheet" href="{{ asset('css/tablet-optimized.css') }}?v=1">
     <link rel="stylesheet" href="{{ asset('css/desktop-optimized.css') }}?v=1">
     <link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}?v=5.1">
@@ -91,9 +91,9 @@
     <link rel="stylesheet" href="{{ asset('css/global-ux-consistency.css') }}?v=1.2">
     <link rel="stylesheet" href="{{ asset('css/admin-bootstrap-polish.css') }}?v=1">
     {{-- Align with layouts.admin / app: mobile sheets gated by viewport media (not JS width) --}}
-    <link rel="stylesheet" href="{{ asset('css/mobile-design-system.css') }}?v=4.0" media="(max-width: 768px)">
+    <link rel="stylesheet" href="{{ asset('css/mobile-design-system.css') }}?v=4.1" media="(max-width: 768px)">
     <link rel="stylesheet" href="{{ asset('css/global-mobile-enhancements.css') }}?v=2" media="(max-width: 768px)">
-    <link rel="stylesheet" href="{{ asset('css/mobile-cross-browser.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/mobile-cross-browser.css') }}?v=2">
 
     {{-- Async CSS Loader Script --}}
     <script>

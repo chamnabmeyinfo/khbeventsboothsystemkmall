@@ -26,7 +26,7 @@
     body {
         -webkit-overflow-scrolling: touch;
         overscroll-behavior-y: contain;
-        contain: layout style paint;
+        /* Avoid contain:paint/layout on body — breaks document scroll & touch panning (Chrome mobile emulation + real devices). */
     }
     
     /* Smooth scrolling */

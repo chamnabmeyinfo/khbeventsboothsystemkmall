@@ -89,9 +89,15 @@ body.app-shell .main-content-pushed.expanded {
 
 /* Mobile: sidebar becomes off-canvas; main full width */
 @media (max-width: 991.98px) {
+    /*
+     * Let the wrapper size to its content so the document (or main) can scroll.
+     * flex:1 + min-height:0 keeps the row viewport-tall and traps overflow — breaks swipe/scroll in mobile emulation.
+     */
     body.app-shell .layout-wrapper {
         display: block !important;
         overflow: visible;
+        flex: 0 0 auto !important;
+        min-height: auto !important;
     }
 
     body.app-shell .modern-sidebar {
@@ -126,7 +132,10 @@ body.app-shell .main-content-pushed.expanded {
     body.app-shell .layout-wrapper > main#main-content.main-content-pushed {
         width: 100% !important;
         min-height: min(100vh, 100svh, 100dvh) !important;
+        overflow-x: hidden;
         overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y pinch-zoom;
     }
 
     /* Notched / rounded displays — requires viewport-fit=cover */

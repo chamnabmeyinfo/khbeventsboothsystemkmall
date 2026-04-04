@@ -15,17 +15,17 @@
     <!-- Global UX Consistency CSS -->
     <link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}?v=5.1">
     <link rel="stylesheet" href="{{ asset('css/global-ux-consistency.css') }}?v=1.2">
-    <link rel="stylesheet" href="{{ asset('css/device-optimized.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/device-optimized.css') }}?v=2">
     <link rel="stylesheet" href="{{ asset('css/tablet-optimized.css') }}?v=1">
     <link rel="stylesheet" href="{{ asset('css/desktop-optimized.css') }}?v=1">
     {{-- Mobile-only sheets: media query so resize/orientation updates apply (no JS width gate) --}}
-    <link rel="stylesheet" href="{{ asset('css/mobile-design-system.css') }}?v=4.0" media="(max-width: 768px)">
+    <link rel="stylesheet" href="{{ asset('css/mobile-design-system.css') }}?v=4.1" media="(max-width: 768px)">
     <link rel="stylesheet" href="{{ asset('css/global-mobile-enhancements.css') }}?v=2" media="(max-width: 768px)">
-    <link rel="stylesheet" href="{{ asset('css/mobile-cross-browser.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/mobile-cross-browser.css') }}?v=2">
 
     <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}?v=3.2">
     <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=3.4">
-    <link rel="stylesheet" href="{{ asset('css/app-shell-layout.css') }}?v=1.4">
+    <link rel="stylesheet" href="{{ asset('css/app-shell-layout.css') }}?v=1.5">
     <link rel="stylesheet" href="{{ asset('vendor/sweetalert2/css/sweetalert2.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/sweetalert2-custom.css') }}?v=1">
     <link rel="stylesheet" href="{{ asset('vendor/toastr/css/toastr.min.css') }}">

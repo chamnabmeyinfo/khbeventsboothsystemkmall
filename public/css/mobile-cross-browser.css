@@ -21,6 +21,32 @@
     }
 }
 
+/*
+ * Chrome DevTools device toolbar often keeps pointer:fine — still apply tap/scroll hints at mobile widths.
+ * pan-y keeps vertical swipe/scroll working on main content; manipulation on controls only above.
+ */
+@media (max-width: 768px) {
+    body.app-shell #main-content.main-content-pushed,
+    body.app-shell .layout-wrapper {
+        touch-action: pan-y pinch-zoom;
+    }
+
+    button,
+    input[type="button"],
+    input[type="submit"],
+    input[type="reset"],
+    .btn,
+    [role="button"],
+    .action-btn,
+    .sidebar-toggle-btn,
+    .header-action-btn,
+    .page-link,
+    .dropdown-toggle,
+    .nav-link {
+        touch-action: manipulation;
+    }
+}
+
 @media (max-width: 768px) {
     html {
         overflow-x: hidden;
@@ -31,6 +57,7 @@
     body {
         overflow-x: hidden;
         overscroll-behavior-x: none;
+        touch-action: pan-y pinch-zoom;
     }
 
     @supports (overflow: clip) {
@@ -45,6 +72,12 @@
     canvas {
         max-width: 100%;
         height: auto;
+    }
+
+    /* Wide tables: allow horizontal pan inside scrollport (body uses pan-y) */
+    .table-responsive,
+    .looker-table-wrapper {
+        touch-action: pan-x pan-y pinch-zoom;
     }
 
     /* Modals: respect home indicator / rounded display (with viewport-fit=cover) */
