@@ -51,8 +51,10 @@
                         </p>
                     </div>
                     <div class="mt-3 mt-md-0">
-                        <button type="button" class="btn btn-light btn-sm" onclick="refreshPage()">
-                            <i class="fas fa-sync-alt mr-1"></i>Refresh
+                        <button type="button" class="btn btn-light btn-sm" onclick="refreshPage()"
+                            title="Reload this page so the summary numbers at the top match the latest data in the database."
+                            aria-label="Refresh reports dashboard">
+                            <i class="fas fa-sync-alt mr-1" aria-hidden="true"></i>Refresh
                         </button>
                     </div>
                 </div>
@@ -120,7 +122,8 @@
     <div class="row">
         <!-- Sales Report -->
         <div class="col-lg-4 col-md-6 mb-4">
-            <div class="report-card primary" onclick="window.location='{{ route('reports.sales') }}'">
+            <div class="report-card primary" onclick="window.location='{{ route('reports.sales') }}'" role="link" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.location='{{ route('reports.sales') }}';}"
+                title="Open Sales Report: revenue and bookings for a date range you choose (default range on the report page).">
                 <div style="padding: 32px;">
                     <div class="report-icon">
                         <i class="fas fa-dollar-sign"></i>
@@ -145,8 +148,9 @@
                             Export to CSV/PDF
                         </li>
                     </ul>
-                    <a href="{{ route('reports.sales') }}" class="btn btn-primary btn-block" onclick="event.stopPropagation()">
-                        <i class="fas fa-arrow-right mr-1"></i>View Sales Report
+                    <a href="{{ route('reports.sales') }}" class="btn btn-primary btn-block" onclick="event.stopPropagation()"
+                        title="Go to Sales Report (same as clicking the card).">
+                        <i class="fas fa-arrow-right mr-1" aria-hidden="true"></i>View Sales Report
                     </a>
                 </div>
             </div>
@@ -154,7 +158,8 @@
 
         <!-- Booking Trends -->
         <div class="col-lg-4 col-md-6 mb-4">
-            <div class="report-card info" onclick="window.location='{{ route('reports.trends') }}'">
+            <div class="report-card info" onclick="window.location='{{ route('reports.trends') }}'" role="link" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.location='{{ route('reports.trends') }}';}"
+                title="Open Booking Trends: daily booking activity over a number of days you can adjust.">
                 <div style="padding: 32px;">
                     <div class="report-icon">
                         <i class="fas fa-chart-line"></i>
@@ -179,8 +184,9 @@
                             Visual trend analysis
                         </li>
                     </ul>
-                    <a href="{{ route('reports.trends') }}" class="btn btn-info btn-block" onclick="event.stopPropagation()">
-                        <i class="fas fa-arrow-right mr-1"></i>View Trends
+                    <a href="{{ route('reports.trends') }}" class="btn btn-info btn-block" onclick="event.stopPropagation()"
+                        title="Go to Booking Trends (same as clicking the card).">
+                        <i class="fas fa-arrow-right mr-1" aria-hidden="true"></i>View Trends
                     </a>
                 </div>
             </div>
@@ -188,7 +194,8 @@
 
         <!-- User Performance -->
         <div class="col-lg-4 col-md-6 mb-4">
-            <div class="report-card success" onclick="window.location='{{ route('reports.user-performance') }}'">
+            <div class="report-card success" onclick="window.location='{{ route('reports.user-performance') }}'" role="link" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.location='{{ route('reports.user-performance') }}';}"
+                title="Open User Performance: revenue and bookings attributed to each staff user.">
                 <div style="padding: 32px;">
                     <div class="report-icon">
                         <i class="fas fa-users"></i>
@@ -213,42 +220,64 @@
                             Performance rankings
                         </li>
                     </ul>
-                    <a href="{{ route('reports.user-performance') }}" class="btn btn-success btn-block" onclick="event.stopPropagation()">
-                        <i class="fas fa-arrow-right mr-1"></i>View Performance
+                    <a href="{{ route('reports.user-performance') }}" class="btn btn-success btn-block" onclick="event.stopPropagation()"
+                        title="Go to User Performance (same as clicking the card).">
+                        <i class="fas fa-arrow-right mr-1" aria-hidden="true"></i>View Performance
                     </a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Quick Actions -->
+    <!-- Quick report shortcuts: each opens a report with dates/filters pre-filled -->
     <div class="row mt-4">
         <div class="col-12">
             <div class="glass-card">
                 <div class="p-4 border-bottom">
-                    <h3 class="h5 fw-bold mb-0 text-dark"><i class="fas fa-bolt mr-2"></i>Quick Actions</h3>
+                    <h3 class="h5 fw-bold mb-1 text-dark"><i class="fas fa-bolt mr-2" aria-hidden="true"></i>Quick report shortcuts</h3>
+                    <p class="text-muted small mb-0">Each button opens the named report in a new context: Sales shortcuts set <strong>date from</strong> and <strong>date to</strong> on the Sales report; Trends opens Booking Trends with a fixed day range. Change dates on the report page anytime.</p>
                 </div>
                 <div class="p-4">
                     <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ route('reports.sales', ['date_from' => now()->subDays(7)->format('Y-m-d'), 'date_to' => now()->format('Y-m-d')]) }}" class="btn btn-outline-primary btn-block">
-                                <i class="fas fa-calendar-week mr-1"></i>Last 7 Days
+                        <div class="col-md-6 col-lg-3 mb-4">
+                            <a href="{{ route('reports.sales', ['date_from' => now()->subDays(7)->format('Y-m-d'), 'date_to' => now()->format('Y-m-d')]) }}"
+                                class="btn btn-outline-primary btn-block"
+                                id="qa-sales-7"
+                                title="Opens Sales Report: bookings from 7 days ago through today, revenue table and chart for that window."
+                                aria-describedby="qa-sales-7-help">
+                                <i class="fas fa-calendar-week mr-1" aria-hidden="true"></i>Last 7 Days
                             </a>
+                            <p class="small text-muted mb-0 mt-2" id="qa-sales-7-help"><strong>Goes to:</strong> Sales Report. <strong>Does:</strong> sets booking date range to the last 7 days (including today). You can adjust filters on the next page.</p>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ route('reports.sales', ['date_from' => now()->subDays(30)->format('Y-m-d'), 'date_to' => now()->format('Y-m-d')]) }}" class="btn btn-outline-primary btn-block">
-                                <i class="fas fa-calendar-alt mr-1"></i>Last 30 Days
+                        <div class="col-md-6 col-lg-3 mb-4">
+                            <a href="{{ route('reports.sales', ['date_from' => now()->subDays(30)->format('Y-m-d'), 'date_to' => now()->format('Y-m-d')]) }}"
+                                class="btn btn-outline-primary btn-block"
+                                id="qa-sales-30"
+                                title="Opens Sales Report: bookings from 30 days ago through today."
+                                aria-describedby="qa-sales-30-help">
+                                <i class="fas fa-calendar-alt mr-1" aria-hidden="true"></i>Last 30 Days
                             </a>
+                            <p class="small text-muted mb-0 mt-2" id="qa-sales-30-help"><strong>Goes to:</strong> Sales Report. <strong>Does:</strong> sets the range to the last 30 days through today.</p>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ route('reports.sales', ['date_from' => now()->startOfMonth()->format('Y-m-d'), 'date_to' => now()->format('Y-m-d')]) }}" class="btn btn-outline-primary btn-block">
-                                <i class="fas fa-calendar mr-1"></i>This Month
+                        <div class="col-md-6 col-lg-3 mb-4">
+                            <a href="{{ route('reports.sales', ['date_from' => now()->startOfMonth()->format('Y-m-d'), 'date_to' => now()->format('Y-m-d')]) }}"
+                                class="btn btn-outline-primary btn-block"
+                                id="qa-sales-month"
+                                title="Opens Sales Report: from the first day of this calendar month through today."
+                                aria-describedby="qa-sales-month-help">
+                                <i class="fas fa-calendar mr-1" aria-hidden="true"></i>This Month
                             </a>
+                            <p class="small text-muted mb-0 mt-2" id="qa-sales-month-help"><strong>Goes to:</strong> Sales Report. <strong>Does:</strong> sets range from the start of the current month to today (calendar month, not rolling 30 days).</p>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ route('reports.trends', ['days' => 90]) }}" class="btn btn-outline-info btn-block">
-                                <i class="fas fa-chart-area mr-1"></i>90-Day Trends
+                        <div class="col-md-6 col-lg-3 mb-4">
+                            <a href="{{ route('reports.trends', ['days' => 90]) }}"
+                                class="btn btn-outline-info btn-block"
+                                id="qa-trends-90"
+                                title="Opens Booking Trends: daily booking counts for the last 90 days."
+                                aria-describedby="qa-trends-90-help">
+                                <i class="fas fa-chart-area mr-1" aria-hidden="true"></i>90-Day Trends
                             </a>
+                            <p class="small text-muted mb-0 mt-2" id="qa-trends-90-help"><strong>Goes to:</strong> Booking Trends (not Sales). <strong>Does:</strong> shows trend charts for the last 90 days. Use the report page to change the number of days.</p>
                         </div>
                     </div>
                 </div>

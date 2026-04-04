@@ -14,33 +14,10 @@ class RoleController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Role::with(['users', 'permissions']);
-
-        // Filter by status
-        if ($request->filled('status')) {
-            $query->where('is_active', $request->status == 'active' ? 1 : 0);
-        }
-
-        // Search
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('slug', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
-            });
-        }
-
-        $roles = $query->orderBy('sort_order')->paginate(20)->withQueryString();
-
-        // Statistics
-        $stats = [
-            'total_roles' => Role::count(),
-            'active_roles' => Role::where('is_active', true)->count(),
-            'total_users_with_roles' => $this->getUsersWithRolesCount(),
-        ];
-
-        return view('roles.index', compact('roles', 'stats'));
+        return redirect()->route('staff.access', array_merge(
+            $request->query(),
+            ['tab' => 'roles']
+        ));
     }
 
     /**
@@ -50,7 +27,7 @@ class RoleController extends Controller
     {
         try {
             // Check if role_id column exists
-            $hasRoleId = Schema::hasColumn('user', 'role_id');
+            $hasRoleId = Schema::hasColumn('users', 'role_id');
             if ($hasRoleId) {
                 return \App\Models\User::whereNotNull('role_id')->count();
             }
@@ -126,7 +103,7 @@ class RoleController extends Controller
             ], 200);
         }
 
-        return redirect()->route('roles.index')
+        return redirect()->route('staff.access', ['tab' => 'roles'])
             ->with('success', 'Role created successfully.');
     }
 
@@ -192,24 +169,36 @@ class RoleController extends Controller
             $role->permissions()->detach();
         }
 
-        return redirect()->route('roles.index')
+        return redirect()->route('staff.access', ['tab' => 'roles'])
             ->with('success', 'Role updated successfully.');
     }
 
     /**
      * Remove the specified role
      */
-    public function destroy(Role $role)
+    public function destroy(Request $request, Role $role)
     {
         // Check if role has users
         if ($role->users()->count() > 0) {
-            return redirect()->route('roles.index')
-                ->with('error', 'Cannot delete role. There are users assigned to this role.');
+            $message = 'Cannot delete role. There are users assigned to this role.';
+            if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'error' => $message], 422);
+            }
+
+            return redirect()->route('staff.access', ['tab' => 'roles'])
+                ->with('error', $message);
         }
 
         $role->delete();
 
-        return redirect()->route('roles.index')
+        if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Role deleted successfully.',
+            ]);
+        }
+
+        return redirect()->route('staff.access', ['tab' => 'roles'])
             ->with('success', 'Role deleted successfully.');
     }
 }

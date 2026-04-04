@@ -1,0 +1,61 @@
+/**
+ * Permissions module (/permissions) — single responsive sheet (Bootstrap 5 breakpoints).
+ * Visual system: dashboard-looker.css tokens on body.ios-dashboard-mode.
+ */
+body.permissions-page .looker-dashboard {
+    padding: 0 1rem 2rem;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+    body.permissions-page .looker-dashboard {
+        padding: 0 1.25rem 2.5rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    body.permissions-page .looker-dashboard {
+        padding: 0 1.5rem 3rem;
+    }
+}
+
+body.permissions-page .permissions-module-panel {
+    overflow: hidden;
+}
+
+body.permissions-page .permissions-module-panel .panel-header.permissions-module-panel__header {
+    background: linear-gradient(
+        135deg,
+        var(--accent-blue) 0%,
+        var(--accent-purple) 100%
+    );
+    color: #fff;
+    border-bottom: none;
+    padding: 1rem 1.25rem;
+}
+
+body.permissions-page .permissions-module-panel__header .panel-title {
+    color: #fff;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+body.permissions-page .permissions-module-panel__header .status-badge {
+    background: rgba(255, 255, 255, 0.22);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+body.permissions-page .permissions-table-scroll {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Create / edit form shell */
+body.permissions-page.permissions-form-page .permissions-form-panel .panel-header {
+    border-bottom: 1px solid var(--border-light);
+}

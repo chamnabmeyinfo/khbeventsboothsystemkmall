@@ -3,17 +3,20 @@
 @section('title', 'Settings')
 
 @section('content')
-<div class='looker-dashboard'>
-<div class="row mb-4">
-    <div class="col">
-        <h2 class="mb-1"><i class="fas fa-cog me-2"></i>Global Settings</h2>
-        <p class="text-muted mb-0">System configuration, appearance, uploads, and maintenance in one place.</p>
-    </div>
-</div>
+<div class="looker-dashboard settings-page">
+    <header class="looker-header">
+        <div class="looker-header-title">
+            <h1><i class="fas fa-sliders-h me-2" aria-hidden="true"></i>Global settings</h1>
+            <p>System configuration, appearance, uploads, and maintenance in one place.</p>
+        </div>
+        <div class="looker-actions d-none d-md-flex">
+            <a href="{{ route('dashboard') }}" class="action-btn action-btn-secondary">
+                <i class="fas fa-chart-line" aria-hidden="true"></i> Dashboard
+            </a>
+        </div>
+    </header>
 
-<div class="row">
-    <div class="col-md-12">
-        <div class="glass-card settings-global-tabs-card">
+    <div class="canvas-panel settings-tabs-panel p-0 overflow-hidden">
             <div class="settings-tabs-scroll border-bottom">
                 <ul class="nav nav-tabs settings-main-tabs flex-nowrap mb-0 px-2 px-md-3 pt-3" id="globalSettingsTabs" role="tablist">
                     <li class="nav-item" role="presentation">
@@ -83,113 +86,109 @@
                 <!-- Cache Management -->
                 <div class="tab-pane fade show active" id="cache-management" role="tabpanel" aria-labelledby="cache-tab" tabindex="0">
                     <div class="p-4">
-                        <h5 class="mb-3 h6 text-dark fw-bold"><i class="fas fa-broom me-2"></i>Cache Management</h5>
-                        <p class="text-muted">Clear various caches to ensure the application is using the latest data and configurations.</p>
+                        <header class="settings-tab-header">
+                            <h2 class="panel-title settings-tab-header__title"><i class="fas fa-broom" aria-hidden="true"></i> Cache management</h2>
+                            <p class="settings-tab-lead">Clear Laravel caches after config, route, or view changes. Use “Clear all” or “Optimize” when you know the impact.</p>
+                        </header>
 
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <div class="card border">
-                                    <div class="p-4">
-                                        <h6 class="h5 fw-bold mb-0 text-dark">
-                                            <i class="fas fa-database me-2 text-primary"></i>Application Cache
-                                        </h6>
-                                        <p class="card-text text-muted small">Clear the application cache (stored data, queries, etc.)</p>
-                                        <form action="{{ route('settings.cache.clear') }}" method="POST" class="d-inline settings-form-ajax">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-primary">
-                                                <i class="fas fa-trash me-1"></i>Clear Cache
-                                            </button>
-                                        </form>
-                                    </div>
+                                <div class="settings-mini-panel h-100">
+                                    <h3 class="settings-mini-panel__title">
+                                        <span class="settings-mini-panel__icon settings-mini-panel__icon--blue" aria-hidden="true"><i class="fas fa-database"></i></span>
+                                        Application cache
+                                    </h3>
+                                    <p class="settings-mini-panel__desc">Application cache (stored data, queries, etc.).</p>
+                                    <form action="{{ route('settings.cache.clear') }}" method="POST" class="settings-form-ajax mt-auto">
+                                        @csrf
+                                        <button type="submit" class="action-btn action-btn-primary action-btn-compact">
+                                            <i class="fas fa-trash" aria-hidden="true"></i>Clear cache
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
 
                             <div class="col-md-6">
-                                <div class="card border">
-                                    <div class="p-4">
-                                        <h6 class="h5 fw-bold mb-0 text-dark">
-                                            <i class="fas fa-file-code me-2 text-info"></i>Configuration Cache
-                                        </h6>
-                                        <p class="card-text text-muted small">Clear the configuration cache (config files)</p>
-                                        <form action="{{ route('settings.config.clear') }}" method="POST" class="d-inline settings-form-ajax">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-info">
-                                                <i class="fas fa-trash me-1"></i>Clear Config
-                                            </button>
-                                        </form>
-                                    </div>
+                                <div class="settings-mini-panel h-100">
+                                    <h3 class="settings-mini-panel__title">
+                                        <span class="settings-mini-panel__icon settings-mini-panel__icon--purple" aria-hidden="true"><i class="fas fa-file-code"></i></span>
+                                        Configuration cache
+                                    </h3>
+                                    <p class="settings-mini-panel__desc">Compiled configuration from config files.</p>
+                                    <form action="{{ route('settings.config.clear') }}" method="POST" class="settings-form-ajax mt-auto">
+                                        @csrf
+                                        <button type="submit" class="action-btn action-btn-secondary action-btn-compact">
+                                            <i class="fas fa-trash" aria-hidden="true"></i>Clear config
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
 
                             <div class="col-md-6">
-                                <div class="card border">
-                                    <div class="p-4">
-                                        <h6 class="h5 fw-bold mb-0 text-dark">
-                                            <i class="fas fa-route me-2 text-success"></i>Route Cache
-                                        </h6>
-                                        <p class="card-text text-muted small">Clear the route cache (route definitions)</p>
-                                        <form action="{{ route('settings.route.clear') }}" method="POST" class="d-inline settings-form-ajax">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-success">
-                                                <i class="fas fa-trash me-1"></i>Clear Routes
-                                            </button>
-                                        </form>
-                                    </div>
+                                <div class="settings-mini-panel h-100">
+                                    <h3 class="settings-mini-panel__title">
+                                        <span class="settings-mini-panel__icon settings-mini-panel__icon--green" aria-hidden="true"><i class="fas fa-route"></i></span>
+                                        Route cache
+                                    </h3>
+                                    <p class="settings-mini-panel__desc">Cached route definitions.</p>
+                                    <form action="{{ route('settings.route.clear') }}" method="POST" class="settings-form-ajax mt-auto">
+                                        @csrf
+                                        <button type="submit" class="action-btn action-btn-secondary action-btn-compact">
+                                            <i class="fas fa-trash" aria-hidden="true"></i>Clear routes
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
 
                             <div class="col-md-6">
-                                <div class="card border">
-                                    <div class="p-4">
-                                        <h6 class="h5 fw-bold mb-0 text-dark">
-                                            <i class="fas fa-eye me-2 text-warning"></i>View Cache
-                                        </h6>
-                                        <p class="card-text text-muted small">Clear the compiled view cache (Blade templates)</p>
-                                        <form action="{{ route('settings.view.clear') }}" method="POST" class="d-inline settings-form-ajax">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-warning">
-                                                <i class="fas fa-trash me-1"></i>Clear Views
-                                            </button>
-                                        </form>
-                                    </div>
+                                <div class="settings-mini-panel h-100">
+                                    <h3 class="settings-mini-panel__title">
+                                        <span class="settings-mini-panel__icon settings-mini-panel__icon--orange" aria-hidden="true"><i class="fas fa-eye"></i></span>
+                                        View cache
+                                    </h3>
+                                    <p class="settings-mini-panel__desc">Compiled Blade templates.</p>
+                                    <form action="{{ route('settings.view.clear') }}" method="POST" class="settings-form-ajax mt-auto">
+                                        @csrf
+                                        <button type="submit" class="action-btn action-btn-secondary action-btn-compact">
+                                            <i class="fas fa-trash" aria-hidden="true"></i>Clear views
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
 
-                        <hr class="my-4">
+                        <hr class="my-4 settings-divider">
 
-                        <div class="row">
+                        <div class="row g-3">
                             <div class="col-md-6">
-                                <div class="card border-danger">
-                                    <div class="p-4">
-                                        <h6 class="card-title text-danger">
-                                            <i class="fas fa-broom me-2"></i>Clear All Caches
-                                        </h6>
-                                        <p class="card-text text-muted small">Clear all caches at once (Application, Config, Route, View)</p>
-                                        <form action="{{ route('settings.clear-all') }}" method="POST" class="d-inline settings-form-ajax" data-confirm="Are you sure you want to clear all caches?">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="fas fa-trash-alt me-1"></i>Clear All
-                                            </button>
-                                        </form>
-                                    </div>
+                                <div class="settings-mini-panel settings-mini-panel--danger h-100">
+                                    <h3 class="settings-mini-panel__title text-danger">
+                                        <span class="settings-mini-panel__icon settings-mini-panel__icon--danger" aria-hidden="true"><i class="fas fa-broom"></i></span>
+                                        Clear all caches
+                                    </h3>
+                                    <p class="settings-mini-panel__desc">Clears application, config, route, and view caches in one step.</p>
+                                    <form action="{{ route('settings.clear-all') }}" method="POST" class="settings-form-ajax mt-auto" data-confirm="Are you sure you want to clear all caches?">
+                                        @csrf
+                                        <button type="submit" class="action-btn action-btn-destructive action-btn-compact">
+                                            <i class="fas fa-trash-alt" aria-hidden="true"></i>Clear all
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
 
                             <div class="col-md-6">
-                                <div class="card border-primary">
-                                    <div class="p-4">
-                                        <h6 class="card-title text-primary">
-                                            <i class="fas fa-rocket me-2"></i>Optimize Application
-                                        </h6>
-                                        <p class="card-text text-muted small">Clear all caches and optimize the application for better performance</p>
-                                        <form action="{{ route('settings.optimize') }}" method="POST" class="d-inline settings-form-ajax" data-confirm="This will clear all caches and optimize the application. Continue?">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-primary">
-                                                <i class="fas fa-magic me-1"></i>Optimize
-                                            </button>
-                                        </form>
-                                    </div>
+                                <div class="settings-mini-panel h-100">
+                                    <h3 class="settings-mini-panel__title">
+                                        <span class="settings-mini-panel__icon settings-mini-panel__icon--blue" aria-hidden="true"><i class="fas fa-rocket"></i></span>
+                                        Optimize application
+                                    </h3>
+                                    <p class="settings-mini-panel__desc">Removes compiled Laravel caches (optimize:clear): bootstrap config, routes, views, and related.</p>
+                                    <form action="{{ route('settings.optimize') }}" method="POST" class="settings-form-ajax mt-auto" data-confirm="This removes compiled caches (optimize:clear). Continue?">
+                                        @csrf
+                                        <button type="submit" class="action-btn action-btn-primary action-btn-compact">
+                                            <i class="fas fa-magic" aria-hidden="true"></i>Optimize
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -199,8 +198,10 @@
                 <!-- Upload Control -->
                 <div class="tab-pane fade" id="settings-upload-control" role="tabpanel" aria-labelledby="upload-control-tab" tabindex="0">
                     <div class="p-4">
-                        <h5 class="mb-3 h6 text-dark fw-bold"><i class="fas fa-upload me-2"></i>Upload Control</h5>
-                        <p class="text-muted">Control file uploads across the system. Set global defaults or per-context limits (floor plan, booth, avatar, etc.).</p>
+                        <header class="settings-tab-header">
+                            <h2 class="panel-title settings-tab-header__title"><i class="fas fa-upload" aria-hidden="true"></i> Upload control</h2>
+                            <p class="settings-tab-lead">Set global upload limits and overrides per context (floor plan, booth, avatar, HR documents, and more).</p>
+                        </header>
                         @include('settings.partials.upload-control-form', [
                             'formId' => 'uploadControlForm',
                             'idPrefix' => '',
@@ -212,8 +213,10 @@
                 <!-- Public View Actions -->
                 <div class="tab-pane fade" id="settings-public-view" role="tabpanel" aria-labelledby="public-view-tab" tabindex="0">
                     <div class="p-4">
-                        <h5 class="mb-3 h6 text-dark fw-bold"><i class="fas fa-eye me-2"></i>Public View Actions</h5>
-                        <p class="text-muted">Control what logged-in users can do on the public floor plan view (<code>/floor-plans/{id}/public</code>). Colors for the public map and ticks are managed under the <strong>Color (map &amp; bookings)</strong> tab.</p>
+                        <header class="settings-tab-header">
+                            <h2 class="panel-title settings-tab-header__title"><i class="fas fa-eye" aria-hidden="true"></i> Public view actions</h2>
+                            <p class="settings-tab-lead">Control what signed-in users can do on <code class="settings-code">/floor-plans/{id}/public</code>. Map colors and booked ticks are under <strong>Color (map &amp; bookings)</strong>.</p>
+                        </header>
                         @include('settings.partials.public-view-behavior-form', [
                             'formId' => 'publicViewBehaviorForm',
                             'idPrefix' => '',
@@ -224,26 +227,28 @@
                 <!-- Push Notifications -->
                 <div class="tab-pane fade" id="push-notifications" role="tabpanel" aria-labelledby="push-tab" tabindex="0">
                     <div class="p-4">
-                        <h5 class="mb-3 h6 text-dark fw-bold"><i class="fas fa-bell me-2"></i>Push Notifications</h5>
-                        <p class="text-muted">Enable browser push notifications so users receive alerts (e.g. new bookings, booth updates) even when the tab is in the background. Uses Web Push (VAPID).</p>
+                        <header class="settings-tab-header">
+                            <h2 class="panel-title settings-tab-header__title"><i class="fas fa-bell" aria-hidden="true"></i> Push notifications</h2>
+                            <p class="settings-tab-lead">Web Push (VAPID) for alerts when the tab is in the background. Users must still grant permission in the browser.</p>
+                        </header>
                         <form id="pushNotificationSettingsForm" action="{{ route('settings.push-notifications.save') }}" method="POST" class="settings-form-ajax">
                             @csrf
-                            <div class="mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="push_notifications_enabled" id="push_notifications_enabled" value="1" {{ ($pushNotificationsEnabled ?? true) ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="push_notifications_enabled">
-                                        <strong>Enable push notifications</strong>
-                                    </label>
+                            <div class="settings-mini-panel mb-3">
+                                <div class="form-check form-switch d-flex align-items-start gap-3">
+                                    <input class="form-check-input settings-form-switch flex-shrink-0" type="checkbox" name="push_notifications_enabled" id="push_notifications_enabled" value="1" {{ ($pushNotificationsEnabled ?? true) ? 'checked' : '' }}>
+                                    <div>
+                                        <label class="form-check-label fw-semibold" for="push_notifications_enabled">Enable push notifications</label>
+                                        <p class="text-muted small mb-0 mt-1">Requires VAPID keys and per-user browser permission.</p>
+                                    </div>
                                 </div>
-                                <small class="text-muted d-block mt-1">When enabled, the system will send browser push notifications for in-app events (requires VAPID keys and user permission).</small>
                             </div>
-                            <div class="mb-3">
+                            <div class="settings-mini-panel mb-4">
                                 <label class="form-label" for="push_vapid_public_key">VAPID public key (optional)</label>
-                                <input type="text" class="form-control font-monospace" name="push_vapid_public_key" id="push_vapid_public_key" value="{{ old('push_vapid_public_key', $pushVapidPublicKey ?? '') }}" placeholder="e.g. BN1a2b3c..." maxlength="500">
-                                <small class="text-muted d-block mt-1">Required for Web Push. Generate with <code>php artisan webpush:vapid</code> (or similar). You can also set <code>PUSH_VAPID_PUBLIC_KEY</code> and <code>PUSH_VAPID_PRIVATE_KEY</code> in <code>.env</code>; the private key must never be stored in the database.</small>
+                                <input type="text" class="form-control font-monospace" name="push_vapid_public_key" id="push_vapid_public_key" value="{{ old('push_vapid_public_key', $pushVapidPublicKey ?? '') }}" placeholder="e.g. BN1a2b3c..." maxlength="500" autocomplete="off">
+                                <p class="text-muted small mb-0 mt-2">Use <code class="settings-code">php artisan webpush:vapid</code> or set <code class="settings-code">PUSH_VAPID_PUBLIC_KEY</code> / <code class="settings-code">PUSH_VAPID_PRIVATE_KEY</code> in <code class="settings-code">.env</code>. Never store the private key in the database.</p>
                             </div>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-1"></i>Save Push Notification Settings
+                            <button type="submit" class="action-btn action-btn-primary">
+                                <i class="fas fa-save" aria-hidden="true"></i>Save push notification settings
                             </button>
                         </form>
                     </div>
@@ -252,55 +257,62 @@
                 <!-- System Information -->
                 <div class="tab-pane fade" id="system-information" role="tabpanel" aria-labelledby="system-info-tab" tabindex="0">
                     <div class="p-4">
-                        <h5 class="mb-3 h6 text-dark fw-bold"><i class="fas fa-info-circle me-2"></i>System Information</h5>
-                        <div class="row">
+                        <header class="settings-tab-header">
+                            <h2 class="panel-title settings-tab-header__title"><i class="fas fa-info-circle" aria-hidden="true"></i> System information</h2>
+                            <p class="settings-tab-lead">Runtime and application identity. Useful when reporting issues or verifying deployment.</p>
+                        </header>
+                        <div class="row g-4">
                             <div class="col-md-6">
-                                <table class="table table-borderless">
-                                    <tr>
-                                        <th width="200">Laravel Version:</th>
-                                        <td>{{ app()->version() }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>PHP Version:</th>
-                                        <td>{{ PHP_VERSION }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Environment:</th>
-                                        <td>
-                                            <span class="badge bg-{{ app()->environment() === 'production' ? 'danger' : 'info' }}">
-                                                {{ app()->environment() }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>Debug Mode:</th>
-                                        <td>
-                                            <span class="badge bg-{{ config('app.debug') ? 'warning' : 'success' }}">
-                                                {{ config('app.debug') ? 'ON' : 'OFF' }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                </table>
+                                <div class="looker-table-wrapper settings-sys-table-wrap">
+                                    <table class="looker-table looker-table--kv">
+                                        <tbody>
+                                            <tr>
+                                                <th scope="row">Laravel version</th>
+                                                <td>{{ app()->version() }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">PHP version</th>
+                                                <td>{{ PHP_VERSION }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">Environment</th>
+                                                <td>
+                                                    <span class="status-badge {{ app()->environment() === 'production' ? 'status-badge-red' : 'status-badge-blue' }}">{{ app()->environment() }}</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">Debug mode</th>
+                                                <td>
+                                                    <span class="status-badge {{ config('app.debug') ? 'status-badge-orange' : 'status-badge-green' }}">{{ config('app.debug') ? 'ON' : 'OFF' }}</span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <table class="table table-borderless">
-                                    <tr>
-                                        <th width="200">App Name:</th>
-                                        <td>{{ config('app.name') }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>App URL:</th>
-                                        <td>{{ config('app.url') }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Timezone:</th>
-                                        <td>{{ config('app.timezone') }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Locale:</th>
-                                        <td>{{ config('app.locale') }}</td>
-                                    </tr>
-                                </table>
+                                <div class="looker-table-wrapper settings-sys-table-wrap">
+                                    <table class="looker-table looker-table--kv">
+                                        <tbody>
+                                            <tr>
+                                                <th scope="row">App name</th>
+                                                <td>{{ config('app.name') }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">App URL</th>
+                                                <td class="text-break">{{ config('app.url') }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">Timezone</th>
+                                                <td>{{ config('app.timezone') }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">Locale</th>
+                                                <td>{{ config('app.locale') }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -309,27 +321,24 @@
                 <!-- Roles and permissions (features) -->
                 <div class="tab-pane fade" id="access-roles-settings" role="tabpanel" aria-labelledby="access-roles-tab" tabindex="0">
                     <div class="p-4">
-                        <h5 class="mb-2 h6 text-dark fw-bold"><i class="fas fa-user-shield me-2"></i>Roles &amp; features (access control)</h5>
-                        <p class="text-muted mb-4">Define roles and permission records (which features each role may use). Assign roles to staff accounts under <strong>Security</strong> in these settings, or open <strong>Staff</strong> under HR in the sidebar.</p>
+                        <header class="settings-tab-header">
+                            <h2 class="panel-title settings-tab-header__title"><i class="fas fa-user-shield" aria-hidden="true"></i> Roles &amp; features</h2>
+                            <p class="settings-tab-lead">Define roles and feature permissions. Assign roles to staff under <strong>Security</strong> here or via <strong>HR → Staff</strong>.</p>
+                        </header>
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="card border h-100">
-                                    <div class="p-4 d-flex flex-column h-100">
-                                        <h6 class="fw-bold text-dark mb-2"><i class="fas fa-users-cog me-2 text-primary"></i>Roles</h6>
-                                        <p class="text-muted small flex-grow-1">Create and edit roles, and attach permissions to each role.</p>
-                                        <a href="{{ route('roles.index') }}" class="btn btn-primary mt-2 align-self-start">
-                                            <i class="fas fa-arrow-right me-1"></i>Open roles
+                            <div class="col-12 col-lg-8">
+                                <div class="settings-mini-panel h-100">
+                                    <h3 class="settings-mini-panel__title">
+                                        <span class="settings-mini-panel__icon settings-mini-panel__icon--blue" aria-hidden="true"><i class="fas fa-users-cog"></i></span>
+                                        Roles &amp; permissions
+                                    </h3>
+                                    <p class="settings-mini-panel__desc">One screen with tabs: define roles, attach permissions, and maintain the feature catalog.</p>
+                                    <div class="d-flex flex-wrap gap-2 mt-auto pt-2">
+                                        <a href="{{ route('staff.access', ['tab' => 'roles']) }}" class="action-btn action-btn-primary action-btn-compact">
+                                            <i class="fas fa-user-shield" aria-hidden="true"></i> Roles tab
                                         </a>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="card border h-100">
-                                    <div class="p-4 d-flex flex-column h-100">
-                                        <h6 class="fw-bold text-dark mb-2"><i class="fas fa-key me-2 text-primary"></i>Permissions (features)</h6>
-                                        <p class="text-muted small flex-grow-1">View and maintain permission records (feature access per module).</p>
-                                        <a href="{{ route('permissions.index') }}" class="btn btn-primary mt-2 align-self-start">
-                                            <i class="fas fa-arrow-right me-1"></i>Open permissions
+                                        <a href="{{ route('staff.access', ['tab' => 'permissions']) }}" class="action-btn action-btn-secondary action-btn-compact">
+                                            <i class="fas fa-key" aria-hidden="true"></i> Permissions tab
                                         </a>
                                     </div>
                                 </div>
@@ -341,18 +350,21 @@
                 <!-- Security: user accounts & access administration -->
                 <div class="tab-pane fade" id="security-settings" role="tabpanel" aria-labelledby="security-tab" tabindex="0">
                     <div class="p-4">
-                        <h5 class="mb-2 h6 text-dark fw-bold"><i class="fas fa-shield-alt me-2"></i>Security</h5>
-                        <p class="text-muted mb-4">Manage system logins: create and deactivate accounts, reset passwords, assign roles, and review access. Day-to-day staff directory access is also available under <strong>HR Management → Staff</strong>.</p>
+                        <header class="settings-tab-header">
+                            <h2 class="panel-title settings-tab-header__title"><i class="fas fa-shield-alt" aria-hidden="true"></i> Security</h2>
+                            <p class="settings-tab-lead">Accounts, passwords, activation, and role assignment. Staff directory: <strong>HR Management → Staff</strong>.</p>
+                        </header>
                         <div class="row g-3">
                             <div class="col-md-6 col-lg-5">
-                                <div class="card border h-100">
-                                    <div class="p-4 d-flex flex-column h-100">
-                                        <h6 class="fw-bold text-dark mb-2"><i class="fas fa-user-lock me-2 text-primary"></i>User &amp; account security</h6>
-                                        <p class="text-muted small flex-grow-1">Staff accounts, passwords, activation status, and role assignment for system access.</p>
-                                        <a href="{{ route('users.index') }}" class="btn btn-primary mt-2 align-self-start">
-                                            <i class="fas fa-arrow-right me-1"></i>Open user administration
-                                        </a>
-                                    </div>
+                                <div class="settings-mini-panel h-100">
+                                    <h3 class="settings-mini-panel__title">
+                                        <span class="settings-mini-panel__icon settings-mini-panel__icon--blue" aria-hidden="true"><i class="fas fa-user-lock"></i></span>
+                                        User &amp; account security
+                                    </h3>
+                                    <p class="settings-mini-panel__desc">Staff accounts, passwords, activation status, and role assignment for system access.</p>
+                                    <a href="{{ route('users.index') }}" class="action-btn action-btn-primary action-btn-compact mt-auto align-self-start">
+                                        <i class="fas fa-arrow-right" aria-hidden="true"></i>Open user administration
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -362,132 +374,147 @@
 <!-- Company Information Tab -->
             <div class="tab-pane fade" id="company" role="tabpanel" aria-labelledby="company-tab" tabindex="0">
                 <div class="p-4">
-                        <h5 class="mb-4"><i class="fas fa-building me-2"></i>Company Information</h5>
-                        <form id="companySettingsForm">
-                            @csrf
+                    <header class="settings-tab-header">
+                        <h2 class="panel-title settings-tab-header__title"><i class="fas fa-building" aria-hidden="true"></i> Company</h2>
+                        <p class="settings-tab-lead">Branding and contact details used across the app, emails, and exports.</p>
+                    </header>
+                    <form id="companySettingsForm">
+                        @csrf
+                        <div class="settings-mini-panel mb-4">
+                            <h3 class="settings-section__title mb-3">Contact &amp; profile</h3>
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label class="form-label">Company Name</label>
-                                    <input type="text" class="form-control" id="company_name" name="company_name" placeholder="Enter company name">
+                                    <label class="form-label" for="company_name">Company name</label>
+                                    <input type="text" class="form-control" id="company_name" name="company_name" placeholder="Enter company name" autocomplete="organization">
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Company Email</label>
-                                    <input type="email" class="form-control" id="company_email" name="company_email" placeholder="contact@company.com">
+                                    <label class="form-label" for="company_email">Company email</label>
+                                    <input type="email" class="form-control" id="company_email" name="company_email" placeholder="contact@company.com" autocomplete="email">
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Company Phone</label>
-                                    <input type="text" class="form-control" id="company_phone" name="company_phone" placeholder="+1234567890">
+                                    <label class="form-label" for="company_phone">Company phone</label>
+                                    <input type="text" class="form-control" id="company_phone" name="company_phone" placeholder="+1234567890" autocomplete="tel">
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Company Website</label>
-                                    <input type="url" class="form-control" id="company_website" name="company_website" placeholder="https://www.company.com">
+                                    <label class="form-label" for="company_website">Company website</label>
+                                    <input type="url" class="form-control" id="company_website" name="company_website" placeholder="https://www.company.com" autocomplete="url">
                                 </div>
                                 <div class="col-md-12">
-                                    <label class="form-label">Company Address</label>
-                                    <textarea class="form-control" id="company_address" name="company_address" rows="2" placeholder="Enter company address"></textarea>
+                                    <label class="form-label" for="company_address">Company address</label>
+                                    <textarea class="form-control" id="company_address" name="company_address" rows="2" placeholder="Enter company address" autocomplete="street-address"></textarea>
                                 </div>
+                            </div>
+                        </div>
 
-                                <!-- Logo Upload -->
-                                <div class="col-md-6">
-                                    <label class="form-label">Company Logo</label>
-                                    <div class="d-flex align-items-center gap-3">
+                        <div class="row g-3 mb-2">
+                            <div class="col-md-6">
+                                <div class="settings-mini-panel h-100">
+                                    <label class="form-label" for="logoFile">Company logo</label>
+                                    <div class="d-flex align-items-start flex-wrap gap-3 mt-2">
                                         <div class="flex-shrink-0">
-                                            <img id="logoPreview" src="" alt="Logo" style="max-width: 150px; max-height: 80px; display: none; border: 1px solid #ddd; padding: 5px; border-radius: 4px;">
+                                            <img id="logoPreview" src="" alt="" class="settings-media-preview settings-media-preview--logo d-none">
                                         </div>
-                                        <div class="flex-grow-1">
-                                            <input type="file" class="form-control" id="logoFile" accept="image/*">
-                                            <small class="text-muted">Recommended: 200x80px, PNG/JPG (max 2MB)</small>
+                                        <div class="flex-grow-1 min-w-0">
+                                            <input type="file" class="form-control" id="logoFile" accept="image/*" aria-describedby="logoFile_help">
+                                            <p class="text-muted small mb-0 mt-2" id="logoFile_help">About 200×80px, PNG or JPG, max 2MB.</p>
                                         </div>
                                     </div>
                                     <input type="hidden" id="company_logo" name="company_logo">
                                 </div>
-
-                                <!-- Favicon Upload -->
-                                <div class="col-md-6">
-                                    <label class="form-label">Favicon</label>
-                                    <div class="d-flex align-items-center gap-3">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="settings-mini-panel h-100">
+                                    <label class="form-label" for="faviconFile">Favicon</label>
+                                    <div class="d-flex align-items-start flex-wrap gap-3 mt-2">
                                         <div class="flex-shrink-0">
-                                            <img id="faviconPreview" src="" alt="Favicon" style="max-width: 32px; max-height: 32px; display: none; border: 1px solid #ddd; padding: 2px; border-radius: 4px;">
+                                            <img id="faviconPreview" src="" alt="" class="settings-media-preview settings-media-preview--favicon d-none">
                                         </div>
-                                        <div class="flex-grow-1">
-                                            <input type="file" class="form-control" id="faviconFile" accept="image/*">
-                                            <small class="text-muted">Recommended: 32x32px, ICO/PNG (max 512KB)</small>
+                                        <div class="flex-grow-1 min-w-0">
+                                            <input type="file" class="form-control" id="faviconFile" accept="image/*" aria-describedby="faviconFile_help">
+                                            <p class="text-muted small mb-0 mt-2" id="faviconFile_help">About 32×32px, ICO or PNG, max 512KB.</p>
                                         </div>
                                     </div>
                                     <input type="hidden" id="company_favicon" name="company_favicon">
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="mt-4">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save me-2"></i>Save Company Settings
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                        <div class="mt-4 d-flex flex-wrap gap-2">
+                            <button type="submit" class="action-btn action-btn-primary">
+                                <i class="fas fa-save" aria-hidden="true"></i>Save company settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
 
             <!-- Color: floor plan, booth map, booking statuses (single responsive implementation; breakpoints align with project standard) -->
             <div class="tab-pane fade" id="global-color-settings" role="tabpanel" aria-labelledby="global-color-tab" tabindex="0">
                 <div class="p-4">
-                        <h5 class="mb-2"><i class="fas fa-fill-drip me-2"></i>Color (map &amp; bookings)</h5>
-                        <p class="text-muted mb-4">Public floor plan accent and booked-tick appearance, booth colors on the canvas/public map, and booking record status colors.</p>
+                    <header class="settings-tab-header">
+                        <h2 class="panel-title settings-tab-header__title"><i class="fas fa-fill-drip" aria-hidden="true"></i> Color (map &amp; bookings)</h2>
+                        <p class="settings-tab-lead">Public map accent, booked-tick look, booth status colors on the floor plan, and booking status colors in the bookings module.</p>
+                    </header>
 
-                        <div class="mb-5 pb-4 border-bottom">
-                            <h6 class="mb-3"><i class="fas fa-map me-2 text-primary"></i>Public floor plan &amp; booked tick</h6>
-                            <p class="text-muted small">Applies to the public floor plan view and the booked-booth checkmark on the designer and public view.</p>
+                        <section class="settings-section mb-5 pb-4 settings-section-divider" aria-labelledby="settings-color-floor-plan-heading">
+                            <h3 class="settings-section__title mb-2" id="settings-color-floor-plan-heading"><i class="fas fa-map" aria-hidden="true"></i> Public floor plan &amp; booked tick</h3>
+                            <p class="settings-tab-lead mb-3">Applies to the public floor plan and the booked-booth checkmark in the designer and public view.</p>
                             @include('settings.partials.floor-plan-color-settings-form', [
                                 'formId' => 'floorPlanColorSettingsForm',
                                 'idPrefix' => '',
                             ])
-                        </div>
+                        </section>
 
-                        <div class="mb-5 pb-4 border-bottom color-tab-booth-status">
-                            <h6 class="mb-3"><i class="fas fa-th-large me-2 text-primary"></i>Booth status (floor plan map)</h6>
-                            <p class="text-muted small">Colors and labels for booth states on the canvas and public floor plan. You can scope a status to a specific floor plan or leave it global.</p>
-                            <div class="d-flex flex-wrap gap-2 mb-3">
-                                <button type="button" class="btn btn-primary btn-sm" id="ct_btnAddStatus"><i class="fas fa-plus me-1"></i>Add status</button>
-                                <button type="button" class="btn btn-outline-primary btn-sm" id="ct_btnSaveStatusSettings"><i class="fas fa-save me-1"></i>Save booth statuses</button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" id="ct_btnResetStatusSettings"><i class="fas fa-undo me-1"></i>Reload</button>
-                                <button type="button" class="btn btn-outline-warning btn-sm" id="ct_btnRestoreBoothDefaults"><i class="fas fa-history me-1"></i>Restore defaults</button>
+                        <section class="settings-section mb-5 pb-4 settings-section-divider color-tab-booth-status" aria-labelledby="settings-color-booth-status-heading">
+                            <h3 class="settings-section__title mb-2" id="settings-color-booth-status-heading"><i class="fas fa-th-large" aria-hidden="true"></i> Booth status (floor plan map)</h3>
+                            <p class="settings-tab-lead mb-3">Labels and colors for booth states on the canvas and public map. Scope a row to one floor plan or leave it global.</p>
+                            <div class="settings-toolbar mb-3">
+                                <button type="button" class="action-btn action-btn-primary action-btn-compact" id="ct_btnAddStatus"><i class="fas fa-plus" aria-hidden="true"></i>Add status</button>
+                                <button type="button" class="action-btn action-btn-secondary action-btn-compact" id="ct_btnSaveStatusSettings"><i class="fas fa-save" aria-hidden="true"></i>Save booth statuses</button>
+                                <button type="button" class="action-btn action-btn-secondary action-btn-compact" id="ct_btnResetStatusSettings"><i class="fas fa-undo" aria-hidden="true"></i>Reload</button>
+                                <button type="button" class="action-btn action-btn-warning-outline action-btn-compact" id="ct_btnRestoreBoothDefaults"><i class="fas fa-history" aria-hidden="true"></i>Restore defaults</button>
                             </div>
                             <p class="text-muted small mb-3">Restore defaults replaces all booth statuses with the five factory global statuses (custom and floor-plan-specific rows are removed).</p>
                             <div id="ct_statusSettingsContainer">
-                                <div class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Open this tab to load booth status colors.</div>
+                                <div class="settings-inline-hint text-center py-4"><span class="spinner-border spinner-border-sm me-2 text-primary" role="status" aria-hidden="true"></span><span class="text-muted">Open this tab to load booth status colors.</span></div>
                             </div>
-                        </div>
+                        </section>
 
-                        <div class="color-tab-booking-status">
-                            <h6 class="mb-3"><i class="fas fa-calendar-check me-2 text-primary"></i>Booking status (bookings module)</h6>
-                            <p class="text-muted small">Labels and colors for booking records (lists, cards, detail pages).</p>
-                            <div class="d-flex flex-wrap gap-2 mb-3">
-                                <button type="button" class="btn btn-primary btn-sm" id="bk_btnAddBookingStatus"><i class="fas fa-plus me-1"></i>Add status</button>
-                                <button type="button" class="btn btn-outline-primary btn-sm" id="bk_btnSaveBookingStatuses"><i class="fas fa-save me-1"></i>Save booking statuses</button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" id="bk_btnReloadBookingStatuses"><i class="fas fa-undo me-1"></i>Reload</button>
-                                <button type="button" class="btn btn-outline-warning btn-sm" id="bk_btnRestoreBookingDefaults"><i class="fas fa-history me-1"></i>Restore defaults</button>
+                        <section class="settings-section color-tab-booking-status" aria-labelledby="settings-color-booking-status-heading">
+                            <h3 class="settings-section__title mb-2" id="settings-color-booking-status-heading"><i class="fas fa-calendar-check" aria-hidden="true"></i> Booking status (bookings module)</h3>
+                            <p class="settings-tab-lead mb-3">Labels and colors for booking records in lists, cards, and detail views.</p>
+                            <div class="settings-toolbar mb-3">
+                                <button type="button" class="action-btn action-btn-primary action-btn-compact" id="bk_btnAddBookingStatus"><i class="fas fa-plus" aria-hidden="true"></i>Add status</button>
+                                <button type="button" class="action-btn action-btn-secondary action-btn-compact" id="bk_btnSaveBookingStatuses"><i class="fas fa-save" aria-hidden="true"></i>Save booking statuses</button>
+                                <button type="button" class="action-btn action-btn-secondary action-btn-compact" id="bk_btnReloadBookingStatuses"><i class="fas fa-undo" aria-hidden="true"></i>Reload</button>
+                                <button type="button" class="action-btn action-btn-warning-outline action-btn-compact" id="bk_btnRestoreBookingDefaults"><i class="fas fa-history" aria-hidden="true"></i>Restore defaults</button>
                             </div>
                             <p class="text-muted small mb-3">Restore defaults resets all booking statuses to the six factory defaults (custom rows are removed).</p>
                             <div id="bk_bookingStatusSettingsContainer">
-                                <div class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2" role="status"></span>Open this tab to load booking statuses.</div>
+                                <div class="settings-inline-hint text-center py-4"><span class="spinner-border spinner-border-sm me-2 text-primary" role="status" aria-hidden="true"></span><span class="text-muted">Open this tab to load booking statuses.</span></div>
                             </div>
-                        </div>
+                        </section>
                     </div>
             </div>
 
             <!-- Appearance/Colors Tab -->
             <div class="tab-pane fade" id="appearance" role="tabpanel" aria-labelledby="appearance-tab" tabindex="0">
                 <div class="p-4">
-                        <h5 class="mb-4"><i class="fas fa-palette me-2"></i>System Color Scheme</h5>
-                        <p class="text-muted mb-4">Customize the color scheme for your entire system. Changes will be applied across all pages.</p>
+                    <header class="settings-tab-header">
+                        <h2 class="panel-title settings-tab-header__title"><i class="fas fa-palette" aria-hidden="true"></i> System color scheme</h2>
+                        <p class="settings-tab-lead">Theme colors for the classic layout (sidebar, navbar, status colors). Refresh other tabs after saving to see full effect.</p>
+                    </header>
 
                         <form id="appearanceSettingsForm">
                             @csrf
                             <div class="row g-4">
                                 <!-- Primary Colors -->
                                 <div class="col-md-6">
-                                    <h6 class="mb-3 d-flex flex-wrap align-items-center gap-2">Primary Colors
-                                        <button type="button" class="btn btn-sm btn-outline-secondary appearance-restore-section" data-appearance-section="primary">Restore defaults</button>
-                                    </h6>
+                                    <div class="settings-mini-panel h-100">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                                        <h3 class="settings-section__title mb-0">Primary colors</h3>
+                                        <button type="button" class="action-btn action-btn-secondary action-btn-compact appearance-restore-section" data-appearance-section="primary">Restore defaults</button>
+                                    </div>
                                     <div class="mb-3">
                                         <label class="form-label">Primary Color</label>
                                         <div class="input-group">
@@ -504,13 +531,16 @@
                                         </div>
                                         <small class="text-muted">Secondary brand color</small>
                                     </div>
+                                    </div>
                                 </div>
 
                                 <!-- Status Colors -->
                                 <div class="col-md-6">
-                                    <h6 class="mb-3 d-flex flex-wrap align-items-center gap-2">Status Colors
-                                        <button type="button" class="btn btn-sm btn-outline-secondary appearance-restore-section" data-appearance-section="status">Restore defaults</button>
-                                    </h6>
+                                    <div class="settings-mini-panel h-100">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                                        <h3 class="settings-section__title mb-0">Status colors</h3>
+                                        <button type="button" class="action-btn action-btn-secondary action-btn-compact appearance-restore-section" data-appearance-section="status">Restore defaults</button>
+                                    </div>
                                     <div class="mb-3">
                                         <label class="form-label">Success Color</label>
                                         <div class="input-group">
@@ -539,13 +569,16 @@
                                             <input type="text" class="form-control" id="danger_color_text" value="#e74a3b" readonly>
                                         </div>
                                     </div>
+                                    </div>
                                 </div>
 
                                 <!-- Layout Colors -->
                                 <div class="col-md-12">
-                                    <h6 class="mb-3 d-flex flex-wrap align-items-center gap-2">Layout Colors
-                                        <button type="button" class="btn btn-sm btn-outline-secondary appearance-restore-section" data-appearance-section="layout">Restore defaults</button>
-                                    </h6>
+                                    <div class="settings-mini-panel">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                                        <h3 class="settings-section__title mb-0">Layout colors</h3>
+                                        <button type="button" class="action-btn action-btn-secondary action-btn-compact appearance-restore-section" data-appearance-section="layout">Restore defaults</button>
+                                    </div>
                                     <div class="row">
                                         <div class="col-md-4 mb-3">
                                             <label class="form-label">Sidebar Background</label>
@@ -569,15 +602,16 @@
                                             </div>
                                         </div>
                                     </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="mt-4">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save me-2"></i>Save Appearance Settings
+                            <div class="mt-4 d-flex flex-wrap gap-2">
+                                <button type="submit" class="action-btn action-btn-primary">
+                                    <i class="fas fa-save" aria-hidden="true"></i>Save appearance settings
                                 </button>
-                                <button type="button" class="btn btn-secondary ms-2" id="resetColors">
-                                    <i class="fas fa-undo me-2"></i>Reset all to defaults
+                                <button type="button" class="action-btn action-btn-secondary" id="resetColors">
+                                    <i class="fas fa-undo" aria-hidden="true"></i>Reset all to defaults
                                 </button>
                             </div>
                         </form>
@@ -587,15 +621,16 @@
             <!-- CDN Settings Tab -->
             <div class="tab-pane fade" id="cdn" role="tabpanel" aria-labelledby="cdn-tab" tabindex="0">
                 <div class="p-4">
-                        <h5 class="mb-4"><i class="fas fa-cloud me-2"></i>CDN Settings</h5>
-                        <p class="text-muted mb-4">Choose whether to load CSS and JavaScript libraries from CDN (Content Delivery Network) or from your local server.</p>
+                    <header class="settings-tab-header">
+                        <h2 class="panel-title settings-tab-header__title"><i class="fas fa-cloud" aria-hidden="true"></i> CDN settings</h2>
+                        <p class="settings-tab-lead">Load shared CSS/JS from a CDN or from files on this server (affects Chart.js, Bootstrap vendor bundles, etc., where the layout supports it).</p>
+                    </header>
 
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>CDN vs Local Assets:</strong>
-                            <ul class="mb-0 mt-2">
-                                <li><strong>CDN (ON):</strong> Faster loading from global CDN servers, but requires internet connection</li>
-                                <li><strong>Local (OFF):</strong> Loads from your server, works offline, but may be slower</li>
+                        <div class="settings-callout settings-callout--info mb-4" role="note">
+                            <p class="settings-callout__title mb-2"><i class="fas fa-info-circle me-2" aria-hidden="true"></i>CDN vs local</p>
+                            <ul class="mb-0 ps-3 small">
+                                <li><strong>CDN on:</strong> Often faster globally; needs internet from the browser.</li>
+                                <li><strong>Local:</strong> Served from your host; better for air-gapped or strict networks.</li>
                             </ul>
                         </div>
 
@@ -603,33 +638,31 @@
                             @csrf
                             <div class="row g-3">
                                 <div class="col-md-12">
-                                    <div class="card border">
-                                        <div class="p-4">
-                                            <div class="form-check form-switch">
-                                                <input class="form-check-input" type="checkbox" id="use_cdn" name="use_cdn" style="width: 3rem; height: 1.5rem;">
-                                                <label class="form-check-label ms-3" for="use_cdn">
-                                                    <strong>Use CDN for Assets</strong>
-                                                    <p class="text-muted small mb-0 mt-1">When enabled, CSS and JavaScript libraries will be loaded from CDN instead of local files.</p>
-                                                </label>
+                                    <div class="settings-mini-panel">
+                                        <div class="form-check form-switch d-flex align-items-start gap-3">
+                                            <input class="form-check-input settings-cdn-switch flex-shrink-0" type="checkbox" id="use_cdn" name="use_cdn" aria-describedby="use_cdn_help">
+                                            <div>
+                                                <label class="form-check-label fw-semibold" for="use_cdn">Use CDN for assets</label>
+                                                <p class="text-muted small mb-0 mt-1" id="use_cdn_help">When enabled, CSS and JavaScript libraries load from the CDN instead of local files.</p>
                                             </div>
+                                        </div>
 
-                                            <div id="cdnStatus" class="mt-3 p-3 rounded" style="display: none;">
-                                                <div class="d-flex align-items-center">
-                                                    <i class="fas fa-circle me-2" style="font-size: 0.75rem;"></i>
-                                                    <span id="cdnStatusText"></span>
-                                                </div>
+                                        <div id="cdnStatus" class="settings-cdn-status mt-3 p-3 rounded d-none" role="status" aria-live="polite">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-circle me-2 settings-cdn-status__dot" aria-hidden="true"></i>
+                                                <span id="cdnStatusText"></span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="mt-4">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save me-2"></i>Save CDN Settings
+                            <div class="mt-4 d-flex flex-wrap gap-2">
+                                <button type="submit" class="action-btn action-btn-primary">
+                                    <i class="fas fa-save" aria-hidden="true"></i>Save CDN settings
                                 </button>
-                                <button type="button" class="btn btn-secondary ms-2" id="cdnRefreshPageHintBtn">
-                                    <i class="fas fa-sync-alt me-2"></i>Refresh Page
+                                <button type="button" class="action-btn action-btn-secondary" id="cdnRefreshPageHintBtn">
+                                    <i class="fas fa-sync-alt" aria-hidden="true"></i>Refresh page
                                 </button>
                             </div>
                         </form>
@@ -639,16 +672,17 @@
             <!-- Module Display Customize Tab -->
             <div class="tab-pane fade" id="module-display" role="tabpanel" aria-labelledby="module-display-tab" tabindex="0">
                 <div class="p-4">
-                        <h5 class="mb-4"><i class="fas fa-mobile-alt me-2"></i>Module Display Customize</h5>
-                        <p class="text-muted mb-4">Control which modules and features are visible on Mobile and Tablet devices. This allows you to customize the user experience for different screen sizes.</p>
+                    <header class="settings-tab-header">
+                        <h2 class="panel-title settings-tab-header__title"><i class="fas fa-mobile-alt" aria-hidden="true"></i> Module display</h2>
+                        <p class="settings-tab-lead">Show or hide sidebar modules on smaller viewports. Desktop navigation is unchanged.</p>
+                    </header>
 
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>Device-Specific Display:</strong>
-                            <ul class="mb-0 mt-2">
-                                <li><strong>Mobile (≤768px):</strong> Control visibility on smartphones</li>
-                                <li><strong>Tablet (769px-1024px):</strong> Control visibility on tablets</li>
-                                <li>Desktop views are not affected by these settings</li>
+                        <div class="settings-callout settings-callout--info mb-4" role="note">
+                            <p class="settings-callout__title mb-2"><i class="fas fa-tablet-alt me-2" aria-hidden="true"></i>Device scope</p>
+                            <ul class="mb-0 ps-3 small">
+                                <li><strong>Mobile:</strong> up to 768px wide.</li>
+                                <li><strong>Tablet:</strong> 769px–1024px.</li>
+                                <li><strong>Desktop:</strong> not controlled here.</li>
                             </ul>
                         </div>
 
@@ -662,35 +696,351 @@
 
 
             </div>
-        </div>
     </div>
-</div>
-
 </div>
 
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.7">
 <style>
-    .looker-dashboard { padding: 0 !important; }
-    .glass-card {
-        background: rgba(255, 255, 255, 0.45);
-        backdrop-filter: blur(40px) saturate(180%);
-        -webkit-backdrop-filter: blur(40px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        border-radius: 24px;
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-        margin-bottom: 24px;
-        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        overflow: hidden;
+    /* Settings (/settings): single responsive layout; breakpoints match project standard (576 / 768 / 992 / 1200). */
+    .settings-page.looker-dashboard {
+        padding: clamp(1rem, 2.5vw, 2rem) !important;
+        box-sizing: border-box;
     }
-    .glass-card:hover {
-        transform: translateY(-5px);
-        background: rgba(255, 255, 255, 0.55);
-        box-shadow: 0 15px 45px rgba(31, 38, 135, 0.2);
+    .settings-page .settings-tabs-panel {
+        box-shadow: var(--shadow-md);
     }
-    .kpi-card-looker {
-        margin-bottom: 24px;
+    .settings-page .settings-tabs-panel:hover {
+        transform: none;
+    }
+    .settings-page .settings-divider {
+        border-color: var(--border-light);
+        opacity: 1;
+    }
+    .settings-page .settings-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    .settings-page .action-btn-compact {
+        padding: 0.45rem 0.9rem;
+        font-size: 0.8125rem;
+    }
+    .settings-page .action-btn-destructive {
+        background: #dc3545;
+        color: #fff;
+        box-shadow:
+            0 4px 0 0 rgba(120, 20, 30, 0.35),
+            0 5px 14px rgba(220, 53, 69, 0.28),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+    .settings-page .action-btn-destructive:hover {
+        background: #c82333;
+        color: #fff;
+        transform: translateY(-2px);
+    }
+    .settings-page .action-btn-destructive:active {
+        transform: translateY(3px) scale(0.985);
+    }
+    .settings-page .action-btn-warning-outline {
+        background: linear-gradient(180deg, #fffdf8 0%, #fff6e8 100%);
+        color: var(--accent-orange);
+        border: 1px solid rgba(255, 149, 0, 0.45);
+        box-shadow: 0 2px 0 0 rgba(255, 149, 0, 0.12), 0 3px 10px rgba(255, 149, 0, 0.08);
+    }
+    .settings-page .action-btn-warning-outline:hover {
+        border-color: var(--accent-orange);
+        color: #c65a00;
+        transform: translateY(-1px);
+    }
+    .settings-page .settings-mini-panel {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        min-height: 100%;
+        padding: 1.25rem 1.35rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition-all);
+    }
+    .settings-page .settings-mini-panel:hover {
+        background: var(--bg-card-hover);
+        box-shadow: var(--shadow-md);
+    }
+    .settings-page .settings-mini-panel--danger {
+        border-color: rgba(255, 59, 48, 0.35);
+        background: rgba(255, 59, 48, 0.04);
+    }
+    .settings-page .settings-mini-panel__title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .settings-page .settings-mini-panel__desc {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin: 0;
+        flex: 1 1 auto;
+    }
+    .settings-page .settings-mini-panel__icon {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-pill);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+    .settings-page .settings-mini-panel__icon--blue {
+        background: var(--accent-blue-light);
+        color: var(--accent-blue);
+    }
+    .settings-page .settings-mini-panel__icon--green {
+        background: var(--accent-green-light);
+        color: var(--accent-green);
+    }
+    .settings-page .settings-mini-panel__icon--orange {
+        background: var(--accent-orange-light);
+        color: var(--accent-orange);
+    }
+    .settings-page .settings-mini-panel__icon--purple {
+        background: var(--accent-purple-light);
+        color: var(--accent-purple);
+    }
+    .settings-page .settings-mini-panel__icon--danger {
+        background: rgba(255, 59, 48, 0.15);
+        color: #ff3b30;
+    }
+    .settings-page .status-badge-red {
+        background: rgba(255, 59, 48, 0.15);
+        color: #ff3b30;
+    }
+    .settings-page .settings-tab-header {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px dashed var(--border-light);
+    }
+    .settings-page .settings-tab-header__title {
+        margin-bottom: 0.35rem;
+    }
+    .settings-page .settings-tab-lead {
+        color: var(--text-secondary);
+        font-size: 0.9375rem;
+        line-height: 1.5;
+        max-width: 52rem;
+        margin: 0;
+    }
+    .settings-page .settings-code {
+        font-size: 0.875em;
+        padding: 0.1em 0.35em;
+        border-radius: 6px;
+        background: rgba(0, 0, 0, 0.04);
+        color: var(--text-secondary);
+    }
+    .settings-page .settings-section__title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .settings-page .settings-section__title i {
+        color: var(--accent-blue);
+        font-size: 1rem;
+    }
+    .settings-page .settings-section-divider {
+        border-bottom: 1px solid var(--border-light);
+    }
+    .settings-page .settings-callout {
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-light);
+        padding: 1rem 1.15rem;
+        background: var(--bg-card);
+    }
+    .settings-page .settings-callout--info {
+        border-color: rgba(0, 122, 255, 0.22);
+        background: var(--accent-blue-light);
+    }
+    .settings-page .settings-callout--danger {
+        border-color: rgba(255, 59, 48, 0.35);
+        background: rgba(255, 59, 48, 0.08);
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+    .settings-page .settings-callout__title {
+        font-weight: 700;
+        margin: 0;
+        color: var(--text-primary);
+    }
+    .settings-page .settings-nested-panel {
+        padding: 1rem 1rem 1rem 1.15rem;
+        border-left: 4px solid var(--accent-blue);
+        border-radius: 0 var(--radius-md) var(--radius-md) 0;
+        background: rgba(255, 255, 255, 0.35);
+        border-top: 1px solid var(--border-light);
+        border-right: 1px solid var(--border-light);
+        border-bottom: 1px solid var(--border-light);
+    }
+    .settings-page .settings-input-narrow {
+        max-width: 20rem;
+    }
+    .settings-page .settings-form-switch {
+        width: 3rem;
+        min-width: 3rem;
+        height: 1.5rem;
+        cursor: pointer;
+    }
+    .settings-page .settings-module-switch {
+        width: 2.75rem;
+        min-width: 2.75rem;
+        height: 1.35rem;
+        cursor: pointer;
+    }
+    .settings-page .settings-upload-table-wrap .looker-table th,
+    .settings-page .settings-upload-table-wrap .looker-table td {
+        vertical-align: middle;
+    }
+    .settings-page .settings-upload-col-size {
+        width: 9rem;
+        max-width: 30%;
+    }
+    .settings-page .looker-table.looker-table--compact th,
+    .settings-page .looker-table.looker-table--compact td {
+        padding: 0.65rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    .settings-page .settings-module-card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 1.25rem 1.35rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition-all);
+    }
+    .settings-page .settings-module-card:hover {
+        background: var(--bg-card-hover);
+        box-shadow: var(--shadow-md);
+    }
+    .settings-page .settings-module-card__icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-pill);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        flex-shrink: 0;
+    }
+    .settings-page .settings-module-card__icon--blue {
+        background: var(--accent-blue-light);
+        color: var(--accent-blue);
+    }
+    .settings-page .settings-module-card__icon--purple {
+        background: var(--accent-purple-light);
+        color: var(--accent-purple);
+    }
+    .settings-page .settings-module-card__icon--green {
+        background: var(--accent-green-light);
+        color: var(--accent-green);
+    }
+    .settings-page .settings-module-card__icon--orange {
+        background: var(--accent-orange-light);
+        color: var(--accent-orange);
+    }
+    .settings-page .settings-module-card__name {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    .settings-page .settings-module-card__desc {
+        font-size: 0.8125rem;
+        color: var(--text-secondary);
+        line-height: 1.4;
+    }
+    .settings-page .settings-module-loading__spinner {
+        width: 2.5rem;
+        height: 2.5rem;
+        color: var(--accent-blue);
+    }
+    .settings-page .settings-media-preview {
+        object-fit: contain;
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        background: rgba(255, 255, 255, 0.6);
+    }
+    .settings-page .settings-media-preview--logo {
+        max-width: 150px;
+        max-height: 80px;
+        padding: 6px;
+    }
+    .settings-page .settings-media-preview--favicon {
+        width: 40px;
+        height: 40px;
+        padding: 4px;
+    }
+    .settings-page .settings-inline-hint {
+        border-radius: var(--radius-md);
+        border: 1px dashed var(--border-light);
+        background: rgba(255, 255, 255, 0.25);
+    }
+    .settings-page .settings-sys-table-wrap .looker-table.looker-table--kv tbody th {
+        width: 42%;
+        max-width: 12rem;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-secondary);
+        background: rgba(255, 255, 255, 0.35);
+        border-right: 1px solid var(--border-light);
+        vertical-align: middle;
+    }
+    .settings-page .settings-sys-table-wrap .looker-table.looker-table--kv tbody td {
+        font-size: 0.9375rem;
+        color: var(--text-primary);
+        vertical-align: middle;
+    }
+    .settings-page .settings-cdn-switch {
+        width: 3rem;
+        height: 1.5rem;
+        min-width: 3rem;
+        cursor: pointer;
+    }
+    .settings-page .settings-cdn-status {
+        border: 1px solid var(--border-light);
+    }
+    .settings-page .settings-cdn-status--on {
+        background: var(--accent-blue-light);
+        color: var(--text-primary);
+        border-color: rgba(0, 122, 255, 0.25);
+    }
+    .settings-page .settings-cdn-status--off {
+        background: var(--accent-green-light);
+        color: var(--text-primary);
+        border-color: rgba(52, 199, 89, 0.25);
+    }
+    .settings-page .settings-cdn-status__dot {
+        font-size: 0.65rem;
+    }
+    .settings-page .settings-cdn-status--on .settings-cdn-status__dot--muted {
+        color: var(--accent-blue);
+    }
+    .settings-page .settings-cdn-status--off .settings-cdn-status__dot--local {
+        color: var(--accent-green);
     }
     /* Booth status table — fits tab container: fixed layout + % cols; vertical scroll only */
     .color-tab-booth-status .booth-status-table-shell {
@@ -717,22 +1067,138 @@
     }
     .color-tab-booth-status .khb-booth-status-scroll .looker-table th,
     .color-tab-booth-status .khb-booth-status-scroll .looker-table td {
-        padding: 0.5rem 0.3rem;
+        padding: 0.65rem 0.45rem;
         min-width: 0;
         overflow: hidden;
         vertical-align: middle;
     }
     .color-tab-booth-status .khb-booth-status-scroll .looker-table th {
         white-space: normal;
-        line-height: 1.2;
+        line-height: 1.25;
         hyphens: auto;
         word-break: break-word;
+        font-size: 0.75rem;
+        letter-spacing: 0.04em;
     }
-    .color-tab-booth-status .booth-status-table input.glass-input,
-    .color-tab-booth-status .booth-status-table select.glass-input {
+    /* Booth status row: calmer bands + separator (replaces flat zebra) */
+    .color-tab-booth-status .looker-table tbody tr.khb-booth-status-row td {
+        background: rgba(255, 255, 255, 0.72);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    }
+    .color-tab-booth-status .looker-table tbody tr.khb-booth-status-row:nth-child(even) td {
+        background: rgba(248, 250, 252, 0.88);
+    }
+    .color-tab-booth-status .looker-table tbody tr.khb-booth-status-row:hover td {
+        background: rgba(255, 255, 255, 0.95) !important;
+        border-bottom-color: rgba(0, 122, 255, 0.12);
+    }
+    .color-tab-booth-status .looker-table tbody tr.khb-booth-status-row:last-child td {
+        border-bottom-color: transparent;
+    }
+    /* Fields: dedicated tokens (avoid glass-input / !important from other sheets) */
+    .color-tab-booth-status .booth-status-table .khb-booth-field,
+    .color-tab-booth-status .booth-status-table select.khb-booth-field {
         width: 100%;
         max-width: 100%;
         box-sizing: border-box;
+        display: block;
+        margin: 0;
+        font-family: inherit;
+        color: var(--text-primary);
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        padding: 0.5rem 0.65rem;
+        font-size: 0.875rem;
+        line-height: 1.35;
+        min-height: 44px;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .color-tab-booth-status .booth-status-table select.khb-booth-field {
+        cursor: pointer;
+        padding-right: 2rem;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23666' d='M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.65rem center;
+        background-size: 10px;
+    }
+    .color-tab-booth-status .booth-status-table .khb-booth-field:hover {
+        border-color: rgba(0, 122, 255, 0.25);
+        background: #fff;
+    }
+    .color-tab-booth-status .booth-status-table .khb-booth-field:focus {
+        outline: none;
+        border-color: var(--accent-blue);
+        box-shadow: 0 0 0 3px var(--accent-blue-light);
+        background: #fff;
+    }
+    .color-tab-booth-status .booth-status-table .khb-booth-field::placeholder {
+        color: var(--text-tertiary);
+    }
+    .color-tab-booth-status .booth-status-table .khb-booth-field--num {
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+        padding-left: 0.35rem;
+        padding-right: 0.35rem;
+    }
+    .color-tab-booth-status .booth-status-table .khb-booth-field--hex {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.8125rem;
+        letter-spacing: 0.02em;
+    }
+    .color-tab-booth-status .booth-status-table .khb-booth-swatch {
+        flex-shrink: 0;
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
+        padding: 3px;
+        border: 2px solid rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        cursor: pointer;
+        background-clip: padding-box;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+    .color-tab-booth-status .booth-status-table .khb-booth-swatch:hover {
+        transform: scale(1.04);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5), 0 2px 8px rgba(0, 122, 255, 0.15);
+    }
+    .color-tab-booth-status .booth-status-table .khb-booth-swatch:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px var(--accent-blue-light), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    }
+    .color-tab-booth-status .khb-color-pair {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.4rem;
+        min-width: 0;
+    }
+    .color-tab-booth-status .khb-color-pair--row {
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 0.5rem;
+    }
+    .color-tab-booth-status .khb-color-pair--row .khb-booth-field--hex {
+        flex: 1 1 auto;
+        min-width: 0;
+        min-height: 44px;
+    }
+    @media (max-width: 575.98px) {
+        .color-tab-booth-status .khb-color-pair--row {
+            flex-wrap: wrap;
+        }
+        .color-tab-booth-status .khb-color-pair--row .khb-booth-swatch {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            min-height: 40px;
+        }
     }
     .color-tab-booth-status .khb-booth-status-scroll thead th {
         position: sticky;
@@ -780,74 +1246,48 @@
         outline: 2px solid rgba(13, 110, 253, 0.45);
         outline-offset: 1px;
     }
-    .color-tab-booth-status .glass-input-color {
-        height: 36px;
-        width: 100%;
-        max-width: 40px;
-        min-height: 36px;
-        border: 2px solid rgba(0, 0, 0, 0.08);
-        border-radius: 8px;
-        cursor: pointer;
-        padding: 2px;
-        flex-shrink: 0;
-    }
-    .color-tab-booth-status .khb-color-pair {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.25rem;
-        min-width: 0;
-    }
-    .color-tab-booth-status .khb-color-pair .status-bg-color-text,
-    .color-tab-booth-status .khb-color-pair .status-border-color-text,
-    .color-tab-booth-status .khb-color-pair .status-text-color-text {
-        width: 100%;
-        min-width: 0;
-        font-variant-numeric: tabular-nums;
-        font-size: 0.8125rem;
-    }
     .color-tab-booth-status .khb-status-drag-handle {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-width: 40px;
-        min-height: 40px;
-        margin: -4px 0;
-        color: var(--text-tertiary, #6c757d);
+        min-width: 44px;
+        min-height: 44px;
+        color: var(--text-tertiary);
         cursor: grab;
-        border-radius: 10px;
+        border-radius: 12px;
         flex-shrink: 0;
         touch-action: none;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: rgba(255, 255, 255, 0.85);
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     }
     .color-tab-booth-status .khb-status-drag-handle:hover {
-        background: rgba(0, 0, 0, 0.04);
-        color: var(--text-secondary, #495057);
+        background: #fff;
+        border-color: rgba(0, 122, 255, 0.22);
+        color: var(--accent-blue);
     }
     .color-tab-booth-status .khb-status-drag-handle:active {
         cursor: grabbing;
     }
-    .color-tab-booth-status .khb-bs-order-cell .d-flex {
+    .color-tab-booth-status .khb-bs-order-stack {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
         min-width: 0;
+        flex-wrap: nowrap;
     }
-    .color-tab-booth-status .khb-bs-order-cell .status-sort-order {
+    .color-tab-booth-status .khb-bs-order-stack .status-sort-order {
         flex: 1 1 auto;
         min-width: 0;
         max-width: 100%;
-        min-height: 38px;
-        text-align: center;
     }
-    .color-tab-booth-status .khb-bs-name-cell input,
-    .color-tab-booth-status .khb-bs-desc-cell input {
+    .color-tab-booth-status .khb-bs-name-cell .khb-booth-field,
+    .color-tab-booth-status .khb-bs-desc-cell .khb-booth-field {
         text-overflow: ellipsis;
     }
-    .color-tab-booth-status .khb-bs-floor-cell select,
-    .color-tab-booth-status .khb-bs-select-cell select {
+    .color-tab-booth-status .khb-bs-floor-cell .khb-booth-field,
+    .color-tab-booth-status .khb-bs-select-cell .khb-booth-field {
         min-width: 0;
-    }
-    .color-tab-booth-status .glass-input-sm,
-    .color-tab-booth-status .glass-input.glass-input-sm {
-        min-height: 40px;
-        font-size: 0.9375rem;
     }
     .color-tab-booth-status .khb-bs-check-wrap .form-check-input {
         width: 1.15rem;
@@ -861,18 +1301,16 @@
     .color-tab-booth-status .khb-booth-status-empty-icon {
         width: 2.5rem;
         height: 2.5rem;
+        background: var(--accent-blue-light);
+        color: var(--accent-blue);
     }
     .color-tab-booth-status .looker-table tbody tr.khb-booth-status-row {
         cursor: default;
     }
-    .color-tab-booth-status .looker-table tbody tr.khb-booth-status-row:nth-child(even) td {
-        background-color: rgba(255, 255, 255, 0.12);
-    }
-    .color-tab-booth-status .looker-table tbody tr.khb-booth-status-row:hover td {
-        background-color: rgba(13, 110, 253, 0.06) !important;
-    }
-    .color-tab-booth-status .khb-bs-actions-cell .btn {
+    .color-tab-booth-status .khb-bs-actions-cell .action-btn {
         max-width: 100%;
+        min-width: 2.5rem;
+        justify-content: center;
         padding-left: 0.5rem;
         padding-right: 0.5rem;
     }
@@ -882,11 +1320,124 @@
             padding: 0.35rem 0.2rem;
         }
     }
-    /* Global Settings: single responsive tab bar (scroll on narrow viewports; touch-friendly targets) */
-    .settings-global-tabs-card:hover {
-        transform: none;
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    /* Booking status table (Color tab) — same shell + looker-table treatment as booth statuses */
+    .color-tab-booking-status .khb-booking-status-table-shell {
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.45);
+        background: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 4px 24px rgba(31, 38, 135, 0.08);
+        overflow: hidden;
+        width: 100%;
+        max-width: 100%;
     }
+    .color-tab-booking-status .khb-booking-status-scroll {
+        max-height: min(70vh, 720px);
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        width: 100%;
+    }
+    .color-tab-booking-status .khb-booking-status-scroll .khb-booking-status-table {
+        width: 100%;
+        max-width: 100%;
+        table-layout: fixed;
+        border-collapse: separate;
+    }
+    .color-tab-booking-status .khb-booking-status-scroll .looker-table th,
+    .color-tab-booking-status .khb-booking-status-scroll .looker-table td {
+        padding: 0.5rem 0.35rem;
+        min-width: 0;
+        overflow: hidden;
+        vertical-align: middle;
+    }
+    .color-tab-booking-status .khb-booking-status-scroll .looker-table th {
+        white-space: normal;
+        line-height: 1.2;
+        hyphens: auto;
+        word-break: break-word;
+    }
+    .color-tab-booking-status .khb-booking-status-scroll thead th {
+        position: sticky;
+        top: 0;
+        z-index: 4;
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+        background: rgba(248, 250, 252, 0.92) !important;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+    .color-tab-booking-status .khb-bk-color-pair {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.25rem;
+        min-width: 0;
+    }
+    .color-tab-booking-status .khb-bk-color-swatch {
+        height: 34px;
+        width: 100%;
+        max-width: 42px;
+        min-height: 34px;
+        padding: 2px;
+        border: 2px solid rgba(0, 0, 0, 0.08);
+        border-radius: 8px;
+        cursor: pointer;
+    }
+    .color-tab-booking-status .khb-bk-color-pair .form-control-sm {
+        font-variant-numeric: tabular-nums;
+        font-size: 0.8125rem;
+        min-height: 38px;
+    }
+    .color-tab-booking-status .khb-bk-order .bk-sort-order,
+    .color-tab-booking-status .khb-bk-code .bk-status-code {
+        min-height: 38px;
+        text-align: center;
+    }
+    .color-tab-booking-status .khb-bk-name .bk-name,
+    .color-tab-booking-status .khb-bk-desc .bk-desc {
+        min-height: 38px;
+        text-overflow: ellipsis;
+    }
+    .color-tab-booking-status .khb-bk-badge .bk-badge {
+        min-height: 38px;
+    }
+    .color-tab-booking-status .khb-bk-check .form-check-input {
+        width: 1.15rem;
+        height: 1.15rem;
+        margin-top: 0;
+        cursor: pointer;
+    }
+    .color-tab-booking-status .looker-table tbody tr.khb-booking-status-row {
+        cursor: default;
+    }
+    .color-tab-booking-status .looker-table tbody tr.khb-booking-status-row:nth-child(even) td {
+        background-color: rgba(255, 255, 255, 0.12);
+    }
+    .color-tab-booking-status .looker-table tbody tr.khb-booking-status-row:hover td {
+        background-color: rgba(13, 110, 253, 0.06) !important;
+    }
+    .color-tab-booking-status .khb-bk-actions .action-btn {
+        min-width: 2.5rem;
+        justify-content: center;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    @media (max-width: 575.98px) {
+        .color-tab-booking-status .khb-booking-status-scroll .looker-table th,
+        .color-tab-booking-status .khb-booking-status-scroll .looker-table td {
+            padding: 0.35rem 0.2rem;
+        }
+    }
+    /* Upload + system key-value tables */
+    .settings-page .settings-upload-table-wrap .looker-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: rgba(248, 250, 252, 0.92) !important;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+    }
+    /* Tab bar: horizontal scroll on narrow viewports; touch-friendly targets (≥44px) */
     .settings-tabs-scroll {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
@@ -1103,18 +1654,20 @@
                     $('#company_logo').val(data.company_logo || '');
                     $('#company_favicon').val(data.company_favicon || '');
                     
-                    // Show logo preview if exists (build URL so images load properly)
                     if (data.company_logo) {
                         var base = '{{ rtrim(url("/"), "/") }}';
                         var path = (data.company_logo + '').replace(/^\/+/, '').replace(/\\/g, '/');
-                        $('#logoPreview').attr('src', path ? base + '/' + path : '').show();
+                        $('#logoPreview').attr('src', path ? base + '/' + path : '').removeClass('d-none');
+                    } else {
+                        $('#logoPreview').attr('src', '').addClass('d-none');
                     }
-                    
-                    // Show favicon preview if exists
+
                     if (data.company_favicon) {
-                        var base = '{{ rtrim(url("/"), "/") }}';
-                        var path = (data.company_favicon + '').replace(/^\/+/, '').replace(/\\/g, '/');
-                        $('#faviconPreview').attr('src', path ? base + '/' + path : '').show();
+                        var base2 = '{{ rtrim(url("/"), "/") }}';
+                        var path2 = (data.company_favicon + '').replace(/^\/+/, '').replace(/\\/g, '/');
+                        $('#faviconPreview').attr('src', path2 ? base2 + '/' + path2 : '').removeClass('d-none');
+                    } else {
+                        $('#faviconPreview').attr('src', '').addClass('d-none');
                     }
                 }
             })
@@ -1172,17 +1725,20 @@
     function updateCDNStatus(useCDN) {
         const statusDiv = $('#cdnStatus');
         const statusText = $('#cdnStatusText');
-        
+        const dot = statusDiv.find('.settings-cdn-status__dot');
+
+        statusDiv.removeClass('d-none settings-cdn-status--on settings-cdn-status--off');
+        dot.removeClass('settings-cdn-status__dot--muted settings-cdn-status__dot--local');
+
         if (useCDN) {
-            statusDiv.removeClass('bg-light').addClass('bg-info text-white');
-            statusText.html('<strong>CDN Enabled:</strong> Assets will be loaded from CDN servers');
-            statusDiv.find('i').removeClass('text-success text-danger').addClass('text-white');
+            statusDiv.addClass('settings-cdn-status--on');
+            statusText.html('<strong>CDN enabled:</strong> assets load from CDN servers.');
+            dot.addClass('settings-cdn-status__dot--muted');
         } else {
-            statusDiv.removeClass('bg-info text-white').addClass('bg-light');
-            statusText.html('<strong>Local Assets:</strong> Assets will be loaded from your local server');
-            statusDiv.find('i').removeClass('text-white').addClass('text-success');
+            statusDiv.addClass('settings-cdn-status--off');
+            statusText.html('<strong>Local assets:</strong> libraries load from this server.');
+            dot.addClass('settings-cdn-status__dot--local');
         }
-        statusDiv.show();
     }
 
     // CDN toggle change handler
@@ -1247,7 +1803,7 @@
             success: function(response) {
                 if (response.status === 200) {
                     $('#company_logo').val(response.path);
-                    $('#logoPreview').attr('src', response.url).show();
+                    $('#logoPreview').attr('src', response.url).removeClass('d-none');
                     toastr.success(response.message);
                 }
             },
@@ -1275,7 +1831,7 @@
             success: function(response) {
                 if (response.status === 200) {
                     $('#company_favicon').val(response.path);
-                    $('#faviconPreview').attr('src', response.url).show();
+                    $('#faviconPreview').attr('src', response.url).removeClass('d-none');
                     toastr.success(response.message);
                 }
             },
@@ -1502,59 +2058,54 @@
             })
             .fail(function() {
                 toastr.error('Failed to load module display settings');
-                $('#moduleDisplayContainer').html('<div class="alert alert-danger">Failed to load settings. Please refresh the page.</div>');
+                $('#moduleDisplayContainer').html('<div class="col-12"><div class="settings-callout settings-callout--danger" role="alert">Failed to load settings. Please refresh the page.</div></div>');
             });
     }
 
+    var moduleIconToneClasses = ['settings-module-card__icon--blue', 'settings-module-card__icon--purple', 'settings-module-card__icon--green', 'settings-module-card__icon--orange'];
     function renderModuleDisplaySettings(settings) {
         let html = '';
-        
+        var toneIndex = 0;
+
         Object.keys(moduleConfig).forEach(function(moduleKey) {
             const module = moduleConfig[moduleKey];
             const moduleSettings = settings[moduleKey] || { mobile: true, tablet: true };
-            
+            var toneClass = moduleIconToneClasses[toneIndex % moduleIconToneClasses.length];
+            toneIndex += 1;
+
             html += `
                 <div class="col-md-6 col-lg-4">
-                    <div class="card border h-100">
-                        <div class="p-4">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="flex-shrink-0">
-                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
-                                        <i class="fas ${module.icon} fa-lg"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <h6 class="mb-0">${module.name}</h6>
-                                    <small class="text-muted">${module.description}</small>
+                    <div class="settings-module-card h-100">
+                        <div class="d-flex align-items-start gap-3 mb-3">
+                            <span class="settings-module-card__icon ${toneClass}" aria-hidden="true"><i class="fas ${module.icon}"></i></span>
+                            <div class="min-w-0 flex-grow-1">
+                                <h3 class="settings-module-card__name mb-1">${module.name}</h3>
+                                <p class="settings-module-card__desc mb-0">${module.description}</p>
+                            </div>
+                        </div>
+                        <div class="row g-2 mt-auto">
+                            <div class="col-6">
+                                <div class="form-check form-switch d-flex align-items-center gap-2">
+                                    <input class="form-check-input settings-module-switch module-toggle" type="checkbox"
+                                           id="module_${moduleKey}_mobile"
+                                           data-module="${moduleKey}"
+                                           data-device="mobile"
+                                           ${moduleSettings.mobile ? 'checked' : ''}>
+                                    <label class="form-check-label small mb-0" for="module_${moduleKey}_mobile">
+                                        <i class="fas fa-mobile-alt me-1" aria-hidden="true"></i>Mobile
+                                    </label>
                                 </div>
                             </div>
-                            
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input module-toggle" type="checkbox" 
-                                               id="module_${moduleKey}_mobile" 
-                                               data-module="${moduleKey}" 
-                                               data-device="mobile"
-                                               ${moduleSettings.mobile ? 'checked' : ''}
-                                               style="width: 2.5rem; height: 1.25rem;">
-                                        <label class="form-check-label" for="module_${moduleKey}_mobile">
-                                            <i class="fas fa-mobile-alt me-1"></i> Mobile
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input module-toggle" type="checkbox" 
-                                               id="module_${moduleKey}_tablet" 
-                                               data-module="${moduleKey}" 
-                                               data-device="tablet"
-                                               ${moduleSettings.tablet ? 'checked' : ''}
-                                               style="width: 2.5rem; height: 1.25rem;">
-                                        <label class="form-check-label" for="module_${moduleKey}_tablet">
-                                            <i class="fas fa-tablet-alt me-1"></i> Tablet
-                                        </label>
-                                    </div>
+                            <div class="col-6">
+                                <div class="form-check form-switch d-flex align-items-center gap-2">
+                                    <input class="form-check-input settings-module-switch module-toggle" type="checkbox"
+                                           id="module_${moduleKey}_tablet"
+                                           data-module="${moduleKey}"
+                                           data-device="tablet"
+                                           ${moduleSettings.tablet ? 'checked' : ''}>
+                                    <label class="form-check-label small mb-0" for="module_${moduleKey}_tablet">
+                                        <i class="fas fa-tablet-alt me-1" aria-hidden="true"></i>Tablet
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -1562,7 +2113,7 @@
                 </div>
             `;
         });
-        
+
         $('#moduleDisplayContainer').html(html);
     }
 

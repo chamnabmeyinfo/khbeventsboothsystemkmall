@@ -111,7 +111,7 @@
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save mr-1"></i>Create Role
                 </button>
-                <a href="{{ route('roles.index') }}" class="btn btn-default">Cancel</a>
+                <a href="{{ route('staff.access', ['tab' => 'roles']) }}" class="btn btn-default">Cancel</a>
             </div>
         </form>
     </div>

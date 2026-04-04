@@ -1,0 +1,59 @@
+/**
+ * Staff access hub (/staff/access) — Roles & Permissions tabs.
+ * Single responsive sheet; uses dashboard-looker + roles-page + permissions-page tokens.
+ */
+body.staff-access-page .staff-access-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    border-bottom: 1px solid var(--border-light);
+    padding: 0;
+    margin-bottom: 1.25rem;
+}
+
+body.staff-access-page .staff-access-nav .nav-item {
+    margin-bottom: -1px;
+}
+
+body.staff-access-page .staff-access-nav .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.65rem 1.15rem;
+    min-height: 44px;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+    background: transparent;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+body.staff-access-page .staff-access-nav .nav-link:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.45);
+    border-color: var(--border-light);
+}
+
+body.staff-access-page .staff-access-nav .nav-link.active {
+    color: var(--accent-blue);
+    background: var(--bg-card);
+    border-color: var(--border-light);
+    border-bottom-color: var(--bg-card);
+    font-weight: 700;
+    box-shadow: var(--shadow-sm);
+}
+
+body.staff-access-page .staff-access-tab-toolbar {
+    padding: 0.35rem 0;
+}
+
+body.staff-access-page .tab-content.staff-access-tab-content {
+    border: none;
+    padding: 0;
+}
+
+body.staff-access-page .tab-content.staff-access-tab-content > .tab-pane {
+    outline: none;
+}

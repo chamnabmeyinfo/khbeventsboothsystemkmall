@@ -172,6 +172,14 @@
         width: 100%;
         flex-wrap: wrap;
     }
+
+    /* Touch targets: primary HR header actions (project standard ≥ 44px) */
+    .hr-dashboard-page .looker-actions > .action-btn:not(.action-btn-icon),
+    .hr-index-page .looker-actions > .action-btn:not(.action-btn-icon) {
+        min-height: 44px;
+        padding-top: 0.65rem;
+        padding-bottom: 0.65rem;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

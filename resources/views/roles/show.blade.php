@@ -10,7 +10,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}"><i class="fas fa-home"></i> Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('roles.index') }}">Roles</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('staff.access', ['tab' => 'roles']) }}">Roles</a></li>
             <li class="breadcrumb-item active">{{ $role->name }}</li>
         </ol>
     </nav>

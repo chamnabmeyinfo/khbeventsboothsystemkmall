@@ -4,7 +4,8 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.7">
-<link rel="stylesheet" href="{{ asset('css/hr-looker.css') }}?v=1">
+<link rel="stylesheet" href="{{ asset('css/hr-looker.css') }}?v=2">
+@include('hr._mobile-styles')
 @endpush
 
 @push('body-class', 'ios-dashboard-mode')

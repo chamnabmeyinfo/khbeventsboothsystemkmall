@@ -104,7 +104,7 @@
                 </a>
                 <ul class="sidebar-sub-nav collapse {{ request()->routeIs('hr.*') ? 'show' : '' }}" id="hrSubmenu" role="list">
                     <li>
-                        <a href="{{ route('hr.dashboard') }}" class="sidebar-sub-link {{ request()->routeIs('hr.dashboard') ? 'active' : '' }}" title="HR Dashboard">
+                        <a href="{{ route('hr.root') }}" class="sidebar-sub-link {{ request()->routeIs('hr.dashboard', 'hr.root') ? 'active' : '' }}" title="HR Dashboard">
                             <span class="sidebar-sub-bullet" aria-hidden="true"></span><span>HR Dashboard</span>
                         </a>
                     </li>

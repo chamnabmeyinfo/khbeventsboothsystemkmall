@@ -1,0 +1,127 @@
+/**
+ * Roles module (/roles) — single responsive sheet (Bootstrap 5 breakpoints).
+ * Visual system: dashboard-looker.css tokens on body.ios-dashboard-mode.
+ */
+body.roles-page .looker-dashboard {
+    padding: 0 1rem 2rem;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+    body.roles-page .looker-dashboard {
+        padding: 0 1.25rem 2.5rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    body.roles-page .looker-dashboard {
+        padding: 0 1.5rem 3rem;
+    }
+}
+
+body.roles-page .roles-view-toggle {
+    display: inline-flex;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+}
+
+body.roles-page .roles-view-toggle .btn {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0;
+    border: none;
+    line-height: 1;
+    min-width: 44px;
+    min-height: 44px;
+    background: rgba(255, 255, 255, 0.5);
+    color: var(--text-secondary);
+}
+
+body.roles-page .roles-view-toggle .btn:hover {
+    background: rgba(255, 255, 255, 0.85);
+    color: var(--text-primary);
+}
+
+body.roles-page .roles-view-toggle .btn.active {
+    background: var(--accent-blue);
+    color: #fff;
+}
+
+body.roles-page .roles-view-toggle .btn + .btn {
+    border-left: 1px solid var(--border-light);
+}
+
+body.roles-page .roles-entity-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    transition: var(--transition-all);
+    overflow: hidden;
+    height: 100%;
+}
+
+body.roles-page .roles-entity-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+    background: var(--bg-card-hover);
+}
+
+body.roles-page .roles-entity-card .roles-entity-head {
+    padding: 1.25rem 1.35rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+body.roles-page .roles-entity-card .roles-entity-body {
+    padding: 1.25rem 1.35rem;
+}
+
+body.roles-page .roles-entity-card .roles-entity-foot {
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.35);
+    border-top: 1px solid var(--border-light);
+}
+
+body.roles-page .roles-entity-card .roles-entity-foot .btn {
+    border-radius: var(--radius-md);
+}
+
+body.roles-page .roles-table-scroll {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+body.roles-page .roles-modal-content {
+    border: none;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+}
+
+body.roles-page .roles-modal-header {
+    background: linear-gradient(
+        135deg,
+        var(--accent-blue) 0%,
+        var(--accent-purple) 100%
+    );
+    color: #fff;
+    border-bottom: none;
+    padding: 1.25rem 1.5rem;
+}
+
+body.roles-page .roles-modal-header .modal-title {
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+body.roles-page .roles-modal-header .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.9;
+}

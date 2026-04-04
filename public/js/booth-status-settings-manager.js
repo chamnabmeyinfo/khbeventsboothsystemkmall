@@ -21,41 +21,41 @@
         var html = '<tr id="' + rowId + '" class="table-row-no-press khb-booth-status-row" data-status-id="' + (status.id || '') + '" data-status-code="' + status.status_code + '">';
 
         html += '<td class="khb-bs-order-cell">';
-        html += '<div class="d-flex align-items-center gap-2 flex-nowrap">';
+        html += '<div class="khb-bs-order-stack">';
         html += '<span class="khb-status-drag-handle" role="button" tabindex="0" aria-label="Drag to reorder row"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>';
-        html += '<input type="number" class="glass-input glass-input-sm status-sort-order" value="' + (status.sort_order || 0) + '" min="0" inputmode="numeric" aria-label="Sort order">';
+        html += '<input type="number" class="khb-booth-field khb-booth-field--num status-sort-order" value="' + (status.sort_order || 0) + '" min="0" inputmode="numeric" aria-label="Sort order">';
         html += '</div></td>';
-        html += '<td><input type="number" class="glass-input glass-input-sm status-code" value="' + status.status_code + '" min="1" required inputmode="numeric" aria-label="Status code"></td>';
-        html += '<td class="khb-bs-name-cell"><input type="text" class="glass-input glass-input-sm status-name" value="' + escapeHtml(status.status_name || '') + '" required maxlength="100" autocomplete="off"></td>';
+        html += '<td class="khb-bs-code-cell"><input type="number" class="khb-booth-field khb-booth-field--num status-code" value="' + status.status_code + '" min="1" required inputmode="numeric" aria-label="Status code"></td>';
+        html += '<td class="khb-bs-name-cell"><input type="text" class="khb-booth-field status-name" value="' + escapeHtml(status.status_name || '') + '" required maxlength="100" autocomplete="off" placeholder="Label"></td>';
 
-        html += '<td><div class="khb-color-pair"><input type="color" class="glass-input glass-input-color status-bg-color" value="' + (status.status_color || '#28a745') + '" title="Background color" aria-label="Background color">';
-        html += '<input type="text" class="glass-input glass-input-sm status-bg-color-text" value="' + (status.status_color || '#28a745') + '" maxlength="7" inputmode="text" aria-label="Background hex"></div></td>';
-        html += '<td><div class="khb-color-pair"><input type="color" class="glass-input glass-input-color status-border-color" value="' + (status.border_color || status.status_color || '#28a745') + '" title="Border color" aria-label="Border color">';
-        html += '<input type="text" class="glass-input glass-input-sm status-border-color-text" value="' + (status.border_color || status.status_color || '#28a745') + '" maxlength="7" aria-label="Border hex"></div></td>';
-        html += '<td><input type="number" class="glass-input glass-input-sm status-border-width" value="' + (status.border_width || 2) + '" min="0" max="10" inputmode="numeric" title="Border width (0-10px)" aria-label="Border width"></td>';
+        html += '<td class="khb-bs-color-cell"><div class="khb-color-pair khb-color-pair--row"><input type="color" class="khb-booth-swatch status-bg-color" value="' + (status.status_color || '#28a745') + '" title="Background color" aria-label="Background color">';
+        html += '<input type="text" class="khb-booth-field khb-booth-field--hex status-bg-color-text" value="' + (status.status_color || '#28a745') + '" maxlength="7" inputmode="text" aria-label="Background hex" spellcheck="false"></div></td>';
+        html += '<td class="khb-bs-color-cell"><div class="khb-color-pair khb-color-pair--row"><input type="color" class="khb-booth-swatch status-border-color" value="' + (status.border_color || status.status_color || '#28a745') + '" title="Border color" aria-label="Border color">';
+        html += '<input type="text" class="khb-booth-field khb-booth-field--hex status-border-color-text" value="' + (status.border_color || status.status_color || '#28a745') + '" maxlength="7" aria-label="Border hex" spellcheck="false"></div></td>';
+        html += '<td class="khb-bs-num-cell"><input type="number" class="khb-booth-field khb-booth-field--num status-border-width" value="' + (status.border_width || 2) + '" min="0" max="10" inputmode="numeric" title="Border width (px)" aria-label="Border width"></td>';
 
-        html += '<td class="khb-bs-select-cell"><select class="glass-input glass-input-sm status-border-style" aria-label="Border style">';
+        html += '<td class="khb-bs-select-cell"><select class="khb-booth-field khb-booth-field--select status-border-style" aria-label="Border style">';
         var borderStyles = ['solid', 'dashed', 'dotted', 'double', 'groove', 'ridge', 'inset', 'outset', 'none'];
         borderStyles.forEach(function (style) {
             html += '<option value="' + style + '"' + ((status.border_style || 'solid') === style ? ' selected' : '') + '>' + style.charAt(0).toUpperCase() + style.slice(1) + '</option>';
         });
         html += '</select></td>';
 
-        html += '<td><input type="number" class="glass-input glass-input-sm status-border-radius" value="' + (status.border_radius || 4) + '" min="0" max="50" inputmode="numeric" title="Border radius (0-50px)" aria-label="Border radius"></td>';
+        html += '<td class="khb-bs-num-cell"><input type="number" class="khb-booth-field khb-booth-field--num status-border-radius" value="' + (status.border_radius || 4) + '" min="0" max="50" inputmode="numeric" title="Corner radius (px)" aria-label="Border radius"></td>';
 
-        html += '<td><div class="khb-color-pair"><input type="color" class="glass-input glass-input-color status-text-color" value="' + (status.text_color || '#ffffff') + '" title="Text color" aria-label="Text color">';
-        html += '<input type="text" class="glass-input glass-input-sm status-text-color-text" value="' + (status.text_color || '#ffffff') + '" maxlength="7" aria-label="Text hex"></div></td>';
+        html += '<td class="khb-bs-color-cell"><div class="khb-color-pair khb-color-pair--row"><input type="color" class="khb-booth-swatch status-text-color" value="' + (status.text_color || '#ffffff') + '" title="Text color" aria-label="Text color">';
+        html += '<input type="text" class="khb-booth-field khb-booth-field--hex status-text-color-text" value="' + (status.text_color || '#ffffff') + '" maxlength="7" aria-label="Text hex" spellcheck="false"></div></td>';
 
-        html += '<td class="khb-bs-select-cell"><select class="glass-input glass-input-sm status-badge-color" aria-label="Badge color">';
+        html += '<td class="khb-bs-select-cell"><select class="khb-booth-field khb-booth-field--select status-badge-color" aria-label="Badge color">';
         var badgeColors = ['success', 'info', 'warning', 'danger', 'primary', 'secondary', 'dark', 'light'];
         badgeColors.forEach(function (color) {
             html += '<option value="' + color + '"' + (status.badge_color === color ? ' selected' : '') + '>' + color.charAt(0).toUpperCase() + color.slice(1) + '</option>';
         });
         html += '</select></td>';
 
-        html += '<td class="khb-bs-desc-cell"><input type="text" class="glass-input glass-input-sm status-description" value="' + escapeHtml(status.description || '') + '" placeholder="Optional description" autocomplete="off"></td>';
+        html += '<td class="khb-bs-desc-cell"><input type="text" class="khb-booth-field status-description" value="' + escapeHtml(status.description || '') + '" placeholder="Notes (optional)" autocomplete="off"></td>';
 
-        html += '<td class="khb-bs-floor-cell"><select class="glass-input glass-input-sm status-floor-plan" aria-label="Floor plan scope">';
+        html += '<td class="khb-bs-floor-cell"><select class="khb-booth-field khb-booth-field--select status-floor-plan" aria-label="Floor plan scope">';
         html += '<option value="">Global (all floor plans)</option>';
         (floorPlans || []).forEach(function (fp) {
             var sel = parseInt(status.floor_plan_id, 10) === parseInt(fp.id, 10) ? ' selected' : '';
@@ -65,7 +65,7 @@
 
         html += '<td class="text-center khb-bs-check-cell"><div class="form-check d-flex justify-content-center mb-0 mx-auto khb-bs-check-wrap"><input type="checkbox" class="form-check-input status-is-default" ' + (status.is_default ? 'checked' : '') + ' aria-label="Default status"></div></td>';
         html += '<td class="text-center khb-bs-check-cell"><div class="form-check d-flex justify-content-center mb-0 mx-auto khb-bs-check-wrap"><input type="checkbox" class="form-check-input status-is-active" ' + (status.is_active !== false ? 'checked' : '') + ' aria-label="Active"></div></td>';
-        html += '<td class="text-center khb-bs-actions-cell"><button type="button" class="btn btn-sm btn-outline-danger rounded-pill btn-delete-status px-3" title="Remove this status"><i class="fas fa-trash-alt" aria-hidden="true"></i><span class="visually-hidden">Delete</span></button></td>';
+        html += '<td class="text-center khb-bs-actions-cell"><button type="button" class="action-btn action-btn-destructive action-btn-compact btn-delete-status" title="Remove this status"><i class="fas fa-trash-alt" aria-hidden="true"></i><span class="visually-hidden">Delete</span></button></td>';
         html += '</tr>';
         return html;
     }
@@ -450,9 +450,9 @@
         var $container = $('#' + p + 'statusSettingsContainer');
         if (!statuses || statuses.length === 0) {
             $container.html(
-                '<div class="alert alert-light border rounded-3 shadow-sm mb-0 d-flex align-items-start gap-3 khb-booth-status-empty">' +
-                    '<span class="rounded-circle bg-primary bg-opacity-10 text-primary d-inline-flex align-items-center justify-content-center flex-shrink-0 khb-booth-status-empty-icon" aria-hidden="true"><i class="fas fa-th-large"></i></span>' +
-                    '<div><strong class="d-block mb-1">No booth statuses yet</strong><span class="text-muted small">Add a row with <strong>Add status</strong>, then save. You can drag rows by the grip to reorder.</span></div>' +
+                '<div class="settings-callout settings-callout--info mb-0 d-flex align-items-start gap-3 khb-booth-status-empty" role="status">' +
+                    '<span class="rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0 khb-booth-status-empty-icon" aria-hidden="true"><i class="fas fa-th-large"></i></span>' +
+                    '<div><p class="settings-callout__title mb-1">No booth statuses yet</p><p class="small text-muted mb-0">Use <strong>Add status</strong>, edit the row, then <strong>Save booth statuses</strong>. Drag the grip to reorder.</p></div>' +
                 '</div>'
             );
             return;
@@ -569,7 +569,9 @@
                 }
             })
             .fail(function () {
-                $('#' + p + 'statusSettingsContainer').html('<div class="alert alert-danger">Failed to load status settings</div>');
+                $('#' + p + 'statusSettingsContainer').html(
+                    '<div class="settings-callout settings-callout--danger" role="alert">Failed to load booth status settings. Please refresh the page.</div>'
+                );
             });
     }
 

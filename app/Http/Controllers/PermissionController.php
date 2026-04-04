@@ -12,41 +12,10 @@ class PermissionController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Permission::query();
-
-        // Filter by module
-        if ($request->filled('module')) {
-            $query->where('module', $request->module);
-        }
-
-        // Filter by status
-        if ($request->filled('status')) {
-            $query->where('is_active', $request->status == 'active' ? 1 : 0);
-        }
-
-        // Search
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('slug', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
-            });
-        }
-
-        $permissions = $query->orderBy('module')->orderBy('sort_order')->get()->groupBy('module');
-
-        // Statistics
-        $stats = [
-            'total_permissions' => Permission::count(),
-            'active_permissions' => Permission::where('is_active', true)->count(),
-            'modules_count' => Permission::distinct()->count('module'),
-        ];
-
-        // Get unique modules
-        $modules = Permission::distinct()->pluck('module')->filter()->sort()->values();
-
-        return view('permissions.index', compact('permissions', 'stats', 'modules'));
+        return redirect()->route('staff.access', array_merge(
+            $request->query(),
+            ['tab' => 'permissions']
+        ));
     }
 
     /**
@@ -82,7 +51,7 @@ class PermissionController extends Controller
             'sort_order' => $validated['sort_order'] ?? 0,
         ]);
 
-        return redirect()->route('permissions.index')
+        return redirect()->route('staff.access', ['tab' => 'permissions'])
             ->with('success', 'Permission created successfully.');
     }
 
@@ -129,24 +98,36 @@ class PermissionController extends Controller
             'sort_order' => $validated['sort_order'] ?? $permission->sort_order,
         ]);
 
-        return redirect()->route('permissions.index')
+        return redirect()->route('staff.access', ['tab' => 'permissions'])
             ->with('success', 'Permission updated successfully.');
     }
 
     /**
      * Remove the specified permission
      */
-    public function destroy(Permission $permission)
+    public function destroy(Request $request, Permission $permission)
     {
         // Check if permission is assigned to any roles
         if ($permission->roles()->count() > 0) {
-            return redirect()->route('permissions.index')
-                ->with('error', 'Cannot delete permission. It is assigned to one or more roles.');
+            $message = 'Cannot delete permission. It is assigned to one or more roles.';
+            if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'error' => $message], 422);
+            }
+
+            return redirect()->route('staff.access', ['tab' => 'permissions'])
+                ->with('error', $message);
         }
 
         $permission->delete();
 
-        return redirect()->route('permissions.index')
+        if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Permission deleted successfully.',
+            ]);
+        }
+
+        return redirect()->route('staff.access', ['tab' => 'permissions'])
             ->with('success', 'Permission deleted successfully.');
     }
 }

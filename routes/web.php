@@ -280,6 +280,10 @@ Route::middleware(['auth'])->group(function () {
 
     // HR Routes
     Route::prefix('hr')->name('hr.')->group(function () {
+        Route::get('/', function () {
+            return redirect()->route('hr.dashboard');
+        })->middleware('permission:hr.dashboard.view')->name('root');
+
         // HR Dashboard
         Route::get('/dashboard', [\App\Http\Controllers\HR\HRDashboardController::class, 'index'])->name('dashboard')->middleware('permission:hr.dashboard.view');
 
@@ -353,7 +357,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Admin Routes
     Route::middleware(['admin'])->group(function () {
-        // Staff Management
+        // Staff Management — roles & permissions hub (tabbed)
+        Route::get('staff/access', [\App\Http\Controllers\StaffAccessController::class, 'index'])->name('staff.access');
         Route::resource('roles', \App\Http\Controllers\RoleController::class);
         Route::resource('permissions', \App\Http\Controllers\PermissionController::class);
 

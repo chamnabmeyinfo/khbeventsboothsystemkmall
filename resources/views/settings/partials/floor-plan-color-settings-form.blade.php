@@ -11,27 +11,27 @@
     <input type="hidden" name="floor_plan_color_scope" value="1">
     <div class="mb-3">
         <label class="form-label" for="{{ $p }}public_view_button_color">Public view button color</label>
-        <div class="input-group" style="max-width: 320px;">
+        <div class="input-group settings-input-narrow">
             <input type="color" class="form-control form-control-color" name="public_view_button_color" id="{{ $p }}public_view_button_color" value="{{ old('public_view_button_color', $publicViewButtonColor ?? '#28a745') }}" title="Primary button color">
             <input type="text" class="form-control" value="{{ old('public_view_button_color', $publicViewButtonColor ?? '#28a745') }}" id="{{ $p }}public_view_button_color_hex" maxlength="7" pattern="#[0-9A-Fa-f]{6}" placeholder="#28a745" aria-label="Button color hex" autocomplete="off">
         </div>
         <small class="text-muted d-block mt-1">Accent for primary actions on the public floor plan (Book this booth, toolbar controls, booking modal, help headings). Booth status colors on the map are configured below.</small>
     </div>
-    <div class="mb-3">
+    <div class="settings-mini-panel mb-3">
         <input type="hidden" name="booth_booked_show_tick" value="0">
-        <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" name="booth_booked_show_tick" id="{{ $p }}booth_booked_show_tick" value="1" {{ ($showBookedTick ?? true) ? 'checked' : '' }}>
-            <label class="form-check-label" for="{{ $p }}booth_booked_show_tick">
-                <strong>Show tick sign on booked booths (canvas and public view)</strong>
-            </label>
+        <div class="form-check form-switch d-flex align-items-start gap-3">
+            <input class="form-check-input settings-form-switch flex-shrink-0" type="checkbox" name="booth_booked_show_tick" id="{{ $p }}booth_booked_show_tick" value="1" {{ ($showBookedTick ?? true) ? 'checked' : '' }}>
+            <div>
+                <label class="form-check-label fw-semibold" for="{{ $p }}booth_booked_show_tick">Show tick on booked booths (canvas &amp; public)</label>
+                <p class="text-muted small mb-0 mt-1">Shows a check (✓) on booked booths in the designer and on the public floor plan.</p>
+            </div>
         </div>
-        <small class="text-muted d-block mt-1">When enabled, a check (✓) appears on booked booths on the canvas designer and on the public floor plan view.</small>
     </div>
-    <div class="mb-3 ps-3 border-start border-2 border-secondary">
-        <h6 class="mb-2">Booked tick appearance</h6>
+    <div class="settings-nested-panel mb-3">
+        <h3 class="settings-section__title mb-3">Booked tick appearance</h3>
         <div class="mb-3">
             <label class="form-label" for="{{ $p }}tick_floor_plan_id">Apply to floor plan</label>
-            <select class="form-select" name="tick_floor_plan_id" id="{{ $p }}tick_floor_plan_id" style="max-width: 320px;">
+            <select class="form-select settings-input-narrow" name="tick_floor_plan_id" id="{{ $p }}tick_floor_plan_id">
                 <option value="">Default (all floor plans)</option>
                 @foreach($floorPlans ?? [] as $fp)
                     <option value="{{ $fp->id }}" {{ (isset($tickFloorPlanId) && (string)$tickFloorPlanId === (string)$fp->id) ? 'selected' : '' }}>{{ $fp->name }}{{ $fp->is_default ? ' (default)' : '' }}</option>
@@ -137,12 +137,12 @@
         </div>
         <small class="text-muted d-block mt-1">Customize how the booked tick looks on canvas and public view. Colors must be hex (e.g. #ec4899). Booths linked to a booking use colors from <strong>Settings → Booking statuses</strong> (bookings module).</small>
     </div>
-    <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
-        <button type="submit" class="btn btn-primary">
-            <i class="fas fa-save me-1"></i>Save floor plan colors &amp; tick
+    <div class="settings-toolbar mt-3">
+        <button type="submit" class="action-btn action-btn-primary">
+            <i class="fas fa-save" aria-hidden="true"></i>Save floor plan colors &amp; tick
         </button>
-        <button type="button" class="btn btn-outline-warning" id="{{ $p }}btnRestoreFloorPlanColorDefaults">
-            <i class="fas fa-undo me-1"></i>Restore defaults
+        <button type="button" class="action-btn action-btn-warning-outline action-btn-compact" id="{{ $p }}btnRestoreFloorPlanColorDefaults">
+            <i class="fas fa-undo" aria-hidden="true"></i>Restore defaults
         </button>
     </div>
     <p class="text-muted small mt-2 mb-0">Restore applies to the <strong>public button color</strong> and <strong>booked tick</strong> for the floor plan selected above (or global default).</p>

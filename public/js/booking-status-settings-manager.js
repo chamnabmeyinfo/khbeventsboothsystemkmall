@@ -17,22 +17,22 @@
 
     function renderRow(status, index, idPrefix) {
         var rowId = 'bk-status-row-' + (status.id || 'new-' + index);
-        var html = '<tr id="' + rowId + '" data-status-id="' + (status.id || '') + '" data-status-code="' + status.status_code + '">';
-        html += '<td><input type="number" class="form-control form-control-sm bk-sort-order" value="' + (status.sort_order || 0) + '" min="0" style="width: 64px;"></td>';
-        html += '<td><input type="number" class="form-control form-control-sm bk-status-code" value="' + status.status_code + '" min="1" required style="width: 72px;"></td>';
-        html += '<td><input type="text" class="form-control form-control-sm bk-name" value="' + escapeHtml(status.status_name || '') + '" required maxlength="100"></td>';
-        html += '<td><div class="input-group input-group-sm"><input type="color" class="form-control form-control-color bk-bg" value="' + (status.status_color || '#6c757d') + '"><input type="text" class="form-control bk-bg-text" value="' + (status.status_color || '#6c757d') + '" maxlength="7" style="max-width: 88px;"></div></td>';
-        html += '<td><div class="input-group input-group-sm"><input type="color" class="form-control form-control-color bk-border" value="' + (status.border_color || status.status_color || '#6c757d') + '"><input type="text" class="form-control bk-border-text" value="' + (status.border_color || status.status_color || '#6c757d') + '" maxlength="7" style="max-width: 88px;"></div></td>';
-        html += '<td><div class="input-group input-group-sm"><input type="color" class="form-control form-control-color bk-text" value="' + (status.text_color || '#ffffff') + '"><input type="text" class="form-control bk-text-hex" value="' + (status.text_color || '#ffffff') + '" maxlength="7" style="max-width: 88px;"></div></td>';
-        html += '<td><select class="form-select form-select-sm bk-badge">';
+        var html = '<tr id="' + rowId + '" class="table-row-no-press khb-booking-status-row" data-status-id="' + (status.id || '') + '" data-status-code="' + status.status_code + '">';
+        html += '<td class="khb-bk-order"><input type="number" class="form-control form-control-sm bk-sort-order" value="' + (status.sort_order || 0) + '" min="0" aria-label="Sort order"></td>';
+        html += '<td class="khb-bk-code"><input type="number" class="form-control form-control-sm bk-status-code" value="' + status.status_code + '" min="1" required aria-label="Status code"></td>';
+        html += '<td class="khb-bk-name"><input type="text" class="form-control form-control-sm bk-name" value="' + escapeHtml(status.status_name || '') + '" required maxlength="100" autocomplete="off"></td>';
+        html += '<td class="khb-bk-color"><div class="khb-bk-color-pair"><input type="color" class="form-control form-control-color khb-bk-color-swatch bk-bg" value="' + (status.status_color || '#6c757d') + '" title="Background" aria-label="Background color"><input type="text" class="form-control form-control-sm bk-bg-text" value="' + (status.status_color || '#6c757d') + '" maxlength="7" inputmode="text" aria-label="Background hex"></div></td>';
+        html += '<td class="khb-bk-color"><div class="khb-bk-color-pair"><input type="color" class="form-control form-control-color khb-bk-color-swatch bk-border" value="' + (status.border_color || status.status_color || '#6c757d') + '" title="Border" aria-label="Border color"><input type="text" class="form-control form-control-sm bk-border-text" value="' + (status.border_color || status.status_color || '#6c757d') + '" maxlength="7" inputmode="text" aria-label="Border hex"></div></td>';
+        html += '<td class="khb-bk-color"><div class="khb-bk-color-pair"><input type="color" class="form-control form-control-color khb-bk-color-swatch bk-text" value="' + (status.text_color || '#ffffff') + '" title="Text" aria-label="Text color"><input type="text" class="form-control form-control-sm bk-text-hex" value="' + (status.text_color || '#ffffff') + '" maxlength="7" inputmode="text" aria-label="Text hex"></div></td>';
+        html += '<td class="khb-bk-badge"><select class="form-select form-select-sm bk-badge" aria-label="Badge style">';
         ['secondary', 'success', 'info', 'warning', 'danger', 'primary', 'dark', 'light'].forEach(function (c) {
             html += '<option value="' + c + '"' + (status.badge_color === c ? ' selected' : '') + '>' + c + '</option>';
         });
         html += '</select></td>';
-        html += '<td><input type="text" class="form-control form-control-sm bk-desc" value="' + escapeHtml(status.description || '') + '" placeholder="Description"></td>';
-        html += '<td class="text-center"><input type="checkbox" class="form-check-input bk-default" ' + (status.is_default ? 'checked' : '') + '></td>';
-        html += '<td class="text-center"><input type="checkbox" class="form-check-input bk-active" ' + (status.is_active !== false ? 'checked' : '') + '></td>';
-        html += '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger bk-delete"><i class="fas fa-trash"></i></button></td>';
+        html += '<td class="khb-bk-desc"><input type="text" class="form-control form-control-sm bk-desc" value="' + escapeHtml(status.description || '') + '" placeholder="Description" autocomplete="off"></td>';
+        html += '<td class="text-center khb-bk-check"><input type="checkbox" class="form-check-input bk-default" ' + (status.is_default ? 'checked' : '') + ' aria-label="Default status"></td>';
+        html += '<td class="text-center khb-bk-check"><input type="checkbox" class="form-check-input bk-active" ' + (status.is_active !== false ? 'checked' : '') + ' aria-label="Active"></td>';
+        html += '<td class="text-center khb-bk-actions"><button type="button" class="action-btn action-btn-destructive action-btn-compact bk-delete" title="Remove this status"><i class="fas fa-trash-alt" aria-hidden="true"></i><span class="visually-hidden">Delete</span></button></td>';
         html += '</tr>';
         return html;
     }
@@ -42,12 +42,12 @@
         var deleteUrl = cfg.deleteUrlTemplate;
 
         $wrap.find('.bk-bg, .bk-border, .bk-text').off('change').on('change', function () {
-            $(this).siblings('input[type="text"]').val($(this).val());
+            $(this).closest('.khb-bk-color-pair').find('input[type="text"]').val($(this).val());
         });
         $wrap.find('.bk-bg-text, .bk-border-text, .bk-text-hex').off('input').on('input', function () {
             var v = $(this).val();
             if (/^#[0-9A-Fa-f]{6}$/.test(v)) {
-                $(this).siblings('input[type="color"]').val(v);
+                $(this).closest('.khb-bk-color-pair').find('input[type="color"]').val(v);
             }
         });
         $wrap.find('.bk-default').off('change').on('change', function () {
@@ -92,19 +92,31 @@
         var p = cfg.idPrefix || '';
         var $c = $('#' + p + 'bookingStatusSettingsContainer');
         if (!statuses || statuses.length === 0) {
-            $c.html('<div class="alert alert-info mb-0">No booking statuses. Click Add to create one.</div>');
+            $c.html(
+                '<div class="settings-callout settings-callout--info mb-0" role="status">' +
+                    '<p class="settings-callout__title mb-1">No booking statuses yet</p>' +
+                    '<p class="small text-muted mb-0">Use <strong>Add status</strong>, edit the row, then <strong>Save booking statuses</strong>.</p>' +
+                '</div>'
+            );
             return;
         }
         var html =
-            '<div class="table-responsive"><table class="table table-bordered table-hover table-sm align-middle"><thead class="table-light"><tr>' +
-            '<th>Order</th><th>Code</th><th>Name</th><th>Background</th><th>Border</th><th>Text</th><th>Badge</th><th>Description</th><th>Default</th><th>Active</th><th></th>' +
+            '<div class="khb-booking-status-table-shell">' +
+            '<div class="looker-table-wrapper khb-booking-status-scroll" role="region" aria-label="Booking status settings">' +
+            '<table class="looker-table mb-0 khb-booking-status-table" id="' +
+            p +
+            'bookingStatusTable">' +
+            '<thead><tr>' +
+            '<th scope="col">Order</th><th scope="col">Code</th><th scope="col">Name</th>' +
+            '<th scope="col">Background</th><th scope="col">Border</th><th scope="col">Text</th><th scope="col">Badge</th><th scope="col">Description</th>' +
+            '<th scope="col" class="text-center">Default</th><th scope="col" class="text-center">Active</th><th scope="col" class="text-center"><span class="visually-hidden">Remove</span></th>' +
             '</tr></thead><tbody id="' +
             p +
             'bookingStatusBody">';
         statuses.forEach(function (st, i) {
             html += renderRow(st, i, p);
         });
-        html += '</tbody></table></div>';
+        html += '</tbody></table></div></div>';
         $c.html(html);
         $('#' + p + 'bookingStatusBody').sortable({
             handle: '.bk-sort-order',
@@ -127,7 +139,9 @@
                 }
             })
             .fail(function () {
-                $('#' + p + 'bookingStatusSettingsContainer').html('<div class="alert alert-danger">Failed to load booking statuses.</div>');
+                $('#' + p + 'bookingStatusSettingsContainer').html(
+                    '<div class="settings-callout settings-callout--danger" role="alert">Failed to load booking statuses. Please refresh the page.</div>'
+                );
             });
     }
 
