@@ -94,6 +94,7 @@
     <link rel="stylesheet" href="{{ asset('css/mobile-design-system.css') }}?v=4.1" media="(max-width: 768px)">
     <link rel="stylesheet" href="{{ asset('css/global-mobile-enhancements.css') }}?v=2" media="(max-width: 768px)">
     <link rel="stylesheet" href="{{ asset('css/mobile-cross-browser.css') }}?v=2">
+    <link rel="stylesheet" href="{{ asset('css/responsive-mobile-first.css') }}?v=2">
 
     {{-- Async CSS Loader Script --}}
     <script>

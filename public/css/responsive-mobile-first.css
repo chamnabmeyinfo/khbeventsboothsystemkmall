@@ -1,0 +1,293 @@
+/**
+ * KHB responsive foundation (mobile-first).
+ * Single responsive implementation using project breakpoints:
+ * mobile <576, tablet >=768, desktop >=1024.
+ * Focus: prevent overflow, preserve brand look, improve usability on 320-430px.
+ */
+
+/* Base safety across all viewports */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+img,
+svg,
+video,
+canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+.layout-wrapper,
+#main-content,
+.main-content-pushed,
+.canvas-panel,
+.card,
+.card-body,
+.modal-content,
+.table-responsive,
+.looker-table-wrapper,
+.looker-dashboard,
+.looker-header,
+.looker-actions {
+    min-width: 0;
+}
+
+/* Mobile first: 320px-767.98px */
+@media (max-width: 767.98px) {
+    html,
+    body {
+        overflow-x: hidden;
+    }
+
+    main#main-content.container-fluid,
+    .container,
+    .container-fluid {
+        width: 100%;
+        max-width: 100%;
+        padding-left: clamp(12px, 3.8vw, 16px) !important;
+        padding-right: clamp(12px, 3.8vw, 16px) !important;
+    }
+
+    .looker-dashboard {
+        padding: clamp(12px, 3.6vw, 16px);
+    }
+
+    .looker-header {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .looker-header-title h1 {
+        font-size: clamp(1.25rem, 5.3vw, 1.5rem);
+        line-height: 1.25;
+    }
+
+    .looker-header-title p {
+        font-size: clamp(0.875rem, 3.5vw, 0.95rem);
+    }
+
+    .looker-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .looker-actions .action-btn,
+    .looker-actions .btn {
+        min-height: 44px;
+    }
+
+    .data-canvas-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+
+    .data-canvas-grid .col-span-4,
+    .data-canvas-grid .col-span-6,
+    .data-canvas-grid .col-span-8,
+    .data-canvas-grid .col-span-12 {
+        grid-column: 1 / -1 !important;
+    }
+
+    .kpi-wrapper {
+        grid-template-columns: 1fr !important;
+        gap: 0.875rem !important;
+    }
+
+    .canvas-panel,
+    .kpi-card-looker,
+    .card {
+        border-radius: 14px !important;
+        padding: clamp(12px, 3.6vw, 16px);
+    }
+
+    .btn,
+    .action-btn,
+    .form-control,
+    .form-select,
+    .input-group-text {
+        min-height: 44px;
+    }
+
+    .form-control,
+    .form-select {
+        width: 100%;
+        max-width: 100%;
+        font-size: 16px;
+    }
+
+    .table-responsive,
+    .looker-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .modal-dialog {
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+    }
+
+    body.app-shell .modern-sidebar {
+        width: min(86vw, 320px) !important;
+    }
+
+    /* Bootstrap/AdminLTE rows: avoid cramped two-column fragments on phone */
+    .row {
+        --bs-gutter-x: 0.9rem;
+    }
+
+    .row > [class*="col-"] {
+        width: 100%;
+    }
+
+    /* Keep filter/tool areas usable on narrow screens */
+    .panel-header,
+    .quick-filters-bar,
+    #tableControlBar,
+    .books-toolbar,
+    .staff-access-tab-toolbar,
+    .staff-access-nav,
+    .staff-access-sub-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    /* DataTables/AdminLTE controls */
+    .dataTables_wrapper .row {
+        row-gap: 0.5rem;
+    }
+
+    .dataTables_wrapper .row > div,
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate {
+        width: 100%;
+        text-align: left !important;
+    }
+
+    .dataTables_wrapper .dataTables_filter input {
+        width: 100% !important;
+        margin-left: 0 !important;
+    }
+
+    /* Select2/select wrappers often overflow in forms */
+    .select2-container,
+    .select2-container .selection,
+    .select2-container .select2-selection {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Module-specific density fixes (no visual restyle) */
+    .books-page .books-card-view-inner {
+        padding: 0.75rem;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .books-page .books-table-btn {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        min-height: 40px;
+    }
+
+    .clients-page .clients-table-options__panel {
+        max-width: calc(100vw - 1rem);
+    }
+
+    .booths-management-mode .looker-dashboard,
+    .booths-management-mode #boothManagementContainer {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+
+    .booths-management-mode .mobile-stats-container {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.6rem !important;
+    }
+
+    .booths-management-mode .quick-filters-scroll,
+    .booths-management-mode #quickFilterChips {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .staff-access-page .staff-access-nav .nav-link,
+    .staff-access-page .staff-access-sub-nav .nav-link,
+    .staff-access-page .staff-access-module-nav .nav-link {
+        max-width: 100%;
+        white-space: normal;
+    }
+}
+
+/* Small phones: 320px-430px */
+@media (max-width: 430px) {
+    .kpi-title,
+    .panel-title,
+    .card-header h3,
+    .card-header h4,
+    .card-header h5 {
+        font-size: 0.95rem !important;
+    }
+
+    .btn,
+    .action-btn {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+
+    .badge {
+        white-space: normal;
+        word-break: break-word;
+    }
+
+    .booths-management-mode .mobile-stats-container {
+        grid-template-columns: 1fr !important;
+    }
+
+    .staff-access-page .staff-access-nav .nav-link,
+    .staff-access-page .staff-access-sub-nav .nav-link {
+        padding: 0.55rem 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    .books-page .books-toolbar {
+        justify-content: stretch;
+    }
+
+    .books-page .books-toolbar > * {
+        width: 100%;
+    }
+}
+
+/* Tablet and up: keep comfortable spacing and avoid accidental narrow layouts */
+@media (min-width: 768px) {
+    .looker-dashboard {
+        padding: clamp(1rem, 2vw, 2rem);
+    }
+
+    .row > [class*="col-"] {
+        width: auto;
+    }
+}
+
+/* Desktop and up */
+@media (min-width: 1024px) {
+    .container-fluid {
+        width: 100%;
+    }
+}

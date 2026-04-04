@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="{{ asset('css/mobile-design-system.css') }}?v=4.1" media="(max-width: 768px)">
     <link rel="stylesheet" href="{{ asset('css/global-mobile-enhancements.css') }}?v=2" media="(max-width: 768px)">
     <link rel="stylesheet" href="{{ asset('css/mobile-cross-browser.css') }}?v=2">
+    <link rel="stylesheet" href="{{ asset('css/responsive-mobile-first.css') }}?v=2">
 
     <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}?v=3.2">
     <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=3.4">
