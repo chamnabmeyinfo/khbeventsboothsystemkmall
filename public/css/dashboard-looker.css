@@ -855,6 +855,47 @@ body.ios-dashboard-mode .main-content-pushed table.table tbody tr:not(.table-row
     transition-duration: 0.05s;
 }
 
+/* --------------------------------------------------------------------------
+   Mobile / small tablet — single responsive Looker header & canvas (Bootstrap md breakpoint)
+   -------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    .looker-dashboard {
+        padding: 1rem 1rem 1.5rem;
+    }
+
+    .looker-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+    }
+
+    .looker-header-title h1 {
+        font-size: 1.5rem;
+    }
+
+    .looker-header-title p {
+        font-size: 0.875rem;
+    }
+
+    .looker-actions {
+        flex-wrap: wrap;
+        width: 100%;
+        justify-content: flex-start;
+        gap: 0.5rem;
+    }
+
+    .looker-actions .action-btn,
+    .looker-actions .btn {
+        min-height: 44px;
+    }
+
+    .data-canvas-grid .col-span-6 {
+        grid-column: span 12;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     body.ios-dashboard-mode .looker-table tbody tr:not(.table-row-no-press):active td,
     body.ios-dashboard-mode .looker-table-container table tbody tr:not(.table-row-no-press):active td,

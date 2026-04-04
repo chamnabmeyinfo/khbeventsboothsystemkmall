@@ -27,7 +27,7 @@
     <header class="looker-header animate-slide-up delay-1">
         <div class="looker-header-title">
             <h1>Users</h1>
-            <p>Manage staff accounts, roles, and status. Filter the directory, then open a user for full details.</p>
+            <p>Manage staff accounts, roles, and status. Mark <strong>demo</strong> logins for training or QA so they are easy to filter apart from <strong>real</strong> production staff.</p>
         </div>
         <div class="looker-actions flex-wrap align-items-center gap-2">
             <button type="button" class="action-btn action-btn-primary" onclick="showCreateUserModal()">
@@ -88,6 +88,28 @@
                 <i class="fas fa-fw fa-briefcase" aria-hidden="true"></i> Type = sale
             </div>
         </div>
+        @if(\Illuminate\Support\Facades\Schema::hasColumn('user', 'account_kind'))
+        <div class="kpi-card-looker success animate-slide-up delay-5">
+            <div class="kpi-top">
+                <div class="kpi-title">Real logins</div>
+                <div class="kpi-icon-wrapper success-icon"><i class="fas fa-user-check" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format(\App\Models\User::realStaff()->count()) }}</div>
+            <div class="kpi-bottom trend-positive">
+                <a href="{{ route('users.index', array_merge(request()->except('page'), ['account_kind' => \App\Models\User::ACCOUNT_KIND_REAL])) }}" class="text-reset text-decoration-none">Production accounts</a>
+            </div>
+        </div>
+        <div class="kpi-card-looker purple animate-slide-up delay-5">
+            <div class="kpi-top">
+                <div class="kpi-title">Demo logins</div>
+                <div class="kpi-icon-wrapper purple-icon"><i class="fas fa-flask" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format(\App\Models\User::demoAccounts()->count()) }}</div>
+            <div class="kpi-bottom trend-neutral">
+                <a href="{{ route('users.index', array_merge(request()->except('page'), ['account_kind' => \App\Models\User::ACCOUNT_KIND_DEMO])) }}" class="text-reset text-decoration-none">Testing / training</a>
+            </div>
+        </div>
+        @endif
     </div>
 
     <div class="canvas-panel users-filter-panel animate-slide-up delay-3 mb-3" aria-labelledby="users-filter-heading">
@@ -100,7 +122,7 @@
                 <p class="users-filter-panel__hint">Match username, role, type, or status—then apply.@if(! empty($usersIndexDefaultFilters)) Use <strong>Default filters</strong> for the usual workspace preset.@endif</p>
             </div>
             <div class="users-filter-panel__actions">
-                @if(request()->hasAny(['search', 'type', 'role_id', 'status']))
+                @if(request()->hasAny(['search', 'type', 'role_id', 'status', 'account_kind']))
                     <span class="status-badge status-badge-blue users-filter-panel__badge">{{ number_format($total) }} match(es)</span>
                 @endif
                 @if(! empty($usersIndexDefaultFilters))
@@ -155,6 +177,16 @@
                             <option value="0" {{ request('status') == '0' ? 'selected' : '' }}>Inactive</option>
                         </select>
                     </div>
+                    @if(\Illuminate\Support\Facades\Schema::hasColumn('user', 'account_kind'))
+                    <div class="col-12 col-md-4 col-lg-3 users-filter-panel__field">
+                        <label class="users-filter-panel__label" for="users_filter_account_kind"><i class="fas fa-flask" aria-hidden="true"></i> Account kind</label>
+                        <select name="account_kind" id="users_filter_account_kind" class="form-select users-filter-panel__control">
+                            <option value="">All</option>
+                            <option value="{{ \App\Models\User::ACCOUNT_KIND_REAL }}" {{ request('account_kind') === \App\Models\User::ACCOUNT_KIND_REAL ? 'selected' : '' }}>Real staff</option>
+                            <option value="{{ \App\Models\User::ACCOUNT_KIND_DEMO }}" {{ request('account_kind') === \App\Models\User::ACCOUNT_KIND_DEMO ? 'selected' : '' }}>Demo (testing)</option>
+                        </select>
+                    </div>
+                    @endif
                 </div>
             </form>
         </div>
@@ -178,6 +210,9 @@
                                 <th>Username</th>
                                 <th class="users-th-shrink">Type</th>
                                 <th>Role</th>
+                                @if(\Illuminate\Support\Facades\Schema::hasColumn('user', 'account_kind'))
+                                <th class="users-th-shrink">Kind</th>
+                                @endif
                                 <th class="users-th-shrink">Status</th>
                                 <th>Activity</th>
                                 <th class="users-th-shrink">Actions</th>
@@ -188,7 +223,7 @@
                                 @include('users.partials.table-row', ['user' => $user])
                             @empty
                             <tr class="table-row-no-press">
-                                <td colspan="8" class="text-center py-5">
+                                <td colspan="{{ \Illuminate\Support\Facades\Schema::hasColumn('user', 'account_kind') ? 9 : 8 }}" class="text-center py-5">
                                     <div class="text-tertiary">
                                         <i class="fas fa-user-slash fa-3x mb-3 text-secondary opacity-50" aria-hidden="true"></i>
                                         <p class="mb-0 fw-semibold text-secondary">No users found</p>
@@ -224,7 +259,7 @@
                      onclick="window.location=this.getAttribute('data-user-url')"
                      onkeydown="if(event.key==='Enter'){ window.location=this.getAttribute('data-user-url'); }">
                     <div class="users-entity-head">
-                        <div class="d-flex justify-content-between align-items-center gap-2">
+                            <div class="d-flex justify-content-between align-items-center gap-2">
                             <div class="d-flex align-items-center gap-2 min-w-0">
                                 <x-avatar
                                     :avatar="$user->avatar"
@@ -235,11 +270,16 @@
                                 />
                                 <h3 class="h6 mb-0 text-truncate">{{ $user->username }}</h3>
                             </div>
+                            <div class="d-flex flex-wrap gap-1 justify-content-end">
                             @if($user->isAdmin())
                                 <span class="status-badge status-badge-purple flex-shrink-0">Admin</span>
                             @else
                                 <span class="status-badge status-badge-neutral flex-shrink-0">Sale</span>
                             @endif
+                            @if(\Illuminate\Support\Facades\Schema::hasColumn('user', 'account_kind') && ($user->account_kind ?? \App\Models\User::ACCOUNT_KIND_REAL) === \App\Models\User::ACCOUNT_KIND_DEMO)
+                                <span class="status-badge status-badge-orange flex-shrink-0">Demo</span>
+                            @endif
+                            </div>
                         </div>
                     </div>
                     <div class="users-entity-body">
@@ -259,12 +299,19 @@
                             </div>
                         </div>
                         <div class="mb-3">
-                            <div class="d-flex align-items-center gap-2 mb-1">
+                            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
                                 <i class="fas fa-toggle-on text-muted" aria-hidden="true"></i>
                                 @if($user->isActive())
                                     <span class="status-badge status-badge-green">Active</span>
                                 @else
                                     <span class="status-badge status-badge-orange">Inactive</span>
+                                @endif
+                                @if(\Illuminate\Support\Facades\Schema::hasColumn('user', 'account_kind'))
+                                    @if(($user->account_kind ?? \App\Models\User::ACCOUNT_KIND_REAL) === \App\Models\User::ACCOUNT_KIND_DEMO)
+                                        <span class="status-badge status-badge-orange">Demo</span>
+                                    @else
+                                        <span class="status-badge status-badge-green">Real</span>
+                                    @endif
                                 @endif
                             </div>
                         </div>
@@ -376,6 +423,16 @@
                                     <option value="0">Inactive</option>
                                 </select>
                             </div>
+                            @if(\Illuminate\Support\Facades\Schema::hasColumn('user', 'account_kind'))
+                            <div class="col-md-6">
+                                <label for="modal_user_account_kind" class="form-label">Account kind</label>
+                                <select class="form-select rounded-3" id="modal_user_account_kind" name="account_kind">
+                                    <option value="{{ \App\Models\User::ACCOUNT_KIND_REAL }}" selected>Real staff (production)</option>
+                                    <option value="{{ \App\Models\User::ACCOUNT_KIND_DEMO }}">Demo (testing / training)</option>
+                                </select>
+                                <small class="text-muted">Demo logins are excluded from HR dashboard production KPIs.</small>
+                            </div>
+                            @endif
                         </div>
                     </div>
 
@@ -574,6 +631,9 @@ function showCreateUserModal() {
     }
     $('#modal_user_type').val('2');
     $('#modal_user_status').val('1');
+    if ($('#modal_user_account_kind').length) {
+        $('#modal_user_account_kind').val('{{ \App\Models\User::ACCOUNT_KIND_REAL }}');
+    }
 }
 
 // Handle Create User Form Submission
@@ -667,6 +727,9 @@ $(document).ready(function() {
         $('#createUserError').addClass('d-none').text('');
         $('#modal_user_type').val('2');
         $('#modal_user_status').val('1');
+        if ($('#modal_user_account_kind').length) {
+            $('#modal_user_account_kind').val('{{ \App\Models\User::ACCOUNT_KIND_REAL }}');
+        }
     });
     
     // Lazy Loading Variables
@@ -677,7 +740,8 @@ $(document).ready(function() {
         search: '{{ request('search') }}',
         type: '{{ request('type') }}',
         status: '{{ request('status') }}',
-        role_id: '{{ request('role_id') }}'
+        role_id: '{{ request('role_id') }}',
+        account_kind: '{{ request('account_kind') }}'
     };
     
     // Lazy Loading Observer
@@ -731,6 +795,7 @@ $(document).ready(function() {
         if (usersFilterParams.type) params.append('type', usersFilterParams.type);
         if (usersFilterParams.status) params.append('status', usersFilterParams.status);
         if (usersFilterParams.role_id) params.append('role_id', usersFilterParams.role_id);
+        if (usersFilterParams.account_kind) params.append('account_kind', usersFilterParams.account_kind);
         
         fetch('{{ route("users.index") }}?' + params.toString(), {
             method: 'GET',

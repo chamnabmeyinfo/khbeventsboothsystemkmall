@@ -52,16 +52,20 @@ class AffiliateDemoDataSeeder extends Seeder
 
         // Create Sales Managers
         foreach ($salesManagers as $manager) {
+            $attrs = [
+                'password' => Hash::make('password123'),
+                'type' => 1,
+                'status' => 1,
+                'role_id' => $salesManagerRole ? $salesManagerRole->id : null,
+                'create_time' => now(),
+                'update_time' => now(),
+            ];
+            if (Schema::hasColumn('user', 'account_kind')) {
+                $attrs['account_kind'] = User::ACCOUNT_KIND_DEMO;
+            }
             $user = User::firstOrCreate(
                 ['username' => $manager['username']],
-                [
-                    'password' => Hash::make('password123'),
-                    'type' => 1,
-                    'status' => 1,
-                    'role_id' => $salesManagerRole ? $salesManagerRole->id : null,
-                    'create_time' => now(),
-                    'update_time' => now(),
-                ]
+                $attrs
             );
             $salesUsers[] = $user;
             $this->command->info("Created sales manager: {$manager['username']}");
@@ -69,19 +73,31 @@ class AffiliateDemoDataSeeder extends Seeder
 
         // Create Sales Staff
         foreach ($salesStaff as $staff) {
+            $attrs = [
+                'password' => Hash::make('password123'),
+                'type' => 1,
+                'status' => 1,
+                'role_id' => $salesStaffRole ? $salesStaffRole->id : null,
+                'create_time' => now(),
+                'update_time' => now(),
+            ];
+            if (Schema::hasColumn('user', 'account_kind')) {
+                $attrs['account_kind'] = User::ACCOUNT_KIND_DEMO;
+            }
             $user = User::firstOrCreate(
                 ['username' => $staff['username']],
-                [
-                    'password' => Hash::make('password123'),
-                    'type' => 1,
-                    'status' => 1,
-                    'role_id' => $salesStaffRole ? $salesStaffRole->id : null,
-                    'create_time' => now(),
-                    'update_time' => now(),
-                ]
+                $attrs
             );
             $salesUsers[] = $user;
             $this->command->info("Created sales staff: {$staff['username']}");
+        }
+
+        if (Schema::hasColumn('user', 'account_kind')) {
+            $demoUsernames = array_merge(
+                array_column($salesManagers, 'username'),
+                array_column($salesStaff, 'username')
+            );
+            User::whereIn('username', $demoUsernames)->update(['account_kind' => User::ACCOUNT_KIND_DEMO]);
         }
 
         // Create Sample Clients

@@ -61,6 +61,21 @@
                     </div>
                 </div>
 
+                @if(\Illuminate\Support\Facades\Schema::hasColumn('employees', 'account_kind'))
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label for="employee_account_kind">Employee record kind</label>
+                            <select class="form-control" id="employee_account_kind" name="account_kind">
+                                <option value="{{ \App\Models\HR\Employee::ACCOUNT_KIND_REAL }}" {{ old('account_kind', \App\Models\HR\Employee::ACCOUNT_KIND_REAL) === \App\Models\HR\Employee::ACCOUNT_KIND_REAL ? 'selected' : '' }}>Real staff (production)</option>
+                                <option value="{{ \App\Models\HR\Employee::ACCOUNT_KIND_DEMO }}" {{ old('account_kind') === \App\Models\HR\Employee::ACCOUNT_KIND_DEMO ? 'selected' : '' }}>Demo (testing / training)</option>
+                            </select>
+                            <small class="text-muted">If you link a user account below, this follows the login&rsquo;s kind automatically.</small>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">

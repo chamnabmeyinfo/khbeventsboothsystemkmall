@@ -91,6 +91,19 @@
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
+                        @if(\Illuminate\Support\Facades\Schema::hasColumn('user', 'account_kind'))
+                        <div class="col-md-6">
+                            <label for="account_kind" class="form-label">Account kind</label>
+                            <select class="form-select @error('account_kind') is-invalid @enderror" id="account_kind" name="account_kind">
+                                <option value="{{ \App\Models\User::ACCOUNT_KIND_REAL }}" {{ old('account_kind', $user->account_kind ?? \App\Models\User::ACCOUNT_KIND_REAL) === \App\Models\User::ACCOUNT_KIND_REAL ? 'selected' : '' }}>Real staff (production)</option>
+                                <option value="{{ \App\Models\User::ACCOUNT_KIND_DEMO }}" {{ old('account_kind', $user->account_kind ?? \App\Models\User::ACCOUNT_KIND_REAL) === \App\Models\User::ACCOUNT_KIND_DEMO ? 'selected' : '' }}>Demo (testing / training)</option>
+                            </select>
+                            @error('account_kind')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted">Changing this updates linked HR employee records to the same kind.</small>
+                        </div>
+                        @endif
                     </div>
                 </div>
 

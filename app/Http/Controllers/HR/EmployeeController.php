@@ -8,6 +8,7 @@ use App\Models\HR\Employee;
 use App\Models\HR\Position;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class EmployeeController extends Controller
 {
@@ -48,6 +49,14 @@ class EmployeeController extends Controller
         // Filter by employment type
         if ($request->filled('employment_type')) {
             $query->where('employment_type', $request->employment_type);
+        }
+
+        if ($request->filled('account_kind') && Schema::hasColumn('employees', 'account_kind')) {
+            if ($request->account_kind === Employee::ACCOUNT_KIND_REAL) {
+                $query->realStaff();
+            } elseif ($request->account_kind === Employee::ACCOUNT_KIND_DEMO) {
+                $query->demoStaff();
+            }
         }
 
         $employees = $query->orderBy('first_name')->orderBy('last_name')->paginate(20)->withQueryString();
@@ -113,10 +122,13 @@ class EmployeeController extends Controller
             'tax_id' => 'nullable|string|max:100',
             'social_security_number' => 'nullable|string|max:100',
             'notes' => 'nullable|string',
+            'account_kind' => 'nullable|in:'.Employee::ACCOUNT_KIND_REAL.','.Employee::ACCOUNT_KIND_DEMO,
         ]);
 
         $validated['created_by'] = auth()->id();
         $validated['status'] = 'active';
+
+        $this->resolveEmployeeAccountKind($validated, $validated['user_id'] ?? null);
 
         // Generate employee code if not provided
         if (empty($validated['employee_code'])) {
@@ -189,6 +201,7 @@ class EmployeeController extends Controller
      */
     public function edit(Employee $employee)
     {
+        $employee->loadMissing('user');
         $departments = Department::active()->orderBy('name')->get();
         $positions = Position::active()->orderBy('name')->get();
         $managers = Employee::active()->where('id', '!=', $employee->id)->orderBy('first_name')->orderBy('last_name')->get();
@@ -250,7 +263,10 @@ class EmployeeController extends Controller
             'tax_id' => 'nullable|string|max:100',
             'social_security_number' => 'nullable|string|max:100',
             'notes' => 'nullable|string',
+            'account_kind' => 'nullable|in:'.Employee::ACCOUNT_KIND_REAL.','.Employee::ACCOUNT_KIND_DEMO,
         ]);
+
+        $this->resolveEmployeeAccountKind($validated, $validated['user_id'] ?? null);
 
         // If salary changed, create history entry
         if (($validated['salary'] ?? null) && $validated['salary'] != $employee->salary) {
@@ -302,6 +318,29 @@ class EmployeeController extends Controller
 
         return redirect()->route('hr.employees.edit', $newEmployee)
             ->with('success', 'Employee duplicated successfully. Please update the details.');
+    }
+
+    /**
+     * Linked employees inherit the user login's account_kind; unlinked use the form (default real).
+     */
+    private function resolveEmployeeAccountKind(array &$validated, ?int $userId): void
+    {
+        if (! Schema::hasColumn('employees', 'account_kind')) {
+            unset($validated['account_kind']);
+
+            return;
+        }
+
+        if ($userId) {
+            $login = User::find($userId);
+            if ($login && Schema::hasColumn('user', 'account_kind')) {
+                $validated['account_kind'] = $login->account_kind ?? User::ACCOUNT_KIND_REAL;
+            } else {
+                $validated['account_kind'] = $validated['account_kind'] ?? Employee::ACCOUNT_KIND_REAL;
+            }
+        } else {
+            $validated['account_kind'] = $validated['account_kind'] ?? Employee::ACCOUNT_KIND_REAL;
+        }
     }
 
     /**

@@ -83,6 +83,16 @@
                             <option value="temporary" {{ request('employment_type') == 'temporary' ? 'selected' : '' }}>Temporary</option>
                         </select>
                     </div>
+                    @if(\Illuminate\Support\Facades\Schema::hasColumn('employees', 'account_kind'))
+                    <div class="col-md-2 mb-3">
+                        <label for="account_kind" class="form-label font-weight-bold">Record kind</label>
+                        <select class="form-control" id="account_kind" name="account_kind">
+                            <option value="">All</option>
+                            <option value="{{ \App\Models\HR\Employee::ACCOUNT_KIND_REAL }}" {{ request('account_kind') === \App\Models\HR\Employee::ACCOUNT_KIND_REAL ? 'selected' : '' }}>Real staff</option>
+                            <option value="{{ \App\Models\HR\Employee::ACCOUNT_KIND_DEMO }}" {{ request('account_kind') === \App\Models\HR\Employee::ACCOUNT_KIND_DEMO ? 'selected' : '' }}>Demo</option>
+                        </select>
+                    </div>
+                    @endif
                     <div class="col-md-1 mb-3 d-flex align-items-end">
                         <button type="submit" class="action-btn action-btn-primary w-100 justify-content-center"><i class="fas fa-search"></i></button>
                     </div>
@@ -106,6 +116,9 @@
                         <th>Department</th>
                         <th>Position</th>
                         <th>Type</th>
+                        @if(\Illuminate\Support\Facades\Schema::hasColumn('employees', 'account_kind'))
+                        <th>Kind</th>
+                        @endif
                         <th>Status</th>
                         <th>Hired</th>
                         <th>Actions</th>
@@ -138,6 +151,15 @@
                         </td>
                         <td>{{ $employee->position->name ?? '—' }}</td>
                         <td><span class="status-badge status-badge-purple">{{ ucfirst(str_replace('-', ' ', $employee->employment_type)) }}</span></td>
+                        @if(\Illuminate\Support\Facades\Schema::hasColumn('employees', 'account_kind'))
+                        <td>
+                            @if(($employee->account_kind ?? \App\Models\HR\Employee::ACCOUNT_KIND_REAL) === \App\Models\HR\Employee::ACCOUNT_KIND_DEMO)
+                                <span class="status-badge status-badge-orange"><i class="fas fa-flask mr-1"></i>Demo</span>
+                            @else
+                                <span class="status-badge status-badge-green"><i class="fas fa-user-check mr-1"></i>Real</span>
+                            @endif
+                        </td>
+                        @endif
                         <td>
                             @php
                                 $st = [
@@ -170,7 +192,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" class="hr-empty-cell">
+                        <td colspan="{{ \Illuminate\Support\Facades\Schema::hasColumn('employees', 'account_kind') ? 10 : 9 }}" class="hr-empty-cell">
                             <i class="fas fa-user-slash"></i>
                             <p class="mb-2">No employees found</p>
                             @if(auth()->user()->hasPermission('hr.employees.create'))

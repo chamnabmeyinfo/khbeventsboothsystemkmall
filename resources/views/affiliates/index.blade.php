@@ -6,7 +6,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.7">
-<link rel="stylesheet" href="{{ asset('css/affiliates-page.css') }}?v=1.0">
+<link rel="stylesheet" href="{{ asset('css/affiliates-page.css') }}?v=1.1">
 @endpush
 
 @push('body-class', 'ios-dashboard-mode affiliates-page')

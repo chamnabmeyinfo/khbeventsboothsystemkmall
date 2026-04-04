@@ -1,0 +1,218 @@
+/**
+ * HR / AdminLTE mobile, touch, and print helpers.
+ * Single responsive implementation; breakpoints: 768px, 576px (project standard).
+ * Loaded only where @include('hr._mobile-styles') is used.
+ */
+
+@media (max-width: 768px) {
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table {
+        font-size: 0.875rem;
+    }
+
+    .table th,
+    .table td {
+        padding: 0.5rem;
+        white-space: nowrap;
+    }
+
+    .card {
+        margin-bottom: 1rem;
+    }
+
+    .card-header {
+        padding: 0.75rem 1rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-control,
+    .select2-container {
+        width: 100% !important;
+    }
+
+    .small-box {
+        margin-bottom: 1rem;
+    }
+
+    .info-box {
+        margin-bottom: 1rem;
+    }
+
+    .info-box-icon {
+        width: 70px;
+        height: 70px;
+        font-size: 1.5rem;
+    }
+
+    .card-primary.card-outline .card-body .row > div {
+        margin-bottom: 1rem;
+    }
+
+    .calendar-day {
+        height: 80px !important;
+        font-size: 0.75rem;
+        padding: 3px !important;
+    }
+
+    .calendar-day .badge {
+        font-size: 0.65rem;
+        padding: 1px 3px;
+        margin-bottom: 2px;
+    }
+
+    .table-responsive table {
+        min-width: 600px;
+    }
+
+    .modal-dialog {
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+    }
+
+    .sidebar {
+        transform: translateX(-100%);
+    }
+
+    .sidebar.show {
+        transform: translateX(0);
+    }
+
+    .row .col-lg-3,
+    .row .col-md-3,
+    .row .col-md-4,
+    .row .col-md-6 {
+        margin-bottom: 1rem;
+    }
+
+    .user-panel {
+        padding: 0.75rem;
+    }
+
+    .manager-dashboard .card {
+        margin-bottom: 1rem;
+    }
+
+    .leave-calendar-filters .col-md-2,
+    .leave-calendar-filters .col-md-3,
+    .leave-calendar-filters .col-md-4 {
+        margin-bottom: 0.75rem;
+    }
+
+    .profile-form .row > div {
+        margin-bottom: 1rem;
+    }
+
+    .document-list .table td {
+        font-size: 0.8rem;
+    }
+
+    .attendance-table {
+        overflow-x: auto;
+    }
+
+    .table-responsive .d-none-mobile {
+        display: none !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-header h3 {
+        font-size: 1rem;
+    }
+
+    .small-box .inner h3 {
+        font-size: 1.5rem;
+    }
+
+    .small-box .inner p {
+        font-size: 0.875rem;
+    }
+
+    .btn-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .btn-group .btn {
+        margin-bottom: 0.25rem;
+        width: 100%;
+    }
+
+    .calendar-day {
+        height: 60px !important;
+        font-size: 0.7rem;
+    }
+
+    .calendar-day .badge {
+        font-size: 0.6rem;
+        padding: 1px 2px;
+    }
+
+    .table th:nth-child(n + 4),
+    .table td:nth-child(n + 4) {
+        display: none;
+    }
+
+    .table th:first-child,
+    .table td:first-child,
+    .table th:nth-child(2),
+    .table td:nth-child(2),
+    .table th:last-child,
+    .table td:last-child {
+        display: table-cell;
+    }
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    .nav-link {
+        padding: 0.75rem 1rem;
+    }
+
+    .table tbody tr {
+        cursor: pointer;
+    }
+
+    .badge {
+        padding: 0.35em 0.65em;
+    }
+}
+
+@media print {
+    .sidebar,
+    .main-header,
+    .content-header,
+    .card-header .card-tools,
+    .btn {
+        display: none !important;
+    }
+
+    .content-wrapper {
+        margin-left: 0 !important;
+    }
+}

@@ -1,148 +1,122 @@
-@extends('layouts.adminlte')
+@extends('layouts.admin')
 
 @section('title', 'Affiliate Details - ' . $user->username)
 @section('page-title', 'Affiliate Details')
 @section('breadcrumb', 'Sales / Affiliates / ' . $user->username)
 
 @push('styles')
-<style>
-    .stat-card {
-        background: white;
-        border-radius: 12px;
-        padding: 24px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        text-align: center;
-    }
-    
-    .stat-value {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 8px;
-    }
-    
-    .stat-label {
-        font-size: 0.875rem;
-        color: #6c757d;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    .booking-card {
-        background: white;
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        transition: all 0.2s;
-    }
-    
-    .booking-card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.7">
+<link rel="stylesheet" href="{{ asset('css/affiliates-page.css') }}?v=1.1">
 @endpush
 
-@section('content')
-<div class="container-fluid">
-    <!-- User Info Header -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <div class="d-flex align-items-center">
-                        <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 32px; font-weight: 700; margin-right: 20px;">
-                            {{ strtoupper(substr($user->username, 0, 1)) }}
-                        </div>
-                        <div>
-                            <h3 class="mb-1" style="font-weight: 700;">{{ $user->username }}</h3>
-                            <p class="text-muted mb-0">
-                                @if($user->isAdmin())
-                                    <span class="badge badge-primary">Administrator</span>
-                                @else
-                                    <span class="badge badge-secondary">Sales Person</span>
-                                @endif
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 text-right">
-                    <a href="{{ route('affiliates.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left mr-2"></i>Back to List
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+@push('body-class', 'ios-dashboard-mode affiliates-page')
 
-    <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-value text-primary">{{ $totalBookings }}</div>
-                <div class="stat-label">Total Bookings</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-value text-success">${{ number_format($totalRevenue, 2) }}</div>
-                <div class="stat-label">Total Revenue</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-value text-info">{{ $uniqueClients }}</div>
-                <div class="stat-label">Unique Clients</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-value text-warning">{{ $bookingsByFloorPlan->count() }}</div>
-                <div class="stat-label">Floor Plans</div>
-            </div>
-        </div>
-        <div class="col-md-3 mt-3 mt-md-0">
-            <div class="stat-card">
-                <div class="stat-value text-info">${{ number_format($avgBookingValue, 2) }}</div>
-                <div class="stat-label">Avg / Booking</div>
-            </div>
-        </div>
-        <div class="col-md-3 mt-3 mt-md-0">
-            <div class="stat-card">
-                <div class="stat-value" style="font-size:1.25rem;">
-                    @if($lastBookingAt)
-                        {{ \Carbon\Carbon::parse($lastBookingAt)->format('M d, Y') }}
-                    @else
-                        <span class="text-muted">No bookings</span>
-                    @endif
+@section('content')
+<div class="looker-dashboard">
+    <header class="looker-header animate-slide-up delay-1">
+        <div class="looker-header-title">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <div class="affiliates-profile-avatar" aria-hidden="true">{{ strtoupper(substr($user->username, 0, 1)) }}</div>
+                <div>
+                    <h1 class="mb-1">{{ $user->username }}</h1>
+                    <p class="mb-0 text-secondary small">
+                        @if($user->isAdmin())
+                            <span class="status-badge status-badge-blue">Administrator</span>
+                        @else
+                            <span class="status-badge status-badge-neutral">Sales person</span>
+                        @endif
+                    </p>
                 </div>
-                <div class="stat-label">Last Booking</div>
             </div>
+        </div>
+        <div class="looker-actions">
+            <a href="{{ route('affiliates.index') }}" class="action-btn action-btn-secondary">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to list
+            </a>
+        </div>
+    </header>
+
+    <div class="kpi-wrapper">
+        <div class="kpi-card-looker animate-slide-up delay-2">
+            <div class="kpi-top">
+                <div class="kpi-title">Bookings</div>
+                <div class="kpi-icon-wrapper primary-icon"><i class="fas fa-calendar-check" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format($totalBookings) }}</div>
+            <div class="kpi-bottom trend-neutral">Attributed bookings</div>
+        </div>
+        <div class="kpi-card-looker success animate-slide-up delay-3">
+            <div class="kpi-top">
+                <div class="kpi-title">Revenue</div>
+                <div class="kpi-icon-wrapper success-icon"><i class="fas fa-dollar-sign" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">${{ number_format($totalRevenue, 0) }}</div>
+            <div class="kpi-bottom trend-positive">Booth totals</div>
+        </div>
+        <div class="kpi-card-looker purple animate-slide-up delay-4">
+            <div class="kpi-top">
+                <div class="kpi-title">Clients</div>
+                <div class="kpi-icon-wrapper purple-icon"><i class="fas fa-users" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format($uniqueClients) }}</div>
+            <div class="kpi-bottom trend-neutral">Unique clients</div>
+        </div>
+        <div class="kpi-card-looker warning animate-slide-up delay-5">
+            <div class="kpi-top">
+                <div class="kpi-title">Floor plans</div>
+                <div class="kpi-icon-wrapper warning-icon"><i class="fas fa-map" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format($bookingsByFloorPlan->count()) }}</div>
+            <div class="kpi-bottom trend-warning">With activity</div>
+        </div>
+        <div class="kpi-card-looker animate-slide-up delay-5">
+            <div class="kpi-top">
+                <div class="kpi-title">Avg / booking</div>
+                <div class="kpi-icon-wrapper primary-icon"><i class="fas fa-chart-bar" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">${{ number_format($avgBookingValue, 0) }}</div>
+            <div class="kpi-bottom trend-neutral">Mean revenue</div>
+        </div>
+        <div class="kpi-card-looker animate-slide-up delay-5">
+            <div class="kpi-top">
+                <div class="kpi-title">Last booking</div>
+                <div class="kpi-icon-wrapper primary-icon"><i class="fas fa-clock" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker fs-5">
+                @if($lastBookingAt)
+                    {{ \Carbon\Carbon::parse($lastBookingAt)->format('M j, Y') }}
+                @else
+                    <span class="text-secondary">—</span>
+                @endif
+            </div>
+            <div class="kpi-bottom trend-neutral">Most recent</div>
         </div>
         @if(isset($totalBenefits) && $totalBenefits['total'] > 0)
-        <div class="col-md-3 mt-3 mt-md-0">
-            <div class="stat-card" style="background: linear-gradient(135deg, #43e97b15 0%, #38f9d715 100%); border: 2px solid #43e97b;">
-                <div class="stat-value text-success">${{ number_format($totalBenefits['total'], 2) }}</div>
-                <div class="stat-label">Total Benefits</div>
+        <div class="kpi-card-looker success animate-slide-up delay-5">
+            <div class="kpi-top">
+                <div class="kpi-title">Benefits</div>
+                <div class="kpi-icon-wrapper success-icon"><i class="fas fa-gift" aria-hidden="true"></i></div>
             </div>
+            <div class="kpi-value-looker">${{ number_format($totalBenefits['total'], 0) }}</div>
+            <div class="kpi-bottom trend-positive">Estimated total</div>
         </div>
         @endif
     </div>
 
-    <!-- Benefits Breakdown -->
     @if(isset($totalBenefits) && count($totalBenefits['breakdown']) > 0)
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-gift mr-2"></i>Benefits Breakdown</h5>
+    <div class="canvas-panel mb-4 animate-slide-up delay-5">
+        <div class="panel-header">
+            <h2 class="panel-title"><i class="fas fa-gift" aria-hidden="true"></i> Benefits breakdown</h2>
         </div>
-        <div class="card-body">
+        <div class="looker-table-wrapper">
             <div class="table-responsive">
-                <table class="table table-sm table-hover">
+                <table class="looker-table">
                     <thead>
                         <tr>
-                            <th>Benefit Name</th>
-                            <th>Type</th>
-                            <th>Calculation</th>
-                            <th class="text-right">Amount</th>
+                            <th scope="col">Benefit</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Calculation</th>
+                            <th scope="col" class="text-end">Amount</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -151,31 +125,29 @@
                             <td>
                                 <strong>{{ $item['benefit']->name }}</strong>
                                 @if($item['benefit']->description)
-                                    <br><small class="text-muted">{{ Str::limit($item['benefit']->description, 50) }}</small>
+                                    <br><span class="small text-secondary">{{ Str::limit($item['benefit']->description, 60) }}</span>
                                 @endif
                             </td>
                             <td>
-                                <span class="badge badge-primary">{{ ucfirst($item['benefit']->type) }}</span>
+                                <span class="status-badge status-badge-blue">{{ ucfirst($item['benefit']->type) }}</span>
                             </td>
                             <td>
                                 @if($item['benefit']->calculation_method === 'percentage')
-                                    {{ number_format($item['benefit']->percentage, 2) }}% of Revenue
+                                    {{ number_format($item['benefit']->percentage, 2) }}% of revenue
                                 @elseif($item['benefit']->calculation_method === 'fixed_amount')
-                                    Fixed Amount
+                                    Fixed amount
                                 @else
-                                    Tiered Structure
+                                    Tiered structure
                                 @endif
                             </td>
-                            <td class="text-right">
-                                <strong class="text-success">${{ number_format($item['amount'], 2) }}</strong>
-                            </td>
+                            <td class="text-end"><strong class="text-success">${{ number_format($item['amount'], 2) }}</strong></td>
                         </tr>
                         @endforeach
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="3" class="text-right">Total Benefits:</th>
-                            <th class="text-right text-success">${{ number_format($totalBenefits['total'], 2) }}</th>
+                            <th colspan="3" class="text-end">Total benefits</th>
+                            <th class="text-end text-success">${{ number_format($totalBenefits['total'], 2) }}</th>
                         </tr>
                     </tfoot>
                 </table>
@@ -184,94 +156,95 @@
     </div>
     @endif
 
-    <!-- Filters -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="GET" action="{{ route('affiliates.show', $user->id) }}" class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">Floor Plan</label>
-                    <select name="floor_plan_id" class="form-control">
-                        <option value="">All Floor Plans</option>
+    <div class="filter-bar">
+        <form method="GET" action="{{ route('affiliates.show', $user->id) }}" id="affiliateShowFilters">
+            <div class="filter-header">
+                <h6><i class="fas fa-filter" aria-hidden="true"></i> Booking filters</h6>
+            </div>
+            <div class="filter-row-primary">
+                <div>
+                    <label class="form-label" for="show_floor_plan_id">Floor plan</label>
+                    <select name="floor_plan_id" id="show_floor_plan_id" class="form-select">
+                        <option value="">All floor plans</option>
                         @foreach($floorPlans as $fp)
-                            <option value="{{ $fp->id }}" {{ $floorPlanId == $fp->id ? 'selected' : '' }}>
+                            <option value="{{ $fp->id }}" {{ (string) $floorPlanId === (string) $fp->id ? 'selected' : '' }}>
                                 {{ $fp->name }}
                             </option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Date From</label>
-                    <input type="date" name="date_from" class="form-control" value="{{ $dateFrom }}">
+                <div>
+                    <label class="form-label" for="show_date_from">Date from</label>
+                    <input type="date" name="date_from" id="show_date_from" class="form-control" value="{{ $dateFrom }}">
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Date To</label>
-                    <input type="date" name="date_to" class="form-control" value="{{ $dateTo }}">
+                <div>
+                    <label class="form-label" for="show_date_to">Date to</label>
+                    <input type="date" name="date_to" id="show_date_to" class="form-control" value="{{ $dateTo }}">
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">&nbsp;</label>
-                    <button type="submit" class="btn btn-primary btn-block">
-                        <i class="fas fa-filter"></i> Filter
-                    </button>
-                </div>
-            </form>
-        </div>
+            </div>
+            <div class="filter-actions">
+                <button type="submit" class="action-btn action-btn-primary">
+                    <i class="fas fa-filter" aria-hidden="true"></i> Apply filters
+                </button>
+                <a href="{{ route('affiliates.show', $user->id) }}" class="action-btn action-btn-secondary">Reset</a>
+            </div>
+        </form>
     </div>
 
-    <!-- Bookings List -->
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-list mr-2"></i>Affiliate Bookings</h5>
+    <div class="canvas-panel animate-slide-up delay-5">
+        <div class="panel-header">
+            <h2 class="panel-title"><i class="fas fa-list" aria-hidden="true"></i> Affiliate bookings</h2>
         </div>
-        <div class="card-body">
-            @forelse($bookings as $booking)
-            <div class="booking-card">
-                <div class="row align-items-center">
-                    <div class="col-md-3">
-                        <strong>Date:</strong> {{ \Carbon\Carbon::parse($booking->date_book)->format('M d, Y') }}<br>
-                        <small class="text-muted">{{ \Carbon\Carbon::parse($booking->date_book)->format('g:i A') }}</small>
-                    </div>
-                    <div class="col-md-3">
-                        <strong>Client:</strong><br>
-                        @if($booking->client)
-                            {{ $booking->client->company ?? $booking->client->name }}
-                        @else
-                            Client #{{ $booking->clientid }}
-                        @endif
-                    </div>
-                    <div class="col-md-2">
-                        <strong>Floor Plan:</strong><br>
-                        @if($booking->floorPlan)
-                            {{ $booking->floorPlan->name }}
-                        @else
-                            N/A
-                        @endif
-                    </div>
-                    <div class="col-md-2">
-                        <strong>Booths:</strong><br>
-                        {{ $booking->booths()->count() }}
-                    </div>
-                    <div class="col-md-2 text-right">
-                        <strong>Revenue:</strong><br>
-                        <span class="text-success font-weight-bold">
-                            ${{ number_format($booking->booths()->sum('price') ?? 0, 2) }}
-                        </span>
-                    </div>
+        @if($bookings->isEmpty())
+            <div class="text-center py-5 text-secondary">
+                <i class="fas fa-inbox fa-2x mb-3 d-block opacity-50" aria-hidden="true"></i>
+                <p class="mb-0">No bookings match the current filters.</p>
+            </div>
+        @else
+            <div class="looker-table-wrapper">
+                <div class="table-responsive">
+                    <table class="looker-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Date</th>
+                                <th scope="col">Client</th>
+                                <th scope="col">Floor plan</th>
+                                <th scope="col" class="text-center">Booths</th>
+                                <th scope="col" class="text-end">Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($bookings as $booking)
+                            <tr>
+                                <td>
+                                    <strong>{{ \Carbon\Carbon::parse($booking->date_book)->format('M j, Y') }}</strong>
+                                    <br><span class="small text-secondary">{{ \Carbon\Carbon::parse($booking->date_book)->format('g:i A') }}</span>
+                                </td>
+                                <td>
+                                    @if($booking->client)
+                                        {{ $booking->client->company ?? $booking->client->name }}
+                                    @else
+                                        Client #{{ $booking->clientid }}
+                                    @endif
+                                </td>
+                                <td>
+                                    {{ $booking->floorPlan ? $booking->floorPlan->name : '—' }}
+                                </td>
+                                <td class="text-center">{{ $booking->booths()->count() }}</td>
+                                <td class="text-end"><span class="affiliates-revenue">${{ number_format($booking->booths()->sum('price') ?? 0, 2) }}</span></td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            @empty
-            <div class="text-center py-5">
-                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                <p class="text-muted">No bookings found with the current filters.</p>
-            </div>
-            @endforelse
-            
-            <!-- Pagination -->
-            @if($bookings->hasPages())
-            <div class="mt-4">
+        @endif
+
+        @if($bookings->hasPages())
+            <div class="affiliates-pagination-footer">
                 {{ $bookings->links() }}
             </div>
-            @endif
-        </div>
+        @endif
     </div>
 </div>
 @endsection

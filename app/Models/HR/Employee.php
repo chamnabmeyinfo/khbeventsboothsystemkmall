@@ -10,6 +10,10 @@ class Employee extends Model
 {
     use HasFactory;
 
+    public const ACCOUNT_KIND_REAL = 'real';
+
+    public const ACCOUNT_KIND_DEMO = 'demo';
+
     protected $fillable = [
         'user_id',
         'employee_code',
@@ -43,6 +47,7 @@ class Employee extends Model
         'termination_date',
         'termination_reason',
         'status',
+        'account_kind',
         'salary',
         'currency',
         'bank_name',
@@ -200,5 +205,33 @@ class Employee extends Model
     public function scopeWithPosition($query, $positionId)
     {
         return $query->where('position_id', $positionId);
+    }
+
+    public function isDemoProfile(): bool
+    {
+        $kind = $this->account_kind ?? $this->attributes['account_kind'] ?? self::ACCOUNT_KIND_REAL;
+
+        return $kind === self::ACCOUNT_KIND_DEMO;
+    }
+
+    /**
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeRealStaff($query)
+    {
+        return $query->where(function ($q) {
+            $q->where('account_kind', self::ACCOUNT_KIND_REAL)
+                ->orWhereNull('account_kind');
+        });
+    }
+
+    /**
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeDemoStaff($query)
+    {
+        return $query->where('account_kind', self::ACCOUNT_KIND_DEMO);
     }
 }

@@ -88,9 +88,12 @@
     <link rel="stylesheet" href="{{ asset('css/desktop-optimized.css') }}?v=1">
     <link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}?v=5.1">
     <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=3.4">
-    <link rel="stylesheet" href="{{ asset('css/global-ux-consistency.css') }}?v=1.1">
+    <link rel="stylesheet" href="{{ asset('css/global-ux-consistency.css') }}?v=1.2">
     <link rel="stylesheet" href="{{ asset('css/admin-bootstrap-polish.css') }}?v=1">
-    
+    {{-- Align with layouts.admin / app: mobile sheets gated by viewport media (not JS width) --}}
+    <link rel="stylesheet" href="{{ asset('css/mobile-design-system.css') }}?v=4.0" media="(max-width: 768px)">
+    <link rel="stylesheet" href="{{ asset('css/global-mobile-enhancements.css') }}?v=1" media="(max-width: 768px)">
+
     {{-- Async CSS Loader Script --}}
     <script>
         !function(e){"use strict";var t=function(t,n,o){var i,r=e.document,a=r.createElement("link");if(n)i=n;else{var l=(r.body||r.getElementsByTagName("head")[0]).childNodes;i=l[l.length-1]}var d=r.styleSheets;a.rel="stylesheet",a.href=t,a.media="only x",function e(t){if(r.body)return t();setTimeout(function(){e(t)})}(function(){i.parentNode.insertBefore(a,n?i:i.nextSibling)});var f=function(e){for(var t=a.href,n=d.length;n--;)if(d[n].href===t)return e();setTimeout(function(){f(e)})};return a.addEventListener&&a.addEventListener("load",function(){this.media=o||"all"}),a.onloadcssdefined=f,f(function(){a.media!==o&&(a.media=o||"all")}),a};"undefined"!=typeof exports?exports.loadCSS=t:e.loadCSS=t}("undefined"!=typeof global?global:this);

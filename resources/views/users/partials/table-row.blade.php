@@ -58,6 +58,19 @@
             </span>
         @endif
     </td>
+    @if(\Illuminate\Support\Facades\Schema::hasColumn('user', 'account_kind'))
+    <td>
+        @if(($user->account_kind ?? \App\Models\User::ACCOUNT_KIND_REAL) === \App\Models\User::ACCOUNT_KIND_DEMO)
+            <span class="status-badge status-badge-orange" title="Demo / testing login">
+                <i class="fas fa-flask me-1" aria-hidden="true"></i>Demo
+            </span>
+        @else
+            <span class="status-badge status-badge-green" title="Production staff login">
+                <i class="fas fa-user-check me-1" aria-hidden="true"></i>Real
+            </span>
+        @endif
+    </td>
+    @endif
     <td>
         @if($user->isActive())
             <span class="status-badge status-badge-green status-toggle" role="button" tabindex="0" onclick="toggleUserStatus({{ $user->id }}, {{ $user->status }})" onkeydown="if(event.key==='Enter'){toggleUserStatus({{ $user->id }}, {{ $user->status }})}" title="Click to deactivate">

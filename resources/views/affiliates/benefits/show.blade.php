@@ -1,140 +1,135 @@
-@extends('layouts.adminlte')
+@extends('layouts.admin')
 
 @section('title', 'View Affiliate Benefit')
 @section('page-title', 'Benefit Details')
 @section('breadcrumb', 'Sales / Affiliates / Benefits / View')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.7">
+<link rel="stylesheet" href="{{ asset('css/affiliates-page.css') }}?v=1.1">
+@endpush
+
+@push('body-class', 'ios-dashboard-mode affiliates-page')
+
+@php
+    $typeClass = match ($benefit->type) {
+        'commission' => 'status-badge-blue',
+        'bonus' => 'status-badge-green',
+        'incentive' => 'status-badge-purple',
+        'reward' => 'status-badge-orange',
+        default => 'status-badge-neutral',
+    };
+@endphp
+
 @section('content')
-<div class="container-fluid">
-    <div class="card">
-        <div class="card-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="fas fa-gift mr-2"></i>{{ $benefit->name }}</h5>
-                <div>
-                    <a href="{{ route('affiliates.benefits.edit', $benefit->id) }}" class="btn btn-warning btn-sm">
-                        <i class="fas fa-edit mr-1"></i>Edit
-                    </a>
-                    <a href="{{ route('affiliates.benefits.index') }}" class="btn btn-secondary btn-sm">
-                        <i class="fas fa-arrow-left mr-1"></i>Back
-                    </a>
-                </div>
-            </div>
+<div class="looker-dashboard">
+    <header class="looker-header animate-slide-up delay-1">
+        <div class="looker-header-title">
+            <h1>{{ $benefit->name }}</h1>
+            <p class="mb-0">
+                <span class="status-badge {{ $typeClass }}">{{ ucfirst($benefit->type) }}</span>
+                @if($benefit->is_active)
+                    <span class="status-badge status-badge-green ms-1">Active</span>
+                @else
+                    <span class="status-badge status-badge-neutral ms-1">Inactive</span>
+                @endif
+            </p>
         </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <table class="table table-borderless">
-                        <tr>
-                            <th width="40%">Type:</th>
-                            <td>
-                                <span class="badge badge-primary">{{ ucfirst($benefit->type) }}</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Calculation Method:</th>
-                            <td>{{ ucfirst(str_replace('_', ' ', $benefit->calculation_method)) }}</td>
-                        </tr>
-                        @if($benefit->calculation_method === 'percentage')
-                        <tr>
-                            <th>Percentage:</th>
-                            <td><strong>{{ number_format($benefit->percentage, 2) }}%</strong></td>
-                        </tr>
-                        @elseif($benefit->calculation_method === 'fixed_amount')
-                        <tr>
-                            <th>Fixed Amount:</th>
-                            <td><strong>${{ number_format($benefit->fixed_amount, 2) }}</strong></td>
-                        </tr>
-                        @elseif($benefit->tier_structure)
-                        <tr>
-                            <th>Tier Structure:</th>
-                            <td>
-                                <pre style="background: #f8f9fa; padding: 0.5rem; border-radius: 4px; font-size: 0.875rem;">{{ json_encode($benefit->tier_structure, JSON_PRETTY_PRINT) }}</pre>
-                            </td>
-                        </tr>
-                        @endif
-                        <tr>
-                            <th>Priority:</th>
-                            <td>{{ $benefit->priority }}</td>
-                        </tr>
-                        <tr>
-                            <th>Status:</th>
-                            <td>
-                                @if($benefit->is_active)
-                                    <span class="badge badge-success">Active</span>
-                                @else
-                                    <span class="badge badge-secondary">Inactive</span>
-                                @endif
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="col-md-6">
-                    <table class="table table-borderless">
-                        @if($benefit->target_revenue || $benefit->target_bookings || $benefit->target_clients)
-                        <tr>
-                            <th width="40%">Targets:</th>
-                            <td>
-                                @if($benefit->target_revenue)
-                                    <div>Revenue: ${{ number_format($benefit->target_revenue, 2) }}</div>
-                                @endif
-                                @if($benefit->target_bookings)
-                                    <div>Bookings: {{ $benefit->target_bookings }}</div>
-                                @endif
-                                @if($benefit->target_clients)
-                                    <div>Clients: {{ $benefit->target_clients }}</div>
-                                @endif
-                            </td>
-                        </tr>
-                        @endif
-                        @if($benefit->min_revenue || $benefit->max_benefit)
-                        <tr>
-                            <th>Conditions:</th>
-                            <td>
-                                @if($benefit->min_revenue)
-                                    <div>Min Revenue: ${{ number_format($benefit->min_revenue, 2) }}</div>
-                                @endif
-                                @if($benefit->max_benefit)
-                                    <div>Max Benefit: ${{ number_format($benefit->max_benefit, 2) }}</div>
-                                @endif
-                            </td>
-                        </tr>
-                        @endif
-                        <tr>
-                            <th>Applies To:</th>
-                            <td>
-                                @if($benefit->user)
-                                    User: <strong>{{ $benefit->user->username }}</strong><br>
-                                @endif
-                                @if($benefit->floorPlan)
-                                    Floor Plan: <strong>{{ $benefit->floorPlan->name }}</strong><br>
-                                @endif
-                                @if(!$benefit->user && !$benefit->floorPlan)
-                                    <span class="text-muted">All Users & Floor Plans</span>
-                                @endif
-                            </td>
-                        </tr>
-                        @if($benefit->start_date || $benefit->end_date)
-                        <tr>
-                            <th>Date Range:</th>
-                            <td>
-                                @if($benefit->start_date)
-                                    Start: {{ $benefit->start_date->format('M d, Y') }}<br>
-                                @endif
-                                @if($benefit->end_date)
-                                    End: {{ $benefit->end_date->format('M d, Y') }}
-                                @endif
-                            </td>
-                        </tr>
-                        @endif
-                        @if($benefit->description)
-                        <tr>
-                            <th>Description:</th>
-                            <td>{{ $benefit->description }}</td>
-                        </tr>
-                        @endif
-                    </table>
-                </div>
+        <div class="looker-actions flex-wrap">
+            <a href="{{ route('affiliates.benefits.edit', $benefit->id) }}" class="action-btn action-btn-primary">
+                <i class="fas fa-edit" aria-hidden="true"></i> Edit
+            </a>
+            <a href="{{ route('affiliates.benefits.index') }}" class="action-btn action-btn-secondary">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to list
+            </a>
+        </div>
+    </header>
+
+    <div class="data-canvas-grid">
+        <div class="col-span-6 canvas-panel animate-slide-up delay-2">
+            <div class="panel-header">
+                <h2 class="panel-title"><i class="fas fa-calculator" aria-hidden="true"></i> Calculation</h2>
             </div>
+            <dl class="row mb-0 small">
+                <dt class="col-sm-5 text-secondary">Method</dt>
+                <dd class="col-sm-7">{{ ucfirst(str_replace('_', ' ', $benefit->calculation_method)) }}</dd>
+
+                @if($benefit->calculation_method === 'percentage')
+                    <dt class="col-sm-5 text-secondary">Percentage</dt>
+                    <dd class="col-sm-7"><strong>{{ number_format($benefit->percentage, 2) }}%</strong></dd>
+                @elseif($benefit->calculation_method === 'fixed_amount')
+                    <dt class="col-sm-5 text-secondary">Fixed amount</dt>
+                    <dd class="col-sm-7"><strong>${{ number_format($benefit->fixed_amount, 2) }}</strong></dd>
+                @elseif($benefit->tier_structure)
+                    <dt class="col-sm-5 text-secondary align-self-start pt-1">Tier structure</dt>
+                    <dd class="col-sm-7">
+                        <pre class="affiliates-json-pre mb-0">{{ json_encode($benefit->tier_structure, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                    </dd>
+                @endif
+
+                <dt class="col-sm-5 text-secondary">Priority</dt>
+                <dd class="col-sm-7">{{ $benefit->priority }}</dd>
+            </dl>
+        </div>
+
+        <div class="col-span-6 canvas-panel animate-slide-up delay-3">
+            <div class="panel-header">
+                <h2 class="panel-title"><i class="fas fa-bullseye" aria-hidden="true"></i> Targets &amp; scope</h2>
+            </div>
+            <dl class="row mb-0 small">
+                @if($benefit->target_revenue || $benefit->target_bookings || $benefit->target_clients)
+                    <dt class="col-sm-5 text-secondary">Targets</dt>
+                    <dd class="col-sm-7">
+                        @if($benefit->target_revenue)
+                            <div>Revenue: ${{ number_format($benefit->target_revenue, 2) }}</div>
+                        @endif
+                        @if($benefit->target_bookings)
+                            <div>Bookings: {{ $benefit->target_bookings }}</div>
+                        @endif
+                        @if($benefit->target_clients)
+                            <div>Clients: {{ $benefit->target_clients }}</div>
+                        @endif
+                    </dd>
+                @endif
+                @if($benefit->min_revenue || $benefit->max_benefit)
+                    <dt class="col-sm-5 text-secondary">Conditions</dt>
+                    <dd class="col-sm-7">
+                        @if($benefit->min_revenue)
+                            <div>Min revenue: ${{ number_format($benefit->min_revenue, 2) }}</div>
+                        @endif
+                        @if($benefit->max_benefit)
+                            <div>Max benefit: ${{ number_format($benefit->max_benefit, 2) }}</div>
+                        @endif
+                    </dd>
+                @endif
+                <dt class="col-sm-5 text-secondary">Applies to</dt>
+                <dd class="col-sm-7">
+                    @if($benefit->user)
+                        User: <strong>{{ $benefit->user->username }}</strong><br>
+                    @endif
+                    @if($benefit->floorPlan)
+                        Floor plan: <strong>{{ $benefit->floorPlan->name }}</strong><br>
+                    @endif
+                    @if(!$benefit->user && !$benefit->floorPlan)
+                        <span class="text-secondary">All users &amp; floor plans</span>
+                    @endif
+                </dd>
+                @if($benefit->start_date || $benefit->end_date)
+                    <dt class="col-sm-5 text-secondary">Date range</dt>
+                    <dd class="col-sm-7">
+                        @if($benefit->start_date)
+                            Start: {{ $benefit->start_date->format('M j, Y') }}<br>
+                        @endif
+                        @if($benefit->end_date)
+                            End: {{ $benefit->end_date->format('M j, Y') }}
+                        @endif
+                    </dd>
+                @endif
+                @if($benefit->description)
+                    <dt class="col-sm-5 text-secondary align-self-start pt-1">Description</dt>
+                    <dd class="col-sm-7">{{ $benefit->description }}</dd>
+                @endif
+            </dl>
         </div>
     </div>
 </div>

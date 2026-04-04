@@ -15,7 +15,7 @@
     <header class="looker-header">
         <div class="looker-header-title">
             <h1>HR Dashboard</h1>
-            <p>Workforce overview, attendance, and leave activity.</p>
+            <p>Workforce overview, attendance, and leave activity. KPIs use <strong>real staff</strong> only; demo profiles are listed separately.</p>
         </div>
         <div class="looker-actions">
             <a href="{{ route('hr.employees.index') }}" class="action-btn action-btn-secondary">
@@ -33,14 +33,26 @@
     <div class="kpi-wrapper">
         <div class="kpi-card-looker">
             <div class="kpi-top">
-                <div class="kpi-title">Total Employees</div>
+                <div class="kpi-title">Real staff</div>
                 <div class="kpi-icon-wrapper primary-icon"><i class="fas fa-users"></i></div>
             </div>
             <div class="kpi-value-looker">{{ $totalEmployees }}</div>
             <div class="kpi-bottom trend-neutral">
-                <a href="{{ route('hr.employees.index') }}" class="action-btn action-btn-secondary">Open directory</a>
+                <a href="{{ route('hr.employees.index', ['account_kind' => \App\Models\HR\Employee::ACCOUNT_KIND_REAL]) }}" class="action-btn action-btn-secondary">Open directory</a>
             </div>
         </div>
+        @if($hasEmployeeAccountKind)
+        <div class="kpi-card-looker warning">
+            <div class="kpi-top">
+                <div class="kpi-title">Demo (test)</div>
+                <div class="kpi-icon-wrapper warning-icon"><i class="fas fa-flask"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ $demoEmployeesCount }}</div>
+            <div class="kpi-bottom trend-warning">
+                <a href="{{ route('hr.employees.index', ['account_kind' => \App\Models\HR\Employee::ACCOUNT_KIND_DEMO]) }}" class="action-btn action-btn-secondary">View demo only</a>
+            </div>
+        </div>
+        @endif
         <div class="kpi-card-looker success">
             <div class="kpi-top">
                 <div class="kpi-title">Active</div>
@@ -48,7 +60,7 @@
             </div>
             <div class="kpi-value-looker">{{ $activeEmployees }}</div>
             <div class="kpi-bottom trend-positive">
-                <a href="{{ route('hr.employees.index', ['status' => 'active']) }}" class="action-btn action-btn-secondary">Active only</a>
+                <a href="{{ route('hr.employees.index', ['status' => 'active', 'account_kind' => \App\Models\HR\Employee::ACCOUNT_KIND_REAL]) }}" class="action-btn action-btn-secondary">Active only</a>
             </div>
         </div>
         <div class="kpi-card-looker warning">
@@ -66,7 +78,7 @@
             </div>
             <div class="kpi-value-looker">{{ $onLeave }}</div>
             <div class="kpi-bottom trend-neutral">
-                <a href="{{ route('hr.employees.index', ['status' => 'on-leave']) }}" class="action-btn action-btn-secondary">On leave list</a>
+                <a href="{{ route('hr.employees.index', ['status' => 'on-leave', 'account_kind' => \App\Models\HR\Employee::ACCOUNT_KIND_REAL]) }}" class="action-btn action-btn-secondary">On leave list</a>
             </div>
         </div>
     </div>
@@ -77,7 +89,7 @@
                 <div class="kpi-title">Present Today</div>
                 <div class="kpi-icon-wrapper primary-icon"><i class="fas fa-clock"></i></div>
             </div>
-            <div class="kpi-value-looker">{{ $presentToday }}<span class="hr-kpi-sub">/ {{ $totalEmployees }}</span></div>
+            <div class="kpi-value-looker">{{ $presentToday }}<span class="hr-kpi-sub">/ {{ $totalEmployees }} real</span></div>
             <div class="progress-bar-container">
                 <div class="progress-bar-fill" style="width: {{ min(100, max(0, (float) $attendanceRate)) }}%; background: var(--accent-green);"></div>
             </div>

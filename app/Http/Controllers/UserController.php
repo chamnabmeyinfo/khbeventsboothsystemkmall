@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\HR\Employee;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -42,6 +43,14 @@ class UserController extends Controller
         // Filter by status
         if ($request->filled('status') && $request->status !== '') {
             $query->where('status', $request->status);
+        }
+
+        if ($request->filled('account_kind') && Schema::hasColumn('user', 'account_kind')) {
+            if ($request->account_kind === User::ACCOUNT_KIND_REAL) {
+                $query->realStaff();
+            } elseif ($request->account_kind === User::ACCOUNT_KIND_DEMO) {
+                $query->demoAccounts();
+            }
         }
 
         // Filter by role (only if column exists)
@@ -89,6 +98,14 @@ class UserController extends Controller
         // Filter by status (exact same as index)
         if ($request->filled('status') && $request->status !== '') {
             $query->where('status', $request->status);
+        }
+
+        if ($request->filled('account_kind') && Schema::hasColumn('user', 'account_kind')) {
+            if ($request->account_kind === User::ACCOUNT_KIND_REAL) {
+                $query->realStaff();
+            } elseif ($request->account_kind === User::ACCOUNT_KIND_DEMO) {
+                $query->demoAccounts();
+            }
         }
 
         // Filter by role (exact same as index)
@@ -155,13 +172,22 @@ class UserController extends Controller
             'type' => 'required|integer|in:1,2',
             'status' => 'required|integer|in:0,1',
             'role_id' => 'nullable|exists:roles,id',
+            'account_kind' => 'nullable|in:'.User::ACCOUNT_KIND_REAL.','.User::ACCOUNT_KIND_DEMO,
         ], [
             'password.regex' => 'The password must be at least 8 characters and contain both letters and numbers.',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
 
+        if (! Schema::hasColumn('user', 'account_kind')) {
+            unset($validated['account_kind']);
+        } else {
+            $validated['account_kind'] = $validated['account_kind'] ?? User::ACCOUNT_KIND_REAL;
+        }
+
         $user = User::create($validated);
+
+        $this->syncLinkedEmployeesAccountKind($user);
 
         // Return JSON if request expects JSON (for AJAX/modal requests)
         if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
@@ -174,6 +200,7 @@ class UserController extends Controller
                     'type' => $user->type,
                     'status' => $user->status,
                     'role_id' => $user->role_id,
+                    'account_kind' => Schema::hasColumn('user', 'account_kind') ? ($user->account_kind ?? User::ACCOUNT_KIND_REAL) : null,
                 ],
             ], 200);
         }
@@ -261,9 +288,18 @@ class UserController extends Controller
             'type' => 'required|integer|in:1,2',
             'status' => 'required|integer|in:0,1',
             'role_id' => 'nullable|exists:roles,id',
+            'account_kind' => 'nullable|in:'.User::ACCOUNT_KIND_REAL.','.User::ACCOUNT_KIND_DEMO,
         ]);
 
+        if (! Schema::hasColumn('user', 'account_kind')) {
+            unset($validated['account_kind']);
+        } else {
+            $validated['account_kind'] = $validated['account_kind'] ?? $user->account_kind ?? User::ACCOUNT_KIND_REAL;
+        }
+
         $user->update($validated);
+
+        $this->syncLinkedEmployeesAccountKind($user->fresh());
 
         return redirect()->route('users.show', $user)
             ->with('success', 'User updated successfully.');
@@ -335,6 +371,19 @@ class UserController extends Controller
     /**
      * Update cover image position
      */
+    /**
+     * Keep HR employee rows aligned with login account kind when linked.
+     */
+    private function syncLinkedEmployeesAccountKind(User $user): void
+    {
+        if (! Schema::hasColumn('employees', 'account_kind') || ! Schema::hasColumn('user', 'account_kind')) {
+            return;
+        }
+
+        $kind = $user->account_kind ?? User::ACCOUNT_KIND_REAL;
+        Employee::where('user_id', $user->id)->update(['account_kind' => $kind]);
+    }
+
     public function updateCoverPosition(Request $request, $id)
     {
         try {

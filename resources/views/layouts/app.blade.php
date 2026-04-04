@@ -58,33 +58,11 @@
     <link rel="stylesheet" href="{{ asset('css/tablet-optimized.css') }}?v=1">
     <link rel="stylesheet" href="{{ asset('css/desktop-optimized.css') }}?v=1">
     <link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}?v=5.1">
-    <link rel="stylesheet" href="{{ asset('css/global-ux-consistency.css') }}?v=1.1">
-    
-    {{-- Conditional CSS Loading: Mobile vs Desktop --}}
-    <script>
-        (function() {
-            var isMobile = window.innerWidth <= 768;
-            var isTablet = window.innerWidth > 768 && window.innerWidth <= 1024;
-            
-            // Load mobile CSS only on mobile devices
-            if (isMobile) {
-                var mobileCSS = document.createElement('link');
-                mobileCSS.rel = 'stylesheet';
-                mobileCSS.href = '{{ asset('css/mobile-design-system.css') }}';
-                mobileCSS.media = 'only x';
-                mobileCSS.onload = function() { this.media = 'all'; };
-                document.head.appendChild(mobileCSS);
-                
-                var mobileEnhancements = document.createElement('link');
-                mobileEnhancements.rel = 'stylesheet';
-                mobileEnhancements.href = '{{ asset('css/global-mobile-enhancements.css') }}';
-                mobileEnhancements.media = 'only x';
-                mobileEnhancements.onload = function() { this.media = 'all'; };
-                document.head.appendChild(mobileEnhancements);
-            }
-        })();
-    </script>
-    
+    <link rel="stylesheet" href="{{ asset('css/global-ux-consistency.css') }}?v=1.2">
+    {{-- Mobile-only: link media matches viewport (resize-safe; avoids first-paint width-only JS) --}}
+    <link rel="stylesheet" href="{{ asset('css/mobile-design-system.css') }}?v=4.0" media="(max-width: 768px)">
+    <link rel="stylesheet" href="{{ asset('css/global-mobile-enhancements.css') }}?v=1" media="(max-width: 768px)">
+
     @if(!$useCDN)
     {{-- Performance Optimizer - Load early --}}
     <script src="{{ asset('js/performance-optimizer.js') }}" defer></script>
@@ -92,7 +70,7 @@
     
     <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}?v=3.2">
     <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=3.4">
-    <link rel="stylesheet" href="{{ asset('css/app-shell-layout.css') }}?v=1.2">
+    <link rel="stylesheet" href="{{ asset('css/app-shell-layout.css') }}?v=1.3">
     <link rel="stylesheet" href="{{ asset('css/sweetalert2-custom.css') }}?v=1">
     <link rel="stylesheet" href="{{ asset('css/app-loading-overlay.css') }}?v=2">
     

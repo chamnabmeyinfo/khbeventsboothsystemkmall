@@ -82,6 +82,17 @@
                                     <i class="fas fa-shield me-1" aria-hidden="true"></i>{{ $user->role->name }}
                                 </span>
                             @endif
+                            @if(\Illuminate\Support\Facades\Schema::hasColumn('user', 'account_kind'))
+                                @if(($user->account_kind ?? \App\Models\User::ACCOUNT_KIND_REAL) === \App\Models\User::ACCOUNT_KIND_DEMO)
+                                    <span class="status-badge status-badge-orange">
+                                        <i class="fas fa-flask me-1" aria-hidden="true"></i>Demo account
+                                    </span>
+                                @else
+                                    <span class="status-badge status-badge-green">
+                                        <i class="fas fa-user-check me-1" aria-hidden="true"></i>Real staff
+                                    </span>
+                                @endif
+                            @endif
                             @if($user->isActive())
                                 <span class="status-badge status-badge-green">
                                     <i class="fas fa-check-circle me-1" aria-hidden="true"></i>Active

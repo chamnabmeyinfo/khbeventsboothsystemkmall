@@ -63,6 +63,25 @@
                     </div>
                 </div>
 
+                @if(\Illuminate\Support\Facades\Schema::hasColumn('employees', 'account_kind'))
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label for="employee_account_kind">Employee record kind</label>
+                            <select class="form-control" id="employee_account_kind" name="account_kind" {{ $employee->user_id ? 'disabled' : '' }}>
+                                <option value="{{ \App\Models\HR\Employee::ACCOUNT_KIND_REAL }}" {{ old('account_kind', $employee->account_kind ?? \App\Models\HR\Employee::ACCOUNT_KIND_REAL) === \App\Models\HR\Employee::ACCOUNT_KIND_REAL ? 'selected' : '' }}>Real staff (production)</option>
+                                <option value="{{ \App\Models\HR\Employee::ACCOUNT_KIND_DEMO }}" {{ old('account_kind', $employee->account_kind ?? \App\Models\HR\Employee::ACCOUNT_KIND_REAL) === \App\Models\HR\Employee::ACCOUNT_KIND_DEMO ? 'selected' : '' }}>Demo (testing / training)</option>
+                            </select>
+                            @if($employee->user_id)
+                                <small class="text-muted d-block">Linked to login <strong>{{ $employee->user->username ?? 'user #'.$employee->user_id }}</strong> — kind is synced from Staff → Users. Change it there.</small>
+                            @else
+                                <small class="text-muted">Unlinked records can be marked demo for sandbox HR data.</small>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                @endif
+
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">

@@ -10,6 +10,10 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    public const ACCOUNT_KIND_REAL = 'real';
+
+    public const ACCOUNT_KIND_DEMO = 'demo';
+
     /**
      * The table associated with the model.
      *
@@ -34,6 +38,7 @@ class User extends Authenticatable
         'password',
         'type',
         'status',
+        'account_kind',
         'role_id',
         'avatar',
         'cover_image',
@@ -134,6 +139,45 @@ class User extends Authenticatable
         $status = $this->status ?? $this->attributes['status'] ?? null;
 
         return $status === '1' || $status === 1;
+    }
+
+    /**
+     * Demo / sandbox login (training, QA, seeded demo data).
+     */
+    public function isDemoAccount(): bool
+    {
+        $kind = $this->account_kind ?? $this->attributes['account_kind'] ?? self::ACCOUNT_KIND_REAL;
+
+        return $kind === self::ACCOUNT_KIND_DEMO;
+    }
+
+    /**
+     * Production staff login (default when account_kind is unset or real).
+     */
+    public function isRealStaffAccount(): bool
+    {
+        return ! $this->isDemoAccount();
+    }
+
+    /**
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeRealStaff($query)
+    {
+        return $query->where(function ($q) {
+            $q->where('account_kind', self::ACCOUNT_KIND_REAL)
+                ->orWhereNull('account_kind');
+        });
+    }
+
+    /**
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeDemoAccounts($query)
+    {
+        return $query->where('account_kind', self::ACCOUNT_KIND_DEMO);
     }
 
     /**

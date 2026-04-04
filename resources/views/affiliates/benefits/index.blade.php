@@ -1,72 +1,91 @@
-@extends('layouts.adminlte')
+@extends('layouts.admin')
 
 @section('title', 'Affiliate Benefits Management')
 @section('page-title', 'Affiliate Benefits')
 @section('breadcrumb', 'Sales / Affiliates / Benefits')
 
 @push('styles')
-<style>
-    .benefit-card {
-        background: white;
-        border-radius: 8px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        border-left: 4px solid;
-        transition: all 0.2s;
-    }
-
-    .benefit-card:hover {
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    }
-
-    .benefit-card.commission { border-left-color: #667eea; }
-    .benefit-card.bonus { border-left-color: #43e97b; }
-    .benefit-card.incentive { border-left-color: #4facfe; }
-    .benefit-card.reward { border-left-color: #fa709a; }
-
-    .benefit-badge {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        border-radius: 12px;
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-
-    .badge-commission { background: rgba(102, 126, 234, 0.1); color: #667eea; }
-    .badge-bonus { background: rgba(67, 233, 123, 0.1); color: #28a745; }
-    .badge-incentive { background: rgba(79, 172, 254, 0.1); color: #17a2b8; }
-    .badge-reward { background: rgba(250, 112, 154, 0.1); color: #dc3545; }
-</style>
+<link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.7">
+<link rel="stylesheet" href="{{ asset('css/affiliates-page.css') }}?v=1.1">
 @endpush
 
+@push('body-class', 'ios-dashboard-mode affiliates-page')
+
+@php
+    $activeFilterCount = 0;
+    if (filled(request('search'))) {
+        $activeFilterCount++;
+    }
+    if (filled(request('type'))) {
+        $activeFilterCount++;
+    }
+    if (request()->has('is_active') && request('is_active') !== '') {
+        $activeFilterCount++;
+    }
+@endphp
+
 @section('content')
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <h2 class="mb-0" style="font-weight: 700;">
-                <i class="fas fa-gift mr-2"></i>Affiliate Benefits Management
-            </h2>
-            <p class="text-muted mb-0" style="font-size: 0.875rem;">Configure commission, bonuses, and rewards for sales team</p>
+<div class="looker-dashboard">
+    <header class="looker-header animate-slide-up delay-1">
+        <div class="looker-header-title">
+            <h1>Affiliate benefits</h1>
+            <p>Configure commissions, bonuses, and rewards for your sales team.</p>
         </div>
-        <a href="{{ route('affiliates.benefits.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus mr-2"></i>Create New Benefit
-        </a>
+        <div class="looker-actions flex-wrap">
+            <a href="{{ route('affiliates.index') }}" class="action-btn action-btn-secondary">
+                <i class="fas fa-chart-line" aria-hidden="true"></i> Affiliates
+            </a>
+            <a href="{{ route('affiliates.benefits.create') }}" class="action-btn action-btn-primary">
+                <i class="fas fa-plus" aria-hidden="true"></i> New benefit
+            </a>
+        </div>
+    </header>
+
+    <div class="kpi-wrapper">
+        <div class="kpi-card-looker animate-slide-up delay-2">
+            <div class="kpi-top">
+                <div class="kpi-title">Matching rules</div>
+                <div class="kpi-icon-wrapper primary-icon"><i class="fas fa-gift" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format($benefits->total()) }}</div>
+            <div class="kpi-bottom trend-neutral">With current filters</div>
+        </div>
+        <div class="kpi-card-looker success animate-slide-up delay-3">
+            <div class="kpi-top">
+                <div class="kpi-title">Active</div>
+                <div class="kpi-icon-wrapper success-icon"><i class="fas fa-check-circle" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format($benefits->where('is_active', true)->count()) }}</div>
+            <div class="kpi-bottom trend-positive">On this page</div>
+        </div>
+        <div class="kpi-card-looker warning animate-slide-up delay-4">
+            <div class="kpi-top">
+                <div class="kpi-title">Inactive</div>
+                <div class="kpi-icon-wrapper warning-icon"><i class="fas fa-pause-circle" aria-hidden="true"></i></div>
+            </div>
+            <div class="kpi-value-looker">{{ number_format($benefits->where('is_active', false)->count()) }}</div>
+            <div class="kpi-bottom trend-warning">On this page</div>
+        </div>
     </div>
 
-    <!-- Filters -->
-    <div class="card mb-3">
-        <div class="card-body">
-            <form method="GET" action="{{ route('affiliates.benefits.index') }}" class="row g-2">
-                <div class="col-md-3">
-                    <label class="form-label small">Search</label>
-                    <input type="text" name="search" class="form-control form-control-sm" 
-                           placeholder="Search benefits..." value="{{ request('search') }}">
+    <div class="filter-bar">
+        <form method="GET" action="{{ route('affiliates.benefits.index') }}" id="benefitsFilterForm">
+            <div class="filter-header">
+                <h6>
+                    <i class="fas fa-filter" aria-hidden="true"></i> Filters
+                    <span class="filter-badge {{ $activeFilterCount > 0 ? '' : 'd-none' }}">{{ $activeFilterCount }} active</span>
+                </h6>
+            </div>
+            <div class="filter-row-primary">
+                <div>
+                    <label class="form-label" for="benefits_search">Search</label>
+                    <input type="search" name="search" id="benefits_search" class="form-control" autocomplete="off"
+                           placeholder="Benefit name…" value="{{ request('search') }}">
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label small">Type</label>
-                    <select name="type" class="form-control form-control-sm">
-                        <option value="">All Types</option>
+                <div>
+                    <label class="form-label" for="benefits_type">Type</label>
+                    <select name="type" id="benefits_type" class="form-select">
+                        <option value="">All types</option>
                         @foreach($types as $key => $label)
                             <option value="{{ $key }}" {{ request('type') == $key ? 'selected' : '' }}>
                                 {{ $label }}
@@ -74,123 +93,135 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label small">Status</label>
-                    <select name="is_active" class="form-control form-control-sm">
+                <div>
+                    <label class="form-label" for="benefits_status">Status</label>
+                    <select name="is_active" id="benefits_status" class="form-select">
                         <option value="">All</option>
-                        <option value="1" {{ request('is_active') == '1' ? 'selected' : '' }}>Active</option>
-                        <option value="0" {{ request('is_active') == '0' ? 'selected' : '' }}>Inactive</option>
+                        <option value="1" {{ request('is_active') === '1' || request('is_active') === 1 ? 'selected' : '' }}>Active</option>
+                        <option value="0" {{ request('is_active') === '0' || request('is_active') === 0 ? 'selected' : '' }}>Inactive</option>
                     </select>
                 </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-sm btn-primary me-2">
-                        <i class="fas fa-filter"></i> Filter
-                    </button>
-                    <a href="{{ route('affiliates.benefits.index') }}" class="btn btn-sm btn-secondary">
-                        <i class="fas fa-times"></i>
-                    </a>
-                </div>
-            </form>
-        </div>
+            </div>
+            <div class="filter-actions">
+                <button type="submit" class="action-btn action-btn-primary">
+                    <i class="fas fa-filter" aria-hidden="true"></i> Apply filters
+                </button>
+                <a href="{{ route('affiliates.benefits.index') }}" class="action-btn action-btn-secondary">Reset all</a>
+            </div>
+        </form>
     </div>
 
-    <!-- Benefits List -->
-    <div class="card">
-        <div class="card-body p-0">
+    <div class="canvas-panel animate-slide-up delay-5">
+        <div class="panel-header">
+            <h2 class="panel-title"><i class="fas fa-table" aria-hidden="true"></i> All benefits</h2>
+        </div>
+        <div class="looker-table-wrapper">
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="thead-light">
+                <table class="looker-table">
+                    <thead>
                         <tr>
-                            <th>Benefit Name</th>
-                            <th>Type</th>
-                            <th>Calculation</th>
-                            <th>Value</th>
-                            <th>Targets</th>
-                            <th>Applies To</th>
-                            <th>Priority</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th scope="col">Benefit</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Calculation</th>
+                            <th scope="col">Value</th>
+                            <th scope="col">Targets</th>
+                            <th scope="col">Applies to</th>
+                            <th scope="col" class="text-center">Priority</th>
+                            <th scope="col" class="text-center">Status</th>
+                            <th scope="col" class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($benefits as $benefit)
+                        @php
+                            $typeClass = match ($benefit->type) {
+                                'commission' => 'status-badge-blue',
+                                'bonus' => 'status-badge-green',
+                                'incentive' => 'status-badge-purple',
+                                'reward' => 'status-badge-orange',
+                                default => 'status-badge-neutral',
+                            };
+                        @endphp
                         <tr>
                             <td>
                                 <strong>{{ $benefit->name }}</strong>
                                 @if($benefit->description)
-                                    <br><small class="text-muted">{{ Str::limit($benefit->description, 50) }}</small>
+                                    <br><span class="small text-secondary">{{ Str::limit($benefit->description, 50) }}</span>
                                 @endif
                             </td>
                             <td>
-                                <span class="benefit-badge badge-{{ $benefit->type }}">
-                                    {{ ucfirst($benefit->type) }}
-                                </span>
+                                <span class="status-badge {{ $typeClass }}">{{ ucfirst($benefit->type) }}</span>
                             </td>
-                            <td>
-                                <small class="text-muted">{{ ucfirst(str_replace('_', ' ', $benefit->calculation_method)) }}</small>
-                            </td>
+                            <td><span class="small text-secondary">{{ ucfirst(str_replace('_', ' ', $benefit->calculation_method)) }}</span></td>
                             <td>
                                 @if($benefit->calculation_method === 'percentage')
                                     <strong>{{ number_format($benefit->percentage, 2) }}%</strong>
                                 @elseif($benefit->calculation_method === 'fixed_amount')
                                     <strong>${{ number_format($benefit->fixed_amount, 2) }}</strong>
                                 @else
-                                    <small class="text-muted">Tiered</small>
+                                    <span class="small text-secondary">Tiered</span>
                                 @endif
                             </td>
                             <td>
                                 @if($benefit->target_revenue)
-                                    <small>Revenue: ${{ number_format($benefit->target_revenue, 0) }}</small><br>
+                                    <span class="small d-block">Revenue: ${{ number_format($benefit->target_revenue, 0) }}</span>
                                 @endif
                                 @if($benefit->target_bookings)
-                                    <small>Bookings: {{ $benefit->target_bookings }}</small><br>
+                                    <span class="small d-block">Bookings: {{ $benefit->target_bookings }}</span>
                                 @endif
                                 @if($benefit->target_clients)
-                                    <small>Clients: {{ $benefit->target_clients }}</small>
+                                    <span class="small d-block">Clients: {{ $benefit->target_clients }}</span>
                                 @endif
                                 @if(!$benefit->target_revenue && !$benefit->target_bookings && !$benefit->target_clients)
-                                    <span class="text-muted">—</span>
+                                    <span class="text-secondary">—</span>
                                 @endif
                             </td>
                             <td>
                                 @if($benefit->user)
-                                    <small>User: {{ $benefit->user->username }}</small><br>
+                                    <span class="small d-block">User: {{ $benefit->user->username }}</span>
                                 @endif
                                 @if($benefit->floorPlan)
-                                    <small>Floor Plan: {{ $benefit->floorPlan->name }}</small>
+                                    <span class="small d-block">Plan: {{ $benefit->floorPlan->name }}</span>
                                 @endif
                                 @if(!$benefit->user && !$benefit->floorPlan)
-                                    <span class="text-muted">All</span>
+                                    <span class="text-secondary">All</span>
                                 @endif
                             </td>
-                            <td>
-                                <span class="badge badge-secondary">{{ $benefit->priority }}</span>
+                            <td class="text-center">
+                                <span class="status-badge status-badge-neutral">{{ $benefit->priority }}</span>
                             </td>
-                            <td>
-                                <button type="button" 
-                                        class="btn btn-sm btn-toggle-status {{ $benefit->is_active ? 'btn-success' : 'btn-secondary' }}"
+                            <td class="text-center">
+                                <button type="button"
+                                        class="action-btn benefit-toggle-btn {{ $benefit->is_active ? 'action-btn-primary' : 'action-btn-secondary' }}"
                                         data-id="{{ $benefit->id }}"
-                                        data-status="{{ $benefit->is_active }}">
-                                    <i class="fas fa-{{ $benefit->is_active ? 'check' : 'times' }}"></i>
+                                        data-status="{{ $benefit->is_active ? '1' : '0' }}"
+                                        title="{{ $benefit->is_active ? 'Active — click to deactivate' : 'Inactive — click to activate' }}"
+                                        aria-pressed="{{ $benefit->is_active ? 'true' : 'false' }}">
+                                    <i class="fas fa-{{ $benefit->is_active ? 'check' : 'times' }}" aria-hidden="true"></i>
                                 </button>
                             </td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <a href="{{ route('affiliates.benefits.show', $benefit->id) }}" 
-                                       class="btn btn-info" title="View">
-                                        <i class="fas fa-eye"></i>
+                            <td class="text-center">
+                                <div class="affiliates-benefits-table-actions justify-content-center">
+                                    <a href="{{ route('affiliates.benefits.show', $benefit->id) }}"
+                                       class="action-btn action-btn-secondary"
+                                       title="View"
+                                       aria-label="View {{ $benefit->name }}">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
                                     </a>
-                                    <a href="{{ route('affiliates.benefits.edit', $benefit->id) }}" 
-                                       class="btn btn-warning" title="Edit">
-                                        <i class="fas fa-edit"></i>
+                                    <a href="{{ route('affiliates.benefits.edit', $benefit->id) }}"
+                                       class="action-btn action-btn-primary"
+                                       title="Edit"
+                                       aria-label="Edit {{ $benefit->name }}">
+                                        <i class="fas fa-edit" aria-hidden="true"></i>
                                     </a>
-                                    <form action="{{ route('affiliates.benefits.destroy', $benefit->id) }}" 
-                                          method="POST" class="d-inline"
-                                          onsubmit="return confirm('Are you sure you want to delete this benefit?');">
+                                    <form action="{{ route('affiliates.benefits.destroy', $benefit->id) }}"
+                                          method="POST"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Delete this benefit? This cannot be undone.');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger" title="Delete">
-                                            <i class="fas fa-trash"></i>
+                                        <button type="submit" class="action-btn action-btn-secondary affiliates-btn-danger-soft" title="Delete" aria-label="Delete {{ $benefit->name }}">
+                                            <i class="fas fa-trash" aria-hidden="true"></i>
                                         </button>
                                     </form>
                                 </div>
@@ -198,9 +229,10 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="text-center py-4 text-muted">
-                                <i class="fas fa-gift fa-2x mb-2 d-block"></i>
-                                No benefits found. <a href="{{ route('affiliates.benefits.create') }}">Create your first benefit</a>
+                            <td colspan="9" class="text-center py-5 text-secondary">
+                                <i class="fas fa-gift fa-2x mb-3 d-block opacity-50" aria-hidden="true"></i>
+                                <p class="mb-2">No benefits found.</p>
+                                <a href="{{ route('affiliates.benefits.create') }}" class="action-btn action-btn-primary">Create your first benefit</a>
                             </td>
                         </tr>
                         @endforelse
@@ -209,9 +241,9 @@
             </div>
         </div>
         @if($benefits->hasPages())
-        <div class="card-footer">
-            {{ $benefits->links() }}
-        </div>
+            <div class="affiliates-pagination-footer">
+                {{ $benefits->links() }}
+            </div>
         @endif
     </div>
 </div>
@@ -219,30 +251,39 @@
 
 @push('scripts')
 <script>
-    document.querySelectorAll('.btn-toggle-status').forEach(btn => {
-        btn.addEventListener('click', function() {
+    document.querySelectorAll('.benefit-toggle-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
             const id = this.dataset.id;
-            const currentStatus = this.dataset.status === '1';
-            
-            fetch(`/affiliates/benefits/${id}/toggle-status`, {
+
+            fetch('/affiliates/benefits/' + id + '/toggle-status', {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Content-Type': 'application/json',
-                }
+                    'Accept': 'application/json',
+                },
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    this.dataset.status = data.is_active ? '1' : '0';
-                    this.className = `btn btn-sm btn-toggle-status ${data.is_active ? 'btn-success' : 'btn-secondary'}`;
-                    this.innerHTML = `<i class="fas fa-${data.is_active ? 'check' : 'times'}"></i>`;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Failed to update status');
-            });
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    if (!data.success) {
+                        return;
+                    }
+                    btn.dataset.status = data.is_active ? '1' : '0';
+                    btn.classList.remove('action-btn-primary', 'action-btn-secondary');
+                    if (data.is_active) {
+                        btn.classList.add('action-btn-primary');
+                    } else {
+                        btn.classList.add('action-btn-secondary');
+                    }
+                    btn.setAttribute('aria-pressed', data.is_active ? 'true' : 'false');
+                    btn.title = data.is_active ? 'Active — click to deactivate' : 'Inactive — click to activate';
+                    btn.innerHTML = '<i class="fas fa-' + (data.is_active ? 'check' : 'times') + '" aria-hidden="true"></i>';
+                })
+                .catch(function () {
+                    alert('Failed to update status');
+                });
         });
     });
 </script>
