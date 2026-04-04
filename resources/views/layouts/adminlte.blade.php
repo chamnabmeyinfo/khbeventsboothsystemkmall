@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -92,7 +92,8 @@
     <link rel="stylesheet" href="{{ asset('css/admin-bootstrap-polish.css') }}?v=1">
     {{-- Align with layouts.admin / app: mobile sheets gated by viewport media (not JS width) --}}
     <link rel="stylesheet" href="{{ asset('css/mobile-design-system.css') }}?v=4.0" media="(max-width: 768px)">
-    <link rel="stylesheet" href="{{ asset('css/global-mobile-enhancements.css') }}?v=1" media="(max-width: 768px)">
+    <link rel="stylesheet" href="{{ asset('css/global-mobile-enhancements.css') }}?v=2" media="(max-width: 768px)">
+    <link rel="stylesheet" href="{{ asset('css/mobile-cross-browser.css') }}?v=1">
 
     {{-- Async CSS Loader Script --}}
     <script>
@@ -1584,11 +1585,9 @@
             word-wrap: break-word;
         }
     </style>
-    
-    <!-- Mobile Design System -->
-    <link rel="stylesheet" href="{{ asset('css/mobile-design-system.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/global-mobile-enhancements.css') }}">
-    
+
+    {{-- Mobile sheets: loaded earlier with media="(max-width: 768px)" — do not duplicate here (would apply on desktop). --}}
+
     <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}?v=3.2">
     <link rel="stylesheet" href="{{ asset('css/app-loading-overlay.css') }}?v=2">
     

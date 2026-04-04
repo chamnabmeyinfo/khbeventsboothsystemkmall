@@ -1,0 +1,71 @@
+/**
+ * Mobile cross-browser foundations (iOS Safari, Chrome Android, Samsung Internet, Firefox).
+ * Always loaded; rules are scoped by media or pointer type. Pair with viewport-fit=cover.
+ */
+
+/* Touch devices: reduce double-tap zoom delay (Chrome/Samsung Internet; iOS respects on controls) */
+@media (hover: none) and (pointer: coarse) {
+    button,
+    input[type="button"],
+    input[type="submit"],
+    input[type="reset"],
+    .btn,
+    [role="button"],
+    .action-btn,
+    .sidebar-toggle-btn,
+    .header-action-btn,
+    .page-link,
+    .dropdown-toggle,
+    .nav-link {
+        touch-action: manipulation;
+    }
+}
+
+@media (max-width: 768px) {
+    html {
+        overflow-x: hidden;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+    }
+
+    body {
+        overflow-x: hidden;
+        overscroll-behavior-x: none;
+    }
+
+    @supports (overflow: clip) {
+        html {
+            overflow-x: clip;
+        }
+    }
+
+    img,
+    svg,
+    video,
+    canvas {
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* Modals: respect home indicator / rounded display (with viewport-fit=cover) */
+    .modal {
+        padding-left: env(safe-area-inset-left, 0px);
+        padding-right: env(safe-area-inset-right, 0px);
+    }
+
+    .modal-dialog.modal-fullscreen,
+    .modal-dialog {
+        margin-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+    }
+
+    /* AdminLTE top bar — safe area (navbar keeps its own horizontal padding) */
+    .main-header {
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-left: env(safe-area-inset-left, 0px);
+        padding-right: env(safe-area-inset-right, 0px);
+    }
+
+    .wrapper .content-wrapper {
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+}
