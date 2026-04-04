@@ -1,0 +1,235 @@
+/**
+ * AdminLTE / Bootstrap 4 — main content polish (KHB)
+ * Single responsive stylesheet; uses appearance :root vars from layouts/adminlte.
+ * Scoped to .content-wrapper so sidebar, navbar tools, and modals stay predictable.
+ */
+
+.content-wrapper .btn:not(.btn-tool):not(.btn-xs):not(.page-link),
+.modal .btn:not(.btn-tool):not(.btn-xs):not(.close):not(.page-link) {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border-radius: 12px;
+  padding: 0.5rem 1.15rem;
+  transition:
+    transform 0.14s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.14s ease,
+    filter 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  line-height: 1.25;
+}
+
+.content-wrapper .btn-sm,
+.modal .btn-sm {
+  padding: 0.35rem 0.85rem;
+  border-radius: 10px;
+  font-size: 0.875rem;
+}
+
+.content-wrapper .btn-lg,
+.modal .btn-lg {
+  padding: 0.65rem 1.4rem;
+  border-radius: 14px;
+  font-size: 1rem;
+}
+
+.content-wrapper .btn-default,
+.content-wrapper .btn-secondary,
+.modal .btn-default,
+.modal .btn-secondary {
+  background: linear-gradient(180deg, #ffffff 0%, #f3f5f7 100%);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #1f2937;
+  box-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.05),
+    0 3px 10px rgba(0, 0, 0, 0.06);
+}
+
+.content-wrapper .btn-default:hover,
+.content-wrapper .btn-secondary:hover,
+.modal .btn-default:hover,
+.modal .btn-secondary:hover {
+  border-color: rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+  box-shadow:
+    0 3px 0 rgba(0, 0, 0, 0.06),
+    0 6px 14px rgba(0, 0, 0, 0.08);
+  color: #111827;
+}
+
+.content-wrapper .btn-primary,
+.modal .btn-primary {
+  background-color: var(--primary-color, #4e73df) !important;
+  border-color: var(--primary-color, #4e73df) !important;
+  box-shadow:
+    0 3px 0 rgba(0, 0, 0, 0.12),
+    0 5px 16px rgba(78, 115, 223, 0.25);
+}
+
+.content-wrapper .btn-primary:hover,
+.modal .btn-primary:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+.content-wrapper .btn-success,
+.modal .btn-success {
+  background-color: var(--success-color, #1cc88a) !important;
+  border-color: var(--success-color, #1cc88a) !important;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.1), 0 4px 12px rgba(28, 200, 138, 0.25);
+}
+
+.content-wrapper .btn-success:hover,
+.modal .btn-success:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.content-wrapper .btn-info,
+.modal .btn-info {
+  background-color: var(--info-color, #36b9cc) !important;
+  border-color: var(--info-color, #36b9cc) !important;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.1), 0 4px 12px rgba(54, 185, 204, 0.25);
+}
+
+.content-wrapper .btn-info:hover,
+.modal .btn-info:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.content-wrapper .btn-warning,
+.modal .btn-warning {
+  background-color: var(--warning-color, #f6c23e) !important;
+  border-color: var(--warning-color, #f6c23e) !important;
+  color: #1f2937 !important;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.08), 0 4px 12px rgba(246, 194, 62, 0.35);
+}
+
+.content-wrapper .btn-warning:hover,
+.modal .btn-warning:hover {
+  filter: brightness(1.04);
+  transform: translateY(-1px);
+  color: #111827 !important;
+}
+
+.content-wrapper .btn-danger,
+.modal .btn-danger {
+  background-color: var(--danger-color, #e74a3b) !important;
+  border-color: var(--danger-color, #e74a3b) !important;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.12), 0 4px 12px rgba(231, 74, 59, 0.28);
+}
+
+.content-wrapper .btn-danger:hover,
+.modal .btn-danger:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.content-wrapper .btn:active,
+.modal .btn:active {
+  transform: translateY(1px);
+  transition-duration: 0.06s;
+}
+
+.content-wrapper .btn:focus-visible,
+.modal .btn:focus-visible {
+  outline: 2px solid var(--primary-color, #4e73df);
+  outline-offset: 2px;
+}
+
+/* Cards & panels in main content */
+.modal-content {
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 12px 40px rgba(31, 38, 135, 0.12);
+}
+
+.modal-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  font-weight: 600;
+}
+
+.content-wrapper .card {
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 24px rgba(31, 38, 135, 0.07);
+  overflow: hidden;
+}
+
+.content-wrapper .card-header {
+  font-weight: 600;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
+}
+
+.content-wrapper .card-outline {
+  border-width: 1px;
+}
+
+/* Form controls — subtle, matches touch-friendly global-ux on mobile */
+@media (min-width: 769px) {
+  .content-wrapper .form-control,
+  .content-wrapper select.form-control {
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    min-height: 2.5rem;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .content-wrapper .form-control:focus {
+    border-color: var(--primary-color, #4e73df);
+    box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.15);
+  }
+}
+
+/* Tables inside content */
+.content-wrapper .table thead th {
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+  border-bottom-width: 2px;
+}
+
+.content-wrapper .table-hover tbody tr:hover {
+  background-color: rgba(78, 115, 223, 0.04);
+}
+
+/* Badges in content */
+.content-wrapper .badge {
+  font-weight: 600;
+  padding: 0.35em 0.65em;
+  border-radius: 8px;
+}
+
+/* Pages that mix Bootstrap .btn inside Looker — restore Admin defaults */
+body.ios-dashboard-mode .looker-dashboard .btn:not(.btn-tool) {
+  display: inline-block;
+  font-weight: 400;
+  letter-spacing: normal;
+  border-radius: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  gap: 0;
+  align-items: stretch;
+  justify-content: flex-start;
+  box-shadow: none;
+  line-height: 1.5;
+}
+
+body.ios-dashboard-mode .looker-dashboard .btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border-radius: 0.2rem;
+}
+
+body.ios-dashboard-mode .looker-dashboard .btn-lg {
+  padding: 0.5rem 1rem;
+  font-size: 1.25rem;
+  border-radius: 0.3rem;
+}

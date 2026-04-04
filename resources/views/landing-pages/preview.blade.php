@@ -1,35 +1,46 @@
 @extends('layouts.adminlte')
 
+@include('landing-pages.partials.admin-looker-setup')
+
 @section('title', 'Preview Landing Page')
 @section('page-title', 'Preview Landing Page')
 @section('breadcrumb', 'Landing Pages / Preview')
 
 @section('content')
-<div class="container-fluid">
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h3 class="card-title mb-0">{{ $landingPage->name }}</h3>
-            <div class="d-flex gap-2">
-                <a href="{{ route('landing-pages.edit', $landingPage) }}" class="btn btn-primary btn-sm">Edit</a>
-                <a href="{{ route('landing-pages.public.show', $landingPage) }}" target="_blank" class="btn btn-info btn-sm">Open Public URL</a>
-            </div>
+<div class="looker-dashboard">
+    <header class="looker-header">
+        <div class="looker-header-title">
+            <h1>Preview: {{ $landingPage->name }}</h1>
+            <p>Inline editing in an embedded public view.</p>
         </div>
-        <div class="card-body">
-            <div class="alert alert-info py-2">
-                <strong>Inline edit:</strong> Click text blocks in preview to edit directly, then click <em>Save Changes</em>.
-                For image blocks, use <em>Alt + Click</em> to set image URL/path quickly. Use Lock/Undo/Reset/Publish from the toolbar.
-            </div>
-            <p class="text-muted mb-2">
-                Public URL:
-                <a href="{{ route('landing-pages.public.show', $landingPage) }}" target="_blank">{{ route('landing-pages.public.show', $landingPage) }}</a>
-            </p>
-            <div class="border rounded" style="height: 75vh; min-height: 500px;">
-                <iframe
-                    src="{{ route('landing-pages.public.show', [$landingPage, 'editor' => 1, 'lang' => $landingPage->default_locale ?? 'en']) }}"
-                    title="Landing preview"
-                    style="width: 100%; height: 100%; border: 0;"
-                    loading="lazy"></iframe>
-            </div>
+        <div class="looker-actions flex-wrap">
+            <a href="{{ route('landing-pages.edit', $landingPage) }}" class="action-btn action-btn-secondary">
+                <i class="fas fa-edit" aria-hidden="true"></i> Edit settings
+            </a>
+            <a href="{{ route('landing-pages.public.show', $landingPage) }}" target="_blank" rel="noopener" class="action-btn action-btn-primary">
+                <i class="fas fa-external-link-alt" aria-hidden="true"></i> Open public URL
+            </a>
+        </div>
+    </header>
+
+    <div class="lp-callout" role="status">
+        <strong>Inline edit:</strong> Click text blocks in the preview to edit, then use <em>Save Changes</em>.
+        For images, use <em>Alt + Click</em> to set URL/path. Use Lock / Undo / Reset / Publish from the toolbar.
+    </div>
+
+    <div class="canvas-panel">
+        <div class="panel-header">
+            <h2 class="panel-title"><i class="fas fa-eye" aria-hidden="true"></i> Live preview</h2>
+        </div>
+        <p class="text-muted small mb-3">
+            Public URL:
+            <a href="{{ route('landing-pages.public.show', $landingPage) }}" target="_blank" rel="noopener">{{ route('landing-pages.public.show', $landingPage) }}</a>
+        </p>
+        <div class="lp-preview-frame">
+            <iframe
+                src="{{ route('landing-pages.public.show', [$landingPage, 'editor' => 1, 'lang' => $landingPage->default_locale ?? 'en']) }}"
+                title="Landing preview"
+                loading="lazy"></iframe>
         </div>
     </div>
 </div>

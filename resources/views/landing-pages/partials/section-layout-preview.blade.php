@@ -4,9 +4,9 @@
     $lpLoc = preg_replace('/[^a-z0-9_-]/i', '', (string) ($loc ?? 'en'));
 @endphp
 <div class="lp-sec-preview" role="region" aria-labelledby="lp-sec-prev-h-{{ $lpLoc }}-{{ $sid }}">
-    <div class="lp-sec-preview__head d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+    <div class="lp-sec-preview__head d-flex flex-wrap align-items-center justify-content-between mb-2">
         <span class="lp-sec-preview__title text-muted small mb-0" id="lp-sec-prev-h-{{ $lpLoc }}-{{ $sid }}">Layout preview</span>
-        <span class="badge badge-light border text-muted font-weight-normal">Public page</span>
+        <span class="status-badge status-badge-neutral">Public page</span>
     </div>
 
     @if($sid === 1)

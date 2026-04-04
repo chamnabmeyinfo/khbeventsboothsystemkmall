@@ -1,44 +1,47 @@
 @extends('layouts.adminlte')
 
+@include('landing-pages.partials.admin-looker-setup')
+
 @section('title', 'Landing leads & reporting')
 @section('page-title', 'Leads & reporting: '.$landingPage->name)
 @section('breadcrumb', 'Landing Pages / Reporting')
 
 @section('content')
-<div class="container-fluid">
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+<div class="looker-dashboard">
+    <header class="looker-header">
+        <div class="looker-header-title">
+            <h1>Leads: {{ $landingPage->name }}</h1>
+            <p>Submissions from this landing page only.</p>
         </div>
-    @endif
+        <div class="looker-actions flex-wrap">
+            <a href="{{ route('landing-pages.reporting.create', ['landing_page_id' => $landingPage->id]) }}" class="action-btn action-btn-primary">
+                <i class="fas fa-plus" aria-hidden="true"></i> Add lead
+            </a>
+            <a href="{{ route('landing-pages.edit', $landingPage) }}" class="action-btn action-btn-secondary">Edit page</a>
+            <a href="{{ route('landing-pages.analytics', $landingPage) }}" class="action-btn action-btn-secondary">Visitor analytics</a>
+            @if($landingPage->is_published)
+                <a href="{{ route('landing-pages.public.show', $landingPage) }}" class="action-btn action-btn-secondary" target="_blank" rel="noopener">Public URL</a>
+            @endif
+            <a href="{{ route('landing-pages.reporting.index') }}" class="action-btn action-btn-secondary">All pages — leads</a>
+            <a href="{{ route('landing-pages.index') }}" class="action-btn action-btn-secondary">All pages</a>
+        </div>
+    </header>
 
-    <div class="alert alert-light border mb-3">
+    <div class="lp-callout">
         <strong>Marketing leads only.</strong>
         Admin URL: <code>/landing-pages/{{ $landingPage->slug }}/reporting</code>. Public page: <code>/l/{{ $landingPage->slug }}</code>.
         Booth and floor-plan <strong>event bookings</strong> are managed under the main <strong>Bookings</strong> menu, not here.
     </div>
-    <div class="card">
-        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-            <h3 class="card-title mb-0">
-                <i class="fas fa-chart-line mr-2"></i>Lead submissions
-            </h3>
-            <div class="d-flex flex-wrap gap-2">
-                <a href="{{ route('landing-pages.reporting.create', ['landing_page_id' => $landingPage->id]) }}" class="btn btn-success btn-sm">Add lead</a>
-                <a href="{{ route('landing-pages.edit', $landingPage) }}" class="btn btn-default btn-sm">Edit page</a>
-                <a href="{{ route('landing-pages.analytics', $landingPage) }}" class="btn btn-primary btn-sm">Visitor analytics</a>
-                <a href="{{ route('landing-pages.public.show', $landingPage) }}" class="btn btn-info btn-sm" target="_blank" rel="noopener">Public URL</a>
-                <a href="{{ route('landing-pages.reporting.index') }}" class="btn btn-outline-primary btn-sm">All pages — leads</a>
-                <a href="{{ route('landing-pages.index') }}" class="btn btn-default btn-sm">All pages</a>
-            </div>
+
+    <div class="canvas-panel">
+        <div class="panel-header">
+            <h2 class="panel-title"><i class="fas fa-chart-line" aria-hidden="true"></i> Lead submissions</h2>
         </div>
-        <div class="card-body py-2">
-            <p class="text-muted small mb-0">
-                Rows are created when visitors submit the on-page form or the continue modal. Engagement events are stored separately for funnel reporting.
-            </p>
-        </div>
-        <div class="table-responsive">
-            <table class="table table-hover table-sm mb-0">
+        <p class="text-muted small mb-3">
+            Rows are created when visitors submit the on-page form or the continue modal. Engagement events are stored separately for funnel reporting.
+        </p>
+        <div class="looker-table-wrapper">
+            <table class="looker-table">
                 <thead>
                     <tr>
                         <th>Received</th>
@@ -64,13 +67,15 @@
                             <td class="small">{{ $row->source ?: '—' }}</td>
                             <td class="small text-muted">{{ $row->ip_address ?: '—' }}</td>
                             <td class="text-right text-nowrap">
-                                <a href="{{ route('landing-pages.reporting.show', $row) }}" class="btn btn-xs btn-default">View</a>
-                                <a href="{{ route('landing-pages.reporting.edit', $row) }}" class="btn btn-xs btn-primary">Edit</a>
-                                <form method="post" action="{{ route('landing-pages.reporting.destroy', $row) }}" class="d-inline" onsubmit="return confirm('Delete this lead?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-xs btn-outline-danger">Delete</button>
-                                </form>
+                                <div class="lp-row-actions">
+                                    <a href="{{ route('landing-pages.reporting.show', $row) }}" class="action-btn action-btn-secondary lp-btn-compact">View</a>
+                                    <a href="{{ route('landing-pages.reporting.edit', $row) }}" class="action-btn action-btn-primary lp-btn-compact">Edit</a>
+                                    <form method="post" action="{{ route('landing-pages.reporting.destroy', $row) }}" class="d-inline" onsubmit="return confirm('Delete this lead?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger lp-btn-compact">Delete</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -82,7 +87,7 @@
             </table>
         </div>
         @if(method_exists($leads, 'links'))
-            <div class="card-footer">{{ $leads->links() }}</div>
+            <div class="lp-pagination-wrap">{{ $leads->links() }}</div>
         @endif
     </div>
 </div>

@@ -1,32 +1,32 @@
 @extends('layouts.adminlte')
 
+@include('landing-pages.partials.admin-looker-setup')
+
 @section('title', 'Landing pages — visitor analytics')
 @section('page-title', 'Visitor analytics (all landing pages)')
 @section('breadcrumb', 'Landing Pages / Analytics overview')
 
 @section('content')
-<div class="container-fluid">
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+<div class="looker-dashboard">
+    <header class="looker-header">
+        <div class="looker-header-title">
+            <h1>Visitor analytics</h1>
+            <p>Funnel and engagement across all landing pages.</p>
         </div>
-    @endif
+        <div class="looker-actions flex-wrap">
+            <a href="{{ route('landing-pages.index') }}" class="action-btn action-btn-secondary">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i> All landing pages
+            </a>
+            <a href="{{ route('landing-pages.reporting.index') }}" class="action-btn action-btn-primary">
+                <i class="fas fa-address-book" aria-hidden="true"></i> Leads &amp; reporting
+            </a>
+        </div>
+    </header>
 
-    <div class="alert alert-light border mb-3">
+    <div class="lp-callout">
         <strong>Per-page detail.</strong>
-        Open a landing page’s full funnel, daily chart, UTM breakdown, and recent events from the <strong>Analytics</strong> link in each row. Public traffic is tracked from <code>/l/{slug}</code> (views, CTA, leads, language, thank-you).
-    </div>
-
-    <div class="card mb-3">
-        <div class="card-body d-flex flex-wrap align-items-center gap-2">
-            <a href="{{ route('landing-pages.index') }}" class="btn btn-default" style="min-height:44px;">
-                <i class="fas fa-arrow-left mr-1"></i>All landing pages
-            </a>
-            <a href="{{ route('landing-pages.reporting.index') }}" class="btn btn-outline-primary" style="min-height:44px;">
-                <i class="fas fa-address-book mr-1"></i>Leads &amp; reporting
-            </a>
-        </div>
+        Open a page’s funnel, daily chart, UTM breakdown, and recent events from the <strong>Analytics</strong> link in each row.
+        Public traffic is tracked from <code>/l/{slug}</code> (views, CTA, leads, language, thank-you).
     </div>
 
     @include('landing-pages.partials.analytics-clear-form', [
@@ -36,14 +36,12 @@
         'formId' => 'lp-an-clear-all',
     ])
 
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title mb-0">
-                <i class="fas fa-users mr-2"></i>Summary by page
-            </h3>
+    <div class="canvas-panel">
+        <div class="panel-header">
+            <h2 class="panel-title"><i class="fas fa-users" aria-hidden="true"></i> Summary by page</h2>
         </div>
-        <div class="table-responsive">
-            <table class="table table-hover mb-0">
+        <div class="looker-table-wrapper">
+            <table class="looker-table">
                 <thead>
                     <tr>
                         <th>Page</th>
@@ -63,7 +61,7 @@
                                 <div class="font-weight-bold">{{ $p->name }}</div>
                                 <div class="small text-muted"><code>{{ $p->slug }}</code>
                                     @if(!$p->is_published)
-                                        <span class="badge badge-secondary">Draft</span>
+                                        <span class="status-badge status-badge-neutral">Draft</span>
                                     @endif
                                 </div>
                             </td>
@@ -73,8 +71,10 @@
                             <td class="text-right">{{ number_format((int) ($s['cta_clicks'] ?? 0)) }}</td>
                             <td class="text-right">{{ number_format((int) ($s['thank_you'] ?? 0)) }}</td>
                             <td class="text-right text-nowrap">
-                                <a href="{{ route('landing-pages.analytics', $p) }}" class="btn btn-sm btn-primary" style="min-height:44px;">Analytics</a>
-                                <a href="{{ route('landing-pages.reporting', $p) }}" class="btn btn-sm btn-default" style="min-height:44px;">Leads</a>
+                                <div class="lp-row-actions justify-content-end">
+                                    <a href="{{ route('landing-pages.analytics', $p) }}" class="action-btn action-btn-primary lp-btn-compact">Analytics</a>
+                                    <a href="{{ route('landing-pages.reporting', $p) }}" class="action-btn action-btn-secondary lp-btn-compact">Leads</a>
+                                </div>
                             </td>
                         </tr>
                     @empty

@@ -17,7 +17,7 @@ textarea.form-control {
   overflow: visible !important;
   white-space: normal !important;
   word-wrap: break-word !important;
-  padding: -0.25rem 1rem;
+  padding: 0.5rem 1rem;
 }
 
 textarea.form-control {
@@ -339,13 +339,13 @@ a:hover {
 }
 
 .btn-primary {
-  background-color: #6366f1 !important;
-  border-color: #6366f1 !important;
+  background-color: var(--primary-color, #6366f1) !important;
+  border-color: var(--primary-color, #6366f1) !important;
 }
 
 .btn-primary:hover {
-  background-color: #4f46e5 !important;
-  border-color: #4f46e5 !important;
+  filter: brightness(0.94);
+  border-color: var(--primary-color, #6366f1) !important;
 }
 
 /* ============================================

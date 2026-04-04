@@ -9,7 +9,7 @@
         })->values();
     });
 @endphp
-<div class="card card-outline-secondary mb-0">
+<div class="card card-outline-secondary mb-0 lp-section-blueprint">
     <div class="card-header py-2">
         <strong class="d-block">Public page sections</strong>
         <small class="text-muted">Choose which blocks appear on the Canton Fair visual page and in what order. Each layout can appear once. <strong>Hero</strong> is always kept if missing. Optional blocks (e.g. promotion, trip slider) still hide themselves when empty.</small>
@@ -17,8 +17,8 @@
     <div class="card-body">
         <input type="hidden" name="visual[section_blueprint_json]" id="lpSectionBlueprintJson" value="{{ e($sectionBlueprintJson) }}">
 
-        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-            <div class="form-inline flex-grow-1 flex-wrap gap-2">
+        <div class="lp-section-toolbar">
+            <div class="form-inline flex-grow-1">
                 <label class="sr-only" for="lpSectionAddLayout">Add section layout</label>
                 <select class="form-control" id="lpSectionAddLayout" aria-label="Layout to add">
                     <option value="">— Add layout —</option>
@@ -26,9 +26,9 @@
                         <option value="{{ $lk }}">{{ $lpSectionLabels[$lk] ?? $lk }}</option>
                     @endforeach
                 </select>
-                <button type="button" class="btn btn-outline-primary" id="lpSectionAddBtn" style="min-height:44px;">Add section</button>
+                <button type="button" class="action-btn action-btn-primary" id="lpSectionAddBtn">Add section</button>
             </div>
-            <a href="{{ route('landing-pages.section-templates.index') }}" class="btn btn-default" style="min-height:44px;">
+            <a href="{{ route('landing-pages.section-templates.index') }}" class="action-btn action-btn-secondary">
                 <i class="fas fa-file-alt mr-1" aria-hidden="true"></i>Section templates
             </a>
         </div>
@@ -37,13 +37,13 @@
             <table class="table table-sm table-bordered mb-0" id="lpSectionBlueprintTable">
                 <thead class="thead-light">
                     <tr>
-                        <th scope="col" style="width:3rem;">#</th>
+                        <th scope="col" class="lp-col-order">#</th>
                         <th scope="col">Layout</th>
-                        <th scope="col" style="width:12rem;">Order</th>
+                        <th scope="col" class="lp-col-order-actions">Order</th>
                         @if(!empty($landingPage))
                             <th scope="col">Apply template</th>
                         @endif
-                        <th scope="col" style="width:6rem;">Remove</th>
+                        <th scope="col" class="lp-col-remove">Remove</th>
                     </tr>
                 </thead>
                 <tbody id="lpSectionBlueprintTbody"></tbody>
@@ -105,7 +105,7 @@
             var tdO = document.createElement('td');
             var up = document.createElement('button');
             up.type = 'button';
-            up.className = 'btn btn-sm btn-outline-secondary mr-1';
+            up.className = 'btn btn-sm btn-outline-secondary lp-section-order-btn mr-1';
             up.setAttribute('aria-label', 'Move up');
             up.textContent = '↑';
             up.disabled = idx === 0;
@@ -120,7 +120,7 @@
             });
             var down = document.createElement('button');
             down.type = 'button';
-            down.className = 'btn btn-sm btn-outline-secondary';
+            down.className = 'btn btn-sm btn-outline-secondary lp-section-order-btn';
             down.setAttribute('aria-label', 'Move down');
             down.textContent = '↓';
             down.disabled = idx >= rows.length - 1;
@@ -149,7 +149,7 @@
                     var form = document.createElement('form');
                     form.method = 'post';
                     form.action = applyUrl;
-                    form.className = 'd-flex flex-wrap align-items-center gap-1';
+                    form.className = 'lp-section-apply-form';
                     var tok = document.createElement('input');
                     tok.type = 'hidden';
                     tok.name = '_token';
@@ -176,7 +176,7 @@
                     });
                     var sub = document.createElement('button');
                     sub.type = 'submit';
-                    sub.className = 'btn btn-sm btn-outline-primary';
+                    sub.className = 'action-btn action-btn-secondary lp-btn-compact';
                     sub.textContent = 'Apply';
                     form.appendChild(sel);
                     form.appendChild(sub);
@@ -188,7 +188,7 @@
             var tdR = document.createElement('td');
             var rm = document.createElement('button');
             rm.type = 'button';
-            rm.className = 'btn btn-sm btn-outline-danger';
+            rm.className = 'btn btn-sm btn-outline-danger lp-section-remove-btn';
             rm.textContent = 'Remove';
             rm.addEventListener('click', function () {
                 var r = parseState();

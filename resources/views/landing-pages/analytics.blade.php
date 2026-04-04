@@ -1,5 +1,7 @@
 @extends('layouts.adminlte')
 
+@include('landing-pages.partials.admin-looker-setup')
+
 @php
     $s = $report['summary'] ?? [];
     $days = (int) ($report['period_days'] ?? 30);
@@ -21,90 +23,92 @@
 @section('breadcrumb', 'Landing Pages / Analytics')
 
 @section('content')
-<div class="container-fluid">
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+<div class="looker-dashboard">
+    <header class="looker-header">
+        <div class="looker-header-title">
+            <h1>Analytics: {{ $landingPage->name }}</h1>
+            <p>Visitor funnel, sources, and recent events.</p>
         </div>
-    @endif
+        <div class="looker-actions flex-wrap align-items-center">
+            <form method="get" action="{{ route('landing-pages.analytics', $landingPage) }}" class="d-flex align-items-center flex-wrap mb-2 mb-md-0 mr-md-2">
+                <label for="lp_an_days" class="small text-muted mb-0 mr-2">Period</label>
+                <select name="days" id="lp_an_days" class="form-control form-control-sm lp-an-period-select" onchange="this.form.submit()">
+                    @foreach([7 => '7 days', 14 => '14 days', 30 => '30 days', 60 => '60 days', 90 => '90 days'] as $v => $label)
+                        <option value="{{ $v }}" {{ $days === $v ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </form>
+            <a href="{{ route('landing-pages.reporting', $landingPage) }}" class="action-btn action-btn-secondary">Leads</a>
+            <a href="{{ route('landing-pages.analytics.index') }}" class="action-btn action-btn-secondary">All pages</a>
+            <a href="{{ route('landing-pages.edit', $landingPage) }}" class="action-btn action-btn-primary">Edit page</a>
+            @if($landingPage->is_published)
+                <a href="{{ route('landing-pages.public.show', $landingPage) }}" class="action-btn action-btn-secondary" target="_blank" rel="noopener">Public URL</a>
+            @endif
+        </div>
+    </header>
 
-    <div class="alert alert-light border mb-3">
+    <div class="lp-callout">
         <strong>Visitor &amp; engagement analytics.</strong>
         Data comes from the public page (<code>/l/{{ $landingPage->slug }}</code>) via the tracking endpoint. JSON API:
         <code>{{ route('landing-pages.analytics', $landingPage) }}?format=json</code>
         (same summary keys as before, plus <code>analytics</code> for detail).
     </div>
 
-    <div class="card mb-3">
-        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-            <h3 class="card-title mb-0">
-                <i class="fas fa-chart-area mr-2"></i>Overview
-            </h3>
-            <div class="d-flex flex-wrap align-items-center gap-2">
-                <form method="get" action="{{ route('landing-pages.analytics', $landingPage) }}" class="d-flex align-items-center flex-wrap gap-2 mb-0">
-                    <label for="lp_an_days" class="small text-muted mb-0">Period</label>
-                    <select name="days" id="lp_an_days" class="form-control form-control-sm" style="min-width: 140px; min-height: 44px;" onchange="this.form.submit()">
-                        @foreach([7 => '7 days', 14 => '14 days', 30 => '30 days', 60 => '60 days', 90 => '90 days'] as $v => $label)
-                            <option value="{{ $v }}" {{ $days === $v ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </form>
-                <a href="{{ route('landing-pages.reporting', $landingPage) }}" class="btn btn-default btn-sm" style="min-height:44px;">Leads</a>
-                <a href="{{ route('landing-pages.analytics.index') }}" class="btn btn-outline-primary btn-sm" style="min-height:44px;">All pages</a>
-                <a href="{{ route('landing-pages.edit', $landingPage) }}" class="btn btn-primary btn-sm" style="min-height:44px;">Edit</a>
-                @if($landingPage->is_published)
-                    <a href="{{ route('landing-pages.public.show', $landingPage) }}" class="btn btn-info btn-sm" target="_blank" rel="noopener" style="min-height:44px;">Public URL</a>
-                @endif
+    <div class="canvas-panel mb-3">
+        <div class="panel-header">
+            <h2 class="panel-title"><i class="fas fa-chart-area" aria-hidden="true"></i> Overview</h2>
+        </div>
+        <p class="text-muted small mb-3">
+            Funnel metrics below are <strong>all-time</strong> (stored totals). Charts and UTM tables use the selected period (last {{ $days }} days).
+        </p>
+        <div class="kpi-wrapper lp-kpi-nudge">
+            <div class="kpi-card-looker">
+                <div class="kpi-top">
+                    <div class="kpi-title">Page views</div>
+                    <div class="kpi-icon-wrapper primary-icon"><i class="fas fa-eye" aria-hidden="true"></i></div>
+                </div>
+                <div class="kpi-value-looker">{{ number_format((int) ($s['views'] ?? 0)) }}</div>
+            </div>
+            <div class="kpi-card-looker success">
+                <div class="kpi-top">
+                    <div class="kpi-title">Unique visitors</div>
+                    <div class="kpi-icon-wrapper success-icon"><i class="fas fa-users" aria-hidden="true"></i></div>
+                </div>
+                <div class="kpi-value-looker">{{ number_format((int) ($s['unique_visitors'] ?? 0)) }}</div>
+            </div>
+            <div class="kpi-card-looker purple">
+                <div class="kpi-top">
+                    <div class="kpi-title">Leads</div>
+                    <div class="kpi-icon-wrapper purple-icon"><i class="fas fa-address-book" aria-hidden="true"></i></div>
+                </div>
+                <div class="kpi-value-looker">{{ number_format((int) ($s['leads'] ?? 0)) }}</div>
+            </div>
+            <div class="kpi-card-looker warning">
+                <div class="kpi-top">
+                    <div class="kpi-title">CTA clicks</div>
+                    <div class="kpi-icon-wrapper warning-icon"><i class="fas fa-mouse-pointer" aria-hidden="true"></i></div>
+                </div>
+                <div class="kpi-value-looker">{{ number_format((int) ($s['cta_clicks'] ?? 0)) }}</div>
+            </div>
+            <div class="kpi-card-looker">
+                <div class="kpi-top">
+                    <div class="kpi-title">Continue</div>
+                    <div class="kpi-icon-wrapper primary-icon"><i class="fas fa-arrow-right" aria-hidden="true"></i></div>
+                </div>
+                <div class="kpi-value-looker">{{ number_format((int) ($s['continues'] ?? 0)) }}</div>
+            </div>
+            <div class="kpi-card-looker success">
+                <div class="kpi-top">
+                    <div class="kpi-title">Thank-you</div>
+                    <div class="kpi-icon-wrapper success-icon"><i class="fas fa-check-circle" aria-hidden="true"></i></div>
+                </div>
+                <div class="kpi-value-looker">{{ number_format((int) ($s['thank_you'] ?? 0)) }}</div>
             </div>
         </div>
-        <div class="card-body">
-            <p class="text-muted small mb-3">
-                Funnel metrics below are <strong>all-time</strong> (stored totals). Charts and UTM tables use the selected period (last {{ $days }} days).
-            </p>
-            <div class="row">
-                <div class="col-6 col-md-4 col-lg-2 mb-3">
-                    <div class="border rounded p-3 h-100 bg-light">
-                        <div class="text-muted small">Page views</div>
-                        <div class="h4 mb-0">{{ number_format((int) ($s['views'] ?? 0)) }}</div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2 mb-3">
-                    <div class="border rounded p-3 h-100 bg-light">
-                        <div class="text-muted small">Unique visitors</div>
-                        <div class="h4 mb-0">{{ number_format((int) ($s['unique_visitors'] ?? 0)) }}</div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2 mb-3">
-                    <div class="border rounded p-3 h-100 bg-light">
-                        <div class="text-muted small">Leads</div>
-                        <div class="h4 mb-0">{{ number_format((int) ($s['leads'] ?? 0)) }}</div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2 mb-3">
-                    <div class="border rounded p-3 h-100 bg-light">
-                        <div class="text-muted small">CTA clicks</div>
-                        <div class="h4 mb-0">{{ number_format((int) ($s['cta_clicks'] ?? 0)) }}</div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2 mb-3">
-                    <div class="border rounded p-3 h-100 bg-light">
-                        <div class="text-muted small">Continue</div>
-                        <div class="h4 mb-0">{{ number_format((int) ($s['continues'] ?? 0)) }}</div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2 mb-3">
-                    <div class="border rounded p-3 h-100 bg-light">
-                        <div class="text-muted small">Thank-you</div>
-                        <div class="h4 mb-0">{{ number_format((int) ($s['thank_you'] ?? 0)) }}</div>
-                    </div>
-                </div>
-            </div>
-            <div class="row mt-1">
-                <div class="col-12 col-md-6">
-                    <div class="small text-muted">Lead conversion (leads ÷ views)</div>
-                    <div class="h5 mb-0">{{ number_format((float) ($s['lead_conversion_rate_percent'] ?? 0), 2) }}%</div>
-                </div>
+        <div class="row mt-1">
+            <div class="col-12 col-md-6">
+                <div class="small text-muted">Lead conversion (leads ÷ views)</div>
+                <div class="h5 mb-0">{{ number_format((float) ($s['lead_conversion_rate_percent'] ?? 0), 2) }}%</div>
             </div>
         </div>
     </div>
@@ -115,176 +119,166 @@
         'formId' => 'lp-an-clear-single',
     ])
 
-    <div class="row">
-        <div class="col-12 col-lg-6 mb-3">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h3 class="card-title mb-0">Events by type (period)</h3>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>Event</th>
-                                <th class="text-right">Count</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($report['by_event_name'] ?? [] as $row)
-                                <tr>
-                                    <td>{{ $eventLabels[$row->event_name] ?? $row->event_name }}</td>
-                                    <td class="text-right">{{ number_format((int) $row->total) }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="2" class="text-center text-muted py-4">No events in this period.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+    <div class="data-canvas-grid">
+        <div class="col-span-6 canvas-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Events by type (period)</h2>
             </div>
-        </div>
-        <div class="col-12 col-lg-6 mb-3">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h3 class="card-title mb-0">Top sources (period)</h3>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>Source</th>
-                                <th class="text-right">Events</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($report['top_sources_period'] ?? [] as $row)
-                                <tr>
-                                    <td><code>{{ $row->source_key }}</code></td>
-                                    <td class="text-right">{{ number_format((int) $row->total) }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="2" class="text-center text-muted py-4">No source data in this period.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12 col-lg-6 mb-3">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h3 class="card-title mb-0">UTM sources (period)</h3>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>utm_source</th>
-                                <th class="text-right">Events</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($report['utm_top_sources'] ?? [] as $row)
-                                <tr>
-                                    <td>{{ $row->utm_source }}</td>
-                                    <td class="text-right">{{ number_format((int) $row->total) }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="2" class="text-center text-muted py-4">No UTM source data in this period.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-lg-6 mb-3">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h3 class="card-title mb-0">UTM campaigns (period)</h3>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>utm_campaign</th>
-                                <th class="text-right">Events</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($report['utm_top_campaigns'] ?? [] as $row)
-                                <tr>
-                                    <td>{{ $row->utm_campaign }}</td>
-                                    <td class="text-right">{{ number_format((int) $row->total) }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="2" class="text-center text-muted py-4">No UTM campaign data in this period.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="card mb-3">
-        <div class="card-header">
-            <h3 class="card-title mb-0">Daily activity (period) — views vs all events</h3>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-sm mb-0">
+            <div class="looker-table-wrapper">
+                <table class="looker-table">
                     <thead>
                         <tr>
-                            <th>Date</th>
-                            <th class="text-right">Views</th>
-                            <th class="text-right">All events</th>
-                            <th style="min-width: 180px;">Views (bar)</th>
+                            <th>Event</th>
+                            <th class="text-right">Count</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @php
-                            $daily = $report['daily_activity'] ?? [];
-                            $maxViews = max(1, (int) collect($daily)->max(fn ($x) => $x['views'] ?? 0));
-                        @endphp
-                        @foreach($daily as $date => $counts)
-                            @php
-                                $v = (int) ($counts['views'] ?? 0);
-                                $pct = round(($v / $maxViews) * 100);
-                            @endphp
+                        @forelse($report['by_event_name'] ?? [] as $row)
                             <tr>
-                                <td class="text-nowrap">{{ $date }}</td>
-                                <td class="text-right">{{ number_format($v) }}</td>
-                                <td class="text-right">{{ number_format((int) ($counts['total_events'] ?? 0)) }}</td>
-                                <td>
-                                    <div class="progress" style="height: 10px;">
-                                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ $pct }}%;" aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                </td>
+                                <td>{{ $eventLabels[$row->event_name] ?? $row->event_name }}</td>
+                                <td class="text-right">{{ number_format((int) $row->total) }}</td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="2" class="text-center text-muted py-4">No events in this period.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-span-6 canvas-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Top sources (period)</h2>
+            </div>
+            <div class="looker-table-wrapper">
+                <table class="looker-table">
+                    <thead>
+                        <tr>
+                            <th>Source</th>
+                            <th class="text-right">Events</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($report['top_sources_period'] ?? [] as $row)
+                            <tr>
+                                <td><code>{{ $row->source_key }}</code></td>
+                                <td class="text-right">{{ number_format((int) $row->total) }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="2" class="text-center text-muted py-4">No source data in this period.</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <div class="card mb-3">
-        <div class="card-header">
-            <h3 class="card-title mb-0">Recent activity (latest {{ count($report['recent_events'] ?? []) }} events)</h3>
+    <div class="data-canvas-grid">
+        <div class="col-span-6 canvas-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">UTM sources (period)</h2>
+            </div>
+            <div class="looker-table-wrapper">
+                <table class="looker-table">
+                    <thead>
+                        <tr>
+                            <th>utm_source</th>
+                            <th class="text-right">Events</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($report['utm_top_sources'] ?? [] as $row)
+                            <tr>
+                                <td>{{ $row->utm_source }}</td>
+                                <td class="text-right">{{ number_format((int) $row->total) }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="2" class="text-center text-muted py-4">No UTM source data in this period.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <div class="table-responsive">
-            <table class="table table-sm table-hover mb-0">
+        <div class="col-span-6 canvas-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">UTM campaigns (period)</h2>
+            </div>
+            <div class="looker-table-wrapper">
+                <table class="looker-table">
+                    <thead>
+                        <tr>
+                            <th>utm_campaign</th>
+                            <th class="text-right">Events</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($report['utm_top_campaigns'] ?? [] as $row)
+                            <tr>
+                                <td>{{ $row->utm_campaign }}</td>
+                                <td class="text-right">{{ number_format((int) $row->total) }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="2" class="text-center text-muted py-4">No UTM campaign data in this period.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="canvas-panel mb-3">
+        <div class="panel-header">
+            <h2 class="panel-title">Daily activity (period) — views vs all events</h2>
+        </div>
+        <div class="looker-table-wrapper">
+            <table class="looker-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th class="text-right">Views</th>
+                        <th class="text-right">All events</th>
+                        <th style="min-width: 180px;">Views (bar)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php
+                        $daily = $report['daily_activity'] ?? [];
+                        $maxViews = max(1, (int) collect($daily)->max(fn ($x) => $x['views'] ?? 0));
+                    @endphp
+                    @foreach($daily as $date => $counts)
+                        @php
+                            $v = (int) ($counts['views'] ?? 0);
+                            $pct = round(($v / $maxViews) * 100);
+                        @endphp
+                        <tr>
+                            <td class="text-nowrap">{{ $date }}</td>
+                            <td class="text-right">{{ number_format($v) }}</td>
+                            <td class="text-right">{{ number_format((int) ($counts['total_events'] ?? 0)) }}</td>
+                            <td>
+                                <div class="progress lp-progress-thin">
+                                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ $pct }}%;" aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="canvas-panel mb-3">
+        <div class="panel-header">
+            <h2 class="panel-title">Recent activity (latest {{ count($report['recent_events'] ?? []) }} events)</h2>
+        </div>
+        <div class="looker-table-wrapper">
+            <table class="looker-table">
                 <thead>
                     <tr>
                         <th>Time</th>

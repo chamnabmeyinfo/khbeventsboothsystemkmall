@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @include('landing-pages.partials.seo-head', ['seo' => $seo])
+    <link rel="stylesheet" href="{{ asset('css/landing-pages-public.css') }}?v=1.0">
     @if($landingPage->use_visual_builder && $landingPage->template_key === 'canton_fair_visual')
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
     @endif
@@ -207,26 +208,17 @@ if (window.LandingPageConfig.inlineEditEnabled) {
         var lastSavedSnapshot = {};
 
         var toolbar = document.createElement('div');
-        toolbar.style.position = 'fixed';
-        toolbar.style.right = '12px';
-        toolbar.style.top = '12px';
-        toolbar.style.zIndex = '99999';
-        toolbar.style.background = 'rgba(17,24,39,0.95)';
-        toolbar.style.color = '#fff';
-        toolbar.style.padding = '10px';
-        toolbar.style.borderRadius = '10px';
-        toolbar.style.boxShadow = '0 10px 30px rgba(0,0,0,0.25)';
-        toolbar.style.width = '240px';
+        toolbar.className = 'lp-inline-edit-toolbar';
         toolbar.innerHTML = ''
-          + '<div style="font-size:12px;margin-bottom:6px;">Inline Edit Mode</div>'
-          + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">'
-          + '<button id="lpLockBtn" style="min-height:34px;padding:6px 8px;border:0;border-radius:8px;background:#6b7280;color:#fff;cursor:pointer;">Lock</button>'
-          + '<button id="lpUndoBtn" style="min-height:34px;padding:6px 8px;border:0;border-radius:8px;background:#374151;color:#fff;cursor:pointer;">Undo</button>'
-          + '<button id="lpResetBtn" style="min-height:34px;padding:6px 8px;border:0;border-radius:8px;background:#b45309;color:#fff;cursor:pointer;">Reset</button>'
-          + '<button id="lpSaveInlineBtn" style="min-height:34px;padding:6px 8px;border:0;border-radius:8px;background:#2563eb;color:#fff;cursor:pointer;">Save</button>'
-          + '<button id="lpPublishBtn" style="grid-column:1/3;min-height:36px;padding:6px 8px;border:0;border-radius:8px;background:#059669;color:#fff;cursor:pointer;">Publish Live</button>'
+          + '<div class="lp-inline-edit-toolbar__title">Inline edit</div>'
+          + '<div class="lp-inline-edit-toolbar__grid">'
+          + '<button type="button" id="lpLockBtn" class="lp-inline-edit-btn lp-inline-edit-btn--muted">Lock</button>'
+          + '<button type="button" id="lpUndoBtn" class="lp-inline-edit-btn lp-inline-edit-btn--muted">Undo</button>'
+          + '<button type="button" id="lpResetBtn" class="lp-inline-edit-btn lp-inline-edit-btn--warn">Reset</button>'
+          + '<button type="button" id="lpSaveInlineBtn" class="lp-inline-edit-btn lp-inline-edit-btn--save">Save changes</button>'
+          + '<button type="button" id="lpPublishBtn" class="lp-inline-edit-btn lp-inline-edit-btn--success">Publish live</button>'
           + '</div>'
-          + '<div style="font-size:11px;margin-top:6px;opacity:.85;">Alt+Click image to edit URL</div>';
+          + '<div class="lp-inline-edit-toolbar__hint">Alt+click an image to edit its URL.</div>';
         document.body.appendChild(toolbar);
 
         function setEditState(isLocked) {
@@ -243,7 +235,7 @@ if (window.LandingPageConfig.inlineEditEnabled) {
             var lockBtn = document.getElementById('lpLockBtn');
             if (lockBtn) {
                 lockBtn.textContent = isLocked ? 'Unlock' : 'Lock';
-                lockBtn.style.background = isLocked ? '#1d4ed8' : '#6b7280';
+                lockBtn.className = 'lp-inline-edit-btn ' + (isLocked ? 'lp-inline-edit-btn--primary' : 'lp-inline-edit-btn--muted');
             }
         }
 
@@ -392,7 +384,7 @@ if (window.LandingPageConfig.inlineEditEnabled) {
                   })
                   .finally(function() {
                       saveBtn.disabled = false;
-                      saveBtn.textContent = 'Save Changes';
+                      saveBtn.textContent = 'Save changes';
                   });
             });
         }
@@ -422,7 +414,7 @@ if (window.LandingPageConfig.inlineEditEnabled) {
                     alert('Publish failed: ' + (err && err.message ? err.message : 'Unknown error'));
                 }).finally(function() {
                     publishBtn.disabled = false;
-                    publishBtn.textContent = 'Publish Live';
+                    publishBtn.textContent = 'Publish live';
                 });
             });
         }

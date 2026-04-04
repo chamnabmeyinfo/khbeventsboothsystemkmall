@@ -80,15 +80,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanuman:wght@100;300;400;700;900&family=Noto+Sans+Khmer:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    {{-- Device-Optimized Performance CSS --}}
-    <link rel="stylesheet" href="{{ asset('css/device-optimized.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/tablet-optimized.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/desktop-optimized.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/global-ux-consistency.css') }}">
     @endif
+
+    {{-- Shared KHB UI (CDN + local): previously only loaded in local-vendor mode --}}
+    <link rel="stylesheet" href="{{ asset('css/device-optimized.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/tablet-optimized.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/desktop-optimized.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}?v=5.1">
+    <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=3.0">
+    <link rel="stylesheet" href="{{ asset('css/global-ux-consistency.css') }}?v=1.1">
+    <link rel="stylesheet" href="{{ asset('css/admin-bootstrap-polish.css') }}?v=1">
     
     {{-- Async CSS Loader Script --}}
     <script>
@@ -1593,7 +1594,7 @@
 
     {{-- Pinch-to-zoom allowed on mobile (viewport + no gesture blocking) --}}
 </head>
-<body class="hold-transition sidebar-mini layout-fixed">
+<body class="hold-transition sidebar-mini layout-fixed @stack('body-class')">
 <!-- Modern Slide-Out Aside Menu - Mobile & Tablet -->
 <div class="modern-aside-overlay" id="asideOverlay"></div>
 <aside class="modern-aside-menu d-md-none d-lg-none" id="asideMenu">

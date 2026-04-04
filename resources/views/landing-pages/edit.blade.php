@@ -1,25 +1,41 @@
 @extends('layouts.adminlte')
 
+@include('landing-pages.partials.admin-looker-setup')
+
 @section('title', 'Edit Landing Page')
 @section('page-title', 'Edit Landing Page')
 @section('breadcrumb', 'Landing Pages / Edit')
 
 @section('content')
-<div class="container-fluid">
-    <div class="card">
-        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-            <h3 class="card-title mb-0"><i class="fas fa-edit mr-2"></i>Edit Landing Page: {{ $landingPage->name }}</h3>
-            <a href="{{ route('landing-pages.reporting', $landingPage) }}" class="btn btn-outline-secondary btn-sm">
-                <i class="fas fa-chart-line mr-1"></i>Leads &amp; reporting ({{ (int) ($landingPage->leads_count ?? 0) }})
+<div class="looker-dashboard">
+    <header class="looker-header">
+        <div class="looker-header-title">
+            <h1>Edit: {{ $landingPage->name }}</h1>
+            <p>Update settings, visuals, and multilingual copy.</p>
+        </div>
+        <div class="looker-actions flex-wrap">
+            <a href="{{ route('landing-pages.reporting', $landingPage) }}" class="action-btn action-btn-secondary">
+                <i class="fas fa-chart-line" aria-hidden="true"></i> Leads ({{ (int) ($landingPage->leads_count ?? 0) }})
             </a>
+            <a href="{{ route('landing-pages.index') }}" class="action-btn action-btn-secondary">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to list
+            </a>
+        </div>
+    </header>
+
+    <div class="canvas-panel lp-landing-form-shell">
+        <div class="panel-header">
+            <h2 class="panel-title"><i class="fas fa-edit" aria-hidden="true"></i> Page configuration</h2>
         </div>
         <form id="lpLandingPageAdminForm" action="{{ route('landing-pages.update', $landingPage) }}" method="POST" enctype="multipart/form-data" novalidate>
             @csrf
             @method('PUT')
             @include('landing-pages.partials.form', ['landingPage' => $landingPage])
-            <div class="card-footer lp-sticky-card-footer">
-                <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i>Update</button>
-                <a href="{{ route('landing-pages.index') }}" class="btn btn-default">Cancel</a>
+            <div class="card-footer lp-sticky-card-footer lp-form-footer-actions">
+                <button type="submit" class="action-btn action-btn-primary">
+                    <i class="fas fa-save" aria-hidden="true"></i> Update
+                </button>
+                <a href="{{ route('landing-pages.index') }}" class="action-btn action-btn-secondary">Cancel</a>
             </div>
         </form>
     </div>

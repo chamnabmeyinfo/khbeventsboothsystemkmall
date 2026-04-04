@@ -13,8 +13,8 @@
     <!-- Font Awesome - Local -->
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
     <!-- Global UX Consistency CSS -->
-    <link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}?v=2.6">
-    <link rel="stylesheet" href="{{ asset('css/global-ux-consistency.css') }}?v=2.6">
+    <link rel="stylesheet" href="{{ asset('css/modern-design-system.css') }}?v=5.1">
+    <link rel="stylesheet" href="{{ asset('css/global-ux-consistency.css') }}?v=1.1">
     
     <link rel="stylesheet" href="{{ asset('css/modern-header.css') }}?v=3.2">
     <link rel="stylesheet" href="{{ asset('css/modern-sidebar.css') }}?v=3.0">
