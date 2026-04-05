@@ -7,6 +7,7 @@ use App\Models\LandingTrackingEvent;
 use App\Models\LandingTrackingVisitor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -19,10 +20,16 @@ class LandingTrackingService
     private const SESSION_COOKIE = 'lp_sid';
 
     /**
-     * @return array{event: LandingTrackingEvent, cookies: array<int, SymfonyCookie>}
+     * Visitor analytics are for anonymous traffic only (not staff or logged-in customers).
+     *
+     * @return array{event: ?LandingTrackingEvent, cookies: array<int, SymfonyCookie>}
      */
     public function capture(LandingPage $landingPage, Request $request, string $eventName, array $payload = []): array
     {
+        if ($this->shouldSkipTrackingForAuthenticatedRequest($request)) {
+            return ['event' => null, 'cookies' => []];
+        }
+
         [$visitor, $visitorCookie] = $this->resolveVisitor($request);
         [$sessionUuid, $sessionCookie] = $this->resolveSession($request);
         $utm = $this->extractUtm($request, $payload);
@@ -64,6 +71,28 @@ class LandingTrackingService
         }
 
         return ['event' => $event, 'cookies' => $cookies];
+    }
+
+    /**
+     * True when any configured auth guard has a user (web, admin, sanctum, client portal, etc.).
+     */
+    public function shouldSkipTrackingForAuthenticatedRequest(Request $request): bool
+    {
+        if ($request->user() !== null) {
+            return true;
+        }
+
+        foreach (array_keys(config('auth.guards', [])) as $guard) {
+            try {
+                if (Auth::guard($guard)->check()) {
+                    return true;
+                }
+            } catch (\Throwable) {
+                continue;
+            }
+        }
+
+        return false;
     }
 
     /**

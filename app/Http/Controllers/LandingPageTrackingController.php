@@ -75,9 +75,9 @@ class LandingPageTrackingController extends Controller
         try {
             LandingPageLead::create([
                 'landing_page_id' => $landingPage->id,
-                'landing_tracking_event_id' => $event->id,
-                'visitor_id' => $event->visitor_id,
-                'session_uuid' => $event->session_uuid,
+                'landing_tracking_event_id' => $event?->id,
+                'visitor_id' => $event?->visitor_id,
+                'session_uuid' => $event?->session_uuid,
                 'name' => $validated['lead_name'] ?? null,
                 'email' => $validated['lead_email'] ?? null,
                 'phone' => $validated['lead_phone'] ?? null,

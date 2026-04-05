@@ -14,6 +14,13 @@ body.lp-landing-admin .looker-dashboard {
     max-width: 100%;
 }
 
+/* Text by language (visual form): Khmer + Chinese inputs use stacks that match admin Khmer fonts + common CJK fallbacks */
+body.lp-landing-admin .lp-visual-form-root #pane-km .form-control,
+body.lp-landing-admin .lp-visual-form-root #pane-zh .form-control {
+    font-family: "Khmer OS Battambang", "Hanuman", "Noto Sans Khmer", "Khmer OS", "Khmer", "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", sans-serif;
+    line-height: 1.5;
+}
+
 /* Compact action buttons in dense tables (touch target ≥ 44px height) */
 .lp-btn-compact {
     padding: 0.45rem 0.85rem;
