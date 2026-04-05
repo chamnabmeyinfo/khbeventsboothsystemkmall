@@ -117,6 +117,50 @@ body.lp-landing-admin .lp-visual-form-root {
     --lp-tab-bg-3: rgba(4, 120, 87, 0.12);
     --lp-tab-active-4: #6f42c1;
     --lp-tab-bg-4: rgba(111, 66, 193, 0.12);
+    --lp-tab-ease: cubic-bezier(0.25, 0.9, 0.32, 1.15);
+    --lp-tab-transition: border-color 0.28s var(--lp-tab-ease), background 0.28s var(--lp-tab-ease), color 0.22s ease, transform 0.32s var(--lp-tab-ease), box-shadow 0.32s var(--lp-tab-ease);
+    /* Active-tab marker above the tab (change in one place if you prefer another emoji) */
+    --lp-tab-emoji: "📍";
+}
+
+/* Active tab: quick “lift into place” when Bootstrap toggles .active */
+@keyframes lp-tab-active-enter {
+    0% {
+        transform: translateY(6px) scale(0.97);
+        filter: brightness(0.92);
+    }
+
+    55% {
+        transform: translateY(-2px) scale(1.02);
+        filter: brightness(1.03);
+    }
+
+    100% {
+        transform: translateY(0) scale(1);
+        filter: brightness(1);
+    }
+}
+
+/* Emoji marker floats slightly above the active tab */
+@keyframes lp-tab-indicator-float {
+    0%,
+    100% {
+        transform: translateX(-50%) translateY(0);
+    }
+
+    50% {
+        transform: translateX(-50%) translateY(-5px);
+    }
+}
+
+@keyframes lp-tab-indicator-appear {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
 
 /* Level 1 — Shared / Sections / Section copy */
@@ -124,20 +168,24 @@ body.lp-landing-admin .lp-visual-form-root .lp-visual-primary-tabs {
     gap: 0.35rem;
     row-gap: 0.35rem;
     border-bottom: 1px solid var(--lp-tab-border-idle);
+    padding-top: 1.15rem;
     padding-bottom: 0;
 }
 
 body.lp-landing-admin .lp-visual-form-root .lp-visual-primary-tabs .nav-link {
+    position: relative;
     min-height: 44px;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
     border: 2px solid var(--lp-tab-border-idle);
     border-bottom-width: 3px;
     border-radius: 0.35rem 0.35rem 0 0;
     margin-bottom: -1px;
     color: var(--text-secondary, #495057);
     background: rgba(255, 255, 255, 0.55);
-    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    transition: var(--lp-tab-transition);
 }
 
 body.lp-landing-admin .lp-visual-form-root .lp-visual-primary-tabs .nav-link:hover:not(.active) {
@@ -153,6 +201,7 @@ body.lp-landing-admin .lp-visual-form-root .lp-visual-primary-tabs .nav-link.act
     border-color: var(--lp-tab-active-1);
     border-bottom-color: var(--lp-tab-active-1);
     box-shadow: inset 0 3px 0 0 var(--lp-tab-active-1);
+    animation: lp-tab-active-enter 0.48s var(--lp-tab-ease) both;
 }
 
 body.lp-landing-admin .lp-visual-form-root .lp-visual-primary-tabs .nav-link:focus {
@@ -170,19 +219,23 @@ body.lp-landing-admin .lp-visual-form-root .lp-lang-tabs {
     flex-wrap: wrap;
     gap: 0.25rem;
     row-gap: 0.25rem;
+    padding-top: 1.15rem;
 }
 
 body.lp-landing-admin .lp-visual-form-root .lp-lang-tabs .nav-link {
+    position: relative;
     min-height: 44px;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
     border: 2px solid var(--lp-tab-border-idle);
     border-bottom-width: 3px;
     border-radius: 0.35rem 0.35rem 0 0;
     margin-bottom: -1px;
     color: var(--text-secondary, #495057);
     background: rgba(255, 255, 255, 0.65);
-    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    transition: var(--lp-tab-transition);
 }
 
 body.lp-landing-admin .lp-visual-form-root .lp-lang-tabs .nav-link:hover:not(.active) {
@@ -198,6 +251,7 @@ body.lp-landing-admin .lp-visual-form-root .lp-lang-tabs .nav-link.active {
     border-color: var(--lp-tab-active-2);
     border-bottom-color: var(--lp-tab-active-2);
     box-shadow: inset 0 3px 0 0 var(--lp-tab-active-2);
+    animation: lp-tab-active-enter 0.48s var(--lp-tab-ease) both;
 }
 
 body.lp-landing-admin .lp-visual-form-root .lp-lang-tabs .nav-link:focus {
@@ -211,6 +265,7 @@ body.lp-landing-admin .lp-visual-form-root .lp-lang-tabs .nav-link:focus {
     -webkit-overflow-scrolling: touch;
     margin-bottom: -1px;
     border-bottom: 1px solid var(--lp-tab-border-idle);
+    padding-top: 1.15rem;
 }
 
 .lp-landing-section-tabs {
@@ -226,10 +281,12 @@ body.lp-landing-admin .lp-visual-form-root .lp-lang-tabs .nav-link:focus {
 
 /* Level 3 — Hero / Package / … section tabs */
 body.lp-landing-admin .lp-visual-form-root .lp-landing-section-tabs .nav-link {
+    position: relative;
     white-space: nowrap;
     min-height: 44px;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     padding: 0.5rem 0.75rem;
     font-size: 0.9rem;
     border: 2px solid var(--lp-tab-border-idle);
@@ -238,7 +295,7 @@ body.lp-landing-admin .lp-visual-form-root .lp-landing-section-tabs .nav-link {
     margin-bottom: -1px;
     color: var(--text-secondary, #495057);
     background: rgba(255, 255, 255, 0.6);
-    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    transition: var(--lp-tab-transition);
 }
 
 body.lp-landing-admin .lp-visual-form-root .lp-landing-section-tabs .nav-link:hover:not(.active) {
@@ -254,6 +311,7 @@ body.lp-landing-admin .lp-visual-form-root .lp-landing-section-tabs .nav-link.ac
     border-color: var(--lp-tab-active-3);
     border-bottom-color: var(--lp-tab-active-3);
     box-shadow: inset 0 3px 0 0 var(--lp-tab-active-3);
+    animation: lp-tab-active-enter 0.48s var(--lp-tab-ease) both;
 }
 
 body.lp-landing-admin .lp-visual-form-root .lp-landing-section-tabs .nav-link:focus {
@@ -273,16 +331,53 @@ body.lp-landing-admin .lp-visual-form-root .lp-agenda-admin-nav {
     flex-wrap: wrap;
     gap: 0.25rem;
     row-gap: 0.25rem;
+    padding-top: 1.15rem;
 }
 
 body.lp-landing-admin .lp-visual-form-root .lp-agenda-admin-nav .nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
     border: 2px solid var(--lp-tab-border-idle);
     border-bottom-width: 3px;
     border-radius: 0.3rem 0.3rem 0 0;
     margin-bottom: -1px;
     color: var(--text-secondary, #495057);
     background: rgba(255, 255, 255, 0.55);
-    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    transition: var(--lp-tab-transition);
+}
+
+/* Emoji sits above the tab (outside the button edge); room from ul padding-top */
+body.lp-landing-admin .lp-visual-form-root .lp-visual-primary-tabs .nav-link::before,
+body.lp-landing-admin .lp-visual-form-root .lp-lang-tabs .nav-link::before,
+body.lp-landing-admin .lp-visual-form-root .lp-landing-section-tabs .nav-link::before,
+body.lp-landing-admin .lp-visual-form-root .lp-agenda-admin-nav .nav-link::before {
+    content: none;
+}
+
+body.lp-landing-admin .lp-visual-form-root .lp-visual-primary-tabs .nav-link.active::before,
+body.lp-landing-admin .lp-visual-form-root .lp-lang-tabs .nav-link.active::before,
+body.lp-landing-admin .lp-visual-form-root .lp-landing-section-tabs .nav-link.active::before,
+body.lp-landing-admin .lp-visual-form-root .lp-agenda-admin-nav .nav-link.active::before {
+    content: var(--lp-tab-emoji);
+    position: absolute;
+    top: -1.2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.4rem;
+    line-height: 1;
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    filter: drop-shadow(0 2px 5px rgba(15, 23, 42, 0.22));
+    z-index: 3;
+    pointer-events: none;
+    animation: lp-tab-indicator-appear 0.38s ease-out both, lp-tab-indicator-float 2.6s ease-in-out 0.42s infinite;
 }
 
 body.lp-landing-admin .lp-visual-form-root .lp-agenda-admin-nav .nav-link:hover:not(.active) {
@@ -298,11 +393,32 @@ body.lp-landing-admin .lp-visual-form-root .lp-agenda-admin-nav .nav-link.active
     border-color: var(--lp-tab-active-4);
     border-bottom-color: var(--lp-tab-active-4);
     box-shadow: inset 0 3px 0 0 var(--lp-tab-active-4);
+    animation: lp-tab-active-enter 0.48s var(--lp-tab-ease) both;
 }
 
 body.lp-landing-admin .lp-visual-form-root .lp-agenda-admin-nav .nav-link:focus {
     outline: 2px solid var(--lp-tab-active-4);
     outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.lp-landing-admin .lp-visual-form-root .lp-visual-primary-tabs .nav-link,
+    body.lp-landing-admin .lp-visual-form-root .lp-lang-tabs .nav-link,
+    body.lp-landing-admin .lp-visual-form-root .lp-landing-section-tabs .nav-link,
+    body.lp-landing-admin .lp-visual-form-root .lp-agenda-admin-nav .nav-link {
+        animation: none !important;
+        transition-duration: 0.01ms !important;
+        transition-delay: 0ms !important;
+    }
+
+    body.lp-landing-admin .lp-visual-form-root .lp-visual-primary-tabs .nav-link.active::before,
+    body.lp-landing-admin .lp-visual-form-root .lp-lang-tabs .nav-link.active::before,
+    body.lp-landing-admin .lp-visual-form-root .lp-landing-section-tabs .nav-link.active::before,
+    body.lp-landing-admin .lp-visual-form-root .lp-agenda-admin-nav .nav-link.active::before {
+        animation: none !important;
+        transform: translateX(-50%);
+        opacity: 1;
+    }
 }
 
 .lp-agenda-by-day-editor .lp-agenda-admin-content {
