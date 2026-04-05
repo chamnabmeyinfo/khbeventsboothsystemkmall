@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\LandingPage;
+use App\Models\LandingPageEvent;
 use App\Models\LandingPageLead;
 use App\Models\LandingPageSectionTemplate;
-use App\Models\LandingPageEvent;
 use App\Services\LandingTextTranslationService;
 use App\Services\LandingTrackingService;
 use Illuminate\Http\Request;
@@ -954,6 +954,14 @@ class LandingPageController extends Controller
             unset($visual[$k]);
         }
 
+        try {
+            json_encode($visual, JSON_THROW_ON_ERROR | JSON_INVALID_UTF8_SUBSTITUTE);
+        } catch (\JsonException $e) {
+            throw ValidationException::withMessages([
+                'visual' => ['Visual content could not be saved as JSON. Remove invalid UTF-8 or control characters from text fields (e.g. promotion or trip JSON), then try again.'],
+            ]);
+        }
+
         $validated['visual_content'] = $visual;
 
         if ((bool) ($validated['use_visual_builder'] ?? false)) {
@@ -977,6 +985,33 @@ class LandingPageController extends Controller
         );
 
         return $validated;
+    }
+
+    /**
+     * Normalize JSON textarea POST values: trim, strip UTF-8 BOM, avoid casting arrays to the literal "Array".
+     */
+    private function normalizeJsonTextareaInput(mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+        if (is_string($value)) {
+            $s = preg_replace('/^\xEF\xBB\xBF/', '', $value) ?? $value;
+
+            return trim($s);
+        }
+        if (is_array($value)) {
+            try {
+                return trim((string) json_encode($value, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
+            } catch (\JsonException) {
+                return '';
+            }
+        }
+        if (is_scalar($value)) {
+            return trim((string) $value);
+        }
+
+        return '';
     }
 
     /**
@@ -1032,14 +1067,16 @@ class LandingPageController extends Controller
         );
 
         if (array_key_exists('trip_phases_json', $locIn)) {
-            $jsonRaw = trim((string) $locIn['trip_phases_json']);
+            $jsonRaw = $this->normalizeJsonTextareaInput($locIn['trip_phases_json']);
             if ($jsonRaw === '') {
                 unset($block['trip_phases']);
             } else {
                 $decoded = json_decode($jsonRaw, true);
                 if (json_last_error() !== JSON_ERROR_NONE || ! is_array($decoded)) {
                     throw ValidationException::withMessages([
-                        'visual.i18n.'.$locale.'.trip_phases_json' => ['Trip phases must be valid JSON (array of phases).'],
+                        'visual.i18n.'.$locale.'.trip_phases_json' => [
+                            'Trip phases must be valid JSON (array of phases).'.(json_last_error() !== JSON_ERROR_NONE ? ' ('.json_last_error_msg().')' : ''),
+                        ],
                     ]);
                 }
                 $phases = LandingPage::sanitizeTripPhases($decoded);
@@ -1057,7 +1094,7 @@ class LandingPageController extends Controller
         }
 
         if (array_key_exists('promotion_discounts_json', $locIn)) {
-            $promoRaw = trim((string) $locIn['promotion_discounts_json']);
+            $promoRaw = $this->normalizeJsonTextareaInput($locIn['promotion_discounts_json']);
             if ($promoRaw === '') {
                 unset($block['promotion_discounts']);
                 $block['promotion_discounts_show'] = false;
@@ -1065,13 +1102,24 @@ class LandingPageController extends Controller
                 $decoded = json_decode($promoRaw, true);
                 if (json_last_error() !== JSON_ERROR_NONE || ! is_array($decoded)) {
                     throw ValidationException::withMessages([
-                        'visual.i18n.'.$locale.'.promotion_discounts_json' => ['Promotion discounts must be valid JSON (object with base_price_text and tiers, or an array of tier objects).'],
+                        'visual.i18n.'.$locale.'.promotion_discounts_json' => [
+                            'Promotion discounts must be valid JSON (object with base_price_text and tiers, or an array of tier objects).'.(json_last_error() !== JSON_ERROR_NONE ? ' ('.json_last_error_msg().')' : ''),
+                        ],
                     ]);
                 }
-                $block['promotion_discounts'] = LandingPage::sanitizePromotionDiscounts($decoded);
+                try {
+                    $block['promotion_discounts'] = LandingPage::sanitizePromotionDiscounts($decoded);
+                } catch (\Throwable $e) {
+                    report($e);
+                    throw ValidationException::withMessages([
+                        'visual.i18n.'.$locale.'.promotion_discounts_json' => ['Promotion discounts could not be processed. Check tier numbers (participants and off_each must be positive integers).'],
+                    ]);
+                }
                 $block['promotion_discounts_show'] = true;
             }
         }
+
+        unset($block['promotion_discounts_json'], $block['trip_phases_json']);
 
         $agendaRaw = array_key_exists('agenda_items_text', $locIn) ? (string) $locIn['agenda_items_text'] : null;
         $block['agenda_items'] = $this->parsePipeList(

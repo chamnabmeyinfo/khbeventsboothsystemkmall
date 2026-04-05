@@ -166,9 +166,9 @@
 @endphp
 
 {{-- Single responsive landing CSS — Premium Glass; breakpoints: 576 / 768 / 992 / 1200 --}}
-{{-- Fonts: Roboto (Latin/English), Hanuman (Khmer); Chinese uses system UI via sans-serif fallback --}}
+{{-- Fonts: Roboto + Hanuman (body/UI); Cormorant Garamond (display / trip activity titles); CJK via system fallbacks --}}
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Hanuman:wght@400;700&family=Roboto:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Hanuman:wght@400;700&family=Roboto:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
     .lv-wrap{
         --lv-primary:#c41e1e;
         --lv-primary-hover:#9e1818;
@@ -968,8 +968,20 @@
     }
     /* Trip activity image slider (single responsive implementation) */
     .lv-trip-activity{padding:clamp(40px,8vw,72px) 0;background:linear-gradient(180deg,rgba(248,250,252,.98) 0%,rgba(241,245,249,.95) 100%);border-top:1px solid rgba(15,23,42,.06);border-bottom:1px solid rgba(15,23,42,.06)}
-    .lv-trip-activity__head{text-align:center;margin-bottom:clamp(20px,4vw,28px)}
-    .lv-trip-activity__head h2{margin:0;font-size:clamp(1.35rem,3vw,1.75rem);color:var(--lv-ink,#0f172a)}
+    .lv-trip-activity__head{
+        text-align:center;margin:0 auto clamp(24px,5vw,36px);max-width:40rem;padding:0 clamp(12px,3vw,20px);
+    }
+    .lv-trip-activity__head::before{
+        content:"";display:block;width:min(72px,18vw);height:2px;margin:0 auto 16px;border-radius:2px;
+        background:linear-gradient(90deg,transparent,rgba(201,162,39,.95),transparent);
+        box-shadow:0 0 20px rgba(201,162,39,.35);
+    }
+    .lv-trip-activity__head h2{
+        margin:0;font-size:clamp(1.55rem,3.6vw,2.05rem);font-weight:600;letter-spacing:-0.03em;line-height:1.18;
+        font-family:"Cormorant Garamond","Georgia","Times New Roman",serif;color:var(--lv-ink,#0f172a);
+        text-wrap:balance;
+        text-shadow:0 1px 0 rgba(255,255,255,.6);
+    }
     .lv-trip-activity__slider{position:relative;max-width:min(960px,100%);margin:0 auto}
     .lv-trip-activity__viewport{position:relative;border-radius:20px;overflow:hidden;box-shadow:0 20px 50px rgba(15,23,42,.12),0 0 0 1px rgba(255,255,255,.5) inset;background:#0f172a}
     .lv-trip-activity__track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -977,20 +989,26 @@
     .lv-trip-activity__slide{flex:0 0 100%;scroll-snap-align:start;margin:0;position:relative;overflow:hidden;border-radius:20px}
     .lv-trip-activity__img{display:block;width:100%;height:auto;max-height:min(56vh,520px);object-fit:cover;vertical-align:middle}
     .lv-trip-activity__cap{
-        margin:0;padding:14px 16px 20px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;
-        background:linear-gradient(180deg,transparent,rgba(15,23,42,.9));position:absolute;left:0;right:0;bottom:0;
+        margin:0;padding:clamp(20px,4.5vw,32px) clamp(18px,4vw,36px) clamp(24px,5vw,38px);
+        display:flex;flex-direction:column;align-items:center;justify-content:flex-end;text-align:center;gap:6px;
+        background:linear-gradient(180deg,transparent 0%,rgba(6,10,22,.45) 28%,rgba(8,12,26,.92) 100%);
+        position:absolute;left:0;right:0;bottom:0;
+        backdrop-filter:saturate(1.1) blur(4px);
+        -webkit-backdrop-filter:saturate(1.1) blur(4px);
     }
     .lv-trip-activity__slide-kicker{
-        display:block;font-size:.7rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
-        color:rgba(253,230,138,.98);margin:0;line-height:1.3;text-shadow:0 1px 6px rgba(0,0,0,.55);
+        display:block;font-family:"Roboto","Hanuman",sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.24em;text-transform:uppercase;
+        color:#f0e6c8;margin:0;line-height:1.35;
+        text-shadow:0 0 24px rgba(201,162,39,.45),0 2px 10px rgba(0,0,0,.65);
     }
     .lv-trip-activity__slide-title{
-        display:block;font-size:clamp(1.05rem,2.8vw,1.4rem);font-weight:800;line-height:1.2;color:#fff;margin:0;
-        text-shadow:0 2px 14px rgba(0,0,0,.55);
+        display:block;font-family:"Cormorant Garamond","Georgia","Times New Roman",serif;
+        font-size:clamp(1.4rem,4.2vw,2.15rem);font-weight:600;letter-spacing:-0.02em;line-height:1.15;color:#fff;margin:0;
+        text-shadow:0 2px 20px rgba(0,0,0,.55),0 1px 0 rgba(255,255,255,.12);
     }
     .lv-trip-activity__slide-desc{
-        display:block;font-size:.9rem;font-weight:500;line-height:1.45;color:rgba(248,250,252,.92);margin:2px 0 0;
-        text-shadow:0 1px 8px rgba(0,0,0,.45);
+        display:block;max-width:36ch;margin:4px auto 0;font-size:.9rem;font-weight:500;line-height:1.5;color:rgba(248,250,252,.9);
+        text-shadow:0 1px 10px rgba(0,0,0,.5);
     }
     .lv-trip-activity__nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.92);color:var(--lv-ink,#0f172a);box-shadow:0 4px 16px rgba(15,23,42,.15);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
     .lv-trip-activity__nav:hover{background:#fff}

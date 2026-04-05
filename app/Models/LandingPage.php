@@ -1535,6 +1535,14 @@ TXT;
         if ($input === []) {
             return $defaults;
         }
+        // Single tier object at root, e.g. {"participants":5,"off_each":20,"label":"Group"} (no base_price_text / tiers)
+        if (! array_is_list($input) && ! isset($input['tiers']) && ! isset($input['base_price_text']) && ! isset($input['intro_text'])) {
+            $n = (int) ($input['participants'] ?? $input['min_participants'] ?? 0);
+            $off = (int) ($input['off_each'] ?? $input['discount_off_each'] ?? $input['off'] ?? 0);
+            if ($n >= 1 && $off >= 1) {
+                $input = [$input];
+            }
+        }
         if (array_is_list($input)) {
             $tiers = self::sanitizePromotionTiers($input);
 
@@ -1615,7 +1623,6 @@ TXT;
      * Normalize and validate section blueprint from stored or submitted JSON.
      * Each layout appears at most once; hero is always included first if missing.
      *
-     * @param  mixed  $raw
      * @return list<array{id: string, layout: string}>
      */
     public static function sanitizeSectionBlueprint(mixed $raw): array
