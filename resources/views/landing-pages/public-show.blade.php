@@ -356,17 +356,21 @@ if (window.LandingPageConfig.inlineEditEnabled) {
                 }
                 saveBtn.disabled = true;
                 saveBtn.textContent = 'Saving...';
+                var formBody = new FormData();
+                formBody.append('locale', window.LandingPageConfig.inlineLocale || 'en');
+                Object.keys(fields).forEach(function(k) {
+                    var v = fields[k];
+                    formBody.append('fields[' + k + ']', v === undefined || v === null ? '' : String(v));
+                });
                 fetch(window.LandingPageConfig.inlineUpdateUrl, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
                         'Accept': 'application/json',
-                        'X-CSRF-TOKEN': window.LandingPageConfig.csrfToken
+                        'X-CSRF-TOKEN': window.LandingPageConfig.csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
                     },
-                    body: JSON.stringify({
-                        fields: fields,
-                        locale: window.LandingPageConfig.inlineLocale || 'en'
-                    })
+                    credentials: 'same-origin',
+                    body: formBody
                 }).then(function(r) { return r.json(); })
                   .then(function(data) {
                       if (!data || data.ok !== true) {

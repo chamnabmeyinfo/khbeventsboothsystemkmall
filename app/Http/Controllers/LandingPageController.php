@@ -464,6 +464,10 @@ class LandingPageController extends Controller
         return view('landing-pages.leads', compact('landingPage', 'leads'));
     }
 
+    /**
+     * Persist inline-edited copy from the public preview (?editor=1).
+     * Expects a normal form POST (multipart or urlencoded): fields[key]=value and optional locale — not a JSON request body.
+     */
     public function updateVisualInline(Request $request, LandingPage $landingPage)
     {
         if (! $landingPage->use_visual_builder) {
@@ -475,6 +479,7 @@ class LandingPageController extends Controller
 
         $validated = $request->validate([
             'fields' => 'required|array',
+            'fields.*' => 'nullable|string|max:20000',
             'locale' => 'nullable|string|max:12',
         ]);
 

@@ -263,6 +263,9 @@ body.lp-landing-admin .lp-visual-form-root .lp-lang-tabs .nav-link:focus {
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
+    /* Let vertical scroll pass to the page on touch; horizontal strips otherwise steal wheel/scroll. */
+    touch-action: pan-x;
+    overscroll-behavior-x: contain;
     margin-bottom: -1px;
     border-bottom: 1px solid var(--lp-tab-border-idle);
     padding-top: 1.15rem;

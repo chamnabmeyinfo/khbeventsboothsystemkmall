@@ -758,10 +758,33 @@
         });
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initAgendaByDay);
-    } else {
+    /**
+     * Horizontal overflow-x strips (section tabs) often capture vertical wheel in Chrome, which feels like the page "won't scroll" after switching tabs. Forward vertical wheel to the window.
+     */
+    function lpBindHorizontalStripWheelScrollThrough() {
+        document.querySelectorAll('.lp-landing-section-tabs-wrap').forEach(function (el) {
+            el.addEventListener('wheel', function (e) {
+                if (e.ctrlKey) {
+                    return;
+                }
+                if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) {
+                    return;
+                }
+                e.preventDefault();
+                window.scrollBy(0, e.deltaY);
+            }, { passive: false });
+        });
+    }
+
+    function lpInitLandingVisualFormScripts() {
         initAgendaByDay();
+        lpBindHorizontalStripWheelScrollThrough();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', lpInitLandingVisualFormScripts);
+    } else {
+        lpInitLandingVisualFormScripts();
     }
 })();
 </script>

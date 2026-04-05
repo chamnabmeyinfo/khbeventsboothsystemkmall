@@ -134,22 +134,6 @@
     margin-right: 8px;
 }
 
-.lp-thx__fine {
-    margin-top: 24px;
-    font-size: 0.9rem;
-    color: var(--lp-pub-muted);
-}
-
-.lp-thx__fine a {
-    color: var(--lp-pub-brand);
-    font-weight: 600;
-    text-decoration: none;
-}
-
-.lp-thx__fine a:hover {
-    text-decoration: underline;
-}
-
 /* ---------- Continue modal ---------- */
 #lpContinueModal.lp-continue-modal[hidden] {
     display: none !important;
@@ -310,7 +294,8 @@
 /* ---------- Admin inline preview toolbar (/l/...?editor=1) ---------- */
 .lp-inline-edit-toolbar {
     position: fixed;
-    right: 12px;
+    left: 12px;
+    right: auto;
     top: 12px;
     z-index: 99999;
     width: min(260px, calc(100vw - 24px));
@@ -390,7 +375,8 @@
 
 @media (max-width: 575.98px) {
     .lp-inline-edit-toolbar {
-        right: 8px;
+        left: 8px;
+        right: auto;
         top: 8px;
         width: calc(100vw - 16px);
     }

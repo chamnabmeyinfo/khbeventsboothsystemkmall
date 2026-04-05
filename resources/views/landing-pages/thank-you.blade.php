@@ -25,10 +25,6 @@
                     <i class="fa-solid fa-arrow-left lp-thx__btn-icon" aria-hidden="true"></i>{{ __('Back to offer') }}
                 </a>
             </div>
-            <p class="lp-thx__fine">
-                {{ __('Already have an account?') }}
-                <a href="{{ url('/login') }}">{{ __('Log in') }}</a>
-            </p>
         </div>
     </main>
 </body>

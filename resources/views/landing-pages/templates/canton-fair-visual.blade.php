@@ -423,7 +423,7 @@
     }
     /* Agenda: single responsive table (public + preview) */
     .lv-agenda-table-wrap{
-        width:100%;margin-top:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+        width:100%;margin-top:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x;overscroll-behavior-x:contain;
         border-radius:var(--lv-radius-sm);
         border:1px solid var(--lv-glass-edge);
         background:var(--lv-glass-fill-strong);
@@ -447,7 +447,7 @@
     /* Itinerary: Day 1 / Day 2 / … tabs (CSS-only; no Bootstrap on public page) */
     .lv-agenda-tabs{margin-top:8px}
     .lv-agenda-tab-input{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-    .lv-agenda-tablist{display:flex;flex-wrap:nowrap;gap:10px;align-items:stretch;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:4px 2px 14px;margin:0 0 -1px;border-bottom:1px solid rgba(15,23,42,.1);scrollbar-width:thin}
+    .lv-agenda-tablist{display:flex;flex-wrap:nowrap;gap:10px;align-items:stretch;overflow-x:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x;overscroll-behavior-x:contain;padding:4px 2px 14px;margin:0 0 -1px;border-bottom:1px solid rgba(15,23,42,.1);scrollbar-width:thin}
     .lv-agenda-tab{
         flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 18px;margin:0;
         font:inherit;font-weight:600;font-size:.92rem;color:var(--lv-ink);
@@ -984,7 +984,7 @@
     }
     .lv-trip-activity__slider{position:relative;max-width:min(960px,100%);margin:0 auto}
     .lv-trip-activity__viewport{position:relative;border-radius:20px;overflow:hidden;box-shadow:0 20px 50px rgba(15,23,42,.12),0 0 0 1px rgba(255,255,255,.5) inset;background:#0f172a}
-    .lv-trip-activity__track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .lv-trip-activity__track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;touch-action:pan-x;overscroll-behavior-x:contain;scrollbar-width:none}
     .lv-trip-activity__track::-webkit-scrollbar{display:none}
     .lv-trip-activity__slide{flex:0 0 100%;scroll-snap-align:start;margin:0;position:relative;overflow:hidden;border-radius:20px}
     .lv-trip-activity__img{display:block;width:100%;height:auto;max-height:min(56vh,520px);object-fit:cover;vertical-align:middle}
@@ -1117,6 +1117,21 @@
 <script>
 window.LpHeroRotation = @json($heroEnableRotation && count($heroRotationSegments) > 0 ? ['segments' => $heroRotationSegments, 'cycleMs' => 45000] : null);
 document.addEventListener('DOMContentLoaded', function () {
+    (function initLvHorizontalScrollWheelPassThrough() {
+        document.querySelectorAll('.lv-agenda-tablist, .lv-trip-activity__track, .lv-agenda-table-wrap').forEach(function (el) {
+            el.addEventListener('wheel', function (e) {
+                if (e.ctrlKey) {
+                    return;
+                }
+                if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) {
+                    return;
+                }
+                e.preventDefault();
+                window.scrollBy(0, e.deltaY);
+            }, { passive: false });
+        });
+    })();
+
     (function initTripActivitySlider() {
         var root = document.querySelector('[data-lv-trip-activity-slider]');
         if (!root) return;
