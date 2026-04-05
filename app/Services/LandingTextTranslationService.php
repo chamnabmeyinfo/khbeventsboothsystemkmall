@@ -111,33 +111,25 @@ class LandingTextTranslationService
     }
 
     /**
-     * image_path|caption — path is never translated; caption is translated when present.
+     * path|caption|headline|title — path is never translated; text columns translated when present.
      */
     private function translateTripActivityGallerySlides(string $text, string $source, string $target): string
     {
-        $lines = preg_split("/\r\n|\r|\n/", $text) ?: [];
+        $rows = \App\Models\LandingPage::parseTripActivityGallerySlideRows($text);
         $out = [];
-        foreach ($lines as $line) {
-            $line = trim((string) $line);
-            if ($line === '') {
-                $out[] = '';
-
-                continue;
-            }
-            if (! str_contains($line, '|')) {
-                $out[] = $line;
-
-                continue;
-            }
-            [$pathPart, $capPart] = explode('|', $line, 2);
-            $pathPart = trim((string) $pathPart);
-            $capPart = trim(strip_tags((string) $capPart));
-            $tc = $capPart !== '' ? $this->translateSegment($capPart, $source, $target) : '';
-
-            $out[] = $tc !== '' ? $pathPart.'|'.$tc : $pathPart;
+        foreach ($rows as $row) {
+            $cap = trim((string) ($row['caption'] ?? ''));
+            $headline = trim((string) ($row['headline'] ?? ''));
+            $title = trim((string) ($row['title'] ?? ''));
+            $out[] = \App\Models\LandingPage::encodeTripActivityGallerySlideRow([
+                'path' => $row['path'],
+                'caption' => $cap !== '' ? $this->translateSegment($cap, $source, $target) : '',
+                'headline' => $headline !== '' ? $this->translateSegment($headline, $source, $target) : '',
+                'title' => $title !== '' ? $this->translateSegment($title, $source, $target) : '',
+            ]);
         }
 
-        return implode("\n", $out);
+        return implode("\n", array_filter($out, static fn (string $l) => $l !== ''));
     }
 
     private function translatePipeDelimitedMultiline(string $text, string $source, string $target): string

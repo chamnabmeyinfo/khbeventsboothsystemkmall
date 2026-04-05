@@ -11,10 +11,33 @@
             <div class="lv-trip-activity__viewport">
                 <div class="lv-trip-activity__track" data-lv-trip-act-track tabindex="0">
                     @foreach($tripActivitySlides as $ti => $sl)
-                        <figure class="lv-trip-activity__slide" data-lv-trip-act-slide="{{ $ti }}" aria-label="{{ $sl['caption'] !== '' ? $sl['caption'] : 'Slide '.($ti + 1) }}">
-                            <img class="lv-trip-activity__img" src="{{ $sl['src'] }}" alt="{{ $sl['caption'] !== '' ? $sl['caption'] : 'Trip activity photo '.($ti + 1) }}" loading="{{ $ti === 0 ? 'eager' : 'lazy' }}" decoding="async" width="960" height="540">
-                            @if($sl['caption'] !== '')
-                                <figcaption class="lv-trip-activity__cap">{{ $sl['caption'] }}</figcaption>
+                        @php
+                            $lvTaAlt = trim((string) ($sl['title'] ?? ''));
+                            if ($lvTaAlt === '') {
+                                $lvTaAlt = trim((string) ($sl['headline'] ?? ''));
+                            }
+                            if ($lvTaAlt === '') {
+                                $lvTaAlt = trim((string) ($sl['caption'] ?? ''));
+                            }
+                            if ($lvTaAlt === '') {
+                                $lvTaAlt = 'Trip activity photo '.($ti + 1);
+                            }
+                            $lvTaHasOverlay = trim((string) ($sl['headline'] ?? '')) !== '' || trim((string) ($sl['title'] ?? '')) !== '' || trim((string) ($sl['caption'] ?? '')) !== '';
+                        @endphp
+                        <figure class="lv-trip-activity__slide" data-lv-trip-act-slide="{{ $ti }}" aria-label="{{ $lvTaAlt }}">
+                            <img class="lv-trip-activity__img" src="{{ $sl['src'] }}" alt="{{ $lvTaAlt }}" loading="{{ $ti === 0 ? 'eager' : 'lazy' }}" decoding="async" width="960" height="540">
+                            @if($lvTaHasOverlay)
+                                <figcaption class="lv-trip-activity__cap">
+                                    @if(trim((string) ($sl['headline'] ?? '')) !== '')
+                                        <span class="lv-trip-activity__slide-kicker">{{ $sl['headline'] }}</span>
+                                    @endif
+                                    @if(trim((string) ($sl['title'] ?? '')) !== '')
+                                        <span class="lv-trip-activity__slide-title">{{ $sl['title'] }}</span>
+                                    @endif
+                                    @if(trim((string) ($sl['caption'] ?? '')) !== '')
+                                        <span class="lv-trip-activity__slide-desc">{{ $sl['caption'] }}</span>
+                                    @endif
+                                </figcaption>
                             @endif
                         </figure>
                     @endforeach

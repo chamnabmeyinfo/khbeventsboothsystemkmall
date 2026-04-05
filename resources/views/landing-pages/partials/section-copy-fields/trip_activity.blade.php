@@ -14,6 +14,8 @@
             $tripActivitySlideRows[] = [
                 'path' => $p,
                 'caption' => (string) ($row['caption'] ?? ''),
+                'headline' => (string) ($row['headline'] ?? ''),
+                'title' => (string) ($row['title'] ?? ''),
             ];
         }
     } else {
@@ -43,7 +45,7 @@
                 <span class="mb-0 font-weight-bold">Slides</span>
                 @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'trip_activity_gallery_slides_text', 'canAutoTranslate' => $canAutoTranslate])
             </div>
-            <p class="small text-muted mb-2">Leave all slides removed and no new uploads to hide this block on the public page.</p>
+            <p class="small text-muted mb-2">Per slide: optional <strong>headline</strong> (small line), <strong>title</strong> (main line), and <strong>caption</strong> (short description). Shown on the public slider overlay. Leave all slides removed and no new uploads to hide this block.</p>
 
             @forelse($tripActivitySlideRows as $idx => $slide)
                 <div class="lp-trip-slide-row card mb-2 p-2 border" data-locale="{{ $loc }}" data-lp-trip-slide-row>
@@ -54,8 +56,16 @@
                         <div class="col-md-8 col-lg-9">
                             <input type="hidden" name="{{ $pfx }}[trip_activity_slide_keep][{{ $idx }}][path]" value="{{ e($slide['path']) }}" data-lp-trip-slide-path autocomplete="off">
                             <div class="form-group mb-2">
-                                <label class="small mb-0" for="lp-trip-cap-{{ $loc }}-{{ $idx }}">Caption (optional)</label>
-                                <input type="text" id="lp-trip-cap-{{ $loc }}-{{ $idx }}" class="form-control form-control-sm" name="{{ $pfx }}[trip_activity_slide_keep][{{ $idx }}][caption]" value="{{ e($slide['caption']) }}" maxlength="500" data-lp-trip-slide-caption autocomplete="off">
+                                <label class="small mb-0 font-weight-bold" for="lp-trip-hl-{{ $loc }}-{{ $idx }}">Slide headline <span class="text-muted font-weight-normal">(optional, small text)</span></label>
+                                <input type="text" id="lp-trip-hl-{{ $loc }}-{{ $idx }}" class="form-control form-control-sm" name="{{ $pfx }}[trip_activity_slide_keep][{{ $idx }}][headline]" value="{{ e($slide['headline'] ?? '') }}" maxlength="200" data-lp-trip-slide-headline placeholder="e.g. Day 2 · Morning" autocomplete="off">
+                            </div>
+                            <div class="form-group mb-2">
+                                <label class="small mb-0 font-weight-bold" for="lp-trip-st-{{ $loc }}-{{ $idx }}">Slide title <span class="text-muted font-weight-normal">(optional, prominent)</span></label>
+                                <input type="text" id="lp-trip-st-{{ $loc }}-{{ $idx }}" class="form-control form-control-sm" name="{{ $pfx }}[trip_activity_slide_keep][{{ $idx }}][title]" value="{{ e($slide['title'] ?? '') }}" maxlength="255" data-lp-trip-slide-title placeholder="e.g. Factory visit" autocomplete="off">
+                            </div>
+                            <div class="form-group mb-2">
+                                <label class="small mb-0" for="lp-trip-cap-{{ $loc }}-{{ $idx }}">Caption <span class="text-muted">(optional)</span></label>
+                                <input type="text" id="lp-trip-cap-{{ $loc }}-{{ $idx }}" class="form-control form-control-sm" name="{{ $pfx }}[trip_activity_slide_keep][{{ $idx }}][caption]" value="{{ e($slide['caption']) }}" maxlength="500" data-lp-trip-slide-caption placeholder="Short supporting line" autocomplete="off">
                             </div>
                             <div class="custom-control custom-checkbox">
                                 <input type="checkbox" class="custom-control-input lp-trip-slide-remove" id="lp-trip-rm-{{ $loc }}-{{ $idx }}" name="{{ $pfx }}[trip_activity_slide_keep][{{ $idx }}][remove]" value="1">
@@ -77,8 +87,8 @@
             <details class="mb-0">
                 <summary class="small text-muted" style="cursor: pointer;">Advanced: edit as text (path per line)</summary>
                 <label for="lp-trip-ta-{{ $loc }}" class="sr-only">Trip activity slides — raw lines for translation tools</label>
-                <textarea id="lp-trip-ta-{{ $loc }}" name="{{ $pfx }}[trip_activity_gallery_slides_text]" class="form-control font-monospace mt-2" rows="5" maxlength="8000" aria-describedby="lp-trip-ta-hint-{{ $loc }}" data-lp-trip-slides-textarea data-locale="{{ $loc }}">{{ old('visual.i18n.'.$loc.'.trip_activity_gallery_slides_text', $tripActivitySlidesText) }}</textarea>
-                <small id="lp-trip-ta-hint-{{ $loc }}" class="text-muted d-block mt-1">Synced from the list above when you save. “From English” translation writes here; caption lines use <code>path|caption</code>. Saving uses uploads and the slide list first — edit this only if you know the path format.</small>
+                <textarea id="lp-trip-ta-{{ $loc }}" name="{{ $pfx }}[trip_activity_gallery_slides_text]" class="form-control font-monospace mt-2" rows="6" maxlength="16000" aria-describedby="lp-trip-ta-hint-{{ $loc }}" data-lp-trip-slides-textarea data-locale="{{ $loc }}">{{ old('visual.i18n.'.$loc.'.trip_activity_gallery_slides_text', $tripActivitySlidesText) }}</textarea>
+                <small id="lp-trip-ta-hint-{{ $loc }}" class="text-muted d-block mt-1">Synced from the list above when you save. One slide per line: <code>path|caption|headline|title</code> (omit tail segments if empty; legacy <code>path|caption</code> still works). Do not use <code>|</code> inside the text fields.</small>
             </details>
         </div>
     </div>
@@ -116,8 +126,12 @@
             }
             var path = String(pathInp.value || '').trim();
             var capInp = row.querySelector('input[data-lp-trip-slide-caption]');
+            var hlInp = row.querySelector('input[data-lp-trip-slide-headline]');
+            var tiInp = row.querySelector('input[data-lp-trip-slide-title]');
             var cap = capInp ? String(capInp.value || '').trim() : '';
-            lines.push(cap ? path + '|' + cap : path);
+            var hl = hlInp ? String(hlInp.value || '').trim() : '';
+            var ti = tiInp ? String(tiInp.value || '').trim() : '';
+            lines.push([path, cap, hl, ti].join('|'));
         });
         ta.value = lines.join('\n');
     }

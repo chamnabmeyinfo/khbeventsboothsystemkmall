@@ -499,7 +499,7 @@ class LandingPageController extends Controller
             'agenda_items_text' => 12000,
             'trip_section_title' => 255,
             'trip_activity_gallery_title' => 255,
-            'trip_activity_gallery_slides_text' => 8000,
+            'trip_activity_gallery_slides_text' => 16000,
             'per_person_label' => 120,
             'seats_left_suffix' => 120,
             'booking_name_placeholder' => 120,
@@ -698,12 +698,14 @@ class LandingPageController extends Controller
             'visual.i18n.*.agenda_hdr_detail' => 'nullable|string|max:120',
             'visual.i18n.*.agenda_items_text' => 'nullable|string|max:12000',
             'visual.i18n.*.trip_activity_gallery_title' => 'nullable|string|max:255',
-            'visual.i18n.*.trip_activity_gallery_slides_text' => 'nullable|string|max:8000',
+            'visual.i18n.*.trip_activity_gallery_slides_text' => 'nullable|string|max:16000',
             'visual.i18n.*.trip_activity_slides_rebuild' => 'nullable|in:1',
             'visual.i18n.*.trip_activity_from_textarea' => 'nullable|in:0,1',
             'visual.i18n.*.trip_activity_slide_keep' => 'nullable|array',
             'visual.i18n.*.trip_activity_slide_keep.*.path' => 'nullable|string|max:512',
             'visual.i18n.*.trip_activity_slide_keep.*.caption' => 'nullable|string|max:500',
+            'visual.i18n.*.trip_activity_slide_keep.*.headline' => 'nullable|string|max:200',
+            'visual.i18n.*.trip_activity_slide_keep.*.title' => 'nullable|string|max:255',
             'visual.i18n.*.trip_activity_slide_keep.*.remove' => 'nullable|boolean',
             'visual_trip_activity_new_slides' => 'nullable|array',
             'visual_trip_activity_new_slides.*' => 'nullable',
@@ -1115,7 +1117,10 @@ class LandingPageController extends Controller
         $lines = [];
         if ($fromTextareaOnly) {
             foreach (LandingPage::parseTripActivityGallerySlideRows(trim((string) ($locIn['trip_activity_gallery_slides_text'] ?? ''))) as $r) {
-                $lines[] = $r['caption'] !== '' ? $r['path'].'|'.$r['caption'] : $r['path'];
+                $enc = LandingPage::encodeTripActivityGallerySlideRow($r);
+                if ($enc !== '') {
+                    $lines[] = $enc;
+                }
             }
         } else {
             $keep = $locIn['trip_activity_slide_keep'] ?? null;
@@ -1128,12 +1133,15 @@ class LandingPageController extends Controller
                     if (! empty($row['remove'])) {
                         continue;
                     }
-                    $path = LandingPage::sanitizeTripPhaseFeatureImagePath((string) ($row['path'] ?? ''));
-                    if ($path === '') {
-                        continue;
+                    $enc = LandingPage::encodeTripActivityGallerySlideRow([
+                        'path' => (string) ($row['path'] ?? ''),
+                        'caption' => (string) ($row['caption'] ?? ''),
+                        'headline' => (string) ($row['headline'] ?? ''),
+                        'title' => (string) ($row['title'] ?? ''),
+                    ]);
+                    if ($enc !== '') {
+                        $lines[] = $enc;
                     }
-                    $cap = trim(strip_tags((string) ($row['caption'] ?? '')));
-                    $lines[] = $cap !== '' ? $path.'|'.$cap : $path;
                 }
             }
         }
@@ -1163,7 +1171,11 @@ class LandingPageController extends Controller
                         'visual_trip_activity_new_slides.'.$locale => ['Each trip activity image must be 8 MB or smaller.'],
                     ]);
                 }
-                $lines[] = $this->storeVisualImage($file, $slug, 'trip_activity_slide');
+                $stored = $this->storeVisualImage($file, $slug, 'trip_activity_slide');
+                $enc = LandingPage::encodeTripActivityGallerySlideRow(['path' => $stored]);
+                if ($enc !== '') {
+                    $lines[] = $enc;
+                }
             }
         }
 
@@ -1171,7 +1183,10 @@ class LandingPageController extends Controller
             $paste = trim((string) ($locIn['trip_activity_gallery_slides_text'] ?? ''));
             if ($paste !== '') {
                 foreach (LandingPage::parseTripActivityGallerySlideRows($paste) as $r) {
-                    $lines[] = $r['caption'] !== '' ? $r['path'].'|'.$r['caption'] : $r['path'];
+                    $enc = LandingPage::encodeTripActivityGallerySlideRow($r);
+                    if ($enc !== '') {
+                        $lines[] = $enc;
+                    }
                 }
             }
         }
@@ -1183,9 +1198,9 @@ class LandingPageController extends Controller
         }
 
         $text = implode("\n", $lines);
-        if (strlen($text) > 8000) {
+        if (strlen($text) > 16000) {
             throw ValidationException::withMessages([
-                'visual.i18n.'.$locale.'.trip_activity_gallery_slides_text' => ['Trip activity slides data is too long. Remove some slides or shorten captions.'],
+                'visual.i18n.'.$locale.'.trip_activity_gallery_slides_text' => ['Trip activity slides data is too long. Remove some slides or shorten text on slides.'],
             ]);
         }
 

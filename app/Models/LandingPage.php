@@ -1213,9 +1213,32 @@ TXT;
     }
 
     /**
-     * Trip activity gallery rows for admin forms (relative path + caption).
+     * Encode one trip activity slide for storage (multiline field).
+     * Format: path|caption|headline|title — path required; pipes in text fields are not supported.
      *
-     * @return list<array{path: string, caption: string}>
+     * @param  array{path: string, caption?: string, headline?: string, title?: string}  $row
+     */
+    public static function encodeTripActivityGallerySlideRow(array $row): string
+    {
+        $clean = self::sanitizeTripPhaseFeatureImagePath((string) ($row['path'] ?? ''));
+        if ($clean === '') {
+            return '';
+        }
+
+        return implode('|', [
+            $clean,
+            trim(strip_tags((string) ($row['caption'] ?? ''))),
+            trim(strip_tags((string) ($row['headline'] ?? ''))),
+            trim(strip_tags((string) ($row['title'] ?? ''))),
+        ]);
+    }
+
+    /**
+     * Trip activity gallery rows for admin forms (relative path + caption + optional headline/title per slide).
+     *
+     * Lines: path — or path|caption — or path|caption|headline|title (four segments; middle segments may be empty, e.g. path|||Title only).
+     *
+     * @return list<array{path: string, caption: string, headline: string, title: string}>
      */
     public static function parseTripActivityGallerySlideRows(string $text): array
     {
@@ -1228,10 +1251,14 @@ TXT;
             }
             $path = '';
             $caption = '';
+            $headline = '';
+            $title = '';
             if (str_contains($line, '|')) {
-                [$p, $c] = explode('|', $line, 2);
-                $path = trim((string) $p);
-                $caption = trim(strip_tags((string) $c));
+                $parts = explode('|', $line, 4);
+                $path = trim((string) ($parts[0] ?? ''));
+                $caption = isset($parts[1]) ? trim(strip_tags((string) $parts[1])) : '';
+                $headline = isset($parts[2]) ? trim(strip_tags((string) $parts[2])) : '';
+                $title = isset($parts[3]) ? trim(strip_tags((string) $parts[3])) : '';
             } else {
                 $path = $line;
             }
@@ -1242,6 +1269,8 @@ TXT;
             $out[] = [
                 'path' => $clean,
                 'caption' => $caption,
+                'headline' => $headline,
+                'title' => $title,
             ];
         }
 
@@ -1249,15 +1278,17 @@ TXT;
     }
 
     /**
-     * Trip activity gallery: one slide per line — site image path, optional caption after first pipe.
+     * Trip activity gallery for public template (asset URLs + text fields).
      *
-     * @return list<array{src: string, caption: string}>
+     * @return list<array{src: string, caption: string, headline: string, title: string}>
      */
     public static function parseTripActivityGallerySlides(string $text): array
     {
         return array_map(static fn (array $row) => [
             'src' => asset($row['path']),
             'caption' => $row['caption'],
+            'headline' => $row['headline'],
+            'title' => $row['title'],
         ], self::parseTripActivityGallerySlideRows($text));
     }
 
