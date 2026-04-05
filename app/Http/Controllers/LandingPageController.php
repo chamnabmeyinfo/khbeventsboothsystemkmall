@@ -666,6 +666,13 @@ class LandingPageController extends Controller
             'template_key' => 'nullable|in:canton_fair_visual',
             'visual' => 'nullable|array',
             'visual.hero_cta_target' => 'nullable|string|max:1024',
+            'visual.logo_max_width_px' => 'nullable|integer|min:80|max:420',
+            'visual.logo_max_height_px' => 'nullable|integer|min:40|max:200',
+            'visual.logo_padding_px' => 'nullable|integer|min:0|max:40',
+            'visual.logo_border_radius_px' => 'nullable|integer|min:0|max:48',
+            'visual.logo_shadow_preset' => 'nullable|string|in:default,none,soft,strong,glow',
+            'visual.logo_backdrop' => 'nullable|string|in:none,white,dark',
+            'visual.logo_effect' => 'nullable|string|in:none,gentle_pulse,soft_ring',
             'visual.hero_background_images' => 'nullable|array',
             'visual.hero_background_images.*' => 'nullable|string|max:512',
             'visual.hero_background_video' => 'nullable|string|max:2048',
@@ -891,6 +898,11 @@ class LandingPageController extends Controller
             $visual['hero_cta_target'] = trim((string) $incoming['hero_cta_target']);
         } elseif (! isset($visual['hero_cta_target']) || $visual['hero_cta_target'] === '') {
             $visual['hero_cta_target'] = $existing['hero_cta_target'] ?? $this->normalizeRedirectUrl((string) ($validated['redirect_url'] ?? ''), (string) ($validated['slug'] ?? ''));
+        }
+
+        $mergedPriorForLogo = array_merge($existing, $visual);
+        foreach (LandingPage::mergeIncomingLogoAppearance($incoming, $mergedPriorForLogo) as $logoKey => $logoVal) {
+            $visual[$logoKey] = $logoVal;
         }
 
         $adminLocales = LandingPage::allowedLocaleCodes();

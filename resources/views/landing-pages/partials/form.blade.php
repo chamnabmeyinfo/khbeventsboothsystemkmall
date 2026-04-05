@@ -187,6 +187,77 @@
                         </div>
                     </div>
                 </div>
+                @php
+                    $vfLogoApp = is_array($visualForm ?? null) ? $visualForm : [];
+                    $oldVisualLogo = old('visual');
+                    if (is_array($oldVisualLogo)) {
+                        $vfLogoApp = array_merge($vfLogoApp, $oldVisualLogo);
+                    }
+                    $logoAppearanceForm = \App\Models\LandingPage::normalizeLogoAppearanceFromVisual($vfLogoApp);
+                @endphp
+                <div class="border-top pt-3 mt-3">
+                    <p class="font-weight-bold mb-2">Logo appearance (hero)</p>
+                    <p class="text-muted small mb-3">Controls how the logo is sized and styled on the public hero. Uses max width/height so aspect ratio is preserved.</p>
+                    <div class="form-row">
+                        <div class="form-group col-6 col-md-3">
+                            <label for="lp_logo_max_w">Max width (px)</label>
+                            <input type="number" class="form-control" id="lp_logo_max_w" name="visual[logo_max_width_px]" min="80" max="420" step="1" value="{{ (int) $logoAppearanceForm['logo_max_width_px'] }}">
+                        </div>
+                        <div class="form-group col-6 col-md-3">
+                            <label for="lp_logo_max_h">Max height (px)</label>
+                            <input type="number" class="form-control" id="lp_logo_max_h" name="visual[logo_max_height_px]" min="40" max="200" step="1" value="{{ (int) $logoAppearanceForm['logo_max_height_px'] }}">
+                        </div>
+                        <div class="form-group col-6 col-md-3">
+                            <label for="lp_logo_pad">Padding (px)</label>
+                            <input type="number" class="form-control" id="lp_logo_pad" name="visual[logo_padding_px]" min="0" max="40" step="1" value="{{ (int) $logoAppearanceForm['logo_padding_px'] }}">
+                        </div>
+                        <div class="form-group col-6 col-md-3">
+                            <label for="lp_logo_rad">Corner radius (px)</label>
+                            <input type="number" class="form-control" id="lp_logo_rad" name="visual[logo_border_radius_px]" min="0" max="48" step="1" value="{{ (int) $logoAppearanceForm['logo_border_radius_px'] }}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-12 col-md-4">
+                            <label for="lp_logo_shadow">Shadow / glow</label>
+                            <select class="form-control" id="lp_logo_shadow" name="visual[logo_shadow_preset]">
+                                @foreach([
+                                    'default' => 'Default (bright rim on dark hero)',
+                                    'none' => 'None',
+                                    'soft' => 'Soft',
+                                    'strong' => 'Strong',
+                                    'glow' => 'Gold accent glow',
+                                ] as $lpShVal => $lpShLabel)
+                                    <option value="{{ $lpShVal }}" {{ ($logoAppearanceForm['logo_shadow_preset'] ?? '') === $lpShVal ? 'selected' : '' }}>{{ $lpShLabel }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group col-12 col-md-4">
+                            <label for="lp_logo_backdrop">Background plate</label>
+                            <select class="form-control" id="lp_logo_backdrop" name="visual[logo_backdrop]">
+                                @foreach([
+                                    'none' => 'None',
+                                    'white' => 'Light (white glass)',
+                                    'dark' => 'Dark glass',
+                                ] as $lpBdVal => $lpBdLabel)
+                                    <option value="{{ $lpBdVal }}" {{ ($logoAppearanceForm['logo_backdrop'] ?? '') === $lpBdVal ? 'selected' : '' }}>{{ $lpBdLabel }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group col-12 col-md-4">
+                            <label for="lp_logo_fx">Motion effect</label>
+                            <select class="form-control" id="lp_logo_fx" name="visual[logo_effect]">
+                                @foreach([
+                                    'none' => 'None',
+                                    'gentle_pulse' => 'Gentle pulse',
+                                    'soft_ring' => 'Soft ring',
+                                ] as $lpFxVal => $lpFxLabel)
+                                    <option value="{{ $lpFxVal }}" {{ ($logoAppearanceForm['logo_effect'] ?? '') === $lpFxVal ? 'selected' : '' }}>{{ $lpFxLabel }}</option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted d-block mt-1">Disabled automatically for visitors who prefer reduced motion.</small>
+                        </div>
+                    </div>
+                </div>
                 <div class="form-group mt-3">
                     <label class="d-block">Additional hero slideshow images (optional)</label>
                     <small class="text-muted d-block mb-2">Up to 10 images total (including the primary hero image above). Order is left to right in the list below. Public page: each image shows 6 seconds, then your hero video 10 seconds, in a 45-second repeating loop.</small>

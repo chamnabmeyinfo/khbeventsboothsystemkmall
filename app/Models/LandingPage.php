@@ -15,6 +15,13 @@ class LandingPage extends Model
     /** @var list<string> */
     public const VISUAL_SHARED_KEYS = [
         'logo_image',
+        'logo_max_width_px',
+        'logo_max_height_px',
+        'logo_padding_px',
+        'logo_border_radius_px',
+        'logo_shadow_preset',
+        'logo_backdrop',
+        'logo_effect',
         'hero_background_image',
         'hero_background_images',
         'hero_background_video',
@@ -37,6 +44,152 @@ class LandingPage extends Model
         'faq',
         'terms',
     ];
+
+    /**
+     * Keys under visual_content root for hero logo sizing and effects (Canton Fair template).
+     *
+     * @return list<string>
+     */
+    public static function logoAppearanceStorageKeys(): array
+    {
+        return array_keys(self::defaultLogoAppearance());
+    }
+
+    /**
+     * @return array<string, int|string>
+     */
+    public static function defaultLogoAppearance(): array
+    {
+        return [
+            'logo_max_width_px' => 300,
+            'logo_max_height_px' => 100,
+            'logo_padding_px' => 0,
+            'logo_border_radius_px' => 0,
+            'logo_shadow_preset' => 'default',
+            'logo_backdrop' => 'none',
+            'logo_effect' => 'none',
+        ];
+    }
+
+    /**
+     * Coerce stored / posted logo appearance to safe values for CSS and persistence.
+     *
+     * @param  array<string, mixed>  $v
+     * @return array<string, int|string>
+     */
+    public static function normalizeLogoAppearanceFromVisual(array $v): array
+    {
+        $d = self::defaultLogoAppearance();
+        $w = $v['logo_max_width_px'] ?? null;
+        $h = $v['logo_max_height_px'] ?? null;
+        $p = $v['logo_padding_px'] ?? null;
+        $r = $v['logo_border_radius_px'] ?? null;
+
+        return [
+            'logo_max_width_px' => ($w === null || $w === '') ? $d['logo_max_width_px'] : max(80, min(420, (int) $w)),
+            'logo_max_height_px' => ($h === null || $h === '') ? $d['logo_max_height_px'] : max(40, min(200, (int) $h)),
+            'logo_padding_px' => ($p === null || $p === '') ? $d['logo_padding_px'] : max(0, min(40, (int) $p)),
+            'logo_border_radius_px' => ($r === null || $r === '') ? $d['logo_border_radius_px'] : max(0, min(48, (int) $r)),
+            'logo_shadow_preset' => in_array($sp = strtolower(trim((string) ($v['logo_shadow_preset'] ?? ''))), ['default', 'none', 'soft', 'strong', 'glow'], true)
+                ? $sp
+                : $d['logo_shadow_preset'],
+            'logo_backdrop' => in_array($bd = strtolower(trim((string) ($v['logo_backdrop'] ?? ''))), ['none', 'white', 'dark'], true)
+                ? $bd
+                : $d['logo_backdrop'],
+            'logo_effect' => in_array($fx = strtolower(trim((string) ($v['logo_effect'] ?? ''))), ['none', 'gentle_pulse', 'soft_ring'], true)
+                ? $fx
+                : $d['logo_effect'],
+        ];
+    }
+
+    /**
+     * Merge admin form `visual[...]` logo appearance into prior visual_content (shared keys).
+     *
+     * @param  array<string, mixed>  $incoming  Subset of validated visual[] from the request
+     * @param  array<string, mixed>  $priorVisual  Existing visual row + merged uploads
+     * @return array<string, int|string>
+     */
+    public static function mergeIncomingLogoAppearance(array $incoming, array $priorVisual): array
+    {
+        $anyLogoField = false;
+        foreach (self::logoAppearanceStorageKeys() as $lk) {
+            if (array_key_exists($lk, $incoming)) {
+                $anyLogoField = true;
+                break;
+            }
+        }
+        if (! $anyLogoField) {
+            return self::normalizeLogoAppearanceFromVisual($priorVisual);
+        }
+        $prior = self::normalizeLogoAppearanceFromVisual($priorVisual);
+        $merged = $prior;
+        if (array_key_exists('logo_max_width_px', $incoming)) {
+            $merged['logo_max_width_px'] = $incoming['logo_max_width_px'];
+        }
+        if (array_key_exists('logo_max_height_px', $incoming)) {
+            $merged['logo_max_height_px'] = $incoming['logo_max_height_px'];
+        }
+        if (array_key_exists('logo_padding_px', $incoming)) {
+            $merged['logo_padding_px'] = $incoming['logo_padding_px'];
+        }
+        if (array_key_exists('logo_border_radius_px', $incoming)) {
+            $merged['logo_border_radius_px'] = $incoming['logo_border_radius_px'];
+        }
+        if (array_key_exists('logo_shadow_preset', $incoming)) {
+            $merged['logo_shadow_preset'] = $incoming['logo_shadow_preset'];
+        }
+        if (array_key_exists('logo_backdrop', $incoming)) {
+            $merged['logo_backdrop'] = $incoming['logo_backdrop'];
+        }
+        if (array_key_exists('logo_effect', $incoming)) {
+            $merged['logo_effect'] = $incoming['logo_effect'];
+        }
+
+        return self::normalizeLogoAppearanceFromVisual($merged);
+    }
+
+    /**
+     * Public hero: safe classes and inline dimensions (integers only).
+     *
+     * @param  array<string, mixed>  $visual  Flattened locale visual (e.g. visualForLocale)
+     * @return array{wrapper_class: string, wrapper_style: string, img_style: string}
+     */
+    public static function logoHeroMarkupAttributes(array $visual): array
+    {
+        $a = self::normalizeLogoAppearanceFromVisual($visual);
+        $shadow = preg_replace('/[^a-z]/', '', (string) $a['logo_shadow_preset']);
+        if ($shadow === '') {
+            $shadow = 'default';
+        }
+        $classes = ['lv-logo', 'lv-logo-sh--'.$shadow];
+        if ($a['logo_backdrop'] === 'white') {
+            $classes[] = 'lv-logo--bd-white';
+        } elseif ($a['logo_backdrop'] === 'dark') {
+            $classes[] = 'lv-logo--bd-dark';
+        }
+        if ($a['logo_effect'] === 'gentle_pulse') {
+            $classes[] = 'lv-logo--fx-pulse';
+        } elseif ($a['logo_effect'] === 'soft_ring') {
+            $classes[] = 'lv-logo--fx-ring';
+        }
+        $wrapParts = [];
+        if ((int) $a['logo_padding_px'] > 0) {
+            $wrapParts[] = 'padding:'.(int) $a['logo_padding_px'].'px';
+        }
+        if ((int) $a['logo_border_radius_px'] > 0) {
+            $wrapParts[] = 'border-radius:'.(int) $a['logo_border_radius_px'].'px';
+        }
+
+        return [
+            'wrapper_class' => implode(' ', $classes),
+            'wrapper_style' => $wrapParts !== [] ? implode(';', $wrapParts).';' : '',
+            'img_style' => sprintf(
+                'max-width:%dpx;max-height:%dpx;width:auto;height:auto;',
+                (int) $a['logo_max_width_px'],
+                (int) $a['logo_max_height_px']
+            ),
+        ];
+    }
 
     protected $fillable = [
         'name',
@@ -341,8 +494,16 @@ class LandingPage extends Model
         }
 
         $shared = [];
+        $logoAppearanceFlip = array_flip(self::logoAppearanceStorageKeys());
         foreach (self::VISUAL_SHARED_KEYS as $k) {
+            if (isset($logoAppearanceFlip[$k])) {
+                continue;
+            }
             $shared[$k] = $v[$k] ?? '';
+        }
+        $normLogo = self::normalizeLogoAppearanceFromVisual($v);
+        foreach (self::logoAppearanceStorageKeys() as $lk) {
+            $shared[$lk] = $normLogo[$lk];
         }
 
         $i18n = isset($v['i18n']) && is_array($v['i18n']) ? $v['i18n'] : [];

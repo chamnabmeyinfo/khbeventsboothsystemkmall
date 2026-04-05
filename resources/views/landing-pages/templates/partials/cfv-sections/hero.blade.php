@@ -22,7 +22,14 @@
         </video>
     @endif
     <div class="lv-content lv-container">
-        @if($logo)<span class="lv-logo"><img src="{{ $logo }}" alt="Logo" data-lv-image-key="logo_image" data-lv-image-current="{{ $logo }}"></span>@endif
+        @if($logo)
+            @php
+                $lvLogoAttrs = \App\Models\LandingPage::logoHeroMarkupAttributes($visual ?? []);
+            @endphp
+            <span class="{{ $lvLogoAttrs['wrapper_class'] }}"@if(($lvLogoAttrs['wrapper_style'] ?? '') !== '') style="{{ $lvLogoAttrs['wrapper_style'] }}"@endif>
+                <img src="{{ $logo }}" alt="Logo" class="lv-logo__img" data-lv-image-key="logo_image" data-lv-image-current="{{ $logo }}" style="{{ $lvLogoAttrs['img_style'] }}">
+            </span>
+        @endif
         <h1 data-lv-key="hero_title">{{ $heroTitle }}</h1>
         <h2 data-lv-key="hero_subtitle">{!! nl2br(e($heroSubtitle)) !!}</h2>
         <button type="button" class="lv-btn lv-btn--hero-cta" onclick="trackLandingEvent('cta_click',{cta_label:'VisualHeroCTA',source:'hero'});landingContinue('{{ $heroCtaTarget }}')"><span data-lv-key="hero_cta_text">{{ $heroCtaText }}</span></button>

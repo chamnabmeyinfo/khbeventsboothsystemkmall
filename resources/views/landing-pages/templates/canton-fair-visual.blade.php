@@ -250,14 +250,14 @@
     .lv-hero:before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(165deg,rgba(15,23,42,.9) 0%,rgba(30,27,75,.68) 42%,rgba(196,30,30,.42) 100%)}
     .lv-hero:after{content:"";position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse 85% 55% at 50% 18%,rgba(0,0,0,.35),transparent 58%);pointer-events:none}
     .lv-content{position:relative;z-index:2;color:#fff;text-align:center;padding:clamp(48px,12vw,100px) 0}
-    /* Logo: soft white glow + light depth (mostly white) */
-    .lv-logo{display:inline-block;line-height:0}
-    .lv-logo img{
-        height:clamp(72px,14vw,100px);
-        max-width:min(92vw,300px);
-        width:auto;
+    /* Logo: size from admin (inline); shadow / backdrop / motion via classes (single responsive set) */
+    .lv-logo{display:inline-block;line-height:0;vertical-align:middle;position:relative;z-index:0;max-width:100%;box-sizing:border-box}
+    .lv-logo__img{
+        display:inline-block;
         object-fit:contain;
         vertical-align:middle;
+    }
+    .lv-logo-sh--default .lv-logo__img{
         filter:
             drop-shadow(0 1px 2px rgba(0,0,0,.22))
             drop-shadow(0 3px 10px rgba(0,0,0,.14))
@@ -265,6 +265,52 @@
             drop-shadow(0 0 24px rgba(255,255,255,.7))
             drop-shadow(0 0 40px rgba(255,255,255,.45))
             drop-shadow(0 0 56px rgba(255,255,255,.22));
+    }
+    .lv-logo-sh--none .lv-logo__img{filter:none}
+    .lv-logo-sh--soft .lv-logo__img{filter:drop-shadow(0 2px 8px rgba(0,0,0,.28)) drop-shadow(0 0 12px rgba(255,255,255,.35))}
+    .lv-logo-sh--strong .lv-logo__img{
+        filter:
+            drop-shadow(0 3px 12px rgba(0,0,0,.4))
+            drop-shadow(0 0 20px rgba(255,255,255,.55))
+            drop-shadow(0 0 36px rgba(255,255,255,.35));
+    }
+    .lv-logo-sh--glow .lv-logo__img{
+        filter:
+            drop-shadow(0 2px 10px rgba(0,0,0,.25))
+            drop-shadow(0 0 14px rgba(255,255,255,.75))
+            drop-shadow(0 0 28px rgba(201,162,39,.55))
+            drop-shadow(0 0 48px rgba(196,30,30,.25));
+    }
+    .lv-logo--bd-white{
+        background:rgba(255,255,255,.92);
+        box-shadow:0 6px 28px rgba(0,0,0,.14),0 0 0 1px rgba(255,255,255,.6) inset;
+    }
+    .lv-logo--bd-dark{
+        background:rgba(15,23,42,.5);
+        box-shadow:0 8px 32px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.12);
+    }
+    @keyframes lv-logo-pulse{
+        0%,100%{transform:scale(1)}
+        50%{transform:scale(1.04)}
+    }
+    @keyframes lv-logo-ring{
+        0%{opacity:.85;transform:scale(1)}
+        70%{opacity:0;transform:scale(1.15)}
+        100%{opacity:0;transform:scale(1.2)}
+    }
+    .lv-logo--fx-pulse .lv-logo__img{
+        animation:lv-logo-pulse 2.8s ease-in-out infinite;
+        transform-origin:center center;
+    }
+    .lv-logo--fx-ring::before{
+        content:"";
+        position:absolute;
+        inset:-6px;
+        border-radius:inherit;
+        border:2px solid rgba(255,255,255,.55);
+        pointer-events:none;
+        animation:lv-logo-ring 2.6s ease-out infinite;
+        z-index:-1;
     }
     .lv-hero h1{font-size:clamp(1.75rem,5vw,3.25rem);margin:16px 0 12px;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.55),0 4px 28px rgba(0,0,0,.45)}
     .lv-hero h2{font-size:clamp(1.05rem,2.8vw,1.4rem);font-family:"Roboto","Hanuman",sans-serif;font-weight:500;color:rgba(255,255,255,.98);margin:0 0 28px;max-width:52ch;margin-left:auto;margin-right:auto;line-height:1.55;text-shadow:0 1px 3px rgba(0,0,0,.65),0 2px 14px rgba(0,0,0,.4)}
@@ -588,7 +634,68 @@
         margin-top:4px;font-size:clamp(1.6rem,4vw,2.1rem);font-weight:800;color:var(--lv-primary);
         font-family:"Roboto","Hanuman",sans-serif;line-height:1.2;
     }
-    .lv-promo-intro{display:block;max-width:min(62ch,100%);margin:0 auto 22px;text-align:center;color:var(--lv-body);font-size:1rem;line-height:1.55}
+    /* Promotion intro: single responsive banner + motion (respects prefers-reduced-motion) */
+    .lv-promo-intro-banner{
+        position:relative;
+        max-width:min(56rem,100%);
+        margin:0 auto 22px;
+        padding:clamp(14px,3.5vw,20px) clamp(18px,4vw,28px);
+        text-align:center;
+        border-radius:var(--lv-radius-sm);
+        overflow:hidden;
+        isolation:isolate;
+        background:linear-gradient(145deg,rgba(255,255,255,.9) 0%,rgba(255,252,245,.96) 100%);
+        border:1px solid rgba(201,162,39,.52);
+        box-shadow:0 8px 32px rgba(15,23,42,.07),0 0 0 1px rgba(255,255,255,.85) inset;
+        animation:lv-promo-intro-enter .8s cubic-bezier(.22,1,.36,1) both,
+                   lv-promo-intro-pulse 3.4s ease-in-out infinite .85s;
+    }
+    .lv-promo-intro-banner::after{
+        content:"";
+        position:absolute;
+        top:-10%;
+        left:-55%;
+        width:45%;
+        height:120%;
+        background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
+        transform:skewX(-16deg);
+        animation:lv-promo-intro-sheen 5s ease-in-out infinite 1s;
+        pointer-events:none;
+        z-index:0;
+    }
+    .lv-promo-intro-banner .lv-promo-intro{
+        position:relative;
+        z-index:1;
+        display:block;
+        margin:0;
+        max-width:min(62ch,100%);
+        margin-left:auto;
+        margin-right:auto;
+        text-align:center;
+        color:var(--lv-ink);
+        font-size:clamp(1.03rem,2.6vw,1.16rem);
+        line-height:1.55;
+        font-weight:600;
+        letter-spacing:-0.015em;
+    }
+    @keyframes lv-promo-intro-enter{
+        from{opacity:0;transform:translateY(16px) scale(.99)}
+        to{opacity:1;transform:translateY(0) scale(1)}
+    }
+    @keyframes lv-promo-intro-pulse{
+        0%,100%{box-shadow:0 8px 32px rgba(15,23,42,.07),0 0 0 1px rgba(255,255,255,.85) inset,0 0 0 0 rgba(196,30,30,.04)}
+        50%{box-shadow:0 12px 40px rgba(15,23,42,.09),0 0 0 1px rgba(255,255,255,.85) inset,0 0 40px 6px rgba(201,162,39,.28)}
+    }
+    @keyframes lv-promo-intro-sheen{
+        0%,8%{left:-55%;opacity:0}
+        14%{opacity:1}
+        42%{left:115%}
+        48%,100%{opacity:0;left:115%}
+    }
+    @media (prefers-reduced-motion: reduce){
+        .lv-promo-intro-banner{animation:none}
+        .lv-promo-intro-banner::after{display:none}
+    }
     .lv-promo-tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:8px}
     .lv-promo-tier{
         text-align:center;position:relative;padding:20px 18px 18px;border-radius:var(--lv-radius-sm);
@@ -790,6 +897,8 @@
         .lv-hero .lv-btn--hero-cta,.lv-hero .lv-btn--hero-cta [data-lv-key]{animation:none !important}
         .lv-hero .lv-btn--hero-cta::after{animation:none !important;opacity:0}
         .lv-hero__bg-video,.lv-hero__bg-video--deferred,.lv-hero__bg-slideshow,.lv-hero__bg-video--rotation-deferred{display:none !important}
+        .lv-logo--fx-pulse .lv-logo__img{animation:none !important;transform:none !important}
+        .lv-logo--fx-ring::before{animation:none !important;opacity:0 !important}
     }
     /* Per-phase register CTA (Section 5) */
     .lv-btn--trip-register{

@@ -3,7 +3,9 @@
     <div class="lv-container">
         <h2 id="lvPromoHeading" data-lv-key="promotion_section_title">{{ $promotionSectionTitle }}</h2>
         @if(trim((string) ($promotion['intro_text'] ?? '')) !== '')
-            <p class="lv-promo-intro">{{ $promotion['intro_text'] }}</p>
+            <div class="lv-promo-intro-banner">
+                <p class="lv-promo-intro">{{ $promotion['intro_text'] }}</p>
+            </div>
         @endif
         <div class="lv-promo-base-wrap">
             <div class="lv-card lv-promo-base">
