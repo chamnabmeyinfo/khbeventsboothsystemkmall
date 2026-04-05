@@ -10,20 +10,20 @@
                 <label class="mb-0">Agenda section title</label>
                 @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'agenda_title', 'canAutoTranslate' => $canAutoTranslate])
             </div>
-            <input type="text" name="{{ $pfx }}[agenda_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.agenda_title', $vloc['agenda_title'] ?? '') }}" placeholder="Business Tour Itinerary">
+            <input type="text" name="{{ $pfx }}[agenda_title]" class="form-control" value="{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.agenda_title', $vloc['agenda_title'] ?? '') }}" placeholder="Business Tour Itinerary">
         </div>
         <div class="form-row">
             <div class="form-group col-md-4">
                 <label class="small text-muted mb-0">Table column: time / slot</label>
-                <input type="text" name="{{ $pfx }}[agenda_hdr_slot]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.agenda_hdr_slot', $vloc['agenda_hdr_slot'] ?? '') }}" placeholder="Time / slot" maxlength="120">
+                <input type="text" name="{{ $pfx }}[agenda_hdr_slot]" class="form-control" value="{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.agenda_hdr_slot', $vloc['agenda_hdr_slot'] ?? '') }}" placeholder="Time / slot" maxlength="120">
             </div>
             <div class="form-group col-md-4">
                 <label class="small text-muted mb-0">Table column: activity</label>
-                <input type="text" name="{{ $pfx }}[agenda_hdr_activity]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.agenda_hdr_activity', $vloc['agenda_hdr_activity'] ?? '') }}" placeholder="Activity" maxlength="120">
+                <input type="text" name="{{ $pfx }}[agenda_hdr_activity]" class="form-control" value="{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.agenda_hdr_activity', $vloc['agenda_hdr_activity'] ?? '') }}" placeholder="Activity" maxlength="120">
             </div>
             <div class="form-group col-md-4">
                 <label class="small text-muted mb-0">Table column: details</label>
-                <input type="text" name="{{ $pfx }}[agenda_hdr_detail]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.agenda_hdr_detail', $vloc['agenda_hdr_detail'] ?? '') }}" placeholder="Details" maxlength="120">
+                <input type="text" name="{{ $pfx }}[agenda_hdr_detail]" class="form-control" value="{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.agenda_hdr_detail', $vloc['agenda_hdr_detail'] ?? '') }}" placeholder="Details" maxlength="120">
             </div>
         </div>
         <div class="form-group mb-0">

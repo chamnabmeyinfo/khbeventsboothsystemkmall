@@ -18,12 +18,13 @@
                     $pN = (int) ($tier['participants'] ?? 0);
                     $pOff = (int) ($tier['off_each'] ?? 0);
                     $pLbl = trim((string) ($tier['label'] ?? ''));
-                    $pLine = $pLbl !== '' ? $pLbl : 'For '.$pN.' participants, get $'.$pOff.' off each';
+                    $pTmpl = $promotionTierOfferTemplate ?? 'For #N# participants, get $#OFF# off each';
+                    $pLine = $pLbl !== '' ? $pLbl : str_replace(['#N#', '#OFF#'], [(string) $pN, (string) $pOff], $pTmpl);
                 @endphp
                 <article class="lv-card lv-promo-tier">
                     <div class="lv-promo-tier__icon" aria-hidden="true"><i class="fa-solid fa-users"></i></div>
                     <div class="lv-promo-tier__num">{{ $pN }}</div>
-                    <div class="lv-promo-tier__num-sub">participants</div>
+                    <div class="lv-promo-tier__num-sub">{{ $promotionTierSubtitle ?? 'participants' }}</div>
                     <p class="lv-promo-tier__off">{{ $pLine }}</p>
                 </article>
             @endforeach

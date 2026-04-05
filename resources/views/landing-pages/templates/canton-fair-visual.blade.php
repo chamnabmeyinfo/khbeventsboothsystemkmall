@@ -120,6 +120,8 @@
     $promotionShow = ($visual['promotion_discounts_show'] ?? true) !== false;
     $promotion = \App\Models\LandingPage::resolvePromotionDiscountsForDisplay($visual);
     $promotionSectionTitle = trim((string) ($visual['promotion_section_title'] ?? '')) ?: 'Group promotion discounts';
+    $promotionTierSubtitle = trim((string) ($visual['promotion_tier_subtitle'] ?? '')) ?: 'participants';
+    $promotionTierOfferTemplate = trim((string) ($visual['promotion_tier_offer_template'] ?? '')) ?: 'For #N# participants, get $#OFF# off each';
     $faqItems = is_array($visual['faq_items'] ?? null) ? $visual['faq_items'] : [
         ['question' => 'Do I need visa for China?', 'answer' => 'Yes, and we provide guidance.'],
         ['question' => 'Is translation support included?', 'answer' => 'Yes, Khmer + English assistance is included.'],

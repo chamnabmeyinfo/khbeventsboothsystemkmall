@@ -15,7 +15,7 @@
         <small class="text-muted">Choose which blocks appear on the Canton Fair visual page and in what order. Each layout can appear once. <strong>Hero</strong> is always kept if missing. Optional blocks (e.g. promotion, trip slider) still hide themselves when empty.</small>
     </div>
     <div class="card-body">
-        <input type="hidden" name="visual[section_blueprint_json]" id="lpSectionBlueprintJson" value="{{ e($sectionBlueprintJson) }}">
+        <div id="lpSectionBlueprintFields" class="sr-only" aria-hidden="true"></div>
 
         <div class="lp-section-toolbar">
             <div class="form-inline flex-grow-1">
@@ -63,12 +63,12 @@
 @push('scripts')
 <script>
 (function () {
-    var hidden = document.getElementById('lpSectionBlueprintJson');
+    var fieldsWrap = document.getElementById('lpSectionBlueprintFields');
     var tbody = document.getElementById('lpSectionBlueprintTbody');
     var addLayout = document.getElementById('lpSectionAddLayout');
     var addBtn = document.getElementById('lpSectionAddBtn');
     var quickRoot = document.getElementById('lpSectionQuickAdd');
-    if (!hidden || !tbody || !addLayout || !addBtn) return;
+    if (!fieldsWrap || !tbody || !addLayout || !addBtn) return;
 
     var LAYOUTS = @json($lpSectionKeys);
     var LABELS = @json($lpSectionLabels);
@@ -77,21 +77,32 @@
     var csrf = document.querySelector('meta[name="csrf-token"]');
     var csrfToken = csrf ? csrf.getAttribute('content') : '';
 
+    var blueprintRows = @json($sectionBlueprintForManagement ?? []);
+
     function parseState() {
-        try {
-            var raw = hidden.value.trim();
-            var a = JSON.parse(raw);
-            if (Array.isArray(a) && a.length > 0) {
-                return a;
-            }
-        } catch (e) {}
+        if (Array.isArray(blueprintRows) && blueprintRows.length > 0) {
+            return blueprintRows;
+        }
         return LAYOUTS.map(function (l) {
             return { id: uuid(), layout: l };
         });
     }
 
-    function syncHidden(rows) {
-        hidden.value = JSON.stringify(rows);
+    function syncBlueprintInputs(rows) {
+        blueprintRows = rows;
+        fieldsWrap.innerHTML = '';
+        rows.forEach(function (row, i) {
+            var idIn = document.createElement('input');
+            idIn.type = 'hidden';
+            idIn.name = 'visual[section_blueprint][' + i + '][id]';
+            idIn.value = row.id || '';
+            fieldsWrap.appendChild(idIn);
+            var layIn = document.createElement('input');
+            layIn.type = 'hidden';
+            layIn.name = 'visual[section_blueprint][' + i + '][layout]';
+            layIn.value = row.layout || '';
+            fieldsWrap.appendChild(layIn);
+        });
     }
 
     function uuid() {
@@ -122,7 +133,7 @@
                 var t = r[idx - 1];
                 r[idx - 1] = r[idx];
                 r[idx] = t;
-                syncHidden(r);
+                syncBlueprintInputs(r);
                 render();
             });
             var down = document.createElement('button');
@@ -137,7 +148,7 @@
                 var t = r[idx + 1];
                 r[idx + 1] = r[idx];
                 r[idx] = t;
-                syncHidden(r);
+                syncBlueprintInputs(r);
                 render();
             });
             tdO.appendChild(up);
@@ -206,7 +217,7 @@
                     var hasHero = r.some(function (x) { return x.layout === 'hero'; });
                     if (!hasHero) r.unshift({ id: uuid(), layout: 'hero' });
                 }
-                syncHidden(r);
+                syncBlueprintInputs(r);
                 render();
             });
             tdR.appendChild(rm);
@@ -215,6 +226,7 @@
             tbody.appendChild(tr);
         });
         updateQuickAdd();
+        syncBlueprintInputs(rows);
     }
 
     function updateQuickAdd() {
@@ -254,7 +266,7 @@
             return;
         }
         r.push({ id: uuid(), layout: layout });
-        syncHidden(r);
+        syncBlueprintInputs(r);
         render();
         addLayout.value = '';
     }
@@ -263,14 +275,14 @@
         addLayoutKey(addLayout.value);
     });
 
-    var form = hidden.closest('form');
+    var form = fieldsWrap.closest('form');
     if (form) {
         form.addEventListener('submit', function () {
             var r = parseState();
             if (!r.length) {
                 r = LAYOUTS.map(function (l) { return { id: uuid(), layout: l }; });
             }
-            syncHidden(r);
+            syncBlueprintInputs(r);
         });
     }
 

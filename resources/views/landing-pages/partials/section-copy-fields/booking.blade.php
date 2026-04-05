@@ -10,7 +10,7 @@
                 <label class="mb-0">Booking Section Title</label>
                 @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'booking_title', 'canAutoTranslate' => $canAutoTranslate])
             </div>
-            <input type="text" name="{{ $pfx }}[booking_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.booking_title', $vloc['booking_title'] ?? '') }}">
+            <input type="text" name="{{ $pfx }}[booking_title]" class="form-control" value="{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.booking_title', $vloc['booking_title'] ?? '') }}">
         </div>
         <p class="text-muted small mb-2">Form labels (this language)</p>
         <div class="row">
@@ -20,7 +20,7 @@
                         <label class="mb-0">Name placeholder</label>
                         @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'booking_name_placeholder', 'canAutoTranslate' => $canAutoTranslate])
                     </div>
-                    <input type="text" name="{{ $pfx }}[booking_name_placeholder]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.booking_name_placeholder', $vloc['booking_name_placeholder'] ?? '') }}">
+                    <input type="text" name="{{ $pfx }}[booking_name_placeholder]" class="form-control" value="{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.booking_name_placeholder', $vloc['booking_name_placeholder'] ?? '') }}">
                 </div>
             </div>
             <div class="col-12 col-md-6">
@@ -29,7 +29,7 @@
                         <label class="mb-0">Email placeholder</label>
                         @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'booking_email_placeholder', 'canAutoTranslate' => $canAutoTranslate])
                     </div>
-                    <input type="text" name="{{ $pfx }}[booking_email_placeholder]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.booking_email_placeholder', $vloc['booking_email_placeholder'] ?? '') }}">
+                    <input type="text" name="{{ $pfx }}[booking_email_placeholder]" class="form-control" value="{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.booking_email_placeholder', $vloc['booking_email_placeholder'] ?? '') }}">
                 </div>
             </div>
             <div class="col-12 col-md-6">
@@ -38,7 +38,7 @@
                         <label class="mb-0">Phone placeholder</label>
                         @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'booking_phone_placeholder', 'canAutoTranslate' => $canAutoTranslate])
                     </div>
-                    <input type="text" name="{{ $pfx }}[booking_phone_placeholder]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.booking_phone_placeholder', $vloc['booking_phone_placeholder'] ?? '') }}">
+                    <input type="text" name="{{ $pfx }}[booking_phone_placeholder]" class="form-control" value="{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.booking_phone_placeholder', $vloc['booking_phone_placeholder'] ?? '') }}">
                 </div>
             </div>
             <div class="col-12 col-md-6">
@@ -47,7 +47,7 @@
                         <label class="mb-0">Trip dropdown label</label>
                         @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'booking_trip_placeholder', 'canAutoTranslate' => $canAutoTranslate])
                     </div>
-                    <input type="text" name="{{ $pfx }}[booking_trip_placeholder]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.booking_trip_placeholder', $vloc['booking_trip_placeholder'] ?? '') }}">
+                    <input type="text" name="{{ $pfx }}[booking_trip_placeholder]" class="form-control" value="{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.booking_trip_placeholder', $vloc['booking_trip_placeholder'] ?? '') }}">
                 </div>
             </div>
             <div class="col-12 col-md-6">
@@ -56,7 +56,7 @@
                         <label class="mb-0">Submit button</label>
                         @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'booking_submit_text', 'canAutoTranslate' => $canAutoTranslate])
                     </div>
-                    <input type="text" name="{{ $pfx }}[booking_submit_text]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.booking_submit_text', $vloc['booking_submit_text'] ?? '') }}">
+                    <input type="text" name="{{ $pfx }}[booking_submit_text]" class="form-control" value="{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.booking_submit_text', $vloc['booking_submit_text'] ?? '') }}">
                 </div>
             </div>
         </div>

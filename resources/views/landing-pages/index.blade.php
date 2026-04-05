@@ -182,6 +182,7 @@
                                 <div class="lp-row-actions">
                                     <a href="{{ route('landing-pages.preview', $landingPage) }}" class="action-btn action-btn-secondary lp-btn-compact" target="_blank" rel="noopener">Preview</a>
                                     <a href="{{ route('landing-pages.edit', $landingPage) }}" class="action-btn action-btn-primary lp-btn-compact">Edit</a>
+                                    <a href="{{ route('landing-pages.translation-center', $landingPage) }}" class="action-btn action-btn-secondary lp-btn-compact">Copy</a>
                                     @if(!$landingPage->is_published)
                                         <form method="POST" action="{{ route('landing-pages.publish', $landingPage) }}" class="d-inline">
                                             @csrf

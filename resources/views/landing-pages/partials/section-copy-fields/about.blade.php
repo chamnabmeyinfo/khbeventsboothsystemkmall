@@ -10,21 +10,21 @@
                 <label class="mb-0">About Title</label>
                 @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'about_title', 'canAutoTranslate' => $canAutoTranslate])
             </div>
-            <input type="text" name="{{ $pfx }}[about_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.about_title', $vloc['about_title'] ?? '') }}">
+            <input type="text" name="{{ $pfx }}[about_title]" class="form-control" value="{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.about_title', $vloc['about_title'] ?? '') }}">
         </div>
         <div class="form-group">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
                 <label class="mb-0">About text (main paragraph)</label>
                 @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'about_text_en', 'canAutoTranslate' => $canAutoTranslate])
             </div>
-            <textarea name="{{ $pfx }}[about_text_en]" class="form-control" rows="3">{{ old('visual.i18n.'.$loc.'.about_text_en', $vloc['about_text_en'] ?? '') }}</textarea>
+            <textarea name="{{ $pfx }}[about_text_en]" class="form-control" rows="3">{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.about_text_en', $vloc['about_text_en'] ?? '') }}</textarea>
         </div>
         <div class="form-group mb-0">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
                 <label class="mb-0">About text (highlight box)</label>
                 @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'about_text_kh', 'canAutoTranslate' => $canAutoTranslate])
             </div>
-            <textarea name="{{ $pfx }}[about_text_kh]" class="form-control" rows="3">{{ old('visual.i18n.'.$loc.'.about_text_kh', $vloc['about_text_kh'] ?? '') }}</textarea>
+            <textarea name="{{ $pfx }}[about_text_kh]" class="form-control" rows="3">{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.about_text_kh', $vloc['about_text_kh'] ?? '') }}</textarea>
         </div>
     </div>
 </div>

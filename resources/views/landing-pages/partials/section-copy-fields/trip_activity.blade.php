@@ -1,6 +1,6 @@
 @php
     $ord = (int) ($sectionOrdinal ?? 1);
-    $slideRowsOld = old('visual.i18n.'.$loc.'.trip_activity_slide_keep');
+    $slideRowsOld = old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.trip_activity_slide_keep');
     if (is_array($slideRowsOld) && $slideRowsOld !== []) {
         $tripActivitySlideRows = [];
         foreach ($slideRowsOld as $row) {
@@ -30,14 +30,14 @@
     </div>
     <div class="card-body">
         <input type="hidden" name="{{ $pfx }}[trip_activity_slides_rebuild]" value="1">
-        <input type="hidden" name="{{ $pfx }}[trip_activity_from_textarea]" value="{{ old('visual.i18n.'.$loc.'.trip_activity_from_textarea', '0') }}" data-lp-trip-from-ta="{{ $loc }}">
+        <input type="hidden" name="{{ $pfx }}[trip_activity_from_textarea]" value="{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.trip_activity_from_textarea', '0') }}" data-lp-trip-from-ta="{{ $loc }}">
 
         <div class="form-group">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
                 <label class="mb-0" for="lp-trip-title-{{ $loc }}">Section title</label>
                 @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'trip_activity_gallery_title', 'canAutoTranslate' => $canAutoTranslate])
             </div>
-            <input type="text" id="lp-trip-title-{{ $loc }}" name="{{ $pfx }}[trip_activity_gallery_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.trip_activity_gallery_title', $vloc['trip_activity_gallery_title'] ?? '') }}" placeholder="Trip highlights" maxlength="255">
+            <input type="text" id="lp-trip-title-{{ $loc }}" name="{{ $pfx }}[trip_activity_gallery_title]" class="form-control" value="{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.trip_activity_gallery_title', $vloc['trip_activity_gallery_title'] ?? '') }}" placeholder="Trip highlights" maxlength="255">
         </div>
 
         <div class="form-group mb-0">
@@ -87,7 +87,7 @@
             <details class="mb-0">
                 <summary class="small text-muted" style="cursor: pointer;">Advanced: edit as text (path per line)</summary>
                 <label for="lp-trip-ta-{{ $loc }}" class="sr-only">Trip activity slides — raw lines for translation tools</label>
-                <textarea id="lp-trip-ta-{{ $loc }}" name="{{ $pfx }}[trip_activity_gallery_slides_text]" class="form-control font-monospace mt-2" rows="6" maxlength="16000" aria-describedby="lp-trip-ta-hint-{{ $loc }}" data-lp-trip-slides-textarea data-locale="{{ $loc }}">{{ old('visual.i18n.'.$loc.'.trip_activity_gallery_slides_text', $tripActivitySlidesText) }}</textarea>
+                <textarea id="lp-trip-ta-{{ $loc }}" name="{{ $pfx }}[trip_activity_gallery_slides_text]" class="form-control font-monospace mt-2" rows="6" maxlength="16000" aria-describedby="lp-trip-ta-hint-{{ $loc }}" data-lp-trip-slides-textarea data-locale="{{ $loc }}">{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.trip_activity_gallery_slides_text', $tripActivitySlidesText) }}</textarea>
                 <small id="lp-trip-ta-hint-{{ $loc }}" class="text-muted d-block mt-1">Synced from the list above when you save. One slide per line: <code>path|caption|headline|title</code> (omit tail segments if empty; legacy <code>path|caption</code> still works). Do not use <code>|</code> inside the text fields.</small>
             </details>
         </div>
@@ -105,8 +105,12 @@
         }
         return el;
     }
+    function lpTripActivityTaName(form, loc) {
+        var root = form.getAttribute('data-lp-i18n-root') || 'visual';
+        return root + '[i18n][' + loc + '][trip_activity_gallery_slides_text]';
+    }
     function syncTripSlidesForLocale(form, loc) {
-        var ta = fieldByName(form, 'visual[i18n][' + loc + '][trip_activity_gallery_slides_text]');
+        var ta = fieldByName(form, lpTripActivityTaName(form, loc));
         if (!ta || !ta.getAttribute('data-lp-trip-slides-textarea')) {
             return;
         }
@@ -156,10 +160,7 @@
     window.lpSyncTripSlidesForLocale = syncTripSlidesForLocale;
 
     document.addEventListener('DOMContentLoaded', function () {
-        var form = document.getElementById('lpLandingPageAdminForm');
-        if (!form) {
-            return;
-        }
+        document.querySelectorAll('form[data-lp-i18n-root]').forEach(function (form) {
         form.addEventListener('submit', function () {
             form.querySelectorAll('input[data-lp-trip-from-ta]').forEach(function (flag) {
                 if (String(flag.value || '') === '1') {
@@ -204,6 +205,7 @@
                     syncTripSlidesForLocale(form, loc);
                 }
             }
+        });
         });
     });
 })();

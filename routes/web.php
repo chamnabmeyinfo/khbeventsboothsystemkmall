@@ -402,6 +402,8 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/{landingPage:slug}/apply-section-template', [LandingPageController::class, 'applySectionTemplate'])
                 ->name('apply-section-template');
             Route::get('/{landingPage:slug}/edit', [LandingPageController::class, 'edit'])->name('edit');
+            Route::get('/{landingPage:slug}/translation-center', [LandingPageController::class, 'translationCenter'])->name('translation-center');
+            Route::put('/{landingPage:slug}/translation-center', [LandingPageController::class, 'updateTranslationCenter'])->name('translation-center.update');
             Route::put('/{landingPage:slug}', [LandingPageController::class, 'update'])->name('update');
             Route::delete('/{landingPage:slug}', [LandingPageController::class, 'destroy'])->name('destroy');
             Route::get('/{landingPage:slug}/preview', [LandingPageController::class, 'preview'])->name('preview');

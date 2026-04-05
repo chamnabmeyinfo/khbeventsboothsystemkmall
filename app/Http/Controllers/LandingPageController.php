@@ -105,6 +105,86 @@ class LandingPageController extends Controller
     }
 
     /**
+     * Single place to edit all public-facing multilingual copy (same fields as the main form’s “Text by language” tab).
+     * Data lives in landing_pages.visual_content; deleting the landing page removes it.
+     */
+    public function translationCenter(LandingPage $landingPage)
+    {
+        $landingPage->loadCount('leads');
+        $localeLabels = config('landing_locales.allowed');
+        if (! is_array($localeLabels) || $localeLabels === []) {
+            $localeLabels = [
+                'en' => 'English',
+                'km' => 'ខ្មែរ (Khmer)',
+                'zh' => '中文 (Chinese)',
+            ];
+        }
+        $adminLocales = array_keys($localeLabels);
+        $visualForm = LandingPage::visualContentForAdminForm($landingPage);
+        foreach ($adminLocales as $al) {
+            $visualForm['i18n'][$al] = $visualForm['i18n'][$al] ?? [];
+        }
+        $sectionBlueprintNormalized = LandingPage::sanitizeSectionBlueprint($visualForm['section_blueprint'] ?? null);
+        $tabBlueprint = $sectionBlueprintNormalized;
+        $sectionLayoutLabels = LandingPage::sectionLayoutLabels();
+        $canAutoTranslate = true;
+        $enabledNonEnLocales = array_values(array_filter(
+            $landingPage->enabledLocaleList(),
+            static fn (string $c) => $c !== 'en'
+        ));
+
+        return view('landing-pages.translation-center', compact(
+            'landingPage',
+            'localeLabels',
+            'adminLocales',
+            'visualForm',
+            'tabBlueprint',
+            'sectionLayoutLabels',
+            'canAutoTranslate',
+            'enabledNonEnLocales'
+        ));
+    }
+
+    public function updateTranslationCenter(Request $request, LandingPage $landingPage)
+    {
+        $request->validate([
+            'translation_hub' => 'nullable|array',
+            'translation_hub.i18n' => 'nullable|array',
+            'translation_hub.i18n.*' => 'nullable|array',
+        ]);
+
+        $hub = $request->input('translation_hub', []);
+        $i18nIn = isset($hub['i18n']) && is_array($hub['i18n']) ? $hub['i18n'] : [];
+
+        $visual = LandingPage::ensureStructuredVisualContent(is_array($landingPage->visual_content) ? $landingPage->visual_content : []);
+        $prevI18n = isset($visual['i18n']) && is_array($visual['i18n']) ? $visual['i18n'] : [];
+        $slug = $landingPage->slug;
+
+        foreach (LandingPage::allowedLocaleCodes() as $loc) {
+            if (! isset($i18nIn[$loc]) || ! is_array($i18nIn[$loc])) {
+                continue;
+            }
+            $submitted = $i18nIn[$loc];
+            $prevBlock = is_array($prevI18n[$loc] ?? null) ? $prevI18n[$loc] : [];
+            $block = $this->buildLocaleVisualBlock($loc, $submitted, $prevBlock);
+            $visual['i18n'][$loc] = $this->mergeTripActivityGalleryFromRequest($request, $slug, $loc, $block, $submitted);
+        }
+
+        try {
+            json_encode($visual, JSON_THROW_ON_ERROR | JSON_INVALID_UTF8_SUBSTITUTE);
+        } catch (\JsonException $e) {
+            return redirect()->back()->withInput()->withErrors([
+                'translation_hub' => 'Could not save. Remove invalid UTF-8 or control characters from text fields, then try again.',
+            ]);
+        }
+
+        $landingPage->update(['visual_content' => $visual]);
+
+        return redirect()->route('landing-pages.translation-center', $landingPage->fresh())
+            ->with('success', 'Public copy saved.');
+    }
+
+    /**
      * Machine-translate all visual fields from English into multiple target locales (admin).
      */
     public function translateFromEnglish(Request $request, LandingPage $landingPage)
@@ -493,6 +573,8 @@ class LandingPageController extends Controller
             'package_title' => 255,
             'package_price' => 120,
             'promotion_section_title' => 255,
+            'promotion_tier_subtitle' => 120,
+            'promotion_tier_offer_template' => 1000,
             'booking_title' => 255,
             'faq_title' => 255,
             'terms_title' => 255,
@@ -693,6 +775,8 @@ class LandingPageController extends Controller
             'visual.i18n.*.package_title' => 'nullable|string|max:255',
             'visual.i18n.*.package_price' => 'nullable|string|max:120',
             'visual.i18n.*.promotion_section_title' => 'nullable|string|max:255',
+            'visual.i18n.*.promotion_tier_subtitle' => 'nullable|string|max:120',
+            'visual.i18n.*.promotion_tier_offer_template' => 'nullable|string|max:1000',
             'visual.i18n.*.booking_title' => 'nullable|string|max:255',
             'visual.i18n.*.faq_title' => 'nullable|string|max:255',
             'visual.i18n.*.terms_title' => 'nullable|string|max:255',
@@ -727,11 +811,29 @@ class LandingPageController extends Controller
             'visual.i18n.*.hero_stats_text' => 'nullable|string|max:8000',
             'visual.i18n.*.package_items_text' => 'nullable|string|max:12000',
             'visual.i18n.*.trip_dates_text' => 'nullable|string|max:12000',
-            'visual.i18n.*.trip_phases_json' => 'nullable|string|max:50000',
-            'visual.i18n.*.promotion_discounts_json' => 'nullable|string|max:20000',
+            'visual.i18n.*.promotion_discounts_show' => 'nullable|in:0,1',
+            'visual.i18n.*.promotion_discounts' => 'nullable|array',
+            'visual.i18n.*.promotion_discounts.base_price_text' => 'nullable|string|max:500',
+            'visual.i18n.*.promotion_discounts.intro_text' => 'nullable|string|max:2000',
+            'visual.i18n.*.promotion_discounts.tiers' => 'nullable|array',
+            'visual.i18n.*.promotion_discounts.tiers.*.participants' => 'nullable|string|max:12',
+            'visual.i18n.*.promotion_discounts.tiers.*.off_each' => 'nullable|string|max:12',
+            'visual.i18n.*.promotion_discounts.tiers.*.label' => 'nullable|string|max:500',
+            'visual.i18n.*.trip_phases' => 'nullable|array',
+            'visual.i18n.*.trip_phases.*.label' => 'nullable|string|max:255',
+            'visual.i18n.*.trip_phases.*.date' => 'nullable|string|max:500',
+            'visual.i18n.*.trip_phases.*.status' => 'nullable|string|max:120',
+            'visual.i18n.*.trip_phases.*.seats_left' => 'nullable|string|max:120',
+            'visual.i18n.*.trip_phases.*.intro' => 'nullable|string|max:8000',
+            'visual.i18n.*.trip_phases.*.feature_image' => 'nullable|string|max:512',
+            'visual.i18n.*.trip_phases.*.subsections' => 'nullable|array',
+            'visual.i18n.*.trip_phases.*.subsections.*.title' => 'nullable|string|max:500',
+            'visual.i18n.*.trip_phases.*.subsections.*.detail' => 'nullable|string|max:8000',
             'visual.i18n.*.faq_items_text' => 'nullable|string|max:16000',
             'visual.i18n.*.contact_phones_text' => 'nullable|string|max:4000',
-            'visual.section_blueprint_json' => 'nullable|string|max:12000',
+            'visual.section_blueprint' => 'nullable|array',
+            'visual.section_blueprint.*.id' => 'nullable|string|max:80',
+            'visual.section_blueprint.*.layout' => ['nullable', 'string', 'max:32', Rule::in(LandingPage::SECTION_LAYOUT_KEYS)],
             'visual_logo_image' => 'nullable|image|max:8192',
             'visual_hero_background_image' => 'nullable|image|max:8192',
             'visual_hero_background_images' => 'nullable|array',
@@ -942,10 +1044,8 @@ class LandingPageController extends Controller
             $visual['i18n'][$loc] = $this->mergeTripActivityGalleryFromRequest($request, $slug, $loc, $block, $locIn);
         }
 
-        $bpJson = trim((string) ($incoming['section_blueprint_json'] ?? ''));
-        if ($bpJson !== '') {
-            $decoded = json_decode($bpJson, true);
-            $visual['section_blueprint'] = LandingPage::sanitizeSectionBlueprint(is_array($decoded) ? $decoded : []);
+        if (isset($incoming['section_blueprint']) && is_array($incoming['section_blueprint']) && $incoming['section_blueprint'] !== []) {
+            $visual['section_blueprint'] = LandingPage::sanitizeSectionBlueprint($incoming['section_blueprint']);
         } elseif (! empty($existing['section_blueprint'])) {
             $visual['section_blueprint'] = LandingPage::sanitizeSectionBlueprint($existing['section_blueprint']);
         } else {
@@ -963,7 +1063,7 @@ class LandingPageController extends Controller
             json_encode($visual, JSON_THROW_ON_ERROR | JSON_INVALID_UTF8_SUBSTITUTE);
         } catch (\JsonException $e) {
             throw ValidationException::withMessages([
-                'visual' => ['Visual content could not be saved as JSON. Remove invalid UTF-8 or control characters from text fields (e.g. promotion or trip JSON), then try again.'],
+                'visual' => ['Visual content could not be saved. Remove invalid UTF-8 or control characters from text fields, then try again.'],
             ]);
         }
 
@@ -993,33 +1093,6 @@ class LandingPageController extends Controller
     }
 
     /**
-     * Normalize JSON textarea POST values: trim, strip UTF-8 BOM, avoid casting arrays to the literal "Array".
-     */
-    private function normalizeJsonTextareaInput(mixed $value): string
-    {
-        if ($value === null || $value === '') {
-            return '';
-        }
-        if (is_string($value)) {
-            $s = preg_replace('/^\xEF\xBB\xBF/', '', $value) ?? $value;
-
-            return trim($s);
-        }
-        if (is_array($value)) {
-            try {
-                return trim((string) json_encode($value, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
-            } catch (\JsonException) {
-                return '';
-            }
-        }
-        if (is_scalar($value)) {
-            return trim((string) $value);
-        }
-
-        return '';
-    }
-
-    /**
      * @param  array<string, mixed>  $locIn
      * @param  array<string, mixed>  $prevBlock
      * @return array<string, mixed>
@@ -1032,7 +1105,7 @@ class LandingPageController extends Controller
         $stringFields = [
             'hero_title', 'hero_subtitle', 'hero_cta_text',
             'about_title', 'about_text_en', 'about_text_kh',
-            'package_title', 'package_price', 'promotion_section_title', 'booking_title', 'faq_title', 'terms_title', 'terms_text', 'agenda_title',
+            'package_title', 'package_price', 'promotion_section_title', 'promotion_tier_subtitle', 'promotion_tier_offer_template', 'booking_title', 'faq_title', 'terms_title', 'terms_text', 'agenda_title',
             'agenda_hdr_slot', 'agenda_hdr_activity', 'agenda_hdr_detail',
             'trip_section_title', 'per_person_label', 'seats_left_suffix',
             'booking_name_placeholder', 'booking_email_placeholder', 'booking_phone_placeholder',
@@ -1071,60 +1144,40 @@ class LandingPageController extends Controller
             is_array($prevBlock['trip_dates'] ?? null) ? $prevBlock['trip_dates'] : []
         );
 
-        if (array_key_exists('trip_phases_json', $locIn)) {
-            $jsonRaw = $this->normalizeJsonTextareaInput($locIn['trip_phases_json']);
-            if ($jsonRaw === '') {
-                unset($block['trip_phases']);
+        if (array_key_exists('trip_phases', $locIn)) {
+            $coerced = LandingPage::coerceTripPhasesFromRequest($locIn['trip_phases']);
+            $phases = LandingPage::sanitizeTripPhases($coerced);
+            $nonEmpty = array_filter(
+                $phases,
+                static fn (array $p) => trim((string) ($p['label'] ?? '')) !== '' || trim((string) ($p['date'] ?? '')) !== ''
+            );
+            if ($nonEmpty !== []) {
+                $block['trip_phases'] = array_values($nonEmpty);
+                $block['trip_dates'] = LandingPage::tripPhasesToFlatRows($block['trip_phases']);
             } else {
-                $decoded = json_decode($jsonRaw, true);
-                if (json_last_error() !== JSON_ERROR_NONE || ! is_array($decoded)) {
-                    throw ValidationException::withMessages([
-                        'visual.i18n.'.$locale.'.trip_phases_json' => [
-                            'Trip phases must be valid JSON (array of phases).'.(json_last_error() !== JSON_ERROR_NONE ? ' ('.json_last_error_msg().')' : ''),
-                        ],
-                    ]);
-                }
-                $phases = LandingPage::sanitizeTripPhases($decoded);
-                $nonEmpty = array_filter(
-                    $phases,
-                    static fn (array $p) => trim((string) ($p['label'] ?? '')) !== '' || trim((string) ($p['date'] ?? '')) !== ''
-                );
-                if ($nonEmpty !== []) {
-                    $block['trip_phases'] = array_values($nonEmpty);
-                    $block['trip_dates'] = LandingPage::tripPhasesToFlatRows($block['trip_phases']);
-                } else {
-                    unset($block['trip_phases']);
-                }
+                unset($block['trip_phases']);
             }
         }
 
-        if (array_key_exists('promotion_discounts_json', $locIn)) {
-            $promoRaw = $this->normalizeJsonTextareaInput($locIn['promotion_discounts_json']);
-            if ($promoRaw === '') {
+        if (array_key_exists('promotion_discounts_show', $locIn)) {
+            $showRaw = $locIn['promotion_discounts_show'];
+            $show = in_array($showRaw, [1, '1', true, 'true'], true);
+            if (! $show) {
                 unset($block['promotion_discounts']);
                 $block['promotion_discounts_show'] = false;
             } else {
-                $decoded = json_decode($promoRaw, true);
-                if (json_last_error() !== JSON_ERROR_NONE || ! is_array($decoded)) {
-                    throw ValidationException::withMessages([
-                        'visual.i18n.'.$locale.'.promotion_discounts_json' => [
-                            'Promotion discounts must be valid JSON (object with base_price_text and tiers, or an array of tier objects).'.(json_last_error() !== JSON_ERROR_NONE ? ' ('.json_last_error_msg().')' : ''),
-                        ],
-                    ]);
-                }
                 try {
-                    $block['promotion_discounts'] = LandingPage::sanitizePromotionDiscounts($decoded);
+                    $coerced = LandingPage::coercePromotionDiscountsFromRequest($locIn['promotion_discounts'] ?? []);
+                    $block['promotion_discounts'] = LandingPage::sanitizePromotionDiscounts($coerced);
                 } catch (\Throwable $e) {
                     report($e);
                     throw ValidationException::withMessages([
-                        'visual.i18n.'.$locale.'.promotion_discounts_json' => ['Promotion discounts could not be processed. Check tier numbers (participants and off_each must be positive integers).'],
+                        'visual.i18n.'.$locale.'.promotion_discounts' => ['Promotion discounts could not be processed. Use positive whole numbers for participants and amount off each.'],
                     ]);
                 }
                 $block['promotion_discounts_show'] = true;
             }
         }
-
-        unset($block['promotion_discounts_json'], $block['trip_phases_json']);
 
         $agendaRaw = array_key_exists('agenda_items_text', $locIn) ? (string) $locIn['agenda_items_text'] : null;
         $block['agenda_items'] = $this->parsePipeList(

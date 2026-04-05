@@ -12,7 +12,7 @@
                         <label class="mb-0">Hero title</label>
                         @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'hero_title', 'canAutoTranslate' => $canAutoTranslate])
                     </div>
-                    <input type="text" name="{{ $pfx }}[hero_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.hero_title', $vloc['hero_title'] ?? '') }}">
+                    <input type="text" name="{{ $pfx }}[hero_title]" class="form-control" value="{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.hero_title', $vloc['hero_title'] ?? '') }}">
                 </div>
             </div>
             <div class="col-12 col-md-6">
@@ -21,7 +21,7 @@
                         <label class="mb-0">Hero CTA Text</label>
                         @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'hero_cta_text', 'canAutoTranslate' => $canAutoTranslate])
                     </div>
-                    <input type="text" name="{{ $pfx }}[hero_cta_text]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.hero_cta_text', $vloc['hero_cta_text'] ?? '') }}" placeholder="Reserve Your Seat Now">
+                    <input type="text" name="{{ $pfx }}[hero_cta_text]" class="form-control" value="{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.hero_cta_text', $vloc['hero_cta_text'] ?? '') }}" placeholder="Reserve Your Seat Now">
                 </div>
             </div>
         </div>
@@ -30,7 +30,7 @@
                 <label class="mb-0">Hero subtitle</label>
                 @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'hero_subtitle', 'canAutoTranslate' => $canAutoTranslate])
             </div>
-            <textarea name="{{ $pfx }}[hero_subtitle]" class="form-control" rows="3">{{ old('visual.i18n.'.$loc.'.hero_subtitle', $vloc['hero_subtitle'] ?? '') }}</textarea>
+            <textarea name="{{ $pfx }}[hero_subtitle]" class="form-control" rows="3">{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.hero_subtitle', $vloc['hero_subtitle'] ?? '') }}</textarea>
         </div>
         <div class="form-group mb-0">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">

@@ -10,7 +10,7 @@
                 <label class="mb-0">FAQ Section Title</label>
                 @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'faq_title', 'canAutoTranslate' => $canAutoTranslate])
             </div>
-            <input type="text" name="{{ $pfx }}[faq_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.faq_title', $vloc['faq_title'] ?? '') }}">
+            <input type="text" name="{{ $pfx }}[faq_title]" class="form-control" value="{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.faq_title', $vloc['faq_title'] ?? '') }}">
         </div>
         <div class="form-group">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">

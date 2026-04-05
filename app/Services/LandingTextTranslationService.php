@@ -26,7 +26,7 @@ class LandingTextTranslationService
             'hero_title', 'hero_cta_text', 'hero_subtitle',
             'about_title', 'package_title',
             'about_text_en', 'about_text_kh',
-            'package_price', 'promotion_section_title', 'booking_title', 'faq_title', 'terms_title', 'agenda_title',
+            'package_price', 'promotion_section_title', 'promotion_tier_subtitle', 'promotion_tier_offer_template', 'booking_title', 'faq_title', 'terms_title', 'agenda_title',
             'agenda_hdr_slot', 'agenda_hdr_activity', 'agenda_hdr_detail',
             'trip_section_title', 'per_person_label', 'seats_left_suffix',
             'trip_phase_register_cta', 'trip_phase_modal_title',
@@ -34,6 +34,8 @@ class LandingTextTranslationService
             'hero_stats_text', 'package_items_text', 'trip_dates_text', 'agenda_items_text', 'faq_items_text', 'contact_phones_text', 'terms_text',
             'booking_name_placeholder', 'booking_email_placeholder', 'booking_phone_placeholder',
             'booking_trip_placeholder', 'booking_submit_text',
+            // Structured bundles (JSON string over the wire; matches admin trip phases / promotion form slots)
+            'trip_phases', 'promotion_discounts',
         ];
     }
 
@@ -52,8 +54,129 @@ class LandingTextTranslationService
             'package_items_text' => $this->translatePackageItemsLines($text, $sourceLocale, $targetLocale),
             'trip_activity_gallery_slides_text' => $this->translateTripActivityGallerySlides($text, $sourceLocale, $targetLocale),
             'contact_phones_text' => $this->translateContactPhones($text, $sourceLocale, $targetLocale),
+            'trip_phases' => $this->translateTripPhasesJsonBlob($text, $sourceLocale, $targetLocale),
+            'promotion_discounts' => $this->translatePromotionDiscountsJsonBlob($text, $sourceLocale, $targetLocale),
+            'promotion_tier_offer_template' => $this->translatePromotionTierOfferTemplate($text, $sourceLocale, $targetLocale),
             default => $this->translatePlain($text, $sourceLocale, $targetLocale),
         };
+    }
+
+    /**
+     * @param  string  $json  JSON array of phase objects (same shape as stored visual trip_phases)
+     */
+    private function translateTripPhasesJsonBlob(string $json, string $source, string $target): string
+    {
+        $trim = trim($json);
+        if ($trim === '') {
+            return '[]';
+        }
+        $data = json_decode($trim, true);
+        if (! is_array($data)) {
+            return $json;
+        }
+        $out = [];
+        foreach ($data as $ph) {
+            if (! is_array($ph)) {
+                continue;
+            }
+            $subsOut = [];
+            $subs = $ph['subsections'] ?? [];
+            if (is_array($subs)) {
+                foreach ($subs as $s) {
+                    if (! is_array($s)) {
+                        continue;
+                    }
+                    $t = trim((string) ($s['title'] ?? ''));
+                    $d = trim((string) ($s['detail'] ?? ''));
+                    $subsOut[] = [
+                        'title' => $t !== '' ? $this->translateSegment($t, $source, $target) : '',
+                        'detail' => $d !== '' ? $this->translatePlain($d, $source, $target) : '',
+                    ];
+                }
+            }
+            $label = trim((string) ($ph['label'] ?? ''));
+            $date = trim((string) ($ph['date'] ?? ''));
+            $status = trim((string) ($ph['status'] ?? ''));
+            $seats = trim((string) ($ph['seats_left'] ?? ''));
+            $intro = trim((string) ($ph['intro'] ?? ''));
+            $fi = trim((string) ($ph['feature_image'] ?? ''));
+            $row = [
+                'label' => $label !== '' ? $this->translateSegment($label, $source, $target) : '',
+                'date' => $date !== '' ? $this->translateSegment($date, $source, $target) : '',
+                'status' => $status !== '' ? $this->translateSegment($status, $source, $target) : '',
+                'seats_left' => $seats !== '' ? $this->translateSegment($seats, $source, $target) : '',
+                'intro' => $intro !== '' ? $this->translatePlain($intro, $source, $target) : '',
+                'subsections' => $subsOut,
+            ];
+            if ($fi !== '') {
+                $row['feature_image'] = $fi;
+            }
+            $out[] = $row;
+        }
+        $enc = json_encode($out, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        return $enc !== false ? $enc : $json;
+    }
+
+    /**
+     * @param  string  $json  JSON object base_price_text, intro_text, tiers[{participants, off_each, label}]
+     */
+    private function translatePromotionDiscountsJsonBlob(string $json, string $source, string $target): string
+    {
+        $trim = trim($json);
+        if ($trim === '') {
+            return '{}';
+        }
+        $data = json_decode($trim, true);
+        if (! is_array($data)) {
+            return $json;
+        }
+        $base = trim((string) ($data['base_price_text'] ?? ''));
+        $intro = trim((string) ($data['intro_text'] ?? ''));
+        $tiersOut = [];
+        $tiers = $data['tiers'] ?? [];
+        if (is_array($tiers)) {
+            foreach ($tiers as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                $n = (int) ($row['participants'] ?? 0);
+                $off = (int) ($row['off_each'] ?? 0);
+                $label = trim((string) ($row['label'] ?? ''));
+                $tiersOut[] = [
+                    'participants' => $n,
+                    'off_each' => $off,
+                    'label' => $label !== '' ? $this->translateSegment($label, $source, $target) : '',
+                ];
+            }
+        }
+        $out = [
+            'base_price_text' => $base !== '' ? $this->translateSegment($base, $source, $target) : '',
+            'intro_text' => $intro !== '' ? $this->translatePlain($intro, $source, $target) : '',
+            'tiers' => $tiersOut,
+        ];
+        $enc = json_encode($out, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        return $enc !== false ? $enc : $json;
+    }
+
+    /**
+     * Translate the default promotion tier sentence while keeping #N# and #OFF# for runtime substitution.
+     */
+    private function translatePromotionTierOfferTemplate(string $text, string $source, string $target): string
+    {
+        if (trim($text) === '') {
+            return '';
+        }
+        if ($source === $target) {
+            return $text;
+        }
+        $markN = "\u{E000}";
+        $markOff = "\u{E001}";
+        $masked = str_replace(['#N#', '#OFF#'], [$markN, $markOff], $text);
+        $out = $this->translatePlain($masked, $source, $target);
+
+        return str_replace([$markN, $markOff], ['#N#', '#OFF#'], $out);
     }
 
     /**

@@ -1296,6 +1296,49 @@ TXT;
      * @param  array<int, mixed>  $input
      * @return list<array{label: string, date: string, status: string, seats_left: string, intro: string, subsections: list<array{title: string, detail: string}>, feature_image?: string}>
      */
+    /**
+     * Normalize POSTed trip_phases[0][label]… / subsections[n][title] into a list for {@see sanitizeTripPhases()}.
+     *
+     * @param  mixed  $raw  From request: list of phase-shaped associative arrays
+     * @return list<array<string, mixed>>
+     */
+    public static function coerceTripPhasesFromRequest(mixed $raw): array
+    {
+        if (! is_array($raw)) {
+            return [];
+        }
+        $out = [];
+        foreach ($raw as $ph) {
+            if (! is_array($ph)) {
+                continue;
+            }
+            $subs = [];
+            $subRaw = $ph['subsections'] ?? [];
+            if (is_array($subRaw)) {
+                foreach ($subRaw as $s) {
+                    if (! is_array($s)) {
+                        continue;
+                    }
+                    $subs[] = [
+                        'title' => (string) ($s['title'] ?? ''),
+                        'detail' => (string) ($s['detail'] ?? ''),
+                    ];
+                }
+            }
+            $out[] = [
+                'label' => (string) ($ph['label'] ?? ''),
+                'date' => (string) ($ph['date'] ?? ''),
+                'status' => (string) ($ph['status'] ?? ''),
+                'seats_left' => (string) ($ph['seats_left'] ?? ''),
+                'intro' => (string) ($ph['intro'] ?? ''),
+                'feature_image' => (string) ($ph['feature_image'] ?? ''),
+                'subsections' => $subs,
+            ];
+        }
+
+        return $out;
+    }
+
     public static function sanitizeTripPhases(array $input): array
     {
         $out = [];
@@ -1473,7 +1516,7 @@ TXT;
     }
 
     /**
-     * Default group discount tiers (below package section). Editable via promotion_discounts_json.
+     * Default group discount tiers (below package section). Editable via admin promotion form fields.
      *
      * @return array{base_price_text: string, intro_text: string, tiers: list<array{participants: int, off_each: int, label: string}>}
      */
@@ -1501,6 +1544,39 @@ TXT;
      * @param  array<int, mixed>  $rows
      * @return list<array{participants: int, off_each: int, label: string}>
      */
+    /**
+     * Normalize POSTed promotion_discounts[base_price_text], [tiers][i][participants], etc.
+     *
+     * @param  mixed  $raw
+     * @return array{base_price_text: string, intro_text: string, tiers: list<array{participants: mixed, off_each: mixed, label: string}>}
+     */
+    public static function coercePromotionDiscountsFromRequest(mixed $raw): array
+    {
+        if (! is_array($raw)) {
+            return ['base_price_text' => '', 'intro_text' => '', 'tiers' => []];
+        }
+        $tiers = [];
+        $tr = $raw['tiers'] ?? [];
+        if (is_array($tr)) {
+            foreach ($tr as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                $tiers[] = [
+                    'participants' => $row['participants'] ?? '',
+                    'off_each' => $row['off_each'] ?? '',
+                    'label' => (string) ($row['label'] ?? ''),
+                ];
+            }
+        }
+
+        return [
+            'base_price_text' => (string) ($raw['base_price_text'] ?? ''),
+            'intro_text' => (string) ($raw['intro_text'] ?? ''),
+            'tiers' => $tiers,
+        ];
+    }
+
     public static function sanitizePromotionTiers(array $rows): array
     {
         $out = [];

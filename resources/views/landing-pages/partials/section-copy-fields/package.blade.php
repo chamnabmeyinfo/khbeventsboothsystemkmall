@@ -10,7 +10,7 @@
                 <label class="mb-0">Package Title</label>
                 @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'package_title', 'canAutoTranslate' => $canAutoTranslate])
             </div>
-            <input type="text" name="{{ $pfx }}[package_title]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.package_title', $vloc['package_title'] ?? '') }}">
+            <input type="text" name="{{ $pfx }}[package_title]" class="form-control" value="{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.package_title', $vloc['package_title'] ?? '') }}">
         </div>
         <div class="row">
             <div class="col-12 col-md-6">
@@ -19,7 +19,7 @@
                         <label class="mb-0">Package price</label>
                         @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'package_price', 'canAutoTranslate' => $canAutoTranslate])
                     </div>
-                    <input type="text" name="{{ $pfx }}[package_price]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.package_price', $vloc['package_price'] ?? '$499') }}">
+                    <input type="text" name="{{ $pfx }}[package_price]" class="form-control" value="{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.package_price', $vloc['package_price'] ?? '$499') }}">
                 </div>
             </div>
             <div class="col-12 col-md-6">
@@ -28,7 +28,7 @@
                         <label class="mb-0">&ldquo;Per person&rdquo; label</label>
                         @include('landing-pages.partials.translate-field-btn', ['locale' => $loc, 'fieldKey' => 'per_person_label', 'canAutoTranslate' => $canAutoTranslate])
                     </div>
-                    <input type="text" name="{{ $pfx }}[per_person_label]" class="form-control" value="{{ old('visual.i18n.'.$loc.'.per_person_label', $vloc['per_person_label'] ?? '') }}" placeholder="per person">
+                    <input type="text" name="{{ $pfx }}[per_person_label]" class="form-control" value="{{ old(($lpI18nOldKeyPrefix ?? 'visual.i18n').'.'.$loc.'.per_person_label', $vloc['per_person_label'] ?? '') }}" placeholder="per person">
                 </div>
             </div>
         </div>
