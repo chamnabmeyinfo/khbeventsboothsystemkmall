@@ -106,6 +106,12 @@
                                 target.dispatchEvent(new Event('input', { bubbles: true }));
                                 target.dispatchEvent(new Event('change', { bubbles: true }));
                             }
+                            if (key === 'trip_activity_gallery_slides_text') {
+                                var tripFlag = form.querySelector('input[data-lp-trip-from-ta="' + loc + '"]');
+                                if (tripFlag) {
+                                    tripFlag.value = '1';
+                                }
+                            }
                         });
                     });
                 } else {
@@ -139,6 +145,13 @@
         }
         if (fieldKeys.indexOf(fieldKey) === -1) {
             return;
+        }
+
+        if (fieldKey === 'trip_activity_gallery_slides_text' && typeof window.lpSyncTripSlidesForLocale === 'function') {
+            var enTaFlag = form.querySelector('input[data-lp-trip-from-ta="en"]');
+            if (enTaFlag && String(enTaFlag.value || '') !== '1') {
+                window.lpSyncTripSlidesForLocale(form, 'en');
+            }
         }
 
         var enEl = fieldByName(form, 'visual[i18n][en][' + fieldKey + ']');
@@ -193,6 +206,13 @@
         if (targets.length === 0) {
             alert('Enable at least one language other than English under “Languages on public page”, then try again.');
             return;
+        }
+
+        if (typeof window.lpSyncTripSlidesForLocale === 'function') {
+            var enTaFlagAll = form.querySelector('input[data-lp-trip-from-ta="en"]');
+            if (enTaFlagAll && String(enTaFlagAll.value || '') !== '1') {
+                window.lpSyncTripSlidesForLocale(form, 'en');
+            }
         }
 
         var fields = {};

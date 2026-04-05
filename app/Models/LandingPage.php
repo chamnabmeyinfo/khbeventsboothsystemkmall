@@ -1052,11 +1052,11 @@ TXT;
     }
 
     /**
-     * Trip activity gallery: one slide per line — site image path, optional caption after first pipe.
+     * Trip activity gallery rows for admin forms (relative path + caption).
      *
-     * @return list<array{src: string, caption: string}>
+     * @return list<array{path: string, caption: string}>
      */
-    public static function parseTripActivityGallerySlides(string $text): array
+    public static function parseTripActivityGallerySlideRows(string $text): array
     {
         $out = [];
         $lines = preg_split("/\r\n|\r|\n/", $text) ?: [];
@@ -1079,12 +1079,25 @@ TXT;
                 continue;
             }
             $out[] = [
-                'src' => asset($clean),
+                'path' => $clean,
                 'caption' => $caption,
             ];
         }
 
         return $out;
+    }
+
+    /**
+     * Trip activity gallery: one slide per line — site image path, optional caption after first pipe.
+     *
+     * @return list<array{src: string, caption: string}>
+     */
+    public static function parseTripActivityGallerySlides(string $text): array
+    {
+        return array_map(static fn (array $row) => [
+            'src' => asset($row['path']),
+            'caption' => $row['caption'],
+        ], self::parseTripActivityGallerySlideRows($text));
     }
 
     /**

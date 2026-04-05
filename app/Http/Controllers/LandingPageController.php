@@ -692,6 +692,14 @@ class LandingPageController extends Controller
             'visual.i18n.*.agenda_items_text' => 'nullable|string|max:12000',
             'visual.i18n.*.trip_activity_gallery_title' => 'nullable|string|max:255',
             'visual.i18n.*.trip_activity_gallery_slides_text' => 'nullable|string|max:8000',
+            'visual.i18n.*.trip_activity_slides_rebuild' => 'nullable|in:1',
+            'visual.i18n.*.trip_activity_from_textarea' => 'nullable|in:0,1',
+            'visual.i18n.*.trip_activity_slide_keep' => 'nullable|array',
+            'visual.i18n.*.trip_activity_slide_keep.*.path' => 'nullable|string|max:512',
+            'visual.i18n.*.trip_activity_slide_keep.*.caption' => 'nullable|string|max:500',
+            'visual.i18n.*.trip_activity_slide_keep.*.remove' => 'nullable|boolean',
+            'visual_trip_activity_new_slides' => 'nullable|array',
+            'visual_trip_activity_new_slides.*' => 'nullable',
             'visual.i18n.*.trip_section_title' => 'nullable|string|max:255',
             'visual.i18n.*.per_person_label' => 'nullable|string|max:120',
             'visual.i18n.*.seats_left_suffix' => 'nullable|string|max:120',
@@ -911,7 +919,8 @@ class LandingPageController extends Controller
         foreach ($adminLocales as $loc) {
             $locIn = is_array($reqI18n[$loc] ?? null) ? $reqI18n[$loc] : [];
             $prevBlock = is_array($prevI18n[$loc] ?? null) ? $prevI18n[$loc] : [];
-            $visual['i18n'][$loc] = $this->buildLocaleVisualBlock($loc, $locIn, $prevBlock);
+            $block = $this->buildLocaleVisualBlock($loc, $locIn, $prevBlock);
+            $visual['i18n'][$loc] = $this->mergeTripActivityGalleryFromRequest($request, $slug, $loc, $block, $locIn);
         }
 
         $bpJson = trim((string) ($incoming['section_blueprint_json'] ?? ''));
@@ -980,6 +989,9 @@ class LandingPageController extends Controller
 
         foreach ($stringFields as $f) {
             if (! array_key_exists($f, $locIn)) {
+                continue;
+            }
+            if ($f === 'trip_activity_gallery_slides_text' && (($locIn['trip_activity_slides_rebuild'] ?? '') === '1')) {
                 continue;
             }
             $val = trim((string) $locIn[$f]);
@@ -1071,6 +1083,102 @@ class LandingPageController extends Controller
             $phonesRaw,
             is_array($prevBlock['contact_phones'] ?? null) ? $prevBlock['contact_phones'] : []
         );
+
+        return $block;
+    }
+
+    /**
+     * @param  array<string, mixed>  $block
+     * @param  array<string, mixed>  $locIn
+     * @return array<string, mixed>
+     */
+    private function mergeTripActivityGalleryFromRequest(Request $request, string $slug, string $locale, array $block, array $locIn): array
+    {
+        if (($locIn['trip_activity_slides_rebuild'] ?? '') !== '1') {
+            return $block;
+        }
+
+        $fromTextareaOnly = (($locIn['trip_activity_from_textarea'] ?? '') === '1');
+
+        $lines = [];
+        if ($fromTextareaOnly) {
+            foreach (LandingPage::parseTripActivityGallerySlideRows(trim((string) ($locIn['trip_activity_gallery_slides_text'] ?? ''))) as $r) {
+                $lines[] = $r['caption'] !== '' ? $r['path'].'|'.$r['caption'] : $r['path'];
+            }
+        } else {
+            $keep = $locIn['trip_activity_slide_keep'] ?? null;
+            if (is_array($keep)) {
+                ksort($keep, SORT_NATURAL);
+                foreach ($keep as $row) {
+                    if (! is_array($row)) {
+                        continue;
+                    }
+                    if (! empty($row['remove'])) {
+                        continue;
+                    }
+                    $path = LandingPage::sanitizeTripPhaseFeatureImagePath((string) ($row['path'] ?? ''));
+                    if ($path === '') {
+                        continue;
+                    }
+                    $cap = trim(strip_tags((string) ($row['caption'] ?? '')));
+                    $lines[] = $cap !== '' ? $path.'|'.$cap : $path;
+                }
+            }
+        }
+
+        $allNew = $request->file('visual_trip_activity_new_slides');
+        $localeFiles = null;
+        if (is_array($allNew) && array_key_exists($locale, $allNew)) {
+            $localeFiles = $allNew[$locale];
+        }
+        if ($localeFiles instanceof UploadedFile) {
+            $localeFiles = [$localeFiles];
+        }
+        if (is_array($localeFiles)) {
+            $allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            foreach ($localeFiles as $file) {
+                if (! $file instanceof UploadedFile || ! $file->isValid()) {
+                    continue;
+                }
+                $ext = strtolower((string) $file->getClientOriginalExtension());
+                if (! in_array($ext, $allowedExt, true)) {
+                    throw ValidationException::withMessages([
+                        'visual_trip_activity_new_slides.'.$locale => ['Each new trip activity image must be JPG, PNG, GIF, or WebP.'],
+                    ]);
+                }
+                if ($file->getSize() > 8192 * 1024) {
+                    throw ValidationException::withMessages([
+                        'visual_trip_activity_new_slides.'.$locale => ['Each trip activity image must be 8 MB or smaller.'],
+                    ]);
+                }
+                $lines[] = $this->storeVisualImage($file, $slug, 'trip_activity_slide');
+            }
+        }
+
+        if (! $fromTextareaOnly && $lines === []) {
+            $paste = trim((string) ($locIn['trip_activity_gallery_slides_text'] ?? ''));
+            if ($paste !== '') {
+                foreach (LandingPage::parseTripActivityGallerySlideRows($paste) as $r) {
+                    $lines[] = $r['caption'] !== '' ? $r['path'].'|'.$r['caption'] : $r['path'];
+                }
+            }
+        }
+
+        if (count($lines) > 30) {
+            throw ValidationException::withMessages([
+                'visual.i18n.'.$locale.'.trip_activity_slide_keep' => ['You can add at most 30 trip activity slides per language.'],
+            ]);
+        }
+
+        $text = implode("\n", $lines);
+        if (strlen($text) > 8000) {
+            throw ValidationException::withMessages([
+                'visual.i18n.'.$locale.'.trip_activity_gallery_slides_text' => ['Trip activity slides data is too long. Remove some slides or shorten captions.'],
+            ]);
+        }
+
+        $block['trip_activity_gallery_slides_text'] = $text;
+        unset($block['trip_activity_slides_rebuild'], $block['trip_activity_from_textarea'], $block['trip_activity_slide_keep']);
 
         return $block;
     }
