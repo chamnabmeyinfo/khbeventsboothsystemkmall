@@ -4,5 +4,5 @@ ios-dashboard-mode lp-landing-admin
 @endpush
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/dashboard-looker.css') }}?v=3.6">
-<link rel="stylesheet" href="{{ asset('css/landing-pages-admin.css') }}?v=1.1">
+<link rel="stylesheet" href="{{ asset('css/landing-pages-admin.css') }}?v=1.2">
 @endpush

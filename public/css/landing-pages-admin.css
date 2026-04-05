@@ -106,13 +106,56 @@ body.lp-landing-admin .lp-landing-form-shell .lp-section-toolbar .form-inline {
 }
 
 /* Visual builder tabs & section previews (single responsive template) */
-.lp-visual-primary-tabs .nav-link {
+/* “You are here”: each tab row uses a distinct active border + tint (alert-style cues) */
+body.lp-landing-admin .lp-visual-form-root {
+    --lp-tab-border-idle: rgba(15, 23, 42, 0.14);
+    --lp-tab-active-1: #0d6efd;
+    --lp-tab-bg-1: rgba(13, 110, 253, 0.12);
+    --lp-tab-active-2: #b45309;
+    --lp-tab-bg-2: rgba(180, 83, 9, 0.14);
+    --lp-tab-active-3: #047857;
+    --lp-tab-bg-3: rgba(4, 120, 87, 0.12);
+    --lp-tab-active-4: #6f42c1;
+    --lp-tab-bg-4: rgba(111, 66, 193, 0.12);
+}
+
+/* Level 1 — Shared / Sections / Section copy */
+body.lp-landing-admin .lp-visual-form-root .lp-visual-primary-tabs {
+    gap: 0.35rem;
+    row-gap: 0.35rem;
+    border-bottom: 1px solid var(--lp-tab-border-idle);
+    padding-bottom: 0;
+}
+
+body.lp-landing-admin .lp-visual-form-root .lp-visual-primary-tabs .nav-link {
     min-height: 44px;
     display: inline-flex;
     align-items: center;
+    border: 2px solid var(--lp-tab-border-idle);
+    border-bottom-width: 3px;
+    border-radius: 0.35rem 0.35rem 0 0;
+    margin-bottom: -1px;
+    color: var(--text-secondary, #495057);
+    background: rgba(255, 255, 255, 0.55);
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
 
-.lp-visual-primary-tabs .nav-link:focus {
+body.lp-landing-admin .lp-visual-form-root .lp-visual-primary-tabs .nav-link:hover:not(.active) {
+    border-color: rgba(13, 110, 253, 0.45);
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--lp-tab-active-1);
+}
+
+body.lp-landing-admin .lp-visual-form-root .lp-visual-primary-tabs .nav-link.active {
+    color: var(--lp-tab-active-1);
+    font-weight: 600;
+    background: var(--lp-tab-bg-1);
+    border-color: var(--lp-tab-active-1);
+    border-bottom-color: var(--lp-tab-active-1);
+    box-shadow: inset 0 3px 0 0 var(--lp-tab-active-1);
+}
+
+body.lp-landing-admin .lp-visual-form-root .lp-visual-primary-tabs .nav-link:focus {
     outline: 2px solid var(--accent-blue);
     outline-offset: 2px;
 }
@@ -121,35 +164,100 @@ body.lp-landing-admin .lp-landing-form-shell .lp-section-toolbar .form-inline {
     border-top-left-radius: 0;
 }
 
+/* Level 2 — English / Khmer / Chinese */
+body.lp-landing-admin .lp-visual-form-root .lp-lang-tabs {
+    border-bottom: 1px solid var(--lp-tab-border-idle);
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    row-gap: 0.25rem;
+}
+
+body.lp-landing-admin .lp-visual-form-root .lp-lang-tabs .nav-link {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    border: 2px solid var(--lp-tab-border-idle);
+    border-bottom-width: 3px;
+    border-radius: 0.35rem 0.35rem 0 0;
+    margin-bottom: -1px;
+    color: var(--text-secondary, #495057);
+    background: rgba(255, 255, 255, 0.65);
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+body.lp-landing-admin .lp-visual-form-root .lp-lang-tabs .nav-link:hover:not(.active) {
+    border-color: rgba(180, 83, 9, 0.5);
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--lp-tab-active-2);
+}
+
+body.lp-landing-admin .lp-visual-form-root .lp-lang-tabs .nav-link.active {
+    color: var(--lp-tab-active-2);
+    font-weight: 600;
+    background: var(--lp-tab-bg-2);
+    border-color: var(--lp-tab-active-2);
+    border-bottom-color: var(--lp-tab-active-2);
+    box-shadow: inset 0 3px 0 0 var(--lp-tab-active-2);
+}
+
+body.lp-landing-admin .lp-visual-form-root .lp-lang-tabs .nav-link:focus {
+    outline: 2px solid var(--lp-tab-active-2);
+    outline-offset: 2px;
+}
+
 .lp-landing-section-tabs-wrap {
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     margin-bottom: -1px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid var(--lp-tab-border-idle);
 }
 
 .lp-landing-section-tabs {
     flex-wrap: nowrap;
     border-bottom: 0;
     min-height: 44px;
+    gap: 0.2rem;
 }
 
 .lp-landing-section-tabs .nav-item {
     flex-shrink: 0;
 }
 
-.lp-landing-section-tabs .nav-link {
+/* Level 3 — Hero / Package / … section tabs */
+body.lp-landing-admin .lp-visual-form-root .lp-landing-section-tabs .nav-link {
     white-space: nowrap;
     min-height: 44px;
     display: inline-flex;
     align-items: center;
     padding: 0.5rem 0.75rem;
     font-size: 0.9rem;
+    border: 2px solid var(--lp-tab-border-idle);
+    border-bottom-width: 3px;
+    border-radius: 0.3rem 0.3rem 0 0;
+    margin-bottom: -1px;
+    color: var(--text-secondary, #495057);
+    background: rgba(255, 255, 255, 0.6);
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
 
-.lp-landing-section-tabs .nav-link:focus {
-    outline: 2px solid var(--accent-blue);
+body.lp-landing-admin .lp-visual-form-root .lp-landing-section-tabs .nav-link:hover:not(.active) {
+    border-color: rgba(4, 120, 87, 0.45);
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--lp-tab-active-3);
+}
+
+body.lp-landing-admin .lp-visual-form-root .lp-landing-section-tabs .nav-link.active {
+    color: var(--lp-tab-active-3);
+    font-weight: 600;
+    background: var(--lp-tab-bg-3);
+    border-color: var(--lp-tab-active-3);
+    border-bottom-color: var(--lp-tab-active-3);
+    box-shadow: inset 0 3px 0 0 var(--lp-tab-active-3);
+}
+
+body.lp-landing-admin .lp-visual-form-root .lp-landing-section-tabs .nav-link:focus {
+    outline: 2px solid var(--lp-tab-active-3);
     outline-offset: -2px;
     z-index: 1;
 }
@@ -159,8 +267,42 @@ body.lp-landing-admin .lp-landing-form-shell .lp-section-toolbar .form-inline {
     border-top-right-radius: 0;
 }
 
-.lp-agenda-by-day-editor .lp-agenda-admin-nav {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+/* Level 4 — Agenda “Day N” tabs */
+body.lp-landing-admin .lp-visual-form-root .lp-agenda-admin-nav {
+    border-bottom: 1px solid var(--lp-tab-border-idle);
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    row-gap: 0.25rem;
+}
+
+body.lp-landing-admin .lp-visual-form-root .lp-agenda-admin-nav .nav-link {
+    border: 2px solid var(--lp-tab-border-idle);
+    border-bottom-width: 3px;
+    border-radius: 0.3rem 0.3rem 0 0;
+    margin-bottom: -1px;
+    color: var(--text-secondary, #495057);
+    background: rgba(255, 255, 255, 0.55);
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+body.lp-landing-admin .lp-visual-form-root .lp-agenda-admin-nav .nav-link:hover:not(.active) {
+    border-color: rgba(111, 66, 193, 0.45);
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--lp-tab-active-4);
+}
+
+body.lp-landing-admin .lp-visual-form-root .lp-agenda-admin-nav .nav-link.active {
+    color: var(--lp-tab-active-4);
+    font-weight: 600;
+    background: var(--lp-tab-bg-4);
+    border-color: var(--lp-tab-active-4);
+    border-bottom-color: var(--lp-tab-active-4);
+    box-shadow: inset 0 3px 0 0 var(--lp-tab-active-4);
+}
+
+body.lp-landing-admin .lp-visual-form-root .lp-agenda-admin-nav .nav-link:focus {
+    outline: 2px solid var(--lp-tab-active-4);
+    outline-offset: 2px;
 }
 
 .lp-agenda-by-day-editor .lp-agenda-admin-content {

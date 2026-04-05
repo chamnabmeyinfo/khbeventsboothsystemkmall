@@ -329,7 +329,7 @@
                 </button>
             </div>
         @endif
-        <ul class="nav nav-tabs" id="lpLangTabs" role="tablist">
+        <ul class="nav nav-tabs lp-lang-tabs" id="lpLangTabs" role="tablist">
             @foreach($adminLocales as $i => $loc)
                 <li class="nav-item" role="presentation">
                     <a class="nav-link {{ $i === 0 ? 'active' : '' }}" id="tab-{{ $loc }}" data-toggle="tab" href="#pane-{{ $loc }}" role="tab" aria-controls="pane-{{ $loc }}" aria-selected="{{ $i === 0 ? 'true' : 'false' }}">{{ $localeLabels[$loc] ?? strtoupper($loc) }}</a>
