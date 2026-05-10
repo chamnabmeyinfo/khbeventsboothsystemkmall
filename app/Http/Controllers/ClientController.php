@@ -67,10 +67,29 @@ class ClientController extends Controller
     public function store(CreateClientRequest $request)
     {
         try {
-            $validated = $request->validated();
+              $validated = $request->validated();
             $result = $this->clientService->createClient($validated);
-            $client = $result['client'];
-            $isUpdate = $result['isUpdate'];
+          $client = $result['client'];
+       $isUpdate = $result['isUpdate'];
+
+          // Send welcome email for new clients only
+            if (!$isUpdate && $client->email) {
+         try {
+        \Illuminate\Support\Facades\Mail::to($client->email)
+        ->send(new \App\Mail\ClientWelcomeMail($client));
+             
+         \Log::info('Welcome email sent to new client', [
+                      'client_id' => $client->id,
+                      'client_email' => $client->email,
+                    ]);
+                } catch (\Exception $e) {
+                  \Log::warning('Failed to send welcome email: ' . $e->getMessage(), [
+                     'client_id' => $client->id,
+                     'client_email' => $client->email,
+              ]);
+             // Don't fail client creation if email fails
+            }
+            }
 
             // Return JSON if request expects JSON (for AJAX/modal requests)
             if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {

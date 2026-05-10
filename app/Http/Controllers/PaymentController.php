@@ -181,6 +181,27 @@ class PaymentController extends Controller
                 }
             }
         }
+        // Send payment receipt email
+        try {
+            $payment->load(['booking', 'booking.booth', 'booking.event', 'client']);
+            if ($payment->client && $payment->client->email) {
+            \Illuminate\Support\Facades\Mail::to($payment->client->email)
+                ->send(new \App\Mail\PaymentReceiptMail($payment));
+                
+             // Log email sent
+                \Log::info('Payment receipt email sent', [
+               'payment_id' => $payment->id,
+                    'client_email' => $payment->client->email,
+                 'amount' => $payment->amount,
+            ]);
+            }
+        } catch (\Exception $e) {
+          \Log::warning('Failed to send payment receipt email: ' . $e->getMessage(), [
+                'payment_id' => $payment->id,
+         'client_email' => $payment->client->email ?? 'N/A',
+            ]);
+            // Don't fail the payment if email fails
+        }
 
         return redirect()->route('finance.payments.index')
             ->with('success', 'Payment recorded successfully');

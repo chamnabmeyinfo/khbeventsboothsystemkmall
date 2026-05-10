@@ -481,12 +481,37 @@ class BookController extends Controller
             $booking = $this->bookingService->createBooking($validated);
 
             // Update booth statuses based on booking type
-            Booth::whereIn('id', $validated['booth_ids'])
-                ->whereIn('status', [Booth::STATUS_AVAILABLE, Booth::STATUS_HIDDEN])
+         Booth::whereIn('id', $validated['booth_ids'])
+         ->whereIn('status', [Booth::STATUS_AVAILABLE, Booth::STATUS_HIDDEN])
                 ->lockForUpdate()
                 ->update([
-                    'status' => $boothStatus,
-                ]);
+          'status' => $boothStatus,
+        ]);
+            // Send booking confirmation email
+            try {
+                $booking->load(['client', 'booth', 'event']);
+          if ($booking->client && $booking->client->email) {
+                    \Illuminate\Support\Facades\Mail::to($booking->client->email)
+                ->send(new \App\Mail\BookingConfirmationMail($booking));
+                    
+             // Log email sent in timeline
+                  if (class_exists('\App\Models\BookingTimeline')) {
+                     \App\Models\BookingTimeline::createEntry(
+                $booking->booth ? $booking->booth->id : null,
+               'booking_confirmation_sent',
+                      "Booking confirmation email sent to {$booking->client->email}",
+                            null,
+                          $booking->id
+                        );
+                 }
+           }
+        } catch (\Exception $e) {
+                \Log::warning('Failed to send booking confirmation email: ' . $e->getMessage(), [
+                 'booking_id' => $booking->id,
+            'client_email' => $booking->client->email ?? 'N/A',
+          ]);
+            // Don't fail the booking if email fails
+            }
 
             // Return JSON response for AJAX requests
             if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
