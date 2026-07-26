@@ -35,6 +35,25 @@ Homestead.json
 Homestead.yaml
 
 # -----------------------------------------------------------------------------
+# Server-side editing debris (cPanel file manager, FTP, in-place backups)
+# -----------------------------------------------------------------------------
+# cPanel's editor leaves .htaccess-<hash> copies behind on every save
+.htaccess-*
+.ftpquota
+# PHP error log written next to the app root
+error_log
+# Editor / manual backups taken in place
+*.bak
+*.bak-*
+*.orig
+# Broken or partial .env copies (see .env.example for the template)
+.env.broken
+# Full-site archives — never commit these
+*.zip
+*.tar
+*.tar.gz
+
+# -----------------------------------------------------------------------------
 # IDE / Editor
 # -----------------------------------------------------------------------------
 /.fleet
