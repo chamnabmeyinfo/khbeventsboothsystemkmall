@@ -29,6 +29,17 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f5f5f5;
             overflow: hidden;
+            /* Flex column so the header sits at the top and .canvas-container fills
+               exactly whatever vertical space is left -- whatever height the header
+               actually turns out to be. Previously .canvas-container hard-coded
+               calc(100vh - 48px), assuming a 48px header; on a 375px-wide phone the
+               header wraps (flex-wrap) to ~212px, so the container's bottom landed
+               ~164px BELOW the viewport, and body{overflow:hidden} made that strip
+               permanently unreachable. */
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh; /* real viewport on mobile; vh above is the fallback */
         }
         
         .public-header {
@@ -44,6 +55,7 @@
             flex-wrap: wrap;
             gap: 10px;
             min-height: 48px;
+            flex-shrink: 0; /* keep full height in the body flex column; never squashed */
         }
         
         .header-left {
@@ -566,16 +578,15 @@
         
         .canvas-container {
             width: 100%;
-            height: calc(100vh - 48px);
-            /* 100vh on mobile Safari/Chrome measures the viewport with the address
-               bar collapsed, which overestimates the space actually visible when
-               the page first loads (bar still showing). Since #printContainer's
-               clientHeight directly drives the auto-fit scale calculation, that
-               overestimate meant the fit could size the floor plan for more height
-               than was really on-screen, pushing its bottom edge out of view until
-               the bar collapsed. dvh tracks the real, current viewport instead;
-               unsupported browsers keep the vh fallback above. */
-            height: calc(100dvh - 48px);
+            /* Sits directly under the header and fills the remaining height exactly,
+               driven by the body flex column above rather than a hard-coded header
+               height. `flex: 1 1 0` + `min-height: 0` is the standard pairing that
+               lets a flex child actually shrink below its content size instead of
+               overflowing its parent. This is also what makes the auto-fit reliable:
+               applyZoomFit() measures this element's clientHeight, so the element
+               being the true available height is a prerequisite for fitting. */
+            flex: 1 1 0;
+            min-height: 0;
             overflow: hidden;
             position: relative;
             background: #e9ecef;
@@ -2684,32 +2695,27 @@
 
             const bounds = calculateContentBounds();
             const contentWidth = Math.max(bounds.width || canvasWidth, 100); // Minimum 100px
-            const contentHeight = Math.max(bounds.height || canvasHeight, 100); // Minimum 100px
 
-            // Add padding (5% on each side)
-            const padding = 0.05;
-            const availableWidth = containerWidth * (1 - padding * 2);
-            const availableHeight = containerHeight * (1 - padding * 2);
-
-            // Calculate scale to fit content -- the smaller of the two axes wins, so
-            // the whole image is always visible regardless of its aspect ratio vs the
-            // device's aspect ratio (this is what makes it work across all screens).
-            const scaleX = availableWidth / contentWidth;
-            const scaleY = availableHeight / contentHeight;
-            let fitScale = Math.min(scaleX, scaleY);
+            // Fit to WIDTH: scale so the floor plan spans the full container width,
+            // edge to edge with no side gutters. Deliberately width-only rather than
+            // Math.min(scaleX, scaleY): fitting both axes made tall/portrait plans
+            // shrink to a sliver on narrow phones just to squeeze their height in.
+            // When the scaled height exceeds the container (portrait plan on a short
+            // screen) the remainder sits below the fold and is reached by dragging --
+            // panning is enabled and no `contain` option restricts it.
+            let fitScale = containerWidth / contentWidth;
 
             // Clamp scale to minScale and maxScale limits
             const minScale = 0.01;
             const maxScale = 5;
             fitScale = Math.max(minScale, Math.min(maxScale, fitScale));
 
-            // Anchor to the top-left of the container instead of centering: the
-            // content's own top-left corner (bounds.minX/minY -- normally 0,0, but
-            // using the measured bounds rather than a literal 0 keeps this correct
-            // even if a booth is positioned off the canvas at a negative coordinate)
-            // lands at screen position (0,0). Any slack from the 5% scale padding or
-            // an aspect-ratio mismatch between the image and the screen now falls to
-            // the right/bottom only, instead of being split evenly on all four sides.
+            // Anchor to the top-left of the container: the content's own top-left
+            // corner (bounds.minX/minY -- normally 0,0, but using the measured bounds
+            // rather than a literal 0 keeps this correct even if a booth sits at a
+            // negative coordinate) lands at screen position (0,0), flush against the
+            // header. With width-based scaling above, any leftover space is vertical
+            // only and falls entirely below the plan.
             const panX = -(bounds.minX * fitScale);
             const panY = -(bounds.minY * fitScale);
 
