@@ -2034,8 +2034,18 @@
             return { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 };
         }
 
+        function pinchTargetIsOurs(e) {
+            return !!(container && e.target && (container === e.target || container.contains(e.target)));
+        }
+
         function handlePinchPointerDown(e) {
             if (e.pointerType !== 'touch' || !panzoomInstance) {
+                return;
+            }
+            // Only take over pointers that started on the floor plan itself, so
+            // this doesn't hijack an unrelated two-finger gesture happening
+            // elsewhere on the page (e.g. a modal).
+            if (activePinchPointers.size === 0 && !pinchTargetIsOurs(e)) {
                 return;
             }
             activePinchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -2044,16 +2054,19 @@
                 pinchStartDistance = pinchDistance(pts);
                 pinchStartScale = panzoomInstance.getScale();
                 e.preventDefault();
-                // stopIMMEDIATEPropagation, not stopPropagation: Panzoom's own
-                // pointer listener is bound to this same element and would
-                // otherwise still run right after this one (stopPropagation only
-                // blocks bubbling to OTHER elements, not further same-element
-                // listeners). Confirmed this was happening: a diagnostic listener
-                // added after ours still fired on every dispatch. With disableZoom
-                // still effectively contending for the same pointer stream,
-                // Panzoom's handler was corrupting the pan our math had just set --
-                // measured scale never changing at all across a 4-step pinch while
-                // pan drifted to -10000+, i.e. exactly a "last handler wins" fight.
+                // stopImmediatePropagation here does NOT stop Panzoom's actual
+                // interfering handler -- that one turned out to be bound on
+                // DOCUMENT in the CAPTURE phase (confirmed with a diagnostic
+                // listener: it still fired even when our target-phase handler on
+                // #print called stopImmediatePropagation). Capture runs
+                // document -> ... -> target, i.e. BEFORE our listener even gets a
+                // turn, so nothing done at the target phase can preempt it. That's
+                // why setupPinchZoom() below binds THESE handlers on document
+                // with capture:true too, registered once, early -- so they run
+                // before Panzoom's own document-capture listener (which gets
+                // rebound fresh, and therefore LATER, every time applyZoomFit()
+                // recreates the Panzoom instance). This call still matters for
+                // blocking Panzoom's element-level bubble-phase listeners.
                 e.stopImmediatePropagation();
             }
         }
@@ -2108,10 +2121,19 @@
             if (!canvas) {
                 return;
             }
-            canvas.addEventListener('pointerdown', handlePinchPointerDown);
-            canvas.addEventListener('pointermove', handlePinchPointerMove);
-            canvas.addEventListener('pointerup', handlePinchPointerUp);
-            canvas.addEventListener('pointercancel', handlePinchPointerUp);
+            // Bound on DOCUMENT with capture:true, not on canvas/#print. Panzoom's
+            // own interfering pointer handling is itself on document in the
+            // capture phase (confirmed empirically, see the comment in
+            // handlePinchPointerDown above) -- capture fires document-outward-in,
+            // so only a document-level capture listener registered BEFORE
+            // Panzoom's can run first and stopImmediatePropagation it away.
+            // Called once here, early; every later applyZoomFit() -> initPanzoom()
+            // recreate rebinds Panzoom's OWN listener fresh (i.e. later), so this
+            // stays ahead of it for the life of the page.
+            document.addEventListener('pointerdown', handlePinchPointerDown, true);
+            document.addEventListener('pointermove', handlePinchPointerMove, true);
+            document.addEventListener('pointerup', handlePinchPointerUp, true);
+            document.addEventListener('pointercancel', handlePinchPointerUp, true);
         }
 
         function initPanzoom(scale, panX, panY) {
