@@ -1404,7 +1404,8 @@ window.FPD = {
     },
 };
 </script>
-<script src="{{ asset('js/floor-plan-designer.js') }}"></script>
+@php($fpdJsVersion = is_file(public_path('js/floor-plan-designer.js')) ? filemtime(public_path('js/floor-plan-designer.js')) : 1)
+<script src="{{ asset('js/floor-plan-designer.js') }}?v={{ $fpdJsVersion }}"></script>
 @endpush
 
 <style>
