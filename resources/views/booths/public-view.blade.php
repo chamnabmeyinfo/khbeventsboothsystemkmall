@@ -231,14 +231,26 @@
                 gap: 8px;
             }
             
+            .header-title-section {
+                /* Was a single flex row (icon + name + "• project name"), which is
+                   how project-name ended up hidden below 480px: no room left in the
+                   row once combined with the header-right icons, so it was dropped
+                   entirely rather than wrapped. Stacking the project/event name on
+                   its own line keeps it visible without fighting for row space. */
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1px;
+            }
+
             .header-title-section h1 {
                 font-size: 0.9rem;
             }
-            
+
             .project-name {
-                display: none;
+                margin-left: 0;
+                display: block;
             }
-            
+
             .status-legend-inline {
                 width: 100%;
                 justify-content: center;
@@ -2002,6 +2014,96 @@
         // fights the fit-to-CONTAIN math below, silently forcing a larger scale than
         // requested and cropping the floor plan -- that mismatch was the root cause of
         // "auto-fit" not actually fitting the image on many screens.
+        // Custom two-finger pinch-to-zoom, replacing Panzoom's own (disableZoom:
+        // true above) since its built-in pinch handling produces garbage pan values
+        // under our origin:'0 0'. Tracks active touch pointers itself; on a second
+        // finger touching down, computes the pinch midpoint and starting separation,
+        // then on move recomputes scale from the separation ratio and pan from the
+        // same verified formula as handleCenterZoomWheel -- but anchored to the
+        // pinch midpoint (which the user's fingers define and can move) rather than
+        // a fixed viewport center. Single-finger contact is left entirely alone so
+        // Panzoom's own (unaffected, translation-only) drag-to-pan keeps handling it.
+        const activePinchPointers = new Map();
+        let pinchStartDistance = null;
+        let pinchStartScale = null;
+
+        function pinchDistance(pts) {
+            return Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+        }
+        function pinchMidpoint(pts) {
+            return { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 };
+        }
+
+        function handlePinchPointerDown(e) {
+            if (e.pointerType !== 'touch' || !panzoomInstance) {
+                return;
+            }
+            activePinchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            if (activePinchPointers.size === 2) {
+                const pts = Array.from(activePinchPointers.values());
+                pinchStartDistance = pinchDistance(pts);
+                pinchStartScale = panzoomInstance.getScale();
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }
+
+        function handlePinchPointerMove(e) {
+            if (!activePinchPointers.has(e.pointerId)) {
+                return;
+            }
+            activePinchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            if (activePinchPointers.size !== 2 || !pinchStartDistance || !panzoomInstance) {
+                return;
+            }
+            e.preventDefault();
+            e.stopPropagation();
+
+            const pts = Array.from(activePinchPointers.values());
+            const dist = pinchDistance(pts);
+            const mid = pinchMidpoint(pts);
+            let newScale = pinchStartScale * (dist / pinchStartDistance);
+            newScale = Math.max(0.01, Math.min(5, newScale));
+
+            const rect = container.getBoundingClientRect();
+            const midRelX = mid.x - rect.left;
+            const midRelY = mid.y - rect.top;
+
+            const scale = panzoomInstance.getScale();
+            const pan = panzoomInstance.getPan();
+            const localX = midRelX / scale - pan.x;
+            const localY = midRelY / scale - pan.y;
+            const newPanX = midRelX / newScale - localX;
+            const newPanY = midRelY / newScale - localY;
+
+            panzoomInstance.zoom(newScale, { animate: false });
+            panzoomInstance.pan(newPanX, newPanY, { animate: false, relative: false });
+
+            zoomLevel = newScale;
+            const zoomLevelEl = document.getElementById('zoomLevel');
+            if (zoomLevelEl) {
+                zoomLevelEl.textContent = Math.round(newScale * 100) + '%';
+            }
+        }
+
+        function handlePinchPointerUp(e) {
+            activePinchPointers.delete(e.pointerId);
+            if (activePinchPointers.size < 2) {
+                pinchStartDistance = null;
+                pinchStartScale = null;
+            }
+        }
+
+        function setupPinchZoom() {
+            if (!canvas) {
+                return;
+            }
+            canvas.addEventListener('pointerdown', handlePinchPointerDown);
+            canvas.addEventListener('pointermove', handlePinchPointerMove);
+            canvas.addEventListener('pointerup', handlePinchPointerUp);
+            canvas.addEventListener('pointercancel', handlePinchPointerUp);
+        }
+
         function initPanzoom(scale, panX, panY) {
             if (panzoomInstance && panzoomInstance.destroy) {
                 try { panzoomInstance.destroy(); } catch (e) { /* already gone */ }
@@ -2016,7 +2118,18 @@
                 maxScale: 5,
                 minScale: 0.01,
                 disablePan: false,
-                disableZoom: false,
+                // Panzoom's own built-in pinch-to-zoom is disabled here -- like
+                // zoomToPoint (see handleCenterZoomWheel above), its two-finger
+                // handling computes the pan assuming the default 50%/50%
+                // transform-origin. Verified in-browser with simulated PointerEvents
+                // under our origin:'0 0': a pinch from 40px to 160px finger
+                // separation landed pan at {x: 89004, y: 48713} -- the floor plan
+                // would fly completely off-screen on any real user's pinch gesture.
+                // setupPinchZoom() below replaces it with the same verified formula
+                // used for wheel-zoom. Single-finger drag-to-pan is unaffected --
+                // disablePan stays false and pure translation doesn't involve
+                // origin-dependent focal-point math the way zooming-to-a-point does.
+                disableZoom: true,
                 touchAction: 'none', // required for touch-drag panning and pinch-zoom on mobile
                 // Scale from the canvas's top-left corner, not its centre. Panzoom
                 // renders `scale(s) translate(t)`, and for HTML elements it defaults
@@ -2045,6 +2158,12 @@
         // Initial instance at 1:1; the real auto-fit (see below) replaces this once
         // the container has a real measured size.
         initPanzoom(1, 0, 0);
+
+        // Bound to the canvas DOM element (stable across initPanzoom's destroy/
+        // recreate cycles, unlike the Panzoom instance itself), so this only needs
+        // to run once -- handlePinchPointer* always read the current panzoomInstance
+        // via the shared variable, not a stale captured reference.
+        setupPinchZoom();
 
         if (canvas) {
             // Update zoom level display on manual pinch/wheel/drag zoom
