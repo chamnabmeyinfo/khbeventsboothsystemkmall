@@ -601,6 +601,114 @@
             }
         }
         
+        /* Floor Plan Info panel -- sits between .public-header and .canvas-container
+           as a normal-flow flex sibling (flex-shrink: 0, so it keeps its natural
+           content height and .canvas-container's flex:1 1 0 shrinks to make room). */
+        .floorplan-info-bar {
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            color: #1d1d1f;
+            position: relative;
+        }
+
+        .floorplan-info-toggle {
+            position: absolute;
+            top: 4px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            color: #1d1d1f;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1;
+        }
+
+        .floorplan-info-toggle:hover {
+            background: rgba(var(--pv-btn-primary-rgb), 0.35);
+            color: #fff;
+        }
+
+        .floorplan-info-bar.collapsed .floorplan-info-toggle {
+            transform: rotate(180deg);
+        }
+
+        .floorplan-info-content {
+            padding: 10px 40px 12px 16px;
+            max-height: 240px;
+            overflow-y: auto;
+            transition: max-height 0.25s ease, padding 0.25s ease, opacity 0.2s ease;
+        }
+
+        .floorplan-info-bar.collapsed .floorplan-info-content {
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+
+        .floorplan-info-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 20px;
+        }
+
+        .floorplan-info-chip {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            font-size: 0.85rem;
+        }
+
+        .floorplan-info-chip i {
+            color: var(--pv-btn-primary);
+            width: 14px;
+            text-align: center;
+        }
+
+        .floorplan-info-chip-label {
+            font-weight: 600;
+            opacity: 0.85;
+        }
+
+        .floorplan-info-chip-value {
+            white-space: pre-line;
+        }
+
+        .floorplan-info-map-section {
+            margin-top: 12px;
+        }
+
+        .floorplan-info-map-section .floorplan-info-chip-label {
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .floorplan-info-map-section .floorplan-info-chip-label i {
+            color: var(--pv-btn-primary);
+            margin-right: 6px;
+        }
+
+        @media (max-width: 480px) {
+            .floorplan-info-content {
+                padding: 8px 36px 10px 12px;
+                max-height: 160px;
+            }
+
+            .floorplan-info-chip {
+                font-size: 0.78rem;
+            }
+        }
+
         .canvas-container {
             width: 100%;
             /* Sits directly under the header and fills the remaining height exactly,
@@ -1342,12 +1450,6 @@
             <button type="button" class="help-btn" id="copyPublicLinkBtn" title="Copy link to this floor plan" onclick="copyPublicViewLink()">
                 <i class="fas fa-link"></i>
             </button>
-            @if(!empty($floorPlanInfoFields ?? []))
-            <!-- Floor Plan Info (fields chosen in Edit Floor Plan -> Public View Display Settings) -->
-            <button type="button" class="help-btn" onclick="showFloorPlanInfo()" title="Floor plan information">
-                <i class="fas fa-info-circle"></i>
-            </button>
-            @endif
             <!-- Simple Zoom Controls -->
             <div class="zoom-controls-simple">
                 <div class="zoom-label">Zoom:</div>
@@ -1369,7 +1471,50 @@
             </button>
         </div>
     </div>
-    
+
+    @if(!empty($floorPlanInfoFields ?? []))
+    {{-- Floor Plan Info panel: fields chosen in Edit Floor Plan -> Public View
+         Display Settings. Deliberately a normal-flow sibling here, between
+         .public-header and .canvas-container, NOT an overlay/modal -- body is
+         `display:flex; flex-direction:column` (see the "stick to top" work),
+         .public-header is flex-shrink:0, and #printContainer is `flex:1 1 0`
+         (fills whatever's left). Inserting this panel as another flex-shrink:0
+         sibling here means #printContainer's available height automatically
+         shrinks to make room for it, and applyZoomFit() -- which measures
+         #printContainer.clientHeight fresh on every fit -- picks that up with
+         no changes needed on the JS side, the same way it already adapts to
+         the header's own variable (wrapping) height. --}}
+    <div class="floorplan-info-bar" id="floorplanInfoBar">
+        <button type="button" class="floorplan-info-toggle" onclick="toggleFloorPlanInfo()" id="floorplanInfoToggle" title="Hide floor plan info">
+            <i class="fas fa-chevron-up"></i>
+        </button>
+        <div class="floorplan-info-content" id="floorplanInfoContent">
+            <div class="floorplan-info-chips">
+                @foreach($floorPlanInfoFields as $field)
+                    @if(!$field['isMapEmbed'])
+                        <div class="floorplan-info-chip">
+                            <i class="fas {{ $field['icon'] }}"></i>
+                            <span class="floorplan-info-chip-label">{{ $field['label'] }}:</span>
+                            <span class="floorplan-info-chip-value">{{ $field['value'] }}</span>
+                        </div>
+                    @endif
+                @endforeach
+            </div>
+            @foreach($floorPlanInfoFields as $field)
+                @if($field['isMapEmbed'])
+                    <div class="floorplan-info-map-section">
+                        <div class="floorplan-info-chip-label"><i class="fas {{ $field['icon'] }}"></i> {{ $field['label'] }}</div>
+                        {{-- Admin-entered iframe embed code (Edit Floor Plan -> Google Map
+                             Location), not user-submitted input -- intentionally unescaped
+                             so the pasted embed actually renders as a map. --}}
+                        <div class="floor-plan-info-map">{!! $field['value'] !!}</div>
+                    </div>
+                @endif
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     <!-- Help Modal -->
     <div class="help-modal" id="helpModal" onclick="closeHelp(event)">
         <div class="help-modal-content" onclick="event.stopPropagation()">
@@ -1474,34 +1619,6 @@
     </div>
     @endif
 
-    @if(!empty($floorPlanInfoFields ?? []))
-    <!-- Floor Plan Info Modal: fields chosen in Edit Floor Plan -> Public View Display Settings -->
-    <div class="help-modal" id="floorPlanInfoModal" onclick="closeFloorPlanInfo(event)">
-        <div class="help-modal-content" onclick="event.stopPropagation()">
-            <div class="help-modal-header">
-                <h3><i class="fas fa-info-circle mr-2"></i>{{ $floorPlan->name }}</h3>
-                <button class="help-modal-close" onclick="closeFloorPlanInfo()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="help-modal-body">
-                @foreach($floorPlanInfoFields as $field)
-                    <div class="help-section">
-                        <h4>{{ $field['label'] }}</h4>
-                        @if($field['isMapEmbed'])
-                            {{-- Admin-entered iframe embed code (Edit Floor Plan -> Google Map Location),
-                                 not user-submitted input -- intentionally unescaped so the pasted embed
-                                 actually renders as a map. --}}
-                            <div class="floor-plan-info-map">{!! $field['value'] !!}</div>
-                        @else
-                            <p style="white-space: pre-line;">{{ $field['value'] }}</p>
-                        @endif
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </div>
-    @endif
 
     <!-- Welcome Message -->
     <div class="welcome-message" id="welcomeMessage">
@@ -2788,18 +2905,6 @@
             }
         }
 
-        function showFloorPlanInfo() {
-            var el = document.getElementById('floorPlanInfoModal');
-            if (el) el.classList.add('active');
-        }
-
-        function closeFloorPlanInfo(event) {
-            var el = document.getElementById('floorPlanInfoModal');
-            if (el && (!event || event.target.id === 'floorPlanInfoModal')) {
-                el.classList.remove('active');
-            }
-        }
-        
         function showPermissionsModal() {
             var el = document.getElementById('permissionsModal');
             if (el) el.classList.add('active');
@@ -2896,6 +3001,26 @@
             document.body.removeChild(ta);
         }
         
+        // Floor Plan Info panel: collapsing/expanding changes how much height is
+        // left for #printContainer (they're flex siblings -- see the CSS comment
+        // on .floorplan-info-bar), so the floor plan needs to re-fit afterward.
+        // The panel's height change is CSS-transitioned (0.25s), so the container
+        // hasn't actually resized yet at the moment of the click -- applyZoomFit()
+        // is called after a delay matching that transition, not immediately,
+        // otherwise it would measure the pre-transition height.
+        function toggleFloorPlanInfo() {
+            const bar = document.getElementById('floorplanInfoBar');
+            if (!bar) {
+                return;
+            }
+            bar.classList.toggle('collapsed');
+            const toggleBtn = document.getElementById('floorplanInfoToggle');
+            if (toggleBtn) {
+                toggleBtn.title = bar.classList.contains('collapsed') ? 'Show floor plan info' : 'Hide floor plan info';
+            }
+            setTimeout(applyZoomFit, 260);
+        }
+
         // Welcome message functions
         function closeWelcome() {
             const welcomeMsg = document.getElementById('welcomeMessage');

@@ -1882,6 +1882,16 @@ class BoothController extends Controller
         // Google Maps -- rendered via {!! !!} in the view, so it must NOT be
         // htmlspecialchars-escaped here; it's an admin-only input field, not
         // user-submitted, matching how it's already used elsewhere.
+        $floorPlanInfoFieldIcons = [
+            'description' => 'fa-align-left',
+            'event_start_date' => 'fa-calendar-day',
+            'event_end_date' => 'fa-calendar-check',
+            'event_start_time' => 'fa-clock',
+            'event_end_time' => 'fa-hourglass-end',
+            'event_location' => 'fa-map-marker-alt',
+            'event_venue' => 'fa-building',
+            'google_map_location' => 'fa-map',
+        ];
         $floorPlanInfoFields = [];
         foreach ($floorPlan->publicViewInfoFields() as $fieldKey) {
             $value = $floorPlan->{$fieldKey} ?? null;
@@ -1902,6 +1912,7 @@ class BoothController extends Controller
                 'key' => $fieldKey,
                 'label' => $label,
                 'value' => $value,
+                'icon' => $floorPlanInfoFieldIcons[$fieldKey] ?? 'fa-info-circle',
                 'isMapEmbed' => $fieldKey === 'google_map_location',
             ];
         }
