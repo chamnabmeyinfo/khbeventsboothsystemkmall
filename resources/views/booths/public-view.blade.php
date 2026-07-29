@@ -1947,6 +1947,51 @@
         const container = document.getElementById('printContainer');
         let panzoomWheelHandler = null;
 
+        // Mouse-wheel zoom, anchored to the CENTER of the viewport rather than the
+        // cursor position. Panzoom's own zoomWithWheel/zoomToPoint zoom toward the
+        // cursor, and their internal math assumes the default 50%/50% transform-origin
+        // -- with our custom `origin: '0 0'` (needed for top-left anchoring, see
+        // initPanzoom below) zoomToPoint's output pan was measured wildly wrong
+        // (tens of thousands of px off). So this computes the center-preserving pan
+        // directly from the verified transform formula (screen = scale * (local +
+        // pan), true for origin '0 0') and applies it with .zoom()+.pan() on the
+        // existing instance -- NOT via initPanzoom's destroy/recreate, since a fresh
+        // instance's startX/startY only settle after an async delay (~1 tick) and
+        // reading getPan() back sooner returns stale {0,0}, which rapid-fire wheel
+        // events would hit constantly. .zoom()/.pan() on an already-settled instance
+        // apply and read back synchronously, confirmed in-browser before shipping.
+        function handleCenterZoomWheel(e) {
+            if (!panzoomInstance) {
+                return;
+            }
+            e.preventDefault();
+
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+            const scale = panzoomInstance.getScale();
+            const pan = panzoomInstance.getPan();
+
+            const step = 0.15;
+            let newScale = scale * (e.deltaY < 0 ? (1 + step) : 1 / (1 + step));
+            newScale = Math.max(0.01, Math.min(5, newScale));
+
+            // The content-local point currently sitting at the viewport's center...
+            const localX = (w / 2) / scale - pan.x;
+            const localY = (h / 2) / scale - pan.y;
+            // ...gets the pan recomputed so it's STILL at the viewport's center post-zoom.
+            const newPanX = (w / 2) / newScale - localX;
+            const newPanY = (h / 2) / newScale - localY;
+
+            panzoomInstance.zoom(newScale, { animate: false });
+            panzoomInstance.pan(newPanX, newPanY, { animate: false, relative: false });
+
+            zoomLevel = newScale;
+            const zoomLevelEl = document.getElementById('zoomLevel');
+            if (zoomLevelEl) {
+                zoomLevelEl.textContent = Math.round(newScale * 100) + '%';
+            }
+        }
+
         // Create (or replace) the Panzoom instance at an exact scale + pan position.
         // Passing startScale/startX/startY as constructor options is the reliable way
         // to land on a precise transform with this library -- calling .zoom() then
@@ -1988,7 +2033,7 @@
                 startX: panX,
                 startY: panY,
             });
-            panzoomWheelHandler = panzoomInstance.zoomWithWheel;
+            panzoomWheelHandler = handleCenterZoomWheel;
             container.addEventListener('wheel', panzoomWheelHandler);
             zoomLevel = scale;
             const zoomLevelEl = document.getElementById('zoomLevel');
@@ -2706,35 +2751,29 @@
 
             const bounds = calculateContentBounds();
             const contentWidth = Math.max(bounds.width || canvasWidth, 100); // Minimum 100px
+            const contentHeight = Math.max(bounds.height || canvasHeight, 100); // Minimum 100px
 
-            // Fit to WIDTH: scale so the floor plan spans the full container width,
-            // edge to edge with no side gutters. Deliberately width-only rather than
-            // Math.min(scaleX, scaleY): fitting both axes made tall/portrait plans
-            // shrink to a sliver on narrow phones just to squeeze their height in.
-            // When the scaled height exceeds the container (portrait plan on a short
-            // screen) the remainder sits below the fold and is reached by dragging --
-            // panning is enabled and no `contain` option restricts it.
-            let fitScale = containerWidth / contentWidth;
+            // Fit the WHOLE plan on screen -- the smaller of the two axes wins, so
+            // nothing is cropped and no scrolling/panning is needed to see any part
+            // of it regardless of how its aspect ratio compares to the screen's.
+            const scaleX = containerWidth / contentWidth;
+            const scaleY = containerHeight / contentHeight;
+            let fitScale = Math.min(scaleX, scaleY);
 
             // Clamp scale to minScale and maxScale limits
             const minScale = 0.01;
             const maxScale = 5;
             fitScale = Math.max(minScale, Math.min(maxScale, fitScale));
 
-            // Anchor to the top-left of the container: the content's own top-left
-            // corner (bounds.minX/minY -- normally 0,0, but using the measured bounds
-            // rather than a literal 0 keeps this correct even if a booth sits at a
-            // negative coordinate) lands at screen position (0,0), flush against the
-            // header. With width-based scaling above, any leftover space is vertical
-            // only and falls entirely below the plan.
+            // Horizontal: center. Vertical: stick to the top, flush against the header.
             // Panzoom's translate is applied INSIDE the scale (`scale(s) translate(t)`),
-            // so with transform-origin '0 0' the rendered offset is scale * translate.
-            // The translate therefore has to be in unscaled content units -- multiplying
-            // by fitScale here would double-apply it. (Verified in-browser: translate
-            // (100,50) at scale 0.4 renders at exactly (40,20).) Normally minX/minY are
-            // 0; using the measured bounds keeps a booth at a negative coordinate visible.
-            const panX = -bounds.minX;
-            const panY = -bounds.minY;
+            // so with transform-origin '0 0' the rendered offset is scale * translate
+            // (verified in-browser: translate(100,50) at scale 0.4 renders at exactly
+            // (40,20)) -- the translate has to be in unscaled content units, not
+            // multiplied by fitScale, or the offset doubles up.
+            const desiredLeftPx = (containerWidth - contentWidth * fitScale) / 2; // >= 0, since fitScale <= scaleX
+            const panX = (desiredLeftPx / fitScale) - bounds.minX;
+            const panY = -bounds.minY; // top-anchored: 0px from the header, not centered
 
             initPanzoom(fitScale, panX, panY);
         }
