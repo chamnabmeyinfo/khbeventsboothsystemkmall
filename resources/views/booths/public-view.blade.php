@@ -711,6 +711,18 @@
 
         .canvas-container {
             width: 100%;
+            /* Capped and centered as a box on very wide screens, instead of
+               stretching edge-to-edge -- e.g. on a 1920px viewport it was
+               spanning the full width with the (already-centered) floor plan
+               sitting inside it, which read as an oversized, unbounded canvas.
+               max-width + margin:auto is the standard way to cap+center a flex
+               item without fighting the column flex's default cross-axis
+               stretch: it still stretches to fill up to max-width, then centers
+               within whatever's left. Height sizing (flex: 1 1 0) is completely
+               unaffected -- max-width only constrains the cross axis (width) in
+               this column-direction flex layout. */
+            max-width: 1600px;
+            margin: 0 auto;
             /* Sits directly under the header and fills the remaining height exactly,
                driven by the body flex column above rather than a hard-coded header
                height. `flex: 1 1 0` + `min-height: 0` is the standard pairing that
