@@ -1895,27 +1895,60 @@
         let zoomLevel = 1;
         const canvas = document.getElementById('print');
         const container = document.getElementById('printContainer');
-        
-        // Initialize Panzoom with touch support
-        if (canvas && typeof Panzoom !== 'undefined') {
+        let panzoomWheelHandler = null;
+
+        // Create (or replace) the Panzoom instance at an exact scale + pan position.
+        // Passing startScale/startX/startY as constructor options is the reliable way
+        // to land on a precise transform with this library -- calling .zoom() then
+        // .pan()/.setTransform() on an existing instance does not apply consistently
+        // (setTransform isn't even an instance method on this version; it silently
+        // fell through to .pan(), which does not reliably honor absolute coordinates).
+        // Note: no `contain` option here. 'outside' (cover-style containment) actively
+        // fights the fit-to-CONTAIN math below, silently forcing a larger scale than
+        // requested and cropping the floor plan -- that mismatch was the root cause of
+        // "auto-fit" not actually fitting the image on many screens.
+        function initPanzoom(scale, panX, panY) {
+            if (panzoomInstance && panzoomInstance.destroy) {
+                try { panzoomInstance.destroy(); } catch (e) { /* already gone */ }
+            }
+            if (container && panzoomWheelHandler) {
+                container.removeEventListener('wheel', panzoomWheelHandler);
+            }
+            if (!canvas || typeof Panzoom === 'undefined') {
+                return;
+            }
             panzoomInstance = Panzoom(canvas, {
                 maxScale: 5,
                 minScale: 0.01,
-                contain: 'outside',
                 disablePan: false,
                 disableZoom: false,
-                // Enable touch gestures for mobile
-                touchAction: 'none',
+                touchAction: 'none', // required for touch-drag panning and pinch-zoom on mobile
+                startScale: scale,
+                startX: panX,
+                startY: panY,
             });
-            
-            // Enable pinch zoom on mobile
-            container.addEventListener('wheel', panzoomInstance.zoomWithWheel);
-            
-            // Update zoom level display
+            panzoomWheelHandler = panzoomInstance.zoomWithWheel;
+            container.addEventListener('wheel', panzoomWheelHandler);
+            zoomLevel = scale;
+            const zoomLevelEl = document.getElementById('zoomLevel');
+            if (zoomLevelEl) {
+                zoomLevelEl.textContent = Math.round(scale * 100) + '%';
+            }
+        }
+
+        // Initial instance at 1:1; the real auto-fit (see below) replaces this once
+        // the container has a real measured size.
+        initPanzoom(1, 0, 0);
+
+        if (canvas) {
+            // Update zoom level display on manual pinch/wheel/drag zoom
             canvas.addEventListener('panzoomzoom', function(e) {
                 if (e.detail && e.detail.scale) {
                     zoomLevel = e.detail.scale;
-                    document.getElementById('zoomLevel').textContent = Math.round(zoomLevel * 100) + '%';
+                    const zoomLevelEl = document.getElementById('zoomLevel');
+                    if (zoomLevelEl) {
+                        zoomLevelEl.textContent = Math.round(zoomLevel * 100) + '%';
+                    }
                 }
             });
         }
@@ -2594,106 +2627,66 @@
             };
         }
         
-        document.getElementById('zoomFit').addEventListener('click', function() {
-            if (panzoomInstance && canvas && container) {
-                const containerWidth = container.clientWidth;
-                const containerHeight = container.clientHeight;
-                
-                // Ensure we have valid dimensions
-                if (containerWidth <= 0 || containerHeight <= 0) {
-                    console.warn('Invalid container dimensions');
-                    return;
-                }
-                
-                // Calculate actual content bounds
-                const bounds = calculateContentBounds();
-                const contentWidth = Math.max(bounds.width || canvasWidth, 100); // Minimum 100px
-                const contentHeight = Math.max(bounds.height || canvasHeight, 100); // Minimum 100px
-                
-                // Add padding (5% on each side)
-                const padding = 0.05;
-                const availableWidth = containerWidth * (1 - padding * 2);
-                const availableHeight = containerHeight * (1 - padding * 2);
-                
-                // Calculate scale to fit content
-                const scaleX = availableWidth / contentWidth;
-                const scaleY = availableHeight / contentHeight;
-                let fitScale = Math.min(scaleX, scaleY);
-                
-                // Clamp scale to minScale and maxScale limits
-                const minScale = 0.01;
-                const maxScale = 5;
-                fitScale = Math.max(minScale, Math.min(maxScale, fitScale));
-                
-                // Calculate center position of content
-                const contentCenterX = bounds.minX + (contentWidth / 2);
-                const contentCenterY = bounds.minY + (contentHeight / 2);
-                
-                // Viewport center
-                const viewportCenterX = containerWidth / 2;
-                const viewportCenterY = containerHeight / 2;
-                
-                // Calculate pan to center the content
-                // panX = viewportCenterX - (contentCenterX * fitScale)
-                const panX = viewportCenterX - (contentCenterX * fitScale);
-                const panY = viewportCenterY - (contentCenterY * fitScale);
-                
-                // Apply zoom first, then pan
-                if (panzoomInstance.zoom) {
-                    panzoomInstance.zoom(fitScale, { animate: false });
-                }
-                
-                // Wait a bit for zoom to apply, then set pan position
-                setTimeout(function() {
-                    // Get current scale after zoom (might be clamped)
-                    const currentTransform = panzoomInstance.getTransform ? panzoomInstance.getTransform() : { scale: fitScale, x: 0, y: 0 };
-                    const currentScale = currentTransform.scale || fitScale;
-                    
-                    // Recalculate pan with actual scale
-                    const actualPanX = viewportCenterX - (contentCenterX * currentScale);
-                    const actualPanY = viewportCenterY - (contentCenterY * currentScale);
-                    
-                    // Apply transform with fallback methods
-                    if (panzoomInstance.setTransform) {
-                        panzoomInstance.setTransform({ 
-                            x: actualPanX, 
-                            y: actualPanY, 
-                            scale: currentScale 
-                        });
-                    } else if (panzoomInstance.pan) {
-                        panzoomInstance.pan(actualPanX, actualPanY, { animate: false });
-                    } else if (panzoomInstance.moveTo) {
-                        panzoomInstance.moveTo(contentCenterX, contentCenterY, { animate: false });
-                    }
-                    
-                    // Update zoom level display
-                    zoomLevel = currentScale;
-                    document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
-                }, 100);
+        // Compute the scale + pan that shows the whole floor plan (all booths included)
+        // inside the current container, with 5% breathing room, and apply it in one
+        // atomic step via initPanzoom(). Used by the toolbar button, the on-load
+        // auto-fit, and the resize handler below -- one code path, one behavior.
+        function applyZoomFit() {
+            if (!canvas || !container) {
+                return;
             }
-        });
-        
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
+
+            if (containerWidth <= 0 || containerHeight <= 0) {
+                console.warn('Invalid container dimensions');
+                return;
+            }
+
+            const bounds = calculateContentBounds();
+            const contentWidth = Math.max(bounds.width || canvasWidth, 100); // Minimum 100px
+            const contentHeight = Math.max(bounds.height || canvasHeight, 100); // Minimum 100px
+
+            // Add padding (5% on each side)
+            const padding = 0.05;
+            const availableWidth = containerWidth * (1 - padding * 2);
+            const availableHeight = containerHeight * (1 - padding * 2);
+
+            // Calculate scale to fit content -- the smaller of the two axes wins, so
+            // the whole image is always visible regardless of its aspect ratio vs the
+            // device's aspect ratio (this is what makes it work across all screens).
+            const scaleX = availableWidth / contentWidth;
+            const scaleY = availableHeight / contentHeight;
+            let fitScale = Math.min(scaleX, scaleY);
+
+            // Clamp scale to minScale and maxScale limits
+            const minScale = 0.01;
+            const maxScale = 5;
+            fitScale = Math.max(minScale, Math.min(maxScale, fitScale));
+
+            // Calculate center position of content, then the pan that centers it in the viewport
+            const contentCenterX = bounds.minX + (contentWidth / 2);
+            const contentCenterY = bounds.minY + (contentHeight / 2);
+            const viewportCenterX = containerWidth / 2;
+            const viewportCenterY = containerHeight / 2;
+            const panX = viewportCenterX - (contentCenterX * fitScale);
+            const panY = viewportCenterY - (contentCenterY * fitScale);
+
+            initPanzoom(fitScale, panX, panY);
+        }
+
+        document.getElementById('zoomFit').addEventListener('click', applyZoomFit);
+
         // Auto-fit on load - wait for all booths to be rendered
         window.addEventListener('load', function() {
-            setTimeout(function() {
-                // Ensure all booths are rendered before fitting
-                const zoomFitBtn = document.getElementById('zoomFit');
-                if (zoomFitBtn) {
-                    zoomFitBtn.click();
-                }
-            }, 500);
+            setTimeout(applyZoomFit, 500);
         });
-        
-        // Fit on resize with debouncing
+
+        // Fit on resize with debouncing (covers orientation change on mobile too)
         let resizeTimeout;
         window.addEventListener('resize', function() {
             clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(function() {
-                const zoomFitBtn = document.getElementById('zoomFit');
-                if (zoomFitBtn) {
-                    zoomFitBtn.click();
-                }
-            }, 300);
+            resizeTimeout = setTimeout(applyZoomFit, 300);
         });
         
         // Show booth detail modal
