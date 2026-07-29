@@ -5854,6 +5854,24 @@ const FloorPlanDesigner = {
     },
 
     /**
+     * True if the booth has any rotation applied (beyond floating-point noise).
+     * Rotated booths are intentionally excluded from all grid/peer snapping —
+     * their position is left exactly where the user placed it.
+     */
+    _isBoothRotated: function(el) {
+        if (!el) {
+            return false;
+        }
+        let r = parseFloat(el.getAttribute('data-rotation'));
+        if (isNaN(r)) {
+            const m = (el.style.transform || '').match(/rotate\(([^)]+)\)/);
+            r = m ? (parseFloat(m[1]) || 0) : 0;
+        }
+        r = r % 360;
+        return Math.abs(r) > 0.01;
+    },
+
+    /**
      * After magnetic alignment, pack selection into touching strips: same-row neighbors share a vertical edge (no gap);
      * optionally same-column neighbors share a horizontal edge (vertical stack). Bands use center Y / center X so separate rows/columns usually stay separate.
      */
@@ -6019,6 +6037,9 @@ const FloorPlanDesigner = {
         }
 
         function applyGridRound(el, l, t) {
+            if (self._isBoothRotated(el)) {
+                return; // Rotated booths are excluded from grid/smart snapping
+            }
             if (self.snapEnabled && self.gridSize > 0) {
                 l = Math.round(l / self.gridSize) * self.gridSize;
                 t = Math.round(t / self.gridSize) * self.gridSize;
@@ -6187,6 +6208,9 @@ const FloorPlanDesigner = {
         const canvas = document.getElementById('print');
         if (!canvas || !element) {
             return;
+        }
+        if (self._isBoothRotated(element)) {
+            return; // Rotated booths keep their exact dropped position
         }
         const T = typeof self.smartSnapThreshold === 'number' ? self.smartSnapThreshold : 8;
         const others = Array.from(canvas.querySelectorAll('.dropped-booth')).filter(function(el) {
@@ -8236,18 +8260,18 @@ const FloorPlanDesigner = {
                     newX = Math.max(0, Math.min(newX, canvasWidth - elementWidth));
                     newY = Math.max(0, Math.min(newY, canvasHeight - elementHeight));
                     
-                    // Snap to grid when dragging (if snap is enabled)
-                    if (self.snapEnabled) {
+                    // Snap to grid when dragging (if snap is enabled; rotated booths are never snapped)
+                    if (self.snapEnabled && !self._isBoothRotated(boothElement)) {
                         newX = Math.round(newX / self.gridSize) * self.gridSize;
                         newY = Math.round(newY / self.gridSize) * self.gridSize;
                     }
-                    
+
                     // Apply new position smoothly
                     boothElement.style.left = newX + 'px';
                     boothElement.style.top = newY + 'px';
                     boothElement.setAttribute('data-x', newX);
                     boothElement.setAttribute('data-y', newY);
-                    
+
                     // Preserve rotation during drag (combine with scale)
                     const rotation = boothData.rotation || parseFloat(boothElement.getAttribute('data-rotation')) || 0;
                     if (rotation !== 0) {
@@ -8292,8 +8316,8 @@ const FloorPlanDesigner = {
             newX = Math.max(0, Math.min(newX, canvasWidth - elementWidth));
             newY = Math.max(0, Math.min(newY, canvasHeight - elementHeight));
             
-                // Snap to grid when dragging (if snap is enabled)
-                if (self.snapEnabled) {
+                // Snap to grid when dragging (if snap is enabled; rotated booths are never snapped)
+                if (self.snapEnabled && !self._isBoothRotated(element)) {
             newX = Math.round(newX / self.gridSize) * self.gridSize;
             newY = Math.round(newY / self.gridSize) * self.gridSize;
                 }
@@ -8365,12 +8389,12 @@ const FloorPlanDesigner = {
                     const currentY = parseFloat(boothElement.style.top) || 0;
                     let snappedX = currentX;
                     let snappedY = currentY;
-                    
-                    if (self.snapEnabled) {
+
+                    if (self.snapEnabled && !self._isBoothRotated(boothElement)) {
                         snappedX = Math.round(currentX / self.gridSize) * self.gridSize;
                         snappedY = Math.round(currentY / self.gridSize) * self.gridSize;
                     }
-                    
+
                     boothElement.style.left = snappedX + 'px';
                     boothElement.style.top = snappedY + 'px';
                     boothElement.setAttribute('data-x', snappedX);
@@ -8397,12 +8421,12 @@ const FloorPlanDesigner = {
             const currentY = parseFloat(element.style.top) || 0;
             let snappedX = currentX;
             let snappedY = currentY;
-            
-            if (self.snapEnabled) {
+
+            if (self.snapEnabled && !self._isBoothRotated(element)) {
                 snappedX = Math.round(currentX / self.gridSize) * self.gridSize;
                 snappedY = Math.round(currentY / self.gridSize) * self.gridSize;
             }
-            
+
             element.style.left = snappedX + 'px';
             element.style.top = snappedY + 'px';
             
@@ -9411,8 +9435,8 @@ const FloorPlanDesigner = {
         switch(property) {
                 case 'x': {
                     let finalX = numericValue;
-                    // Snap to grid (if snap is enabled)
-                    if (self.snapEnabled) {
+                    // Snap to grid (if snap is enabled; rotated booths are never snapped)
+                    if (self.snapEnabled && !self._isBoothRotated(element)) {
                         finalX = Math.round(numericValue / self.gridSize) * self.gridSize;
                     }
                     element.style.left = finalX + 'px';
@@ -9421,8 +9445,8 @@ const FloorPlanDesigner = {
                 }
                 case 'y': {
                     let finalY = numericValue;
-                    // Snap to grid (if snap is enabled)
-                    if (self.snapEnabled) {
+                    // Snap to grid (if snap is enabled; rotated booths are never snapped)
+                    if (self.snapEnabled && !self._isBoothRotated(element)) {
                         finalY = Math.round(numericValue / self.gridSize) * self.gridSize;
                     }
                     element.style.top = finalY + 'px';
@@ -9640,9 +9664,10 @@ const FloorPlanDesigner = {
         
         content.innerHTML = propHtml;
         
-        // Helper function to apply grid snapping to position values (only if snap is enabled)
+        // Helper function to apply grid snapping to position values (only if snap is enabled
+        // and the booth has no rotation applied)
         const snapToGrid = function(value) {
-            if (self.snapEnabled) {
+            if (self.snapEnabled && !self._isBoothRotated(element)) {
             return Math.round(value / self.gridSize) * self.gridSize;
             }
             return value;
@@ -9974,8 +9999,8 @@ const FloorPlanDesigner = {
                 newTop = startTop + deltaY;
             }
             
-            // Snap to grid (if snap is enabled)
-            if (self.snapEnabled) {
+            // Snap to grid (if snap is enabled; rotated booths are never snapped)
+            if (self.snapEnabled && !self._isBoothRotated(element)) {
             newWidth = Math.round(newWidth / self.gridSize) * self.gridSize;
             newHeight = Math.round(newHeight / self.gridSize) * self.gridSize;
             newLeft = Math.round(newLeft / self.gridSize) * self.gridSize;
