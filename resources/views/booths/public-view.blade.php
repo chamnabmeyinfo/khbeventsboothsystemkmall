@@ -567,6 +567,15 @@
         .canvas-container {
             width: 100%;
             height: calc(100vh - 48px);
+            /* 100vh on mobile Safari/Chrome measures the viewport with the address
+               bar collapsed, which overestimates the space actually visible when
+               the page first loads (bar still showing). Since #printContainer's
+               clientHeight directly drives the auto-fit scale calculation, that
+               overestimate meant the fit could size the floor plan for more height
+               than was really on-screen, pushing its bottom edge out of view until
+               the bar collapsed. dvh tracks the real, current viewport instead;
+               unsupported browsers keep the vh fallback above. */
+            height: calc(100dvh - 48px);
             overflow: hidden;
             position: relative;
             background: #e9ecef;
@@ -781,6 +790,35 @@
             .dropped-booth:active {
                 transform: scale(1.05);
                 box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            }
+
+            /* Icon-only buttons were sized for mouse precision (22-28px) -- too
+               small to reliably tap. Bump to the ~44px minimum touch target size
+               (Apple HIG / Material Design) on any device with a coarse pointer,
+               regardless of viewport width, so this also covers tablets. Uses
+               pointer:coarse rather than a width breakpoint so it doesn't apply to
+               a narrow desktop window, and doesn't miss a wide touch tablet. */
+            .zoom-btn-simple {
+                width: 44px;
+                height: 44px;
+                font-size: 1rem;
+            }
+
+            .zoom-controls-simple {
+                gap: 8px;
+                padding: 6px 10px;
+            }
+
+            .help-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 1.1rem;
+            }
+
+            .welcome-close {
+                width: 44px;
+                height: 44px;
+                font-size: 1.4rem;
             }
         }
         
@@ -1098,6 +1136,7 @@
         @media (max-width: 576px) {
             .public-booking-modal { padding: 8px; align-items: flex-start; padding-top: 24px; padding-bottom: 24px; }
             .public-booking-modal .modal-content-inner { height: calc(100vh - 48px); max-height: calc(100vh - 48px); }
+            .public-booking-modal .modal-content-inner { height: calc(100dvh - 48px); max-height: calc(100dvh - 48px); }
             .public-booking-modal .modal-body-inner { padding: 16px; }
             .public-booking-modal .bf-form-row .bf-field { min-width: 100%; }
             .public-booking-modal .bf-section-title-row { flex-direction: column; align-items: flex-start; }
