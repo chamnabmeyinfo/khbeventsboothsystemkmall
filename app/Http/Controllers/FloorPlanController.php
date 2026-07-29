@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\Rule;
 
 class FloorPlanController extends Controller
 {
@@ -530,6 +531,8 @@ class FloorPlanController extends Controller
             'canvas_width' => 'nullable|integer|min:100|max:5000',
             'canvas_height' => 'nullable|integer|min:100|max:5000',
             'is_active' => 'nullable',
+            'public_view_info_fields' => 'nullable|array',
+            'public_view_info_fields.*' => ['string', Rule::in(array_keys(FloorPlan::PUBLIC_VIEW_INFO_FIELDS))],
         ];
 
         try {
@@ -573,6 +576,16 @@ class FloorPlanController extends Controller
 
         // Normalize is_active from select value
         $validated['is_active'] = (int) $request->input('is_active', 0) === 1;
+
+        // Checkbox arrays that are fully unchecked don't appear in the request
+        // at all, so $validated['public_view_info_fields'] would simply be
+        // absent -- indistinguishable from "this field wasn't on the form".
+        // The edit form includes a hidden public_view_info_fields_submitted
+        // sentinel so "admin unchecked everything" can be saved as an
+        // explicit empty array instead of silently leaving the old value.
+        if ($request->has('public_view_info_fields_submitted')) {
+            $validated['public_view_info_fields'] = $request->input('public_view_info_fields', []);
+        }
 
         // --- 4. Handle floor plan image upload ---
         if ($request->hasFile('floor_image')) {

@@ -1874,8 +1874,41 @@ class BoothController extends Controller
         $publicViewButtonColorRgb = $pvBtnTheme['rgb_comma'];
         $publicViewButtonColorDark = $pvBtnTheme['dark_hex'];
 
+        // Info panel on the public view: only the fields the admin enabled
+        // (Edit Floor Plan -> Public View Display Settings) AND that actually
+        // have a value on this floor plan. Built here, not in the blade view,
+        // so date/time formatting and the map-embed decision live in one
+        // place. google_map_location can be a raw <iframe> embed pasted from
+        // Google Maps -- rendered via {!! !!} in the view, so it must NOT be
+        // htmlspecialchars-escaped here; it's an admin-only input field, not
+        // user-submitted, matching how it's already used elsewhere.
+        $floorPlanInfoFields = [];
+        foreach ($floorPlan->publicViewInfoFields() as $fieldKey) {
+            $value = $floorPlan->{$fieldKey} ?? null;
+            if ($value === null || $value === '') {
+                continue;
+            }
+            $label = \App\Models\FloorPlan::PUBLIC_VIEW_INFO_FIELDS[$fieldKey] ?? $fieldKey;
+            if (in_array($fieldKey, ['event_start_date', 'event_end_date'], true)) {
+                $value = $value instanceof \Carbon\Carbon ? $value->format('F j, Y') : $value;
+            } elseif (in_array($fieldKey, ['event_start_time', 'event_end_time'], true)) {
+                try {
+                    $value = \Carbon\Carbon::createFromFormat('H:i:s', strlen($value) === 5 ? $value.':00' : $value)->format('g:i A');
+                } catch (\Throwable $e) {
+                    // Leave as stored if it doesn't parse as a time
+                }
+            }
+            $floorPlanInfoFields[] = [
+                'key' => $fieldKey,
+                'label' => $label,
+                'value' => $value,
+                'isMapEmbed' => $fieldKey === 'google_map_location',
+            ];
+        }
+
         return view('booths.public-view', compact(
             'floorPlan',
+            'floorPlanInfoFields',
             'booths',
             'boothsForJS',
             'canvasWidth',

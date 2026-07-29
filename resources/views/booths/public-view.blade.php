@@ -498,6 +498,19 @@
         .help-section:last-child {
             margin-bottom: 0;
         }
+
+        /* Google Maps embed codes hardcode width/height on the <iframe> itself;
+           the wrapper forces it responsive so it doesn't overflow the modal on
+           narrow screens (this is the same class of fix as the touch-target and
+           dvh work earlier -- admin-pasted embed HTML predates any mobile
+           consideration). */
+        .floor-plan-info-map iframe {
+            width: 100% !important;
+            max-width: 100%;
+            border: 0;
+            border-radius: 8px;
+            min-height: 250px;
+        }
         
         .help-section h4 {
             color: var(--pv-btn-primary);
@@ -1329,6 +1342,12 @@
             <button type="button" class="help-btn" id="copyPublicLinkBtn" title="Copy link to this floor plan" onclick="copyPublicViewLink()">
                 <i class="fas fa-link"></i>
             </button>
+            @if(!empty($floorPlanInfoFields ?? []))
+            <!-- Floor Plan Info (fields chosen in Edit Floor Plan -> Public View Display Settings) -->
+            <button type="button" class="help-btn" onclick="showFloorPlanInfo()" title="Floor plan information">
+                <i class="fas fa-info-circle"></i>
+            </button>
+            @endif
             <!-- Simple Zoom Controls -->
             <div class="zoom-controls-simple">
                 <div class="zoom-label">Zoom:</div>
@@ -1454,7 +1473,36 @@
         </div>
     </div>
     @endif
-    
+
+    @if(!empty($floorPlanInfoFields ?? []))
+    <!-- Floor Plan Info Modal: fields chosen in Edit Floor Plan -> Public View Display Settings -->
+    <div class="help-modal" id="floorPlanInfoModal" onclick="closeFloorPlanInfo(event)">
+        <div class="help-modal-content" onclick="event.stopPropagation()">
+            <div class="help-modal-header">
+                <h3><i class="fas fa-info-circle mr-2"></i>{{ $floorPlan->name }}</h3>
+                <button class="help-modal-close" onclick="closeFloorPlanInfo()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="help-modal-body">
+                @foreach($floorPlanInfoFields as $field)
+                    <div class="help-section">
+                        <h4>{{ $field['label'] }}</h4>
+                        @if($field['isMapEmbed'])
+                            {{-- Admin-entered iframe embed code (Edit Floor Plan -> Google Map Location),
+                                 not user-submitted input -- intentionally unescaped so the pasted embed
+                                 actually renders as a map. --}}
+                            <div class="floor-plan-info-map">{!! $field['value'] !!}</div>
+                        @else
+                            <p style="white-space: pre-line;">{{ $field['value'] }}</p>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Welcome Message -->
     <div class="welcome-message" id="welcomeMessage">
         <i class="fas fa-info-circle text-primary"></i>
@@ -2737,6 +2785,18 @@
         function closeHelp(event) {
             if (!event || event.target.id === 'helpModal') {
                 document.getElementById('helpModal').classList.remove('active');
+            }
+        }
+
+        function showFloorPlanInfo() {
+            var el = document.getElementById('floorPlanInfoModal');
+            if (el) el.classList.add('active');
+        }
+
+        function closeFloorPlanInfo(event) {
+            var el = document.getElementById('floorPlanInfoModal');
+            if (el && (!event || event.target.id === 'floorPlanInfoModal')) {
+                el.classList.remove('active');
             }
         }
         

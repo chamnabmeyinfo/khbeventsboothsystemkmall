@@ -369,6 +369,43 @@
                     </div>
                 </div>
 
+                <hr class="mt-4 mb-3">
+                <h5 class="mb-1"><i class="fas fa-eye mr-2"></i>Public View Display Settings</h5>
+                <p class="text-muted small mb-3">
+                    Choose which of the fields above are shown to the public on the front-end floor plan
+                    view (<code>/floor-plans/{{ $floorPlan->id }}/public</code>). The floor plan name and
+                    project name are always shown in the header; everything below is optional and appears
+                    in an "Info" panel visitors can open. Unchecking a field here only hides it from the
+                    public -- it stays saved and editable above.
+                </p>
+                {{-- Sentinel: lets the controller tell "no checkboxes were on this form" apart from
+                     "the admin unchecked every box" (browsers omit a checkbox entirely from the
+                     request when unchecked, so an empty submission would otherwise be ambiguous). --}}
+                <input type="hidden" name="public_view_info_fields_submitted" value="1">
+                @php
+                    $selectedInfoFields = old('public_view_info_fields', $floorPlan->publicViewInfoFields());
+                @endphp
+                <div class="row mb-4">
+                    @foreach(\App\Models\FloorPlan::PUBLIC_VIEW_INFO_FIELDS as $fieldKey => $fieldLabel)
+                        <div class="col-md-4 col-sm-6">
+                            <div class="form-check mb-2">
+                                <input type="checkbox"
+                                       class="form-check-input"
+                                       id="public_view_info_{{ $fieldKey }}"
+                                       name="public_view_info_fields[]"
+                                       value="{{ $fieldKey }}"
+                                       {{ in_array($fieldKey, $selectedInfoFields) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="public_view_info_{{ $fieldKey }}">
+                                    {{ $fieldLabel }}
+                                </label>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                @error('public_view_info_fields')
+                    <div class="alert alert-danger py-2">{{ $message }}</div>
+                @enderror
+
                 <div class="alert alert-success">
                     <i class="fas fa-check-circle mr-1"></i>
                     <strong>Automatic Canvas Loading:</strong> After uploading and saving, the canvas will automatically load this image when you click "View Booths" for this floor plan.
