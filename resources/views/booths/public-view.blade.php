@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
     <script src="{{ asset('vendor/jquery/jquery-3.6.0.min.js') }}"></script>
     <script src="{{ asset('vendor/panzoom/panzoom.min.js') }}"></script>
+    <script src="{{ asset('vendor/html2canvas/html2canvas.min.js') }}"></script>
     <script>
         window.publicViewButtonColor = @json($publicViewButtonColor ?? '#28a745');
     </script>
@@ -1462,6 +1463,12 @@
             <button type="button" class="help-btn" id="copyPublicLinkBtn" title="Copy link to this floor plan" onclick="copyPublicViewLink()">
                 <i class="fas fa-link"></i>
             </button>
+            @if($floorImage && $floorImageExists)
+            <!-- Download the floor plan (with booths) as a PNG -->
+            <button type="button" class="help-btn" id="downloadFloorPlanBtn" title="Save floor plan image" onclick="downloadFloorPlanImage()">
+                <i class="fas fa-download"></i>
+            </button>
+            @endif
             <!-- Simple Zoom Controls -->
             <div class="zoom-controls-simple">
                 <div class="zoom-label">Zoom:</div>
@@ -2977,6 +2984,85 @@
             }
         })();
         
+        // Save the floor plan (background image + booths, as currently colored/
+        // labeled) as a downloadable PNG. Captures the FULL floor plan at its
+        // natural, unscaled size -- not whatever crop/zoom level the visitor
+        // currently has on screen -- by temporarily resetting #print's transform
+        // to none for the capture, then restoring it. Only ever touches
+        // print.style.transform directly, never panzoomInstance's own state, so
+        // there's nothing to re-sync afterward.
+        //
+        // scale: 1 here (not the 2x the admin canvas designer's printFloorplan()
+        // uses for print quality) -- this runs on random visitor devices,
+        // including phones, on floor plans that can be 4000-7000px wide; 2x
+        // would produce a multi-hundred-megapixel canvas that risks crashing a
+        // mobile browser tab for a "save a copy for reference" feature that
+        // doesn't need poster resolution.
+        function downloadFloorPlanImage() {
+            if (typeof html2canvas === 'undefined') {
+                alert('Image capture is not available right now. Please refresh the page and try again.');
+                return;
+            }
+            if (!canvas) {
+                return;
+            }
+
+            var btn = document.getElementById('downloadFloorPlanBtn');
+            var btnIcon = btn ? btn.querySelector('i') : null;
+            var originalIconClass = btnIcon ? btnIcon.className : '';
+            if (btnIcon) {
+                btnIcon.className = 'fas fa-spinner fa-spin';
+            }
+            if (btn) {
+                btn.disabled = true;
+            }
+
+            var originalTransform = canvas.style.transform;
+            canvas.style.transform = 'none';
+
+            function restoreButton() {
+                canvas.style.transform = originalTransform;
+                if (btnIcon) {
+                    btnIcon.className = originalIconClass;
+                }
+                if (btn) {
+                    btn.disabled = false;
+                }
+            }
+
+            html2canvas(canvas, {
+                backgroundColor: '#ffffff',
+                scale: 1,
+                logging: false,
+                useCORS: true,
+                allowTaint: true,
+                width: canvasWidth,
+                height: canvasHeight,
+                windowWidth: canvasWidth,
+                windowHeight: canvasHeight,
+                scrollX: 0,
+                scrollY: 0,
+                x: 0,
+                y: 0
+            }).then(function(renderedCanvas) {
+                restoreButton();
+
+                var rawName = @json($floorPlan->name);
+                var safeName = (rawName || 'floor-plan').toString().replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'floor-plan';
+
+                var link = document.createElement('a');
+                link.download = safeName + '-floor-plan.png';
+                link.href = renderedCanvas.toDataURL('image/png');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }).catch(function(err) {
+                restoreButton();
+                console.error('Floor plan image capture failed:', err);
+                alert('Sorry, could not generate the floor plan image. Please try again.');
+            });
+        }
+
         function copyPublicViewLink() {
             var btn = document.getElementById('copyPublicLinkBtn');
             var url = window.location.href;
