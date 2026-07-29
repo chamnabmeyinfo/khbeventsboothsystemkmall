@@ -2014,18 +2014,34 @@
         // fights the fit-to-CONTAIN math below, silently forcing a larger scale than
         // requested and cropping the floor plan -- that mismatch was the root cause of
         // "auto-fit" not actually fitting the image on many screens.
-        // Custom two-finger pinch-to-zoom, replacing Panzoom's own (disableZoom:
-        // true above) since its built-in pinch handling produces garbage pan values
-        // under our origin:'0 0'. Tracks active touch pointers itself; on a second
-        // finger touching down, computes the pinch midpoint and starting separation,
-        // then on move recomputes scale from the separation ratio and pan from the
-        // same verified formula as handleCenterZoomWheel -- but anchored to the
-        // pinch midpoint (which the user's fingers define and can move) rather than
-        // a fixed viewport center. Single-finger contact is left entirely alone so
-        // Panzoom's own (unaffected, translation-only) drag-to-pan keeps handling it.
-        const activePinchPointers = new Map();
+        // Custom touch handling -- BOTH single-finger drag-pan AND two-finger
+        // pinch-zoom -- entirely replacing Panzoom's own, which is left with
+        // disablePan/disableZoom still nominally false in its options but is
+        // fully preempted below for any touch pointer.
+        //
+        // History: first attempt only intercepted the SECOND finger (leaving
+        // single-finger drag to Panzoom) and called stopImmediatePropagation on
+        // a #print-level listener. That didn't work -- Panzoom's actual
+        // interfering logic turned out to be bound on DOCUMENT in the CAPTURE
+        // phase, which runs document-outward-in, entirely before a target-phase
+        // listener gets a turn; nothing done at the target phase can preempt it.
+        // Second attempt moved to a document-capture listener, registered once,
+        // early, so it runs before Panzoom's own (which gets rebound fresh, and
+        // therefore later, every time applyZoomFit() recreates the instance) --
+        // but only intercepting the 2nd finger still let Panzoom process the
+        // FIRST finger's pointerdown untouched, and it turned out Panzoom's
+        // pinch handling, even with disableZoom:true, still runs on every move
+        // and re-asserts its OWN (frozen, since zoom is disabled) scale value
+        // after ours -- verified directly: our handler's requested scale
+        // (0.214) was being applied, then silently reverted to the pre-gesture
+        // value (0.107) by the time of the next read, while pan (unaffected by
+        // disableZoom) was NOT reverted. Rather than keep reverse-engineering
+        // this library's internal state machine, touch is now claimed
+        // completely -- Panzoom never sees a single touch pointer event.
+        const activeTouchPointers = new Map();
         let pinchStartDistance = null;
         let pinchStartScale = null;
+        let dragStartPan = null; // pan at the moment single-finger drag began
 
         function pinchDistance(pts) {
             return Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
@@ -2033,87 +2049,92 @@
         function pinchMidpoint(pts) {
             return { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 };
         }
-
-        function pinchTargetIsOurs(e) {
+        function touchTargetIsOurs(e) {
             return !!(container && e.target && (container === e.target || container.contains(e.target)));
         }
 
-        function handlePinchPointerDown(e) {
+        function handleTouchPointerDown(e) {
             if (e.pointerType !== 'touch' || !panzoomInstance) {
                 return;
             }
-            // Only take over pointers that started on the floor plan itself, so
-            // this doesn't hijack an unrelated two-finger gesture happening
-            // elsewhere on the page (e.g. a modal).
-            if (activePinchPointers.size === 0 && !pinchTargetIsOurs(e)) {
-                return;
+            if (activeTouchPointers.size === 0 && !touchTargetIsOurs(e)) {
+                return; // don't hijack a gesture starting elsewhere on the page
             }
-            activePinchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-            if (activePinchPointers.size === 2) {
-                const pts = Array.from(activePinchPointers.values());
-                pinchStartDistance = pinchDistance(pts);
-                pinchStartScale = panzoomInstance.getScale();
-                e.preventDefault();
-                // stopImmediatePropagation here does NOT stop Panzoom's actual
-                // interfering handler -- that one turned out to be bound on
-                // DOCUMENT in the CAPTURE phase (confirmed with a diagnostic
-                // listener: it still fired even when our target-phase handler on
-                // #print called stopImmediatePropagation). Capture runs
-                // document -> ... -> target, i.e. BEFORE our listener even gets a
-                // turn, so nothing done at the target phase can preempt it. That's
-                // why setupPinchZoom() below binds THESE handlers on document
-                // with capture:true too, registered once, early -- so they run
-                // before Panzoom's own document-capture listener (which gets
-                // rebound fresh, and therefore LATER, every time applyZoomFit()
-                // recreates the Panzoom instance). This call still matters for
-                // blocking Panzoom's element-level bubble-phase listeners.
-                e.stopImmediatePropagation();
-            }
-        }
-
-        function handlePinchPointerMove(e) {
-            if (!activePinchPointers.has(e.pointerId)) {
-                return;
-            }
-            activePinchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-            if (activePinchPointers.size !== 2 || !pinchStartDistance || !panzoomInstance) {
-                return;
-            }
+            activeTouchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
             e.preventDefault();
             e.stopImmediatePropagation();
 
-            const pts = Array.from(activePinchPointers.values());
-            const dist = pinchDistance(pts);
-            const mid = pinchMidpoint(pts);
-            let newScale = pinchStartScale * (dist / pinchStartDistance);
-            newScale = Math.max(0.01, Math.min(5, newScale));
-
-            const rect = container.getBoundingClientRect();
-            const midRelX = mid.x - rect.left;
-            const midRelY = mid.y - rect.top;
-
-            const scale = panzoomInstance.getScale();
-            const pan = panzoomInstance.getPan();
-            const localX = midRelX / scale - pan.x;
-            const localY = midRelY / scale - pan.y;
-            const newPanX = midRelX / newScale - localX;
-            const newPanY = midRelY / newScale - localY;
-
-            panzoomInstance.zoom(newScale, { animate: false });
-            panzoomInstance.pan(newPanX, newPanY, { animate: false, relative: false });
-
-            zoomLevel = newScale;
-            const zoomLevelEl = document.getElementById('zoomLevel');
-            if (zoomLevelEl) {
-                zoomLevelEl.textContent = Math.round(newScale * 100) + '%';
+            if (activeTouchPointers.size === 1) {
+                dragStartPan = panzoomInstance.getPan();
+            } else if (activeTouchPointers.size === 2) {
+                const pts = Array.from(activeTouchPointers.values());
+                pinchStartDistance = pinchDistance(pts);
+                pinchStartScale = panzoomInstance.getScale();
             }
         }
 
-        function handlePinchPointerUp(e) {
-            activePinchPointers.delete(e.pointerId);
-            if (activePinchPointers.size < 2) {
+        function handleTouchPointerMove(e) {
+            if (!activeTouchPointers.has(e.pointerId) || !panzoomInstance) {
+                return;
+            }
+            const prevPos = activeTouchPointers.get(e.pointerId);
+            activeTouchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            e.preventDefault();
+            e.stopImmediatePropagation();
+
+            if (activeTouchPointers.size === 2 && pinchStartDistance) {
+                const pts = Array.from(activeTouchPointers.values());
+                const dist = pinchDistance(pts);
+                const mid = pinchMidpoint(pts);
+                let newScale = pinchStartScale * (dist / pinchStartDistance);
+                newScale = Math.max(0.01, Math.min(5, newScale));
+
+                const rect = container.getBoundingClientRect();
+                const midRelX = mid.x - rect.left;
+                const midRelY = mid.y - rect.top;
+
+                const scale = panzoomInstance.getScale();
+                const pan = panzoomInstance.getPan();
+                const localX = midRelX / scale - pan.x;
+                const localY = midRelY / scale - pan.y;
+                const newPanX = midRelX / newScale - localX;
+                const newPanY = midRelY / newScale - localY;
+
+                panzoomInstance.zoom(newScale, { animate: false });
+                panzoomInstance.pan(newPanX, newPanY, { animate: false, relative: false });
+
+                zoomLevel = newScale;
+                const zoomLevelEl = document.getElementById('zoomLevel');
+                if (zoomLevelEl) {
+                    zoomLevelEl.textContent = Math.round(newScale * 100) + '%';
+                }
+            } else if (activeTouchPointers.size === 1 && dragStartPan) {
+                // Pure translation: screen delta divided by scale (translate is in
+                // unscaled content units under our origin:'0 0' formula), no focal
+                // point involved -- this is why single-finger drag never needed
+                // the pinch-style origin-aware math in the first place.
+                const scale = panzoomInstance.getScale();
+                const dx = (e.clientX - prevPos.x) / scale;
+                const dy = (e.clientY - prevPos.y) / scale;
+                const current = panzoomInstance.getPan();
+                panzoomInstance.pan(current.x + dx, current.y + dy, { animate: false, relative: false });
+            }
+        }
+
+        function handleTouchPointerUp(e) {
+            activeTouchPointers.delete(e.pointerId);
+            if (activeTouchPointers.size < 2) {
                 pinchStartDistance = null;
                 pinchStartScale = null;
+            }
+            if (activeTouchPointers.size === 1) {
+                // Went from pinch back to one finger -- resume single-finger drag
+                // from here rather than jumping based on a stale reference point.
+                dragStartPan = panzoomInstance ? panzoomInstance.getPan() : null;
+                const remaining = Array.from(activeTouchPointers.entries())[0];
+                activeTouchPointers.set(remaining[0], remaining[1]);
+            } else if (activeTouchPointers.size === 0) {
+                dragStartPan = null;
             }
         }
 
@@ -2121,19 +2142,13 @@
             if (!canvas) {
                 return;
             }
-            // Bound on DOCUMENT with capture:true, not on canvas/#print. Panzoom's
-            // own interfering pointer handling is itself on document in the
-            // capture phase (confirmed empirically, see the comment in
-            // handlePinchPointerDown above) -- capture fires document-outward-in,
-            // so only a document-level capture listener registered BEFORE
-            // Panzoom's can run first and stopImmediatePropagation it away.
-            // Called once here, early; every later applyZoomFit() -> initPanzoom()
-            // recreate rebinds Panzoom's OWN listener fresh (i.e. later), so this
-            // stays ahead of it for the life of the page.
-            document.addEventListener('pointerdown', handlePinchPointerDown, true);
-            document.addEventListener('pointermove', handlePinchPointerMove, true);
-            document.addEventListener('pointerup', handlePinchPointerUp, true);
-            document.addEventListener('pointercancel', handlePinchPointerUp, true);
+            // Document + capture, registered once, early -- see the block comment
+            // above for why (Panzoom's own touch handling is itself document/
+            // capture, and capture order is registration order).
+            document.addEventListener('pointerdown', handleTouchPointerDown, true);
+            document.addEventListener('pointermove', handleTouchPointerMove, true);
+            document.addEventListener('pointerup', handleTouchPointerUp, true);
+            document.addEventListener('pointercancel', handleTouchPointerUp, true);
         }
 
         function initPanzoom(scale, panX, panY) {
