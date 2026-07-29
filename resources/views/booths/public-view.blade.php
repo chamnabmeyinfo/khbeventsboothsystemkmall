@@ -2165,18 +2165,20 @@
                 maxScale: 5,
                 minScale: 0.01,
                 disablePan: false,
-                // Panzoom's own built-in pinch-to-zoom is disabled here -- like
-                // zoomToPoint (see handleCenterZoomWheel above), its two-finger
-                // handling computes the pan assuming the default 50%/50%
-                // transform-origin. Verified in-browser with simulated PointerEvents
-                // under our origin:'0 0': a pinch from 40px to 160px finger
-                // separation landed pan at {x: 89004, y: 48713} -- the floor plan
-                // would fly completely off-screen on any real user's pinch gesture.
-                // setupPinchZoom() below replaces it with the same verified formula
-                // used for wheel-zoom. Single-finger drag-to-pan is unaffected --
-                // disablePan stays false and pure translation doesn't involve
-                // origin-dependent focal-point math the way zooming-to-a-point does.
-                disableZoom: true,
+                // MUST be false. disableZoom:true was tried first (see git history)
+                // to suppress Panzoom's own broken pinch handling, but verified on a
+                // clean page load (no prior test state) that it silently blocks ALL
+                // .zoom() calls -- including our own direct, programmatic ones from
+                // handleCenterZoomWheel and the pinch handler below, not just
+                // Panzoom's internal gesture recognition. That's why scale never
+                // moved in testing regardless of how the pinch math was written: it
+                // wasn't a math bug, it was this flag. It also silently broke the
+                // wheel-zoom fix from de8f621 the moment this was set to true.
+                // Panzoom's own touch gesture recognition is instead kept from ever
+                // running at all -- see setupPinchZoom()'s document/capture-phase
+                // interception below, which claims every touch pointer event before
+                // Panzoom's own listener gets a chance to see it.
+                disableZoom: false,
                 touchAction: 'none', // required for touch-drag panning and pinch-zoom on mobile
                 // Scale from the canvas's top-left corner, not its centre. Panzoom
                 // renders `scale(s) translate(t)`, and for HTML elements it defaults
