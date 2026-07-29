@@ -2044,7 +2044,17 @@
                 pinchStartDistance = pinchDistance(pts);
                 pinchStartScale = panzoomInstance.getScale();
                 e.preventDefault();
-                e.stopPropagation();
+                // stopIMMEDIATEPropagation, not stopPropagation: Panzoom's own
+                // pointer listener is bound to this same element and would
+                // otherwise still run right after this one (stopPropagation only
+                // blocks bubbling to OTHER elements, not further same-element
+                // listeners). Confirmed this was happening: a diagnostic listener
+                // added after ours still fired on every dispatch. With disableZoom
+                // still effectively contending for the same pointer stream,
+                // Panzoom's handler was corrupting the pan our math had just set --
+                // measured scale never changing at all across a 4-step pinch while
+                // pan drifted to -10000+, i.e. exactly a "last handler wins" fight.
+                e.stopImmediatePropagation();
             }
         }
 
@@ -2057,7 +2067,7 @@
                 return;
             }
             e.preventDefault();
-            e.stopPropagation();
+            e.stopImmediatePropagation();
 
             const pts = Array.from(activePinchPointers.values());
             const dist = pinchDistance(pts);
