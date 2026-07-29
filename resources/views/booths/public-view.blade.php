@@ -1973,6 +1973,17 @@
                 disablePan: false,
                 disableZoom: false,
                 touchAction: 'none', // required for touch-drag panning and pinch-zoom on mobile
+                // Scale from the canvas's top-left corner, not its centre. Panzoom
+                // renders `scale(s) translate(t)`, and for HTML elements it defaults
+                // transform-origin to '50% 50%' -- under which content point (0,0)
+                // lands at centre*(1-scale), NOT at the container's top-left. On a
+                // 3508x1982 plan at scale 0.41 that offset measured (1034, 584): the
+                // plan rendered pushed right and down even with pan at exactly (0,0),
+                // which is what made it look centred. With origin '0 0' the mapping
+                // is simply screen = scale * translate, so pan (0,0) really is the
+                // top-left corner. Must be set via this option, not CSS -- Panzoom
+                // writes transform-origin inline and would override a stylesheet rule.
+                origin: '0 0',
                 startScale: scale,
                 startX: panX,
                 startY: panY,
@@ -2716,8 +2727,14 @@
             // negative coordinate) lands at screen position (0,0), flush against the
             // header. With width-based scaling above, any leftover space is vertical
             // only and falls entirely below the plan.
-            const panX = -(bounds.minX * fitScale);
-            const panY = -(bounds.minY * fitScale);
+            // Panzoom's translate is applied INSIDE the scale (`scale(s) translate(t)`),
+            // so with transform-origin '0 0' the rendered offset is scale * translate.
+            // The translate therefore has to be in unscaled content units -- multiplying
+            // by fitScale here would double-apply it. (Verified in-browser: translate
+            // (100,50) at scale 0.4 renders at exactly (40,20).) Normally minX/minY are
+            // 0; using the measured bounds keeps a booth at a negative coordinate visible.
+            const panX = -bounds.minX;
+            const panY = -bounds.minY;
 
             initPanzoom(fitScale, panX, panY);
         }
