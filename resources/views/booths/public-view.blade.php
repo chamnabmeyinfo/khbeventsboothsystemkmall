@@ -2703,13 +2703,15 @@
             const maxScale = 5;
             fitScale = Math.max(minScale, Math.min(maxScale, fitScale));
 
-            // Calculate center position of content, then the pan that centers it in the viewport
-            const contentCenterX = bounds.minX + (contentWidth / 2);
-            const contentCenterY = bounds.minY + (contentHeight / 2);
-            const viewportCenterX = containerWidth / 2;
-            const viewportCenterY = containerHeight / 2;
-            const panX = viewportCenterX - (contentCenterX * fitScale);
-            const panY = viewportCenterY - (contentCenterY * fitScale);
+            // Anchor to the top-left of the container instead of centering: the
+            // content's own top-left corner (bounds.minX/minY -- normally 0,0, but
+            // using the measured bounds rather than a literal 0 keeps this correct
+            // even if a booth is positioned off the canvas at a negative coordinate)
+            // lands at screen position (0,0). Any slack from the 5% scale padding or
+            // an aspect-ratio mismatch between the image and the screen now falls to
+            // the right/bottom only, instead of being split evenly on all four sides.
+            const panX = -(bounds.minX * fitScale);
+            const panY = -(bounds.minY * fitScale);
 
             initPanzoom(fitScale, panX, panY);
         }
