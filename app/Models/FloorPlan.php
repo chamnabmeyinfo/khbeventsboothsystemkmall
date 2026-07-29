@@ -59,6 +59,8 @@ class FloorPlan extends Model
         'google_map_location',
         'feature_image',
         'proposal',
+        'proposal_attachment',
+        'proposal_attachment_name',
         'event_start_date',
         'event_end_date',
         'event_start_time',

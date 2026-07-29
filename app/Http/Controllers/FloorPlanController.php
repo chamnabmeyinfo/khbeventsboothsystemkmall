@@ -202,6 +202,7 @@ class FloorPlanController extends Controller
             'feature_image' => $featureImageRule,
             'google_map_location' => 'nullable|string',
             'proposal' => 'nullable|string',
+            'proposal_attachment' => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,jpg,jpeg,png|max:20480',
             'event_start_date' => 'nullable|date',
             'event_end_date' => 'nullable|date|after_or_equal:event_start_date',
             'event_start_time' => 'nullable|date_format:H:i',
@@ -298,6 +299,20 @@ class FloorPlanController extends Controller
             $validated['feature_image'] = 'images/floor-plans/features/'.$imageName;
         }
 
+        // Handle proposal attachment upload
+        if ($request->hasFile('proposal_attachment')) {
+            $attachment = $request->file('proposal_attachment');
+            $attachmentExtension = strtolower($attachment->getClientOriginalExtension());
+            $attachmentName = time().'_proposal_temp.'.$attachmentExtension; // Temporary name, will update after creation
+            $attachmentPath = public_path('images/floor-plans/proposals');
+            if (! file_exists($attachmentPath)) {
+                mkdir($attachmentPath, 0755, true);
+            }
+            $attachment->move($attachmentPath, $attachmentName);
+            $validated['proposal_attachment'] = 'images/floor-plans/proposals/'.$attachmentName;
+            $validated['proposal_attachment_name'] = $attachment->getClientOriginalName();
+        }
+
         // Get user ID safely - ensure it's always an integer, never username
         $userId = null;
         if (Auth::check()) {
@@ -352,6 +367,20 @@ class FloorPlanController extends Controller
             if (file_exists($oldPath)) {
                 rename($oldPath, $newPath);
                 $floorPlan->feature_image = 'images/floor-plans/features/'.$newImageName;
+                $floorPlan->save();
+            }
+        }
+
+        // Update proposal attachment name to include floor_plan_id for uniqueness
+        if ($floorPlan->proposal_attachment && strpos($floorPlan->proposal_attachment, '_proposal_temp') !== false) {
+            $oldPath = public_path($floorPlan->proposal_attachment);
+            $attachmentExtension = pathinfo($floorPlan->proposal_attachment, PATHINFO_EXTENSION);
+            $newAttachmentName = time().'_proposal_'.$floorPlan->id.'.'.$attachmentExtension;
+            $newPath = public_path('images/floor-plans/proposals/'.$newAttachmentName);
+
+            if (file_exists($oldPath)) {
+                rename($oldPath, $newPath);
+                $floorPlan->proposal_attachment = 'images/floor-plans/proposals/'.$newAttachmentName;
                 $floorPlan->save();
             }
         }
@@ -514,6 +543,8 @@ class FloorPlanController extends Controller
             'feature_image' => $featureImageRule,
             'google_map_location' => 'nullable|string',
             'proposal' => 'nullable|string',
+            'proposal_attachment' => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,jpg,jpeg,png|max:20480',
+            'remove_proposal_attachment' => 'nullable|boolean',
             'event_start_date' => 'nullable|date',
             'event_end_date' => 'nullable|date|after_or_equal:event_start_date',
             'event_start_time' => ['nullable', function ($attribute, $value, $fail) {
@@ -668,6 +699,32 @@ class FloorPlanController extends Controller
             }
         }
 
+        // --- 5b. Handle proposal attachment upload ---
+        if ($request->hasFile('proposal_attachment')) {
+            try {
+                $attachment = $request->file('proposal_attachment');
+                $attachmentName = time().'_proposal_'.$floorPlan->id.'.'.strtolower($attachment->getClientOriginalExtension());
+                $attachmentPath = public_path('images/floor-plans/proposals');
+
+                if (! file_exists($attachmentPath)) {
+                    @mkdir($attachmentPath, 0755, true);
+                }
+
+                $attachment->move($attachmentPath, $attachmentName);
+
+                if (file_exists($attachmentPath.DIRECTORY_SEPARATOR.$attachmentName)) {
+                    $validated['proposal_attachment'] = 'images/floor-plans/proposals/'.$attachmentName;
+                    $validated['proposal_attachment_name'] = $attachment->getClientOriginalName();
+                }
+            } catch (\Throwable $e) {
+                \Log::error('Proposal attachment upload failed: '.$e->getMessage());
+            }
+        } elseif ($request->boolean('remove_proposal_attachment')) {
+            // Admin checked "remove attachment" without uploading a replacement
+            $validated['proposal_attachment'] = null;
+            $validated['proposal_attachment_name'] = null;
+        }
+
         // --- 6. Preserve existing values for fields not being updated ---
         if (! isset($validated['floor_image'])) {
             unset($validated['floor_image']);
@@ -675,6 +732,10 @@ class FloorPlanController extends Controller
         if (! isset($validated['feature_image'])) {
             unset($validated['feature_image']);
         }
+        if (! array_key_exists('proposal_attachment', $validated)) {
+            unset($validated['proposal_attachment'], $validated['proposal_attachment_name']);
+        }
+        unset($validated['remove_proposal_attachment']);
         if (! $request->hasFile('floor_image')) {
             unset($validated['canvas_width'], $validated['canvas_height']);
         }
@@ -682,8 +743,10 @@ class FloorPlanController extends Controller
         // --- 7. Store old image paths before DB update ---
         $oldFloorImage = $floorPlan->floor_image;
         $oldFeatureImage = $floorPlan->feature_image;
+        $oldProposalAttachment = $floorPlan->proposal_attachment;
         $isUploadingNewImage = isset($validated['floor_image']);
         $isUploadingNewFeature = isset($validated['feature_image']);
+        $isChangingProposalAttachment = array_key_exists('proposal_attachment', $validated);
 
         // --- 8. Update database ---
         $floorPlan->update($validated);
@@ -695,6 +758,9 @@ class FloorPlanController extends Controller
         }
         if ($isUploadingNewFeature && $oldFeatureImage) {
             $this->safeDeleteOldImage($oldFeatureImage, $floorPlan->feature_image, $floorPlan->id);
+        }
+        if ($isChangingProposalAttachment && $oldProposalAttachment) {
+            $this->safeDeleteOldImage($oldProposalAttachment, $floorPlan->proposal_attachment, $floorPlan->id);
         }
 
         // --- 10. Sync canvas settings (non-critical) ---

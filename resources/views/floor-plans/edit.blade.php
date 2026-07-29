@@ -192,6 +192,37 @@
                     @enderror
                 </div>
 
+                <div class="form-group">
+                    <label for="proposal_attachment">Proposal Attachment</label>
+
+                    @if ($floorPlan->proposal_attachment)
+                        <div class="mb-2">
+                            <a href="{{ asset($floorPlan->proposal_attachment) }}" target="_blank" rel="noopener">
+                                <i class="fas fa-paperclip mr-1"></i>{{ $floorPlan->proposal_attachment_name ?? 'Current attachment' }}
+                            </a>
+                            <div class="form-check mt-1">
+                                <input type="checkbox" class="form-check-input" id="remove_proposal_attachment" name="remove_proposal_attachment" value="1">
+                                <label class="form-check-label text-danger" for="remove_proposal_attachment">
+                                    Remove this attachment
+                                </label>
+                            </div>
+                        </div>
+                    @endif
+
+                    <input type="file"
+                           class="form-control-file @error('proposal_attachment') is-invalid @enderror"
+                           id="proposal_attachment"
+                           name="proposal_attachment"
+                           accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png">
+                    <small class="form-text text-muted">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Optional: attach or replace the proposal document (PDF, Word, PowerPoint, or image). Max 20MB.
+                    </small>
+                    @error('proposal_attachment')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
+                </div>
+
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
