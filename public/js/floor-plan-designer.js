@@ -8095,7 +8095,14 @@ const FloorPlanDesigner = {
                 e.target.closest('.transform-controls')) {
                 return;
             }
-            
+
+            // Don't start dragging if clicking on the rotate handle -- let its own
+            // listener (setupRotateHandle) handle left-click-drag rotation instead.
+            if (e.target.classList.contains('rotate-handle') ||
+                e.target.closest('.rotate-handle')) {
+                return;
+            }
+
             // Dragging always allowed (no tool restriction)
             
             // Check if this booth is selected - if not, only drag this one
@@ -10108,7 +10115,13 @@ const FloorPlanDesigner = {
                 e.stopPropagation();
                 return;
             }
-            
+
+            // Left-click only: right-click is reserved for the booth context menu
+            // (setupBoothContextMenuDelegation) and should not also start a rotation.
+            if (e.button !== 0) {
+                return;
+            }
+
             e.preventDefault();
             e.stopPropagation();
             e.stopImmediatePropagation();
